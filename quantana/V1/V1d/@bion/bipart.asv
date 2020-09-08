@@ -1,0 +1,142 @@
+function out = bion(eob,kind,modes)
+% 
+% BION     Bi-Quon Object
+%          Create a bi-quon object as a derived QUANTANA object.
+%
+%             eob = envi(quantana,'box'); 
+%             bob = bion(eob,kind,modes);
+%
+%          Kind:
+%             'dist'      two distiguishable particles
+%             'boson'     two bosonic particles
+%             'fermion'   two fermionic particles
+%
+%          Examples:
+%
+%          a) Distinguishable particles in a box (kind = 'dist')
+%
+%              eob = envi(quantana,'box');   % particles in a box
+%              bob = bion(eob,'dist',[1 0 0 0; 0 1 0 0]); 
+%
+%          b) Two bosons in a potential square well (kind = 'boson')
+%
+%              eob = envi(quantana,'well');    % particles in a square well
+%              bob = bion(eob,'boson',[1 0 0 0; 0 1 0 0]); 
+%
+%          Methods:
+%
+%             - xspace          retrieve x-vector of x-space
+%             - yspace          retrieve y-vector of y-space
+%
+%          See also QUANTANA, BION, ENVI
+%   
+   if (~isa(eob,'quantana'))
+      error('quantana object (environment) expected for arg1');
+   end
+
+   if (nargin < 2)
+      error('at least 2 args expected!');
+   end
+   
+   if (nargin < 3)
+      modes = [1 0; 0 1];
+   end
+
+      % set argument defaults
+
+   fmt = '';  dat.kind = kind;  par = get(eob);
+   
+   dat.hbar = either(par.hbar,1);    % reduced Planck constant
+   dat.m = either(par.m,1);          % mass of particles
+   
+   dat.xspace = either(par.zspace(:),(-5:0.1:5)');  
+   dat.yspace = either(par.zspace(:),(-5:0.1:5)');  
+   
+   dat.psi = [];      % actual psi function
+   dat.energy = [];   % energy values 
+   dat.basis = [];    % eigen function basis 
+   dat.eco = [];      % actual expansion coefficients
+   
+      % check arguments
+
+   if (~isa(par.hbar,'double'))
+      error('hbar must be double!');
+   end
+
+   if (~isa(dat.xspace,'double') || min(size(dat.xspace)) ~= 1)
+      error('xspace must be a double vector!');
+   end
+
+   if (~isa(dat.yspace,'double') || min(size(dat.yspace)) ~= 1)
+      error('yspace must be a double vector!');
+   end
+   
+      % object creation
+      
+   [obj,she] = derive(quantana(fmt,par,dat),mfilename);
+   obj = class(obj,obj.tag,she);     
+
+      % Set psi & map
+   
+   if (isempty(dat.psi))
+      dat.psi = eig(obj,0);          % ground state of harmonic osc.
+   end
+   
+   if(~isempty(dat.psi))
+      dat.psi = normalize(dat.psi(:));
+      if (length(dat.psi) ~= length(dat.zspace))
+         error('dimensions of z and psi must match!');
+      end
+      
+      N = length(dat.zspace);
+      [obj,Psi,En] = setup(obj,min(N-1,20));  % pre-calculate eigen functions
+            
+         % calculate map transformation matrix
+         % IDFT matrix is called 'map', i.e. psi = map*phi
+         % phi is a coefficient vector for an expansion in the 
+         % eigen states (therefore not normalized). To transform
+         % back we have to calculate: psi = map*phi
+      
+      %dat.map = normalize(Psi);
+      dat.map = gramschmidt(Psi);
+      dat.phi = dat.map' * dat.psi;   % phi is a coefficient vector
+      dat.energy = En;           
+   end
+   
+   obj = data(obj,dat);               % refresh data
+   
+      % Finish
+      
+   if (nargout==0)
+      demo(obj);
+   else
+      out = obj;
+   end
+   return           
+
+%==========================================================================
+
+function U = gramschmidt(X)
+%
+% GRAMSCHMIDT   Gram-Schmidt procedure to calculate an orthonormal 
+%               basis according to a give set X of linear independent
+%               basis vectors
+%
+   n = size(X,2);
+   
+   if (rank(X) ~= min(size(X)))
+      error('rank deficite!');
+   end
+   
+   for (j=1:n)
+      xj = X(:,j);
+      vj = xj;
+      for (k=1:j-1)
+         vj = vj - U(:,k) * U(:,k)'*xj;
+      end
+      uj = vj / sqrt((vj'*vj));    % normalize
+      U(:,j) = uj;           % store in a matrix U = [u1,u2,...,uj]
+   end
+   return
+   
+% eof   

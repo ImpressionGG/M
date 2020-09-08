@@ -1,0 +1,39 @@
+function c = icast(a,b)
+%
+% ICAST  Cast IMAT to real matriICAST multiplication
+%
+%           c = iadd(a,b)              % c = a + b
+%
+%        See also IMAT, CAST, IMUL, ISUB, IINV
+%
+   if (a.n ~= b.m)
+      error('dimension mismatch!');
+   end
+   n = a.n;                            % equals b.m
+   
+   c = a;
+   c.m = a.m;
+   c.n = b.n;
+   c.expo = a.expo;                    % inherit a's exponent
+   
+   M = zeros(c.m,c.n);
+   A = reshape(a.data,a.m,a.n);
+   B = reshape(b.data,b.m,b.n);
+   
+   for (i=1:c.m)
+      for (j=1:c.n)
+         M(i,j) = 0;
+         for (k=1:c.m)
+            M(i,j) = M(i,j) + A(i,k)*B(k,j);
+         end
+      end
+   end
+   
+   if any(abs(M) >= 2^63)
+       fprintf('*** IMAT overflow during imul!');
+   end
+   
+   c.data = M(:)/(2^b.expo);
+   c.margin = 2^31 / max(abs(c.data));
+
+end

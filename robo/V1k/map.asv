@@ -1,0 +1,170 @@
+function Y = map(C,X,kind)
+%
+% MAP       General mapping. Does both mapping and calculation of the map
+%
+%              C = map(X,Y,0)   % calculate linear map
+%              C = map(X,Y,1)   % calculate affine map
+%              C = map(X,Y,2)   % calculate order 2 map
+%
+%              C = map(X,Y,-2)  % calculate map by 2 corners
+%              C = map(X,Y,-3)  % calculate map by 3 corners
+%              C = map(X,Y,-4)  % calculate map by 4 corners
+%              C = map(X,Y,-5)  % calculate map by 5 corners
+%
+%              Y = map(C,X)     % map X to Y
+%
+%           Meaning of the arguments
+%
+%              C: map coefficients
+%              X: input vector set
+%              Y: output vector set
+%
+%           Example:
+%
+%              C = camera([0 2 0],[80 40],[30 30 30]*deg);
+%              V = vchip; F = photo(C,V);
+%
+%              C1 = map(V,F,1);  F1 = map(C1,V);
+%              C2 = map(V,F,2);  F2 = map(C2,V);
+%
+%           See also: ROBO, HOM, IHOM, PRXY, CAMERA, VPLT
+
+% Update notes:
+%   2009-11-28 map empty vector sets into empty vector sets (ROBO/V1k)
+%   2009-12-02 fix rank deficite (ROBO/V1k)
+%
+   if (nargin == 2)   % actual mapping
+      
+      if (isempty(X)) % 2009-11-28 map empty vector sets into empty vector sets
+          Y = [];     % empty input maps inempty output
+          return
+      end
+
+      [m,n] = size(X);
+      if ( m == 2 )              % 2D input vector set
+         
+         if all(size(C)==[2 2])  % simple linear map
+            Y = C*X;                  
+         elseif all(size(C)==[3 3])       % affine map (H3-matrix)
+            Y = ihom(C*[X; 0*sum(X)+1]);
+         elseif all(size(C,1)==2 & size(C,2)>=6)       % order n map
+            %Y = bili(X,C);
+            Y = nlmap(C,X);
+         else
+            error('bad sized input args!')
+         end
+         
+      elseif ( m == 3 ) % 3D input vector set
+         
+         if all(size(C)==[3 3])  % simple linear map
+            Y = C*X;                  
+         elseif all(size(C)==[4 4])       % affine map (H4-matrix)
+            Y = ihom(C*[X; 0*sum(X)+1]);
+         else
+            error('bad sized input args!')
+         end
+         
+      else
+         error('2D or 3D input vector set expected!')
+      end
+      
+   elseif ( nargin == 3 )  % calculate map
+      
+      Y = velim(X);  X = velim(C);  % interprete input args - eliminate NANs
+      
+      [m,n] = size(X);
+      if any(size(X)~=size(Y))
+         error('sizes of input args must match!')
+      end
+      
+      if ( m == 2 )                 % 2D input vector set
+         
+         if ( kind == 0 )           % calculate linear map: Y = C*X
+            C = Y/X;                % linear regression
+         elseif ( kind == 1 )       % affine map - calculate 3H matrix
+            Xh = [X; 0*sum(X)+1];   % 3H vector set - preserve NANs!
+            Yh = [Y; 0*sum(Y)+1];   % 3H vector set - preserve NANs!
+
+               % 2009-12-02 fix rank deficite (ROBO/V1k)
+            
+            if (rank(Xh) ~= rank(Yh)) 
+               fprintf('map: warning
+               rnk = max(rank(Xh),rank(Yh));
+               if (rank(Xh) < rnk)
+                  for (i=-16:-10)
+                     disturbance = 10^i;
+                     Xhn = vnoise(Xh,disturbance);
+                     if (rank(Xhn) == rnk)
+                        Xh = vnoise(Xh,1000*disturbance);
+                        break;
+                     end
+                  end
+               end
+               if (rank(Yh) < rnk)
+                  for (i=-16:-10)
+                     disturbance = 10^i;
+                     Yhn = vnoise(Yh,disturbance);
+                     if (rank(Yhn) == rnk)
+                        Yh = vnoise(Yh,1000*disturbance);
+                        break;
+                     end
+                  end
+               end
+               C = Yh/Xh;              % 3H matrix
+               C(3,1:2) = [0 0];   % trim to zero, since disturbance could result in non-zero last row            
+            else
+               C = Yh/Xh;              % 3H matrix
+            end
+
+         elseif ( kind >= 2 )
+            % C = bili(X,Y');       % order 2 map
+            C = nlmap(X,Y,kind);    % order n map
+         elseif (kind == -2)
+            corners(C);  % initialize corners
+            idx = corners; idx = idx(3:4);
+            X0 = X(:,idx);  Y0 = Y(:,idx);
+            x = diff(X0(1,:)+sqrt(-1)*X0(2,:));
+            y = diff(Y0(1,:)+sqrt(-1)*Y0(2,:));
+            phi = angle(y)-angle(x);
+            k = abs(y)/abs(x);
+            K = scale(k,k);
+            R = rot(phi);
+            T = R*K;
+            x0 = Y0(:,1) - T*X0(:,1);
+            C = h2m(T,x0);
+         elseif (kind == -3)
+            corners(C);  % initialize corners
+            idx = corners; idx = idx(2:4);
+            C = map(X(:,idx),Y(:,idx),1);
+         elseif (kind == -4)
+            corners(C);  % initialize corners
+            idx = corners; idx = idx(1:4);
+            C = map(X(:,idx),Y(:,idx),1);
+         elseif (kind == -5)
+            corners(C);  % initialize corners
+            idx = corners; idx = idx(1:5);
+            C = map(X(:,idx),Y(:,idx),1);
+         else
+            error('bad value for arg3!')
+         end
+         
+      elseif ( m == 3 ) % 3D input vector set
+         if ( kind == 0 )           % calculate linear map: Y = C*X
+            C = Y/X;                % linear regression
+         elseif ( kind == 1 )       % affine map - calculate 3H matrix
+            Xh = [X; 0*sum(X)+1];   % 4H vector set - preserve NANs!
+            Yh = [Y; 0*sum(Y)+1];   % 4H vector set - preserve NANs!
+            C = Yh/Xh;              % 4H matrix
+         else
+            error('bad value for arg3!')
+         end
+      else
+         error('2D or 3D input vector set expected!')
+      end
+      
+      Y = C;  % output argument is map coefficient matrix
+   else
+      error('2 or 3 input args expected!');
+   end
+   
+% eof

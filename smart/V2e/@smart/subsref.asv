@@ -1,0 +1,149 @@
+function [value,rawval] = subsref(obj,s)
+%
+% SUBSREF   Subscripted reference for SMART '#BULK' objects. 
+%           Exapmple:
+%
+%              value = obj.pU   % get subscripted value by '.pU'
+%
+%           This statement will get the data part according to symbol 'pU'
+%           of a SMART bulk data object. The special case
+%
+%              t = obj.time    % get time stamp vector
+%
+%           will retrieve the time stamp vector.
+%
+%           See also: SMART DATA BULK
+%
+   n = length(s);
+   sym  = '';
+   for (i=1:n)
+      if (s(i).type ~= '.')
+         error('subsref for SMART objects expects always ''.''!');
+      end
+      sym = [sym,s(i).subs];
+      if (i < n)
+         sym = [sym,'.'];
+      end
+   end
+
+      % check for '#BULK' format!
+      
+   fmt = format(obj);
+   if ~strcmp(fmt,'#BULK')
+      error('#BULK data format expected for subscripted reference!');
+   end
+
+   dat = obj.data;          % access data part
+   
+      % get numerical index for data
+   
+   if (strcmp(sym,'time'))  % symbol 'time' gets special treatment
+      idx = 0;
+   else
+      dat = data(obj);
+      idx = match(sym,dat.measure.symbols);
+      if isempty(idx)
+         xyz = [];
+         return;
+      end
+   end
+
+      % now retrieve data
+
+   rawval = retrieve(obj,idx);     % smart retrieve
+   for (i=1:size(rawval,1))
+      value(i,:) = nanreplace(rawval(i,:));
+   end            
+   return
+
+%==========================================================================
+% Auxillary functions
+%==========================================================================
+
+function val = retrieve(smo,j)  
+%
+% RETRIEVE   Retrieve j-th data stream by numeric index (j).
+%
+%               val = retrieve(smo,j)
+%
+   profiler('retrieve',1);     % start profiling
+   dim = property(obj,'dimension');
+
+   dat = data(obj);
+   bulk = smo.bulk;
+   M = length(bulk.t);               % length of time vector
+   N = length(bulk.symbols);         % length of symbol list 
+   
+   Nts = property(obj,'timestamps'); % number of columns for time stamps
+   if (Nts ~= 1)
+      error('number of time stamps must be 1 for smart data storage!');
+   end
+   
+   [m,n] = size(bulk.bulk);
+   if (m ~= M)
+      error('inconsistent row numbers of bulk data!');
+   end
+   if (n ~= N*dim)
+      error('inconsistent column numbers of bulk data!');
+   end
+   
+   if (j == 0)   % time stamps
+      if (Nts > 1)
+         error('number of timestamps must be either 0 or 1!');
+      elseif (Nts == 0)  % take index as time stamps
+         val = 0:size(obj.data.measure.data,1)-1;
+      else  % take time stamps of bulk data
+         val = bulk.t';
+      end
+   elseif (1 <= j & j <= N)  % measurement data
+      val = bulk.bulk(:,dim*(j-1)+(1:dim))';   
+   else
+      error('index out of range!'); 
+   end
+     
+   profiler('retrieve',0);     % end profiling
+   return
+   
+%==========================================================================
+
+function val = nanreplace(val)   % replace all NaNs
+%
+% NANREPLACE  Replace all NaNs in a vector set
+%             1) Each leading NaN is to be replaced by the first 
+%              non NaN value on the right side.
+%
+%             2) Each intermediate and trailing NaN is to be replaced the first 
+%                non NaN value on the left side.
+
+      % Start by temporarily adding a non-NaN dummy column. This dummy column
+      % is called "stopper" and makres sure that the algorithm does not crash
+
+   profiler('nanreplace',1);
+   
+   [m,n] = size(val);
+   for (i=1:m)
+      vi = val(i,:);
+      if all(isnan(vi))
+         vi = zeros(1,n);
+      else
+         jdx = find(~isnan(vi));
+         jmin = min(jdx);
+         vi(1) = vi(jmin);
+
+         v = vi(1);
+         for (j=2:n)
+            if isnan(vi(j))
+               vi(j) = v;
+            else
+               v = vi(j);
+            end
+         end
+      end
+      val(i,:) = vi;
+   end
+   
+   profiler('nanreplace',0);
+   return
+   
+   
+%eof   

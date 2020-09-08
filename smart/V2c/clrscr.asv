@@ -1,0 +1,21 @@
+function clrscr(arg1,arg2)
+%
+% CLRSCR    Clear screen (without destroying menus)
+%
+%           Default figure = gcf:
+%
+%              clrscr            % figure = gcf, axes off
+%              clrscr('on')      % axes visible
+%              clrscr on         % axes visible
+%              clrscr('off')     % axes invisible
+%              clrscr off        % axes invisible
+%
+%           Specified figure = fig:
+%
+%              clrscr(fig)       % specify figure
+%              clrscr(fig,'on')  % axes visible
+%              clrscr(fig,'off') % axes invisible
+%
+%           See also: SMART CLS CLF
+%
+% eof

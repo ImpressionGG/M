@@ -1,0 +1,25 @@
+$type='article'
+%
+% Parameters
+%
+$title='Kugel70'
+$comment='Kugel70'
+$glass='Crystal'
+$facette5=[22.5 45 67.5 90]
+$facette6=[11.25 33.75 56.25 78.75]
+$facette7=[11.25 33.75 56.25 78.75]
+%
+% Header & Data
+%
+        lage [1]       angle [1]
+        0.000000        0.000000
+        1.000000             NaN
+        2.000000             NaN
+        3.000000             NaN
+        4.000000             NaN
+        5.000000       49.961000
+        6.000000       52.539000
+        7.000000       75.251000
+%
+% End of Object
+%

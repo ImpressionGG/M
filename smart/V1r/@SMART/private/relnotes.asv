@@ -1,0 +1,11 @@
+function relnotes
+%
+% RELNOTES  Release notes for Chameo Toolbox
+%
+
+% Release Chameo/V1M
+% ==================
+%
+% 1) Support of "View/Coordinate" menu: see release notes of Chameo/V1M
+%
+%

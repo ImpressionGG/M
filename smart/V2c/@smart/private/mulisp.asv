@@ -1,0 +1,23 @@
+function env = mulisp
+%
+% MULISP  Run the µlisp interpreter. 
+%
+%            mulisp  % run the µlisp interpreter
+%
+%         µlisp is a standard LISp interpreter which is
+%         setup with only a few bound symbols which are: 
+%
+%            QUOTE
+%            DEFINE
+%            LAMBDA
+%
+%         See also: LISP DEMO
+%
+   table = {};    % empty table
+   table{end+1} = {'quote',lisp('<spec>','primitive','pquote')};
+   table{end+1} = {'define',lisp('<spec>','primitive','pdefine')};
+   table{end+1} = {'lambda',lisp('<spec>','primitive','plambda')};
+   
+   nil = lisp;   % just to have NIL
+   env = envi(nil,'#mulisp#
+   env = interpreter(lisp,env)
