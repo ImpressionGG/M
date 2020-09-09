@@ -47,7 +47,7 @@ function ok = All(o)                   % All Tests
    ok = ok && Number(o);               % number construction test
    ok = ok && Poly(o);                 % polynomial test
    ok = ok && Cast(o);                 % casting test
-   ok = ok && Gcd(o);
+   %ok = ok && Gcd(o);
 end
 
 %==========================================================================
@@ -252,7 +252,7 @@ function ok = Poly(o)                  % Polynomial Arithmetic Test
       ok = ok && (comp(ab,c)==0);      % test c-a*b against zero!
       a,b,c
    end
-   function ok = Base100(o)            % Base 100 Example               
+   function ok = Base100(o)            % Base 100 Example              
       ok = 1;                          % ok = true by default
       o = base(corinth,100);           % base 100 object
 
@@ -262,6 +262,22 @@ function ok = Poly(o)                  % Polynomial Arithmetic Test
       
       ab = a*b;
       ok = ok && (comp(ab,c)==0);      % test c-a*b against zero!
+   end
+   function ok = Special(o)            % Special Polynomial Test       
+   %
+   % SPECIAL  This example executed once with a bug
+   %
+      o = base(o,100);
+      c0 = [6 8];
+      c1 = [7 8 9];
+      c2 = [17 56 2];
+      
+      p0 = poly(o,c0);
+      p1 = poly(o,c1);
+      p01 = poly(o,conv(c0,c1));
+      
+      m01 = mul(p0,p1);
+      isz
    end
 end
 
@@ -346,7 +362,7 @@ function ok = Gcd(o)                   % GCD Test
    fprintf('GCD test ...\n');
 
    ok = 1;                             % ok = true by default
-   ok = ok && PolyGcd(o);              % polynomial GCD test 
+   %ok = ok && PolyGcd(o);              % polynomial GCD test 
 
    for (i=1:10)
       ok = ok && RandPolyGcd(o);
@@ -367,29 +383,44 @@ function ok = Gcd(o)                   % GCD Test
       ok = ok && iszero(r1) && iszero(r2);
    end
    function ok = RandPolyGcd(o)        % Random Polynomial GCD Test           
+      RandInt;                         % set random seed to zero
       ok = 1;                          % ok = true by default
+      
       b = 10^RandInt(6);
+      b=1e6;                           % overwrite
+      
       o = base(corinth,b);             % base 1e1,1e2,...1e6 object
 
-      m = RandInt(20);
-      for (i=1:m+1)
-         M = RandInt(1e20) / 1e10;     % magnitude
-         p(i) = M*randn;
+      m = RandInt(3);
+      for (i=1:m)
+         M = 10^(RandInt(11)-6);       % magnitude
+         c0(i) = M*randn;
       end
 
-      n = RandInt(20);
-      for (i=1:n+1)
-         M = RandInt(1e20) / 1e10;     % magnitude
-         q(i) = M*randn;
+      m = RandInt(3);
+      for (i=1:m)
+         M = 10^(RandInt(11)-6);       % magnitude
+         c1(i) = M*randn;
       end
       
-      p0 = poly(o,[1 2]);
-      p1 = poly(o,conv([1 2],[1 2 3]));
-      p2 = poly(o,conv([1 2],[4 5]));
+      m = RandInt(3);
+      for (i=1:m)
+         M = 10^(RandInt(11)-6);       % magnitude
+         c2(i) = M*randn;
+      end
       
+      p0 = poly(o,c0);
+      p1 = poly(o,conv(c0,c1));
+      p2 = poly(o,conv(c0,c2));
+      
+      [q1,r1] = div(p1,p0);           % must be dividable without remainder
+      [q2,r2] = div(p2,p0);           % must be dividable without remainder
+      
+      ok = ok && iszero(r1) && iszero(r2);
+
       cf = gcd(p1,p2);
-      [q1,r1] = div(p0,cf);
-      [q2,r2] = div(cf,p0);
+      [q1,r1] = div(p0,cf);           % must be dividable without remainder
+      [q2,r2] = div(cf,p0);           % must be dividable without remainder
       
       ok = ok && iszero(r1) && iszero(r2);
    end
