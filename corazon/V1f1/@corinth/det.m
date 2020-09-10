@@ -1,8 +1,9 @@
-function D = det(o)
+function D = det(o,M)
 %
 % DET   Calculate determinant of a corinthian matrix
 %
 %          D = det(o)
+%          D = det(o,o.data.matrix)
 %
 %       Example: characteristic polynomial
 %
@@ -17,13 +18,18 @@ function D = det(o)
 %
 %       See also: CORINTH, MATRIX
 %
-   [m,n] = size(o);
+   if (nargin <= 1)
+      [m,n] = size(o);
 
-   if (~type(o,{'matrix'}) || (m ~= n))
-      error('quadratic matrix expected');
+      if (~type(o,{'matrix'}) || (m ~= n))
+         error('quadratic matrix expected');
+      end
+
+      M = o.data.matrix;
    end
 
-   M = o.data.matrix;
+      % calculate determinant from matrix of rational functions
+
    D = Determinant(o,M);
 end
 

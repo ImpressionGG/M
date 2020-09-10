@@ -5,6 +5,12 @@ function oo = inv(o,M)
 %           M = matrix(o,magic(3))
 %           InvM = inv(M)
 %
+%        Example:
+%
+%           o = base(corinth,100);
+%           A = matrix(o,[1 3; 4 2]);
+%           B = inv(A)                 % => [-1/5 3/10; 2/5 -1/10]
+%
 %        Copyright(c): Bluenetics 2020
 %
 %        See also: CORINTH,POLY, MATRIX, DET
@@ -21,58 +27,58 @@ function oo = inv(o,M)
          [num,den,xpo] = peek(o);
          oo = poke(o,-xpo,den,num);
       case 'matrix'
-         oo = o;                       % easy :-)
+         oo = InvMatrix(o);                       
       otherwise
          error('internal')
    end
 end
 
 %==========================================================================
-% Rational Matrix Construction
+% Rational Matrix Inversion
 %==========================================================================
 
-function oo = Matrix(o,M)              % Construct Rational Matrix     
+function o = InvMatrix(o)              % Invert Rational Matrix        
+   assert(type(o,{'matrix'}));
+   M = o.data.matrix;
+
    [m,n] = size(M);
-   if isa(M,'double')
-      A = M;  M = {};
-      for (i=1:m)
-         for (j=1:n)
-            M{i,j} = number(o,A(i,j));
-         end
-      end
+   if ( m~= n)
+      error('quadratic matrix expected');
    end
-   
-   if ~iscell(M)
-      error('cell arrax expected (arg2)');
-   end
-   
-      % convert to rational function matrix
-   
+
+   D = det(o,M);
+
+   sgni = +1;
    for (i=1:m)
+      sgn = sgni;
       for (j=1:n)
-         oo = M{i,j};
-         switch oo.type
-            case 'number'
-               M{i,j} = ratio(poly(oo),poly(o,1));
-            case 'poly'
-               M{i,j} = ratio(oo,poly(o,1));
-            case 'ratio'
-               'ok';                   % data format ok, nothing to change
-            otherwise
-               error('implementation');
-         end
+         Mij = M;                      % init: copy M
+         Mij(i,:) = [];                % remove i-th row
+         Mij(:,j) = [];                % remove j-th column
+
+         Di = det(o,Mij);              % calculate i/j-th sub-determinant
+         mji = sgn * Di;               % start calculating adjoint element
+         mji = div(mji,D);             % divide by determinant
+
+         MT{j,i} = mji;                % mind: transposed matrix
+         sgn = -sgn;                   % alternating signs
       end
+      sgni = -sgni;                    % alternating signs
    end
-   
-   oo = corinth(o,'matrix');
-   oo.data.matrix = M;
+
+   o.data.matrix = MT;                 % inverted matrix
+
+      % cancel and trim
+
+   o.work.can = true;                  % all canceling already done!
+   o.work.trim = true;                 % all trimming already done!
 end
 
 %==========================================================================
 % Cast Corinthian Object To a Matrix of Rational Functions
 %==========================================================================
 
-function oo = Cast(o)
+function oo = Cast(o)                  % Cast to Rational Funct. Matrix
    switch o.type
       case 'number'
          num = poly(o);  den = poly(o,1);

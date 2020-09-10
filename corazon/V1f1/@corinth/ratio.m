@@ -79,6 +79,7 @@ function oo = Rational(p,q)            % Construct Rational Function
    end
    
    oo = poke(corinth(p,'ratio'),NaN,p,q);
+   oo = touch(oo);
 end
 function oo = Matrix(o,M)              % Construct Rational Matrix     
    assert(iscell(M));

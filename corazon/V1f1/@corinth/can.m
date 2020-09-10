@@ -128,15 +128,31 @@ end
 
 function oo = CanRatio(o)              % Cancel Ratio                  
    [x,y,e] = peek(o);
-   cf = gcd(x,y);
-   if ~iseye(cf) && ~iszero(cf)  
-      [x,r] = div(x,cf);                % cancel common factor
-      assert(iszero(r));
+   if (order(y) > 0)
+      cf = gcd(x,y);
+      if ~iseye(cf) && ~iszero(cf)  
+         [x,r] = div(x,cf);            % cancel common factor
+         assert(iszero(r));
 
-      [y,r] = div(y,cf);                % cancel common factor
-      assert(iszero(r));
+         [y,r] = div(y,cf);            % cancel common factor
+         assert(iszero(r));
+      end
    end
-   
+
+   if (order(y) == 0)
+      oy = peek(y,0);                  
+      for (j=0:order(x))
+         oj = peek(x,j);
+         oj = div(oj,oy);
+         x = poke(x,oj,j);
+      end
+      
+         % replace denominator by a number
+
+      oy = number(o,1);
+      y = poke(y,oy,0);
+   end
+
    oo = poke(o,e,x,y);
 end
 

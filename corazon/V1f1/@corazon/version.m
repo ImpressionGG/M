@@ -351,6 +351,7 @@ function VersionV1F
 % - bug fixed: polynomial GCD :-))) - corinth.bak1
 % - first time all corinthian tests passed :-))) - corinth.bak2
 % - corinth/chr: characteristic equation 
+% - pimp corinth/display for pretty matrix display
 %
 %
 % Known Bugs / Wishlist

@@ -45,12 +45,19 @@ function [q,r] = div(o,x,y)            % Divide Two Rational Objects
             [q,r] = DivNumber(o,x);
          case 'poly'
             [q,r] = DivPoly(o,x);
+         case 'ratio'
+            if (nargout > 1)
+               [q,r] = DivRatio(o,x);
+            else
+               q = DivRatio(o,x);
+            end
          otherwise
             error('implermentation restriction!');
       end
 
       q = can(q);  
       q = trim(q);
+
       if (nargout > 1)
          r = can(r);
          r = trim(r);
@@ -183,7 +190,7 @@ end
 % Divide Two Numbers
 %==========================================================================
 
-function [oo,rr] = DivNumber(o1,o2)     % Division of two Numbers        
+function [oo,rr] = DivNumber(o1,o2)     % Division of two Numbers      
    if (o1.data.base ~= o2.data.base)
       error('incompatible bases!');
    end
@@ -206,7 +213,7 @@ end
 % Divide Two Polynomials
 %==========================================================================
 
-function [q,r] = DivPoly(ox,oy)        % Divide Two Polynomials      
+function [q,r] = DivPoly(ox,oy)        % Divide Two Polynomials        
 %
 % DIVPOLY  Polynomial division
 %
@@ -259,3 +266,42 @@ function [q,r] = DivPoly(ox,oy)        % Divide Two Polynomials
       r = sub(r,p);
    end
 end
+
+%==========================================================================
+% Divide Two Rationals
+%==========================================================================
+
+function [q,r] = DivRatio(ox,oy)       % Divide Two Polynomials      
+%
+% DIVRATIO  Division of two rational functions
+%
+%              o1 = ratio(o,[1 2]);
+%              o2 = ratio(o,[5 6 7]);
+%              oo = div(o1,o2)
+%
+   if (ox.data.base ~= oy.data.base)
+      error('incompatible bases!');
+   end
+   assert(isequal(ox.type,'ratio') && isequal(oy.type,'ratio'));
+
+   [numx,denx,~] = peek(ox);           % numerator & denominator polynomial
+   [numy,deny,~] = peek(oy);           % numerator & denominator polynomial
+
+   num = mul(numx,deny);
+   den = mul(denx,numy);
+
+   q = poke(ox,NaN,num,den);
+
+      % cancel and trim
+
+   q.work.can = false;
+   q.work.trim = false;
+
+   q = can(q);
+   q = trim(q);
+
+   if (nargout > 1)
+      r = corinth(q,'ratio');          % zero rational
+   end
+end
+

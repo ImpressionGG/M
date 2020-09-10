@@ -22,8 +22,6 @@ function oo = mul(o,x,y)               % Multiply Two Rational Objects
 %
 %       See also: CORINTH, SUB, MUL, DIV, COMP
 %
-   o = touch(o);                       % just in case of a copy somewhere
-
    if (nargin == 3)
       oo = Mul(o,x,y);
    else
@@ -41,6 +39,7 @@ function oo = mul(o,x,y)               % Multiply Two Rational Objects
             error('implermentation restriction!');
       end
       
+      oo = touch(oo);                  % force cancel & trim
       oo = can(oo);
       oo = trim(oo);
    end

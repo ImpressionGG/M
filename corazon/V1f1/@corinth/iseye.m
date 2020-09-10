@@ -18,7 +18,7 @@ function ok = iseye(o)                % Is Object Multiplicative Unit
       case 'number'
          [num,den,~] = peek(o);
          if length(num) ~= 1 || length(den) ~= 1
-            ok = false
+            ok = false;
          else
             ok = isequal(num(1)/den(1),1);
          end

@@ -1,4 +1,4 @@
-function display(o)                    % Display Corinthian Object     
+function txt = display(o)              % Display Corinthian Object     
 %
 % DISPLAY   Display a CORINTH object (rational object)
 %
@@ -15,16 +15,48 @@ function display(o)                    % Display Corinthian Object
 %
    switch o.type
       case 'number'
-         fprintf('   rational number:\n');
-         Number(o);
+         if (nargout == 0)
+            fprintf('   rational number:\n');
+            Number(o);
+         else
+            txt = '...';
+         end
+
       case 'poly'      
-         Poly(o);
+         if (nargout == 0)
+            Poly(o);
+         else
+            coeffs = real(o);
+            txt = PolyString(o,coeffs,'s');
+            txt = ['(',txt,')'];
+         end
+
       case 'ratio'      
-         Ratio(o);
+         if (nargout == 0)
+            Ratio(o);
+         else
+            [num,den,~] = peek(o);
+            if iseye(den)
+               cnum = real(num);
+               txt = PolyString(o,cnum,'s');
+               txt = ['((',txt,'))'];
+            else
+               cnum = real(num);
+               cden = real(den);
+               txt = RatioString(o,cnum,cden,'s');
+               txt = Trim(o,txt);
+            end
+         end
+
       case 'matrix'  
-         [m,n] = size(o.data.matrix);
-         fprintf('   rational matrix %gx%g:\n',m,n);
-         Matrix(o);
+         if (nargout == 0)
+            [m,n] = size(o.data.matrix);
+            fprintf('   rational matrix %gx%g:\n',m,n);
+            Matrix(o);
+         else
+            [m,n] = size(o);
+            txt = sprintf('%g x %g rational matrix',m,n);
+         end
       otherwise
          disp(o)                       % display in corazon style
    end
@@ -180,7 +212,7 @@ end
 % Display Matrix
 %==========================================================================
 
-function Matrix(o)                     % Display Matrix                
+function OldMatrix(o)                  % Display Matrix                
    assert(isequal(o.type,'matrix'));
    
    M = o.data.matrix;
@@ -193,6 +225,48 @@ function Matrix(o)                     % Display Matrix
          
          Ratio(M{i,j});                % display rational function
       end
+   end
+end
+function Matrix(o)                     % Display Matrix                
+   assert(isequal(o.type,'matrix'));
+   
+   M = o.data.matrix;
+   [m,n] = size(M);
+
+   fprintf('\n');
+   for (i=1:m)
+      paragraph = [];
+      txt = {};  rows = 0;
+      for (j=1:n)        
+         txt{j} = display(M{i,j});     % display rational function
+         rows = max(rows,size(txt{j},1));      % estimate max rows
+      end
+
+         % add n (horizontal) blocks to paragraph      
+
+      for (j=1:n)
+         [mj,nj] = size(txt{j});
+
+         index = sprintf('[%g,%g]:  ',i,j);
+         index = '';
+         spacer = setstr(' '+zeros(mj,3));
+
+         txtj = [spacer,index,txt{j}];
+         [mj,nj] = size(txtj);
+
+         block = setstr(' '+zeros(rows,nj));
+         idx = ceil((rows-mj)/2);
+         block(idx+1:idx+mj,:) = txtj;
+        
+         paragraph = [paragraph, block(1:rows,:)];
+      end
+
+         % print paragraph
+
+      for (i=1:size(paragraph,1))
+         fprintf('   %s\n',paragraph(i,:));
+      end
+      fprintf('\n');
    end
 end
 
@@ -504,6 +578,14 @@ function list = Header(list,G,name,deg_num,deg_den,gain)
    end
    if ( kind == 2 | kind == 3 )
       list{end} = [list{end},sprintf(', sampling period = %g',G(2))];
+   end
+end
+function txt = Trim(o,txt)             % Trim Text                     
+   while (size(txt,1) > 0 && all(txt(:,1)==' '))
+      txt(:,1) = [];
+   end
+   while (size(txt,1) > 0 && all(txt(:,end)==' '))
+      txt(:,end) = [];
    end
 end
 
