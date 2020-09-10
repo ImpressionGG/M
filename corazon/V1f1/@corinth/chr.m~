@@ -1,0 +1,32 @@
+function equ = chr(o)
+%
+% CHR   Calculate characteristic polynomial of a quadratic matrix
+%
+%          A = matrix(o,magic(2))
+%          poly = chr(A)
+%
+%       Example: characteristic polynomial
+%
+%          o = base(corinth,100)
+%
+%          A = matrix(o,diag([-1 -2]))
+%          s = ratio(o,[1 0],1);        % s/1
+%          sI = mul(s,matrix(o,eye(size(A))))
+%          poly = det(sub(Si-A))
+%
+%       Copyright(c): Bluenetics 2020
+%
+%       See also: CORINTH, MATRIX, DET
+%
+   [m,n] = size(o);
+
+   if (~type(o,{'matrix'}) || (m ~= n))
+      error('quadratic matrix expected');
+   end
+
+   s = ratio(o,[1 0],1);
+   I = matrix(o,eye(n
+   M = o.data.matrix;
+   D = Determinant(o,M);
+end
+
