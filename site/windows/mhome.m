@@ -1,0 +1,1 @@
+function p = mhome% % MHOME   Local M-file home for Octave on Windows platform%%            path = mhome%%         See also: use%    p = "z:/Dokumente/Bluenetics/Git/M";end

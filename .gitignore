@@ -5,7 +5,7 @@ node_modules
 # IDE status
 *.emSession
 *.jlink
-*.m
+*.~m
 
 *.DS_Store
 

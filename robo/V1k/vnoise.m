@@ -1,0 +1,47 @@
+function vn = vnoise(v,sigma,bias)
+%
+% VNOISE   Add gaussian noise to a vector set
+%
+%             vn = vnoise(v,sigma,bias)
+%             vn = vnoise(v,sigma)         % bias = 0
+%             vn = vnoise(v)               % sigma = 1
+%             vn = vnoise(v,[sigmax,sigmay],[biasx,biasy])
+%
+%          See also: vset
+
+% Change history
+%    2009-11-29 created (Robo/V1k)
+%    2009-12-02 H3 vector support (Robo/V1k)
+
+   if (nargin < 2) sigma = 1; end
+   if (nargin < 3) bias = 0; end
+   
+   if (length(sigma) == 1) 
+       sigma = [sigma sigma];
+   end
+   
+   if (length(bias) == 1) 
+       bias = [bias bias];
+   end   
+   
+   [m,n] = size(v);
+   
+   if ( m == 3)     % 2009-12-02 H3 vector support (Robo/V1k)
+      vv = velim(v);            % eliminate all NaNs
+      if (any(vv(3,:) ~= 1))     % H3 vector assumed
+         error('H3 vector assumed: last row must all contain 1''s!');
+      end
+      v(3,:) = [];   % delete last row comprising of all ones
+      vn = vnoise(v(1:2,:),sigma,bias);
+      vn = hom(vn);
+   elseif (m == 2)
+      nx = randn(1,n)*sigma(1) + bias(1);
+      ny = randn(1,n)*sigma(2) + bias(2);   
+   
+      vn = v + [nx; ny];
+   else
+      error('V2 or H3 vector expected!');
+   end
+   return
+   
+% eof   

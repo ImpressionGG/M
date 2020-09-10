@@ -1,0 +1,2 @@
+function [xm,param] = maxmag(p,tmax,tag,range)%% MAXMAG   Maximum magnitude within a certain time interval
+%%             xm = maxmag(p,tmax)%%          See also: HEUN%   if (nargin < 3)      [x,t] = heun(p);      xm = max(abs(x'))';   else      for (i=1:length(range))         arg = range(i);         param(i) = arg;                  cmd = ['p.',tag,' = arg;'];         eval(cmd);                  [x,t] = heun(p);         xm(:,i) = max(abs(x'))';      end   endend

@@ -1,0 +1,229 @@
+function out = plot(varargin)
+%
+% PLOT   CARABULL PLOT method. Extension of MATLAB plot function by
+%        extended color strings denoting color, line width and line type
+%
+%           hdl = carabull.plot(x1,y1,'r',x2,y2,'b|o',...)
+%
+%           carabull.plot(x,y,'r')     % same as plot(x,y,'r')
+%           carabull.plot(x,y,'r2')    % plot(x,y) in red, line width 2
+%           carabull.plot(x,y,'r2.-')  % red, line width 2, solid and dot
+%           carabull.plot(x,y,'r|o')   % red stems and balls
+%
+%        Multiple argument tupels:
+%
+%           cbplot = @carabull.plot    % short hand
+%           cbplot(x1,y1,'r|o',x2,y2,x3,y3,'b2')
+%           cbplot(t,x,'r|o',t,y,'g-.',t,z,'b2')
+%
+%        Attribute list: instead of a character string plot attributes
+%        can also be provided by list.
+%
+%           carabull.plot(x1,y1,{rgb,lwid,ltyp},...)
+%
+%           carabull.plot(x,y,{[1 0 0],1,'-'})    % solid red line, width 2
+%           carabull.plot(x,y,{[1 0 0],2,'-'})    % solid red line, width 2
+%           carabull.plot(x,y,{[1 0 0],2,'.-'})   % dashed/dotted red line
+%           carabull.plot(x,y,{[1 0 0],'1','|o'}) % red stems and balls
+%
+%        The attribute string can be a combination of color codes, line
+%        type and line width. For the color codes and line type all the
+%        characters of the MATLAB/plot function are supported:
+%
+%           b     blue          .     point              -     solid
+%           g     green         o     circle             :     dotted
+%           r     red           x     x-mark             -.    dashdot 
+%           c     cyan          +     plus               --    dashed   
+%           m     magenta       *     star             (none)  no line
+%           y     yellow        s     square
+%           k     black         d     diamond
+%           w     white         v     triangle (down)
+%                                ^     triangle (up)
+%                                <     triangle (left)
+%                                >     triangle (right)
+%                                p     pentagram
+%                                h     hexagram
+%
+%        In addition addition '|' and '~' characters are supported which
+%        stand for stem plot ('|') and sequential color change ('~').
+%
+%           carabull.plot(x,y,'|')     % plot stems
+%           carabull.plot(x,y,'|o')    % plot stems with balls on top
+%
+%        Color characters can be provided in multiple occurance, which
+%        means averaging of the RGB values. Thus foe example the follwing
+%        color codes may be used:
+%
+%           kw    gray
+%           ryk   brown
+%           rb    purple
+%           ck    dark cyan
+%           bk    dark blue
+%           gk    dark green
+%           yk    dark yellow
+%           ry    orange
+%           ryy   Gold
+%
+%        See also: CARABULL, CARABULL.COLOR
+%
+   color = @carabull.color;            % short hand
+   
+   ilist = varargin;
+   list = Chunks(ilist);               % check args and group by chunks
+   
+   held = ishold;                      % save initial hold status
+   
+   hdl = [];
+   for (i=1:length(list))
+      entry = list{i};
+      x = entry{1};  y = entry{2};  col = entry{3};
+      [rgb,lwid,ltyp] = color(col);    % get line attributes
+      
+      idx = find(ltyp=='~');
+      if isempty(idx)
+         h = Plot(x,y,rgb,lwid,ltyp);
+      else
+         ltyp(idx) = [];               % remove all '~'
+         h = MultiColorPlot(x,y,lwid,ltyp);
+      end
+         %set(h,'color',rgb,'linewidth',lwid);
+      hdl = [hdl;h];                   % collect handles
+   end
+      
+      % final actions: preserve hold status and care about out args
+      
+   if ~held
+      hold off;                        % restore initial hold status
+   end
+   if (nargout > 0)
+      out = hdl;
+   end
+end
+
+function list = Chunks(ilist)
+%
+% CHUNKS   Get the particular list of parameter chunks and make sure
+%          the args have proper type.
+%
+   nin = length(ilist);
+   
+   i = 0;  list = {};
+   while (i < nin)
+      if (i+3 <= nin) && ischar(ilist{i+3})
+         x = ilist{i+1};  y = ilist{i+2};  col = ilist{i+3};
+         if ~isa(x,'double') || ~isa(y,'double')
+            error(sprintf('arg%g and arg%g must be double!',i+1,i+2))
+         end
+         i = i+3;
+      elseif (i+3 <= nin) && iscell(ilist{i+3})
+         entry = ilist{i+3};
+         if length(entry) ~= 3
+            error('attribute list must have 3 elements!');
+         end
+         x = ilist{i+1};  y = ilist{i+2};  col = ilist{i+3};
+         if ~isa(x,'double') || ~isa(y,'double')
+            error(sprintf('arg%g and arg%g must be double!',i+1,i+2))
+         end
+         i = i+3;
+      elseif (i+2 <= nin)
+         x = ilist{i+1};  y = ilist{i+2};  col = 'k';
+         if ~isa(x,'double') || ~isa(y,'double')
+            error(sprintf('arg%g and arg%g must be double!',i+1,i+2))
+         end
+         i = i+2;
+      else
+         error('bad number of input args (at least one additional arg expected!')
+      end
+
+      list{end+1} = {x,y,col};
+   end
+end
+
+function hdl = Plot(x,y,rgb,lwid,ltyp) % Plot graph and hold
+%
+   if isempty(ltyp)
+      ltyp = '-';                      % solid by default
+   end
+   
+   i = 1;
+   while (i <= length(ltyp))
+      c = ltyp(i);  i = i+1;
+      switch c
+         case '|'
+            if ~all(size(x)==size(y))
+               error('sizes of arg1 and arg2 do not match!');
+            end
+            hdl = plot([x(:),x(:)]',[0*y(:),y(:)]','k-');
+            hold on
+            set(hdl,'color',rgb,'linewidth',lwid);
+         case '-'
+            if (i <= length(ltyp) && ltyp(i) == '.')
+               hdl = plot(x,y,'-.');
+               i = i+1;  hold on
+               set(hdl,'color',rgb,'linewidth',lwid);
+            elseif (i <= length(ltyp) && ltyp(i) == '-') 
+               hdl = plot(x,y,'--');
+               i = i+1;  hold on
+               set(hdl,'color',rgb,'linewidth',lwid);
+            else
+               hdl = plot(x,y,'-');
+               hold on
+               set(hdl,'color',rgb,'linewidth',lwid);
+            end
+         case {'.','o','x','+','*','s','d','v','^','<','>','p','h',':'}
+            hdl = plot(x,y,c);
+            hold on
+            set(hdl,'color',rgb);
+         otherwise
+            'ignore!';
+      end
+   end
+end
+function hdl = MultiColorPlot(x,y,lwid,ltyp)
+   color = @carabull.color;            % short hand
+   if isempty(ltyp)
+      ltyp = '-';
+   end
+   [mx,nx] = size(x);  [my,ny] = size(y);
+   
+   hdl = [];
+   if min(mx,nx) == 1
+      x = x(:);  [mx,nx] = size(x);
+      if (mx ~= my)
+         y = y';  [my,ny] = size(y);
+      end
+      if (mx ~= my)
+         error('length of x and y plot vectors must match!');
+      end
+      for (i=1:ny)
+         col = color(i);
+         rgb = color(col);
+         h = Plot(x,y(:,i),rgb,lwid,ltyp);
+         hdl = [hdl;h];
+      end
+   elseif min(my,ny) == 1
+      y = y(:);  [my,ny] = size(y);
+      if (mx ~= my)
+         x = x';  [mx,nx] = size(x);
+      end
+      if (mx ~= my)
+         error('length of x and y plot vectors must match!');
+      end
+      for (i=1:nx)
+         col = color(i);
+         rgb = color(col);
+         h = Plot(x(:,i),y,rgb,lwid,ltyp);
+         hdl = [hdl;h];
+      end
+   else
+      if any(size(x) ~= size(y))
+         error('incompatible sizes of x and y plot vectors!');
+      end
+      for (i=1:nx)
+         col = color(i);
+         rgb = color(col);
+         h = Plot(x(:,i),y(:,i),rgb,lwid,ltyp);
+         hdl = [hdl;h];
+      end
+   end
+end

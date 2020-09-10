@@ -1,0 +1,1 @@
+% testheun   A = [-2, 0; 0 -1];   x0 = [1;1];   dt = 1e-3;      [x,t] = heun(@flin,A,x0,1,dt);      y = [exp(A(1,1)*t); exp(A(2,2)*t)];      subplot(211)   plot(t,x);   hold on   plot(t,y,'o')   title('simulation and comparison')      e = x-y;   err = max(e(:));      subplot(212)   plot(t,e)   title(sprintf('simulation error (max %g)',err))

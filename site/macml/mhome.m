@@ -1,0 +1,1 @@
+function p = mhome% % MHOME   Local M-file home for Octave on MacOS platform%%            path = mhome%%         See also: use%    p = '/users/hux/Documents/Bluenetics/Git/M';end

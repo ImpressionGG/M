@@ -1,0 +1,92 @@
+function col = color(arg1,arg2,width)
+%
+% COLOR   Substitute proper color values, or set color value according to
+%         a graphics object's handle
+%
+%            col = color('n')  % 'n' denotes 'browN'
+%
+%            hdl = plot([0 1],[0 1]);
+%            color(hdl,'g');     % set green color 
+%            color(hdl,'g',3);   % set green color and also linewidth = 3
+%
+%         See a convinient syntax for an easy plot including color and
+%         line width setting:
+%
+%            color(plot(x,y),'r',3);       % to plot a line
+%            color(plot(x,y,'o'),'r',3);   % to plot balls
+%
+%         Special color symbols:
+%            'r'      Red
+%            'g'      Green
+%            'b'      Blue
+%            'c'      Cyan
+%            'm'      Magenta
+%            'y'      dark Yellow      
+%            'w'      White
+%            'k'      blacK
+%            'a'      grAy
+%            'u'      Ultra marine
+%            'v'      Violet
+%            'o'      Orange
+%            'p'      Purple
+%            'd'      Dark green
+%            'n'      browN
+%
+%         See also: SMART, PLOT
+
+   if (nargin == 1)
+      col = arg1;
+      if (isstr(col))
+         switch col   % assign RGB value for symbols
+            case 'n'
+               col = [0.6 0.4 0.2];  % browN
+            case 'y'
+               col = [1 0.8 0];      % dark yellow      
+            case 'a'
+               col = [0.5 0.5 0.5];  % grAy
+            case 'c'
+               col = [0  0.7 0.7];   % cyan
+            case 'u'
+               col = [0  0 0.7];     % ultra marine
+            case 'v'
+               col = [0.7  0 0.7];   % violet
+            case 'o'
+               col = [1  0.6 0];     % orange
+            case 'p'
+               col = [0.8  0 0.2];   % purple
+            case 'd'
+               col = [0  0.8   0];   % dark green
+            case 'w'
+               col = [1  1   1];     % white
+            case 'k'
+               col = [0  0  0];      % black
+            case 'r'
+               col = [1  0  0];      % red
+            case 'g'
+               col = [0  1  0];      % green
+            case 'b'
+               col = [0  0  1];      % blue
+            case 'c'
+               col = [0  1  1];      % cyan
+            case 'm'
+               col = [1  0  1];      % magenta
+         end
+      end
+      
+   elseif (nargin == 2 || nargin == 3)
+      
+      hdl = arg1;  col = arg2;
+      set(hdl,'color',color(col));
+      if (nargin == 3)
+          set(hdl,'linewidth',width);
+      end
+      
+   else
+       
+      error('bad number of args!');
+      
+   end
+   return
+   
+% eof      
+   

@@ -1,0 +1,1 @@
+% testclf; surfl (peaks); colormap (copper (64)); shading ('interp'); f = uimenu ('label', '&File', 'accelerator', 'f'); e = uimenu ('label', '&Edit', 'accelerator', 'e'); uimenu (f, 'label', 'Close', 'accelerator', 'q', 'callback', 'close (gcf)'); uimenu (e, 'label', 'Toggle &Grid', 'accelerator', 'g', 'callback', 'grid (gca)');

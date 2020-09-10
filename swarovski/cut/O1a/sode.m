@@ -1,0 +1,2 @@
+function [x1,t,x2] = sode(p,tmax,dt)
+%% SODE  Solve ordinary differential equation%%          [x,t] = sode(p)%          [x,t] = sode(p,tmax)%          [x,t] = sode(p,tmax,dt)%%       See also: HOGA, HEUN%   if (nargin < 2)      tmax = p.tmax;   end   if (nargin < 3)      dt = tmax/1000;   end         t = 0:dt:tmax;   x0 = inv(p.A1)*p.b;   for (i=1:length(t))      x1(:,i) = expm(p.A1*t(i))*x0;   end   if (nargout >= 3)      x0 = inv(p.A2)*p.b;      for (i=1:length(t))         x2(:,i) = expm(p.A2*t(i))*x0;      end   endend
