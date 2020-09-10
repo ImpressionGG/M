@@ -113,8 +113,8 @@ function o = Construct(o,type)         % construct object
          o.data.den = 1;
       case 'ratio'
          o.data.expo = NaN;
-         o.data.num = [0];
-         o.data.den = [1];
+         o.data.num = poly(o,[0]);
+         o.data.den = poly(o,[1]);
       case 'matrix'
          data.base = o.data.base;
          data.matrix = {};

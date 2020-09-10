@@ -133,6 +133,7 @@ function oo = CanRatio(o)              % Cancel Ratio
       oo = corinth(o,'ratio');         % return zero ratio
       oo.work.can = true;
       oo.work.trim = true;
+      assert(ty
       return                           % bye!
    end
 

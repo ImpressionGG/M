@@ -352,6 +352,7 @@ function VersionV1F
 % - first time all corinthian tests passed :-))) - corinth.bak2
 % - corinth/chr: characteristic equation 
 % - pimp corinth/display for pretty matrix display
+% - corinth/phi (transition matrix) - with tests :-)))))
 %
 %
 % Known Bugs / Wishlist
