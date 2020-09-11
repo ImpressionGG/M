@@ -360,6 +360,7 @@ function VersionV1F
 % - add some verbose control for corinth objects
 % - terrible, dirty bug fixed in corinth/div/Divide (guess too low!) :-)))
 % - 1 million mantissa tests passed :-)))))
+% - bug fixed: corazon/display - 2nd arg only accepted for display if obj
 %
 %
 % Known Bugs / Wishlist

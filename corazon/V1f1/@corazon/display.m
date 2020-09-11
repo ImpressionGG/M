@@ -9,7 +9,7 @@ function display(o,oo)
 %
 %           See also: CORAZON
 %
-   if (nargin == 2)
+   if (nargin == 2) && isa(oo,'corazon')
       o = oo;
    end
    
