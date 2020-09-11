@@ -1,4 +1,4 @@
-classdef corazon < corazita & corazito  % v0c/@corazon/corazon.m
+classdef corazon < corazita & corazito  % Corazon Class                
 %
 %    CORAZON  Class constructor for CORAZON class. CORAZON class is both
 %             derived from CORAZITO and CORAZINO
@@ -35,3 +35,4 @@ classdef corazon < corazita & corazito  % v0c/@corazon/corazon.m
       end
    end
 end
+
