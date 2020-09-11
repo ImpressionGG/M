@@ -85,8 +85,12 @@ end
 %==========================================================================
 
 function oo = GcdPoly(o1,o2)         % GCD of polynomials        
+   global CorinthVerbose
+   if isempty(CorinthVerbose)
+      CorinthVerbose = 0;
+   end
+
    assert(isequal(o1.type,'poly') && isequal(o2.type,'poly'));
-   talk = (opt(o1,{'verbose',0}) >= 2);
 
    n1 = order(o1);  n2 = order(o2);
    if (n1 == 0 || n2 == 0)
@@ -114,7 +118,7 @@ function oo = GcdPoly(o1,o2)         % GCD of polynomials
          return                        % bye!
       end
       
-      if (talk)
+      if (CorinthVerbose >= 2)
          fprintf('      GcdPoly: [q,r] = div(a(%g#%g),b(%g#%g))\n',...
                         order(a),digits(a), order(b),digits(b)); 
       end

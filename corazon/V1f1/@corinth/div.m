@@ -81,7 +81,10 @@ end
 %==========================================================================
 
 function [q,r] = Div(o,x,y)            % Mantissa Division             
-   verbose = opt(o,{'verbose',0});
+   global CorinthVerbose
+   if isempty(CorinthVerbose)
+      CorinthVerbose = 0;
+   end
    
    sgnx = 1;
    if any(x< 0)
@@ -114,7 +117,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    xi = [zeros(1,ny),x];  q = [];
    for (i=1:nx)
       hi = xi(i:i+ny);
-      [qi,ri] = Division(o,hi,y,verbose);
+      [qi,ri] = Division(o,hi,y,CorinthVerbose);
       q = [q qi];
       xi(i:i+ny) = ri;
    end
@@ -587,7 +590,6 @@ function Trace(o,guess)
    guesses = guesses + 1+guess;
    
    if (rem(count,2000)==0 || guess >= 2)
-      'investigate';
       excess = o.rd((guesses/count-1)*100,2);   % excess guess ratio [%]
       fprintf('   ### %g excess division guesses (%g%%)\n',guess,excess);
    end

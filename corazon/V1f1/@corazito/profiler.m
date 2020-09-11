@@ -1,4 +1,4 @@
-function out = profiler(o,name,mode)   % CORAZON Profiler                      
+function out = profiler(name,mode)     % CORAZITO Profiler                      
 %
 % PROFILER   Collect/display profiling info
 %
@@ -36,19 +36,19 @@ function out = profiler(o,name,mode)   % CORAZON Profiler
 %
 %    Copyright(c): Bluenetics 2020 
 %
-%    See also: CORAZON
+%    See also: CORAZITO
 %
    clock = MyClock;                    % store current clock at entry time
 %
-% Of Highest priority are the profiling calls (3 input args). Those are
+% Of Highest priority are the profiling calls (2 input args). Those are
 % executed if profiling is enabled, or bypassed if profiling is disabled.
 % Especially bypassing must go quickly
 %
-   while (nargin == 3)                 % Actual Profiling Calls        
+   while (nargin == 2)                 % Actual Profiling Calls        
       global GlobCorazonProfiling
       
       if isequal(GlobCorazonProfiling,1)
-         Profiler(o,name,mode,clock);  % actual profiling
+         Profiler(name,mode,clock);  % actual profiling
       else
          if nargout > 0
             out = [];
@@ -59,7 +59,7 @@ function out = profiler(o,name,mode)   % CORAZON Profiler
 %
 % No inout arg
 %
-   while (nargin == 1)                 % one input arg                 
+   while (nargin == 0)                 % no input arg                 
       global GlobCorazonProfile
       p = GlobCorazonProfile;  
    
@@ -72,7 +72,7 @@ function out = profiler(o,name,mode)   % CORAZON Profiler
 %
 % One input args
 %  
-   while (nargin == 2)                 % two input args                
+   while (nargin == 1)                 % one input args                
       global GlobCorazonProfile
       global GlobCorazonProfiling
       
@@ -96,7 +96,7 @@ function out = profiler(o,name,mode)   % CORAZON Profiler
          fprintf('Profiling Stack:\n');
          disp(p.stack);      
       else
-         ProfDemo(nmb);
+         ProfDemo(o,nmb);
       end
       return
    end  
@@ -110,7 +110,7 @@ end
 % Profiler
 %==========================================================================
 
-function Profiler(o,name,mode,cpuenter)% Actual Profiling              
+function Profiler(name,mode,cpuenter)% Actual Profiling              
 %
 % PROFILER   Actual profiling
 %
@@ -250,11 +250,11 @@ function Show(prof)                    % Show Profiling Info
 %
 % SHOW   Display profiling info
 %
-   global GlobSmartProfileBypass
+   global GlobCorazonProfiling
 
    rd = @corazon.rd;                   % access utility
    if (isempty(prof))
-      if ~GlobSmartProfileBypass
+      if isequal(GlobCorazonProfiling,1)
          fprintf('No profiling info available!\n');
       end
       return
@@ -303,104 +303,98 @@ end
 % Profiler Demos
 %==========================================================================
 
-function ProfDemo(nmb)                 % Proiler Demo Dispatcher       
+function ProfDemo(o,nmb)               % Proiler Demo Dispatcher       
 %
 % PROFDEMO   Run profiling demo
 %
    switch nmb
       case 0
-         ProfDemo0;
+         ProfDemo0(o);
       case 1
-         ProfDemo1;
+         ProfDemo1(o);
       otherwise
-         ProfDemoN(nmb);
+         ProfDemoN(o,nmb);
    end
-   return
 end
-
-function ProfDemo0                     % Profiler Demo 0               
+function ProfDemo0(o)                  % Profiler Demo 0               
 %
 % PROFDEMO0   Run profiling demo #0
 %
    fprintf('Run only profiling wthout bodies ...\n');
    
-   p = profile(smart,'main',0);     % reset & begin profiling main
-   p = profile(smart,'sub1',1);     % begin profiling sub1
-   p = profile(smart,'sub1',-1);    % end profiling sub1
-   p = profile(smart,'sub2',1);     % begin profiling sub1
-   p = profile(smart,'sub2',-1);    % end profiling sub1
-   p = profile(smart,'main',-1);    % reset & begin profiling main
+   p = profile(o,'main',0);     % reset & begin profiling main
+   p = profile(o,'sub1',1);     % begin profiling sub1
+   p = profile(o,'sub1',-1);    % end profiling sub1
+   p = profile(o,'sub2',1);     % begin profiling sub1
+   p = profile(o,'sub2',-1);    % end profiling sub1
+   p = profile(o,'main',-1);    % reset & begin profiling main
 
-   profile(smart);
+   profile(o);
    return
 end
-
-function ProfDemo1                     % Profiler Demo 1               
+function ProfDemo1(o)                  % Profiler Demo 1               
 %
 % PROFDEMO1   Run profiling demo #1
 %
    n = 10;
    
-   p = profile(smart,'main',0)     % reset & begin profiling main
+   p = profile(o,'main',0)             % reset & begin profiling main
    time = p.time
    
    for (i=1:10000) magic(n); end
 
-   p = profile(smart,'sub1',1)     % begin profiling sub1
+   p = profile(o,'sub1',1)             % begin profiling sub1
    p.time
    for (i=1:10000) magic(20); end
-   p = profile(smart,'sub1',-1)    % end profiling sub1
+   p = profile(o,'sub1',-1)            % end profiling sub1
    time = p.time
    
    for (i=1:10000) magic(n); end
    
-   p = profile(smart,'sub2',1)     % begin profiling sub1
+   p = profile(o,'sub2',1)             % begin profiling sub1
    time = p.time
    for (i=1:10000) magic(40); end
-   p = profile(smart,'sub2',-1)    % end profiling sub1
+   p = profile(o,'sub2',-1)            % end profiling sub1
    time = p.time
 
    for (i=1:10000) magic(n); end
    
-   p = profile(smart,'main',-1)    % reset & begin profiling main
+   p = profile(o,'main',-1)            % reset & begin profiling main
    time = p.time
 
-   profile(smart);
-   return
+   profile(o);
 end
-
-function ProfDemoN(n)                  % Profiler Demo n               
+function ProfDemoN(o,n)                % Profiler Demo n               
 %
 % PROFDEMON   Run profiling demo #n
 %
 
    n = n*10;
    
-   p = profile(smart,'main',0)     % reset & begin profiling main
+   p = profile(o,'main',0)             % reset & begin profiling main
    time = p.time
    
    for (i=1:10000) magic(n); end
 
-   p = profile(smart,'sub1',1)     % begin profiling sub1
+   p = profile(o,'sub1',1)             % begin profiling sub1
    p.time
    for (i=1:10000) magic(20); end
-   p = profile(smart,'sub1',-1)    % end profiling sub1
+   p = profile(o,'sub1',-1)            % end profiling sub1
    time = p.time
    
    for (i=1:10000) magic(n); end
    
-   p = profile(smart,'sub2',1)     % begin profiling sub1
+   p = profile(o,'sub2',1)             % begin profiling sub1
    time = p.time
    for (i=1:10000) magic(40); end
-   p = profile(smart,'sub2',-1)    % end profiling sub1
+   p = profile(o,'sub2',-1)            % end profiling sub1
    time = p.time
 
    for (i=1:10000) magic(n); end
    
-   p = profile(smart,'main',-1)    % reset & begin profiling main
+   p = profile(o,'main',-1)    % reset & begin profiling main
    time = p.time
 
-   profile(smart);
-   return
+   profile(o);
 end   
 

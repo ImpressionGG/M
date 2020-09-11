@@ -25,7 +25,18 @@ function oo = test(o,varargin)         % CORINTHian Arithmetic Tests
 %
    [gamma,o] = manage(o,varargin,@All,@Menu,...
                       @Mantissa,@Number,@Poly,@Cast,@Timing,@Gcd);
+   
+      % copy verbose (control) option to global variable
+      
+   global CorinthVerbose
+   CorinthVerbose = opt(o,{'control.verbose',2});
+   
+      % call local function (menu setup, or specific test)
+      
    ok = gamma(o);
+   
+      % post processing ...
+      
    if ~isobject(ok)
       fprintf('\nTest Summary:\n');
 
@@ -82,7 +93,7 @@ function ok = Mantissa(o)              % Mantissa Arithmetic Tests
    ok = ok && Base100(o);              % standard base 100 test 
    ok = ok && Brute(o);                % Brute Force Test              
 
-   corazon.profiler;                   % show profiling results
+   o.profiler;                         % show profiling results
 
    function ok = Base10(o)             % Base 10 Example               
       ok = 1;                          % ok = true by default
@@ -393,9 +404,7 @@ end
 
 function ok = Gcd(o)                   % GCD Test                  
    RandInt;                            % set random seed to zero
-   corazon.profiler([]);
    
-   o = opt(o,'verbose',4);
    fprintf('GCD test ...\n');
 
    ok = 1;                             % ok = true by default
@@ -419,7 +428,7 @@ M=N;
       ok = ok && RandPolyGcd(o,m0,m1,m2,b);
    end
 
-   for (i=N+1:M)
+   for (i=N+1:M)                       % 2nd Bunch of Test Runs        
       b = 1e6;                         % this time fixed base
 
       m0 = RandInt(5);
@@ -433,7 +442,8 @@ M=N;
       ok = ok && RandPolyGcd(o,m0,m1,m2,b);
    end
    
-   corazon.profiler;                   % show profiling resultss   
+   o.profiler;                         % show profiling results
+
    fprintf('Polynomial GCD tests: %s\n',o.iif(ok,'OK','FAIL'));
 
    function ok = PolyGcd(o)            % Polynomial GCD Test           
@@ -480,8 +490,8 @@ M=N;
       p10 = mul(p1,p0);
       p20 = mul(p2,p0);
 
-      p10 = opt(p10,'verbose',opt(o,'verbose'));
-      p20 = opt(p20,'verbose',opt(o,'verbose'));
+      p10 = inherit(p10,o);
+      p20 = inherit(p20,o);
       
       [q1,r1] = div(p10,p0);          % must be dividable without remainder
       [q2,r2] = div(p20,p0);          % must be dividable without remainder

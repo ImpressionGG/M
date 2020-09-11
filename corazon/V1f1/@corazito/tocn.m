@@ -46,7 +46,7 @@ function time = tocn(msg,digits)       % Toc for n Runs
    end
    
    if (nargout == 0)
-      fprintf('   %s: %g �s\n',msg,corazito.rd(t,digits));
+      fprintf('   %s: %g us\n',msg,corazito.rd(t,digits));
    else
       time = t;
    end

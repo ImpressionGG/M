@@ -357,6 +357,7 @@ function VersionV1F
 % - change corazon/menu: the way About is called
 % - pimp corazon/display to display other class objects
 % - pimp corazon/profiler to be a bit faster and by default off
+% - add some verbose control for corinth objects
 %
 %
 % Known Bugs / Wishlist
