@@ -1,4 +1,4 @@
-function out = profiler(o,name,mode)   % CORINTH Profiler                      
+function out = profiler(o,name,mode)   % CORAZON Profiler                      
 %
 % PROFILER   Collect/display profiling info for CORINTH objects.
 %
@@ -45,14 +45,14 @@ function out = profiler(o,name,mode)   % CORINTH Profiler
 % Especially bypassing must go quickly
 %
    while (nargin == 3)                 % Actual Profiling Calls        
-      global GlobSmartProfileBypass
+      global GlobCorazonProfiling
       
-      if (GlobSmartProfileBypass)
+      if isequal(GlobCorazonProfiling,1)
+         Profiler(o,name,mode,clock);  % actual profiling
+      else
          if nargout > 0
             out = [];
          end
-      else
-         Profiler(o,name,mode,clock);  % actual profiling
       end
       return;                          % bypass profiling if disabled
    end
@@ -60,8 +60,8 @@ function out = profiler(o,name,mode)   % CORINTH Profiler
 % No inout arg
 %
    while (nargin == 1)                 % one input arg                 
-      global GlobSmartProfile
-      p = GlobSmartProfile;  
+      global GlobCorazonProfile
+      p = GlobCorazonProfile;  
    
       Show(p);                 % graphical display of profiling info
       if nargout > 0
@@ -73,36 +73,25 @@ function out = profiler(o,name,mode)   % CORINTH Profiler
 % One input args
 %  
    while (nargin == 2)                 % two input args                
-      global GlobSmartProfile
-      global GlobSmartProfileBypass
+      global GlobCorazonProfile
+      global GlobCorazonProfiling
       
-      p = GlobSmartProfile;  
+      p = GlobCorazonProfile;  
 
       nmb = name;
       if isempty(nmb)
-         GlobSmartProfile = [];      % initialize
-         if isempty(GlobSmartProfileBypass)
-            GlobSmartProfileBypass = 1;
-         end
+         GlobCorazonProfile = [];      % initialize
          return
       elseif strcmp(name,'on')
          if nargout > 0
-            if (GlobSmartProfileBypass)
-               out = 'off';
-            else
-               out = 'on';
-            end
+           out = o.iif(isequal(GlobCorazonProfiling,1),'on','off');
          end
-         GlobSmartProfileBypass = 0;
+         GlobCorazonProfiling = 1;
       elseif strcmp(name,'off')
          if nargout > 0
-           if (GlobSmartProfileBypass)
-              out = 'off';
-           else
-              out = 'on';
-           end
+           out = o.iif(isequal(GlobCorazonProfiling,1),'on','off');
          end
-         GlobSmartProfileBypass = 1;
+         GlobCorazonProfiling = 0;
       elseif strcmp(name,'debug')
          fprintf('Profiling Stack:\n');
          disp(p.stack);      
@@ -129,8 +118,8 @@ function Profiler(o,name,mode,cpuenter)% Actual Profiling
 %               Profiler(o,'topic',0)  % exit profiling region
 %   
 
-   global GlobSmartProfile
-   p = GlobSmartProfile;  
+   global GlobCorazonProfile
+   p = GlobCorazonProfile;  
 
       % the try-catch clauses of the next sequence of statements are not
       % supported, since the try-catch clauses add a lot of delay, and 
@@ -161,7 +150,7 @@ function Profiler(o,name,mode,cpuenter)% Actual Profiling
       if isempty(p)
          if (mode <= 0)
             fprintf('*** Warning: end profile encountered for empty profile stack!\n');
-            GlobSmartProfile = [];
+            GlobCorazonProfile = [];
             out = [];
             return
          end
@@ -225,19 +214,19 @@ function Profiler(o,name,mode,cpuenter)% Actual Profiling
 
       p.trace = sprintf([symbol,':%10.6f s'],dt);
 
-         % final refresh of accumulated overhead & GlobSmartProfile
+         % final refresh of accumulated overhead & GlobCorazonProfile
          % note: 0.29 ms extra time for creating SMART object
 
       p.cpuend = MyClock + 1e-6;    % plus 1�s to avoid divide by zero
       p.overhead = (p.cpuend - cpuenter)*1.03;   % add some percent more 
       p.time.overhead = p.time.overhead + p.overhead;
-      GlobSmartProfile = p;
+      GlobCorazonProfile = p;
 
    %catch
    %   name
    %   p
    %   fprintf('*** exception catched during profiling\n');
-   %   GlobSmartProfile = [];
+   %   GlobCorazonProfile = [];
    %end
    
    if nargout > 0

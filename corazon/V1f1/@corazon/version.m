@@ -356,6 +356,7 @@ function VersionV1F
 % - basic profiling added :-)))
 % - change corazon/menu: the way About is called
 % - pimp corazon/display to display other class objects
+% - pimp corazon/profiler to be a bit faster and by default off
 %
 %
 % Known Bugs / Wishlist

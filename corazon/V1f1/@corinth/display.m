@@ -14,28 +14,7 @@ function txt = display(o)              % Display Corinthian Object
 %          See also: CORINTH
 %
    if container(o)
-      fprintf('CORINTH object\n');
-      fprintf(' MASTER Properties:\n');
-      fprintf('  tag: %s\n',o.tag);
-      fprintf('  type: %s\n',o.type);
-
-      if isa(o.par,'double') && isempty(o.par)
-         fprintf('   par: []\n');
-      else
-         fprintf('   par:\n');
-         disp(o.par);
-      end
-
-      if iscell(o.data) && isempty(o.data)
-         fprintf('   data: {}\n');
-      elseif isa(o.data,'double') && isempty(o.data)
-         fprintf('   data: []\n');
-      else
-         fprintf('   data:\n');
-         disp(o.data);
-      end
-      fprintf(' WORK Property:\n');
-         disp(o.work);
+      display(corazon,o);
       return
    end
    

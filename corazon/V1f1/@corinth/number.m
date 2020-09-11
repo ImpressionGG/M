@@ -32,8 +32,6 @@ function oo = number(o,num,den,xpo)
 %
 %        See also: CORINTH, POLY, RATIO, MATRIX
 %
-   o = base(o);                        % convert in case of container
-   
    if (nargin == 1)                    % casting
       oo = Cast(o);
    elseif (nargin == 2)

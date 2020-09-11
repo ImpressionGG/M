@@ -50,6 +50,10 @@ function oo = Menu(o)
    
    oo = mitem(o,'-');
    oo = mitem(o,'Mantissa',{@test,'Mantissa'});
+   oo = mitem(o,'Number',  {@test,'Number'});
+   oo = mitem(o,'Poly',    {@test,'Poly'});
+   oo = mitem(o,'Cast',    {@test,'Cast'});
+   oo = mitem(o,'Gcd',     {@test,'Gcd'});
 end
 
 %==========================================================================

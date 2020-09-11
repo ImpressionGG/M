@@ -1,6 +1,6 @@
 function out = profiler(o,name,mode)   % CORAZON Profiler                      
 %
-% PROFILER   Collect/display profiling info
+% PROFILER   Collect/display profiling info for CORINTH objects.
 %
 %    First arg is a smart object which has so far no meaning except enable
 %    access to CORE method profile()
@@ -36,7 +36,7 @@ function out = profiler(o,name,mode)   % CORAZON Profiler
 %
 %    Copyright(c): Bluenetics 2020 
 %
-%    See also: CORAZON
+%    See also: CORINTH
 %
    clock = MyClock;                    % store current clock at entry time
 %

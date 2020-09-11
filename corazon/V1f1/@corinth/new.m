@@ -32,6 +32,7 @@ function oo = Menu(o)                  % Setup Menu
 end
 function oo = Callback(o)
    mode = arg(o,1);
+   o = base(o);                        % convert in case of container
    
    mode = arg(o,1);
    switch mode

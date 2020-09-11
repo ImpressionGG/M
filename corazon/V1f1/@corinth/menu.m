@@ -28,8 +28,8 @@ function oo = About(o)                 % Display Object Info
 
    switch oo.type
       case 'number'
-         title = get(oo,{'title',...
-                         sprintf('rational number (#%g)',digits(oo))});
+         n = digits(oo);
+         title = get(oo,{'title',sprintf('rational number (#%g)',n)});
          txt = display(oo);
          for (i=1:size(txt,1))
             comment{i} = txt(i,:);

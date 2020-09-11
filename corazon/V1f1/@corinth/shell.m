@@ -37,6 +37,7 @@ function o = Shell(o)                  % Shell Setup
    o = menu(o,'End');                  % end menu setup (will refresh)
 end
 function o = Init(o)                   % Init Object                   
+   o.type = 'shell';                   % convert to a 'shell' typed object
    o.data = {};                        % overwrite data
    o = set(o,{'base'},1e2);
    
