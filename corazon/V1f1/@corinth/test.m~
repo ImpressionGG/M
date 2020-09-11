@@ -642,10 +642,10 @@ function ok = Transition(o)            % transition Matrix
    o = base(corinth,1e6);
    
    fprintf('calculate: A = matrix(o,magic(3)) ...\n');
-   A = matrix(o,magic(3))
+   A = matrix(o,magic(3));
    
    fprintf('calculate: B = trans(A) ...\n');
-   Phi = trans(A)
+   Phi = trans(A);
       
    fprintf('calculate: B = sI-B ...\n');
    s = poly(o,[1 0]);
@@ -653,13 +653,12 @@ function ok = Transition(o)            % transition Matrix
    sI = s*I;
    B = sI - A
    
-   fprintf('check: iseye((s*I-A)*Phi)');
+   fprintf('check: iseye(B*Phi)');
    I = B*Phi
    ok = ok && iseye(I);
    
-   fprintf('check: iseye(Phi*(s*I-A)) ...');
-   I = Phi*B
-   ok = ok && iseye(I);
+   I = 
+
 end
 
 %==========================================================================

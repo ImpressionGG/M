@@ -202,6 +202,11 @@ function oo = MulMatrix(o1,o2)         % Multiply Two Matrices
       error('two rational matrices expected');
    end
    
+   global CorinthVerbose
+   if isempty(CorinthVerbose)
+      CorinthVerbose = 0;
+   end
+   
    M1 = o1.data.matrix;
    M2 = o2.data.matrix;
    
@@ -213,9 +218,20 @@ function oo = MulMatrix(o1,o2)         % Multiply Two Matrices
    
    for (i=1:m1)
       for (j=1:n2)
+         if (CorinthVerbose >= 2)
+            fprintf('matrix product [%g,%g] of %gx%g ...\n',i,j,m1,n2);
+         end
+         
          Mij = ratio(o1,0,1);
          for (k=1:n1)
+            if (CorinthVerbose >= 2)
+               fprintf('-> multiply term %g ...\n',k);
+            end
             M1M2 = mul(M1{i,k},M2{k,j});
+
+            if (CorinthVerbose >= 2)
+               fprintf('-> add term %g ...\n',k);
+            end
             Mij = add(Mij,M1M2);
          end
          M{i,j} = Mij;

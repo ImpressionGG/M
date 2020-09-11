@@ -115,8 +115,10 @@ function oo = AddPoly(o1,o2)           % Addition Of Polynomials
       
    oo = corinth(o1,'poly');
    for (i=0:max(n1,n2))
-      o1i = trim(o1,peek(o1,i));
-      o2i = trim(o2,peek(o2,i));
+      %o1i = trim(o1,peek(o1,i));
+      %o2i = trim(o2,peek(o2,i));
+      o1i = trim(peek(o1,i));
+      o2i = trim(peek(o2,i));
       ooi = AddNumber(o1i,o2i);
       oo = poke(oo,ooi,i);
    end

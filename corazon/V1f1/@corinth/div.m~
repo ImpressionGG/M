@@ -202,18 +202,11 @@ function [q,r] = Division(o,x,y,verbose)    % Division Helper
    a = 0.2;                            % some stupid decay factor
    guess = 0;                          % init guess iterations
    
-      % in some seldom cases q could be too small, so we make a trial
-      % whether we are faced with such case ...
-      
    if (comp(o,p,x) <= 0)
       pp = add(o,p,y);
-      if (comp(o,pp,x) <= 0)
-         p = pp;
-         q = q+1;
-      end
+      if (comp
    end
-  
-      % now p should be well suited for the next steps
+   
    
    while (comp(o,p,x) > 0)             % while q*y > x
       guess = guess + 1;               % count guess iterations
@@ -254,11 +247,6 @@ function [q,r] = Division(o,x,y,verbose)    % Division Helper
    if (q >= o.data.base)               % assertion violated ?
       assert(q < o.data.base);
    end
-   
-      % final check: r must be less than divisor y
-      
-   ok = (comp(o,r,y) < 0);
-   assert(ok);
    
    corazon.profiler('Division',0);
 end

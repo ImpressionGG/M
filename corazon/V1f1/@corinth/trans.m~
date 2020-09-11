@@ -1,0 +1,101 @@
+function oo = trans(A,B,C,D)
+%
+% PHI    calculate transition matrix or transfer matrix according to given
+%        dynamic matrix or system matrices
+%
+%           Phi = trans(A)             % calculate transition matrix
+%           [Phi,H] = trans(A,B)       % calculate transfer matrix
+%
+%        Example:
+%
+%           A = matrix(o,magic(3));    % dynamic matrix
+%           Phi = trans(A);            % calculate transition matrix
+%
+%           B = [1 1; 0 1; 1 0];
+%           C = [1 1 0];
+%           D = [1 0];
+%
+%           G = phi(A,B,C,D);          % calculate transfer matrix
+%           G = phi(A,B,C);            % calculate transfer matrix @ D=0
+%
+%        Copyright(c): Bluenetics 2020
+%
+%        See also: CORINTH, DET, INV
+%
+   o = A;                              % some lines are better readable
+   [m,n] = size(A);
+   if (m ~= n)
+      error('quadratic matrix expected');
+   end
+
+   if (nargin == 1)
+      oo = TransitionMatrix(A);
+   elseif (nargin >= 3)
+      [mi,ni] = size(B);               % input matrix sizes
+      [mo,no] = size(C);               % output matrix sizes
+
+      if (nargin < 4)
+         D = zeros(mo,ni);
+      end
+      
+      if (mi ~= m)
+         error('output matrix (arg2) size mismatch');
+      end
+      if (no ~= n)
+         error('input matrix (arg3) size mismatch');
+      end
+      if (mi ~= size(D,1) || no ~= size(D,2))
+         error('direct matrix (arg4) size mismatch');
+      end
+      
+      oo = TransferMatrix(A,B,C,D)
+   end
+end
+
+%==========================================================================
+% Transition Matrix
+%==========================================================================
+
+function Phi = TransitionMatrix(A)
+
+      % auxillary stuff
+
+   s = ratio(o,[1 0]);
+   I = matrix(o,eye(n));
+ 
+      % calc inv(s*I-A)
+
+   sI = s*I;
+   sIminusA = sI - A;
+   Phi = inv(sIminusA);
+end
+
+%==========================================================================
+% Transfer Matrix
+%==========================================================================
+
+function G = TransferMatrix(A,B,C,D)
+   Phi = TransitionMatrix(A);
+
+      % check if also H matrix to be calculated
+
+   PhiB = Phi*B;
+   G = C*PhiB;
+   
+   if isa(D,'double')
+      zero = all(F(:)== 0);
+   else
+      zero = iszero(
+   if (nargout >= 2)
+      if (nargin < 2)
+         error('arg2 missing');
+      end
+
+      [mB,nB] = size(B);
+      if (mb ~= m)
+         error('row numbers of A (arg1) and B (arg2) must match');
+      end
+
+      H = Phi*B;
+   end
+end
