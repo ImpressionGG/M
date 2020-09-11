@@ -32,6 +32,8 @@ function oo = number(o,num,den,xpo)
 %
 %        See also: CORINTH, POLY, RATIO, MATRIX
 %
+   o = base(o);                        % convert in case of container
+   
    if (nargin == 1)                    % casting
       oo = Cast(o);
    elseif (nargin == 2)
@@ -53,7 +55,6 @@ end
 %==========================================================================
 
 function [num,den,xpo] = Number(o,arg)    % Construct rational Number  
-   base = o.data.base;
    den = 1;
    num = [];
 
@@ -72,15 +73,15 @@ function [num,den,xpo] = Number(o,arg)    % Construct rational Number
 
    sign = 2*(arg>=0) - 1;
    mantissa = arg*sign;
-   logb = log10(mantissa) / log10(base);
+   logb = log10(mantissa) / log10(o.data.base);
    xpo = floor(logb);
       
       % integers and floats are differently processed!
       
    if (floor(mantissa) == mantissa)    % integer processing ...
-      [num,den] = Integer(mantissa,base,xpo);
+      [num,den] = Integer(mantissa,o.data.base,xpo);
    else                                % float processing ...
-      [num,den] = Float(mantissa,base,xpo);
+      [num,den] = Float(mantissa,o.data.base,xpo);
    end
    
       % work in sign
@@ -98,7 +99,7 @@ function [num,den,xpo] = Number(o,arg)    % Construct rational Number
       num = oo;                        % return out arg
    end
    
-   function [num,den] = Integer(mantissa,base,xpo)
+   function [num,den] = Integer(mantissa,base,xpo)                     
    %
    % INTEGER  Calculate num/den for integer number
    %
@@ -118,7 +119,7 @@ function [num,den,xpo] = Number(o,arg)    % Construct rational Number
       
       den(1) = 1;                      % always like that for integers
    end
-   function [num,den] = Float(mantissa,base,xpo)
+   function [num,den] = Float(mantissa,base,xpo)                       
    %
    % FLOAT  Calculate num/den for floating point numbers
    %

@@ -8,13 +8,25 @@ function oo = subsref(o,oper)
 %          Copyright(c): Bluenetics 2020
 %
 %          See also: CORINTH, MATRIX, SIZE, SUBSASGN
-%
-   switch oper.type
+%   
+   switch oper(1).type
       case '.'                         % normal dot operation
-         if (nargout == 0)
-            eval(['o.',oper.subs,';']);
+         gamma = eval(['@','o.',oper(1).subs]);
+         if (length(oper) == 1)
+            if (nargout == 0)
+               gamma();
+            else
+               oo = gamma();
+            end
+         elseif (length(oper) == 2 && isequal(oper(2).type,'()'))
+            arg = oper(2).subs{1};
+            if (nargout == 0)
+               gamma(arg);
+            else
+               oo = gamma(args);
+            end
          else
-            eval(['oo=o.',oper.subs,';']);
+            error('implementation');
          end
          
       case '()'

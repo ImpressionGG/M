@@ -354,6 +354,8 @@ function VersionV1F
 % - pimp corinth/display for pretty matrix display
 % - corinth/phi (transition matrix) - with tests :-)))))
 % - basic profiling added :-)))
+% - change corazon/menu: the way About is called
+% - pimp corazon/display to display other class objects
 %
 %
 % Known Bugs / Wishlist

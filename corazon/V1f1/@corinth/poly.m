@@ -37,6 +37,8 @@ function oo = poly(o,num,den,xpo)
 %
 %        See also: CORINTH,POLY, MATRIX
 %
+   o = base(o);                        % convert in case of container
+   
    if (nargin == 1)                    % casting
       oo = Cast(o);
    elseif (nargin == 2)
@@ -69,6 +71,7 @@ function oo = PolyReal(o,arg) % Form Polynomial from Reals
 %           oo = Poly(o,[3.2 7 8.99])
 %           [num,den,expo] = Poly(o,arg,msg)
 %
+   o = base(o);                        % handle container objects 
    [m,n] = size(arg);
    if (m*n == 0)
       error('nonempty data expected');

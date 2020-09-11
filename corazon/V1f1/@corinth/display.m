@@ -13,13 +13,39 @@ function txt = display(o)              % Display Corinthian Object
 %
 %          See also: CORINTH
 %
+   if container(o)
+      fprintf('CORINTH object\n');
+      fprintf(' MASTER Properties:\n');
+      fprintf('  tag: %s\n',o.tag);
+      fprintf('  type: %s\n',o.type);
+
+      if isa(o.par,'double') && isempty(o.par)
+         fprintf('   par: []\n');
+      else
+         fprintf('   par:\n');
+         disp(o.par);
+      end
+
+      if iscell(o.data) && isempty(o.data)
+         fprintf('   data: {}\n');
+      elseif isa(o.data,'double') && isempty(o.data)
+         fprintf('   data: []\n');
+      else
+         fprintf('   data:\n');
+         disp(o.data);
+      end
+      fprintf(' WORK Property:\n');
+         disp(o.work);
+      return
+   end
+   
    switch o.type
       case 'number'
          if (nargout == 0)
             fprintf('   rational number:\n');
             Number(o);
          else
-            txt = '...';
+            txt = Number(o);
          end
 
       case 'poly'      
@@ -56,7 +82,7 @@ end
 % Display Number
 %==========================================================================
 
-function Number(o,name)                 % Display Number               
+function txt = Number(o,name)          % Display Number                
    if (nargin == 1)
       name = get(o,{'name',''});
    end
@@ -119,9 +145,20 @@ function Number(o,name)                 % Display Number
    end
    bar = [blue,bar];
 
-   fprintf('%s%s\n',tab1,num);
-   fprintf('%s%s\n',prefix,bar);
-   fprintf('%s%s\n',tab2,den);
+   if (nargout == 0)
+      fprintf('%s%s\n',tab1,num);
+      fprintf('%s%s\n',prefix,bar);
+      fprintf('%s%s\n',tab2,den);
+   else
+      upper = [tab1,num];
+      middle = [prefix,bar];
+      lower = [tab2,den];
+
+      txt = setstr(' '+zeros(3,length(middle)));
+      txt(1,1:length(upper)) = upper;
+      txt(2,:) = middle;
+      txt(3,1:length(lower)) = lower;
+   end
 end
 
 %==========================================================================

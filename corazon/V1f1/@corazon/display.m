@@ -1,13 +1,18 @@
-function display(o)
+function display(o,oo)
 %
 % DISPLAY   Display a CORAZON object
 %
-%              display(o)
+%              display(o)              % display a corazon object
+%              display(corazon,oo)     % display other class object
 %
 %           Copyright(c): Bluenetics 2020 
 %
 %           See also: CORAZON
 %
+   if (nargin == 2)
+      o = oo;
+   end
+   
    fprintf('%s object\n',upper(class(o)));
    tags = {'tag','type','par','data'};
    fprintf(' MASTER Properties:\n');

@@ -45,12 +45,10 @@ function oo = Callback(o)
           oo = number(o,pi);
 
       case 'Poly4'
-         oo = poly(o,[1.11 2.22 3.33 4.44 5.55]);
-         oo.par.title = 'Order 4 Polynomial';
+         oo = poly(o,[1 2 3 4 5]);
       
-      case 'Ratio5'
-         oo = ratio(o,[27.3 45.7 88.8 72.1 78.5 44],...
-                      [1 47.5 77.7 27.2 87.9 33]);
+      case 'ratio5'
+         oo = ratio(o,[27.3 45.7 88.8 72.1 78.5 44]);
 
       otherwise
          error('internal');

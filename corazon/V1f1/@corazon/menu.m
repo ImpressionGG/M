@@ -713,9 +713,9 @@ function oo = Info(o)                  % Info Menu
       mode = arg(o,1);
       switch mode
          case 'Shell'
-            oo = Home(o);              % go directly
+            oo = menu(o,'Home');
          case 'About'
-            oo = About(o);             % about the current object
+            oo = menu(o,'About');      % about the current object
          case 'Parameter'
             oo = menu(o,'Parameter');  % key parameter info
       end

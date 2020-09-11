@@ -47,6 +47,8 @@ classdef corinth < corazon             % Corinth Class Definition
          casted = (nargin > 0 && isobject(arg1));
          if (casted)                   % in case of casted object
             arg = arg1;                % construct from object
+            arg.data = [];             % otherwise crash downwards
+            arg.data.base = get(arg,{'base',1e6});
          else
             arg = 'number';            % default type
          end

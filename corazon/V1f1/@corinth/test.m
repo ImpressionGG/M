@@ -4,6 +4,8 @@ function oo = test(o,varargin)         % CORINTHian Arithmetic Tests
 %
 %           ok = test(o)               % do all tests
 %
+%           test(o,'Menu');            % setup test menu
+%
 %           ok = test(o,'Mantissa')    % mantissa arithmetic test
 %           ok = test(o,'Number')      % number construction test
 %           ok = test(o,'Poly')        % polynomial arithmetic test
@@ -21,21 +23,33 @@ function oo = test(o,varargin)         % CORINTHian Arithmetic Tests
 %
 %        See also: CORINTH, ADD, SUB, MUL, DIV, COMP
 %
-   [gamma,o] = manage(o,varargin,@All,@Mantissa,@Number,@Poly,@Cast,...
-                      @Timing,@Gcd);
+   [gamma,o] = manage(o,varargin,@All,@Menu,...
+                      @Mantissa,@Number,@Poly,@Cast,@Timing,@Gcd);
    ok = gamma(o);
-  
-   fprintf('\nTest Summary:\n');
-   
-   if ok
-      fprintf('    test ''%s'' passed!\n',char(gamma));
-   else
-      fprintf('*** test ''%s'' failed!\n',char(gamma));
+   if ~isobject(ok)
+      fprintf('\nTest Summary:\n');
+
+      if ok
+         fprintf('    test ''%s'' passed!\n',char(gamma));
+      else
+         fprintf('*** test ''%s'' failed!\n',char(gamma));
+      end
    end
    
    if (nargout > 0)
       oo = ok;
-   end
+   end   
+end
+
+%==========================================================================
+% Setup Test Menu
+%==========================================================================
+
+function oo = Menu(o)
+   oo = mitem(o,'All',{@test,'All'});
+   
+   oo = mitem(o,'-');
+   oo = mitem(o,'Mantissa',{@test,'Mantissa'});
 end
 
 %==========================================================================
@@ -57,7 +71,7 @@ end
 
 function ok = Mantissa(o)              % Mantissa Arithmetic Tests     
    fprintf('Mantissa arithmetic test ...\n');
-   corazon.profiler([]);
+   o.profiler([]);
 
    ok = 1;                             % ok = true by default
    ok = ok && Base10(o);               % standard base 10 test 
@@ -385,6 +399,7 @@ function ok = Gcd(o)                   % GCD Test
 
    N = opt(o,{'number.gcd',4});        % number of GCD test loops
    M = N+2;
+M=N;   
    
    for (i=1:N)
       b = 10^RandInt(6);

@@ -35,6 +35,8 @@ function oo = ratio(o,num,den)
 %
 %        See also: CORINTH,POLY, MATRIX
 %
+   o = base(o);                        % convert in case of container
+
    if (nargin == 1)                    % casting
       oo = Cast(o);
    elseif (nargin == 2)
@@ -45,7 +47,7 @@ function oo = ratio(o,num,den)
          q = poly(o,1);
          oo = Rational(p,q);
       else
-         p = o;  q = num;                 % rename args
+         p = o;  q = num;              % rename args
          oo = Rational(p,q);
       end
    elseif (nargin == 3)

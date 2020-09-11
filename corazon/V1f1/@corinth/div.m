@@ -34,24 +34,34 @@ function [q,r] = div(o,x,y)            % Divide Two Rational Objects
 %
 %       See also: RAT, TRIM, FORM, COMP, ADD, SUB, MUL, DIV
 %
-   o.profiler('div',1);
    o = touch(o);                       % just in case of a copy somewhere
 
    if (nargin == 3)
+      o.profiler('mantdiv',1);
       [q,r] = Div(o,x,y);
+      o.profiler('mantdiv',0);
    else
       x = touch(x);
       switch o.type
          case 'number'
+            o.profiler('numbdiv',1);
             [q,r] = DivNumber(o,x);
+            o.profiler('numbdiv',0);
+            
          case 'poly'
+            o.profiler('polydiv',1);
             [q,r] = DivPoly(o,x);
+            o.profiler('polydiv',0);
+            
          case 'ratio'
+            o.profiler('ratiodiv',1);
             if (nargout > 1)
                [q,r] = DivRatio(o,x);
             else
                q = DivRatio(o,x);
             end
+            o.profiler('ratiodiv',0);
+            
          otherwise
             error('implermentation restriction!');
       end
@@ -64,7 +74,6 @@ function [q,r] = div(o,x,y)            % Divide Two Rational Objects
          r = trim(r);
       end
    end
-   o.profiler('div',0);
 end
 
 %==========================================================================
@@ -72,6 +81,8 @@ end
 %==========================================================================
 
 function [q,r] = Div(o,x,y)            % Mantissa Division             
+   verbose = opt(o,{'verbose',0});
+   
    sgnx = 1;
    if any(x< 0)
       x = -x;  sgnx = -sgnx;
@@ -103,7 +114,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    xi = [zeros(1,ny),x];  q = [];
    for (i=1:nx)
       hi = xi(i:i+ny);
-      [qi,ri] = Division(o,hi,y);
+      [qi,ri] = Division(o,hi,y,verbose);
       q = [q qi];
       xi(i:i+ny) = ri;
    end
@@ -133,7 +144,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    end
    r = r * sgnx;
 end
-function [q,r] = Division(o,x,y)       % Division Helper               
+function [q,r] = Division(o,x,y,verbose)    % Division Helper               
 %
 % DIVISION   Integer division for specific boundary conditions, where
 %            y is non-empty and x has one more digit than y and both x and
@@ -143,13 +154,109 @@ function [q,r] = Division(o,x,y)       % Division Helper
 %
 %            The quotient of this kind of division is one single digit,
 %            i.e. q < base!
-%
+%   
    nx = length(x);  ny = length(y);
    if ~(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0))
-      'stop';
+      assert(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0));
    end
-   assert(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0));
+
+   base = o.data.base;
+   h = x(1)*base + x(2);
    
+      % trivial check whether division x/y can be greater than zero
+      
+   if (h < y(1))       
+      q = 0;
+      r = x;
+      return                           % note q = 0 < base!
+   end
+   
+      % so we know that q > 0! next calculate the most likely quotient
+      % q = floor(h/y(1)). It will work out, e.g., when y(2:end) is
+      % zero (or empty)
+
+   corazon.profiler('Division',1);     % start profiling from here
+   
+      % now we need a most likely guess for the quotient. Note that
+      % since ny > 0 and nx == ny+1 (see assertion) we conclude ny >= 1
+      % and nx >= 2, on which we can base an estimate. Hovever a better
+      % estimate can be calculated if ny >= 2 and nx >= 3, with which we
+      % try to go. The most likely quotient will work out, e.g., when 
+      % y(2:end) is zero (or empty)
+      
+   if (ny >= 2)                        % which means nx >= 3 due to assert
+      hh = h*base + x(3);
+      yy = y(1)*base + y(2);
+      q = floor(hh/yy);                % strong most likely quotient
+   else
+      q = floor(h/y(1));               % weaker most likely quotient
+   end
+   
+      % note that if y(2:end) is non zero then q*y could be greater than x!
+      % in such cases we have to reduce q until q*y <= x fits
+   
+   p = Mul(o,q,y);
+   a = 0.2;                            % some stupid decay factor
+   guess = 0;                          % init guess iterations
+   
+   while (comp(o,p,x) > 0)             % while q*y > x
+      guess = guess + 1;               % count guess iterations
+      
+         % now decrement estimated quotient and see where we are
+         
+      q = q-1;                         % decrement quotien
+      p = Mul(o,q,y);
+      
+         % in addition try a much bigger decay by reducing q by the
+         % factor (1-a), i.e. qq = (1-a)*q. 
+         
+      qq = floor((1-a)*q);             % do some stupid decay
+      pp = Mul(o,qq,y);
+
+         % if this works out well we can take over q = qq, otherwise the
+         % decay factor a was too big and we reduce a = a/2 to be better
+         % prepared next time
+      
+      if (comp(o,pp,x) > 0)            % does this decay work out?
+         q = qq;                       % ohh, yes => lucky! - take over
+      else
+         a = a/2;                      % ohh, no => next time less decay
+      end
+   end
+      
+   if (verbose >= 2)
+      Trace(o,guess);                  % trace guess efficiency
+   end
+   
+      % now we have q*y < = x and we can calculate the remainder
+      
+   r = sub(o,x,p);
+   r = [zeros(1,nx-length(r)),r];      % let's have nx digits for r
+   
+      % final assertion: quotient q must be a digit
+      
+   if (q >= o.data.base)               % assertion violated ?
+      assert(q < o.data.base);
+   end
+   
+   corazon.profiler('Division',0);
+end
+function [q,r] = Old1Division(o,x,y)   % Old Division Helper           
+%
+% DIVISION   Integer division for specific boundary conditions, where
+%            y is non-empty and x has one more digit than y and both x and
+%            y are non-negative.
+%
+%               [q,r] = Division(o,x,y)
+%
+%            The quotient of this kind of division is one single digit,
+%            i.e. q < base!
+%   
+   nx = length(x);  ny = length(y);
+   if ~(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0))
+      assert(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0));
+   end
+
    h = x(1)*o.data.base + x(2);
    
       % trivial check whether division x/y can be greater than zero
@@ -163,7 +270,9 @@ function [q,r] = Division(o,x,y)       % Division Helper
       % so we know that q > 0! next calculate the most likely quotient
       % q = floor(h/y(1)). It will work out, e.g., when y(2:end) is
       % zero (or empty)
-      
+
+   corazon.profiler('Division',1);     % start profiling from here
+   
    q = floor(h/y(1));                  % most likely quotient
 
       % but if y(2:end) is non zero then q*y could be greater than x!
@@ -171,7 +280,9 @@ function [q,r] = Division(o,x,y)       % Division Helper
    
    p = Mul(o,q,y);
    a = 0.2;
+   guess = 0;                          % init guess iterations
    while (comp(o,p,x) > 0)             % while q*y > x
+      guess = guess + 1;               % count guess iterations
       q = q-1;
       p = Mul(o,q,y);
       
@@ -183,6 +294,10 @@ function [q,r] = Division(o,x,y)       % Division Helper
          a = a/2;
       end
    end
+   
+   if (guess>0)
+      %fprintf('   ### %g divsion guesses\n',guess);
+   end
 
       % now we have q*y < = x and we can calculate the remainder
       
@@ -191,13 +306,99 @@ function [q,r] = Division(o,x,y)       % Division Helper
    
       % final assertion: quotient q must be a digit
       
-   if ~(q < o.data.base)
-      'stop';
-   end
-   
    if (q >= o.data.base)               % assertion violated ?
       assert(q < o.data.base);
    end
+   
+   corazon.profiler('Division',0);
+end
+function [q,r] = Old2Division(o,x,y)   % Old Division Helper           
+%
+% DIVISION   Integer division for specific boundary conditions, where
+%            y is non-empty and x has one more digit than y and both x and
+%            y are non-negative.
+%
+%               [q,r] = Division(o,x,y)
+%
+%            The quotient of this kind of division is one single digit,
+%            i.e. q < base!
+%   
+   nx = length(x);  ny = length(y);
+   if ~(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0))
+      assert(ny > 0 && nx==ny+1 && all(x>=0) && all(y>=0));
+   end
+
+   base = o.data.base;
+   h = x(1)*base + x(2);
+   
+      % trivial check whether division x/y can be greater than zero
+      
+   if (h < y(1))       
+      q = 0;
+      r = x;
+      return                           % note q = 0 < base!
+   end
+   
+      % so we know that q > 0! next calculate the most likely quotient
+      % q = floor(h/y(1)). It will work out, e.g., when y(2:end) is
+      % zero (or empty)
+
+   corazon.profiler('Division',1);     % start profiling from here
+   
+   q = floor(h/y(1));                  % most likely quotient
+
+   if (nx >= 4)
+      h2 = ((x(1)*base + x(2))*base + x(3))*base + x(4);
+      y2 = (y(1)*base + y(2))*base + y(3);
+      q2 = floor(h2/y2);
+      p2 = Mul(o,q2,y);
+      c2 = comp(o,p2,x);
+   end
+   if (nx >= 3)
+      h1 = (x(1)*base + x(2))*base + x(3);
+      y1 = (y(1)*base + y(2));
+      q1 = floor(h1/y1);
+      p1 = Mul(o,q1,y);
+      c1 = comp(o,p1,x);
+q = q1;
+   end
+   
+      % but if y(2:end) is non zero then q*y could be greater than x!
+      % in such cases we have to reduce q until q*y <= x fits
+   
+   p = Mul(o,q,y);
+   a = 0.2;
+   guess = 0;                          % init guess iterations
+   while (comp(o,p,x) > 0)             % while q*y > x
+      guess = guess + 1;               % count guess iterations
+      q = q-1;
+      p = Mul(o,q,y);
+      
+      qq = floor((1-a)*q);
+      pp = Mul(o,qq,y);
+      if (comp(o,pp,x) > 0)
+         q = qq;
+      else
+         a = a/2;
+      end
+   end
+   
+      % debug efficiency
+      
+   Trace(o,guess);                     % do some debug tracing
+   
+      % now we have q*y < = x and we can calculate the remainder
+      
+   r = sub(o,x,p);
+   r = [zeros(1,nx-length(r)),r];      % let's have nx digits for r
+   
+      % final assertion: quotient q must be a digit
+      
+   if (q >= o.data.base)               % assertion violated ?
+      assert(q < o.data.base);
+   end
+   
+   corazon.profiler('Division',0);
 end
 
 %==========================================================================
@@ -374,4 +575,20 @@ function z = Mul(o,x,y)                % Multiply Mantissa
       z = add(o,z,t);
    end
    z = sign*z;
+end
+function Trace(o,guess)
+   persistent count guesses
+   
+   if isempty(count)
+      count = 0;  guesses = 0;
+   end
+   
+   count = count + 1;  
+   guesses = guesses + 1+guess;
+   
+   if (rem(count,2000)==0 || guess >= 2)
+      'investigate';
+      excess = o.rd((guesses/count-1)*100,2);   % excess guess ratio [%]
+      fprintf('   ### %g excess division guesses (%g%%)\n',guess,excess);
+   end
 end
