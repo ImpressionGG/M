@@ -23,21 +23,26 @@ function o = poke(o,o1,o2,o3)         % Poke CORINTH Object @ Index
    end
    
    switch o.type
-          case 'number'
-             o = corinth(o,'poly');    % cast ratio to plynomial
-             o = PokePoly(o,o1,o2);
-          case 'poly'
-             o = PokePoly(o,o1,o2);
+      case 'number'
+         o = corinth(o,'poly');    % cast ratio to plynomial
+         o = PokePoly(o,o1,o2);
+
+      case 'poly'
+         o = PokePoly(o,o1,o2);
+
+      case 'matrix'
+         o = PokeMatrix(o,o1,o2,o3);
+
       otherwise
          error('implementation restriction!');
    end
 end
 
 %==========================================================================
-% Pick from Polynomial
+% Poke Polynomial Coefficient
 %==========================================================================
 
-function o = PokePoly(o,oo,i)
+function o = PokePoly(o,oo,i)          % Poke Polynomial Coefficient   
    assert(isequal(o.type,'poly'));
    if (o.data.base ~= oo.data.base)
       error('base mismatch!');
@@ -80,4 +85,35 @@ function o = PokePoly(o,oo,i)
    o.data.num(i,1:nn) = [zeros(1,nn-length(num)),num];
    o.data.den(i,1:nd) = [zeros(1,nd-length(den)),den];
    o.data.blue = [];
+end
+
+%==========================================================================
+% Poke Matrix Element (or Sub-Matrix)
+%==========================================================================
+
+function o = PokeMatrix(o,oo,i,j)     % Poke Matrix Element           
+%
+% PEEKMATRIX  Peek matrix element or sub matrix
+%
+%                o = PokeMatrix(o,i,j)       % M{i,j} = oo
+%
+%                o = PokeMatrix(o,oo,i,[])   % M(i,:) = oo
+%                o = PokeMatrix(o,oo,[],j)   % M(:,j} = oo
+%
+   assert(type(o,{'matrix'}));
+   M = o.data.matrix;
+   [m,n] = size(M);
+   
+   if (i < 1 || i > m)
+      error('bad row index');
+   end
+   if (j < 1 || j > n)
+      error('bad column index');
+   end
+   
+   oo = can(oo);
+   oo = trim(oo);
+   
+   M{i,j} = oo;
+   o.data.matrix = M;
 end
