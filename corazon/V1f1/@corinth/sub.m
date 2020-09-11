@@ -58,7 +58,7 @@ function z = Sub(o,x,y)                % Mantissa Subtraction
    
    [x,y] = form(o,x,y,1);
    if all(x==y)
-      z = trim(o,0*x);
+      z = QuickTrim(o,0*x);
       return
    end
    
@@ -74,8 +74,12 @@ function z = Sub(o,x,y)                % Mantissa Subtraction
          borrow = borrow + 1;
       end
    end
+   
    assert(borrow==0);
-   z = trim(o,z);
+
+   if (z(1) == 0)
+      z = QuickTrim(o,z);
+   end
 end
 
 %==========================================================================
@@ -120,8 +124,10 @@ function oo = SubPoly(o1,o2)           % Subtraction Of Polynomials
       
    oo = corinth(o1,'poly');
    for (i=0:max(n1,n2))
-      o1i = trim(o1,peek(o1,i));
-      o2i = trim(o2,peek(o2,i));
+      %o1i = trim(o1,peek(o1,i));
+      %o2i = trim(o2,peek(o2,i));
+      o1i = trim(peek(o1,i));
+      o2i = trim(peek(o2,i));
       ooi = SubNumber(o1i,o2i);
       oo = poke(oo,ooi,i);
    end
@@ -181,3 +187,18 @@ function oo = SubMatrix(o1,o2)         % Subtract Two Matrices
    oo.data.matrix = M;
 end
 
+%==========================================================================
+% Helpers
+%==========================================================================
+
+function y = QuickTrim(o,x)            % Trim Mantissa                 
+%
+% QUICKTRIM Trim mantissa: remove leading and trailing zeros
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
+   end
+end

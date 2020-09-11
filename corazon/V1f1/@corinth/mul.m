@@ -22,6 +22,8 @@ function oo = mul(o,x,y)               % Multiply Two Rational Objects
 %
 %       See also: CORINTH, SUB, MUL, DIV, COMP
 %
+   o.profiler('mul',1);
+   
    if (nargin == 3)
       oo = Mul(o,x,y);
    else
@@ -43,6 +45,8 @@ function oo = mul(o,x,y)               % Multiply Two Rational Objects
       oo = can(oo);
       oo = trim(oo);
    end
+   
+   o.profiler('mul',0);
 end
 
 %==========================================================================
@@ -50,8 +54,12 @@ end
 %==========================================================================
 
 function z = Mul(o,x,y)                % Multiply Mantissa             
-   x = trim(o,x);
-   y = trim(o,y);
+   if (x(1) == 0)
+      x = QuickTrim(o,x);
+   end
+   if (y(1) == 0)
+      y = QuickTrim(o,y);
+   end
 
    sign = 1;
    if any(x< 0)
@@ -216,4 +224,20 @@ function oo = MulMatrix(o1,o2)         % Multiply Two Matrices
    
    oo = corinth(o1,'matrix');
    oo.data.matrix = M;
+end
+
+%==========================================================================
+% Helpers
+%==========================================================================
+
+function y = QuickTrim(o,x)            % Trim Mantissa                 
+%
+% QUICKTRIM Trim mantissa: remove leading and trailing zeros
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
+   end
 end

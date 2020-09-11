@@ -8,31 +8,35 @@ function [oo,y,e] = trim(o,x,y,e)      % Trim CORINTH Object or Mantissa
 %
 %         See also: RAT
 %
-   if (nargin == 1)
-      trimmed = work(o,'trim');        % object already trimmed?
-      if isequal(trimmed,true)
-         oo = o;
-         return                        % object already trimmed - bye!
-      end
-      
+   if (nargin == 1 && isequal(work(o,'trim'),1))  
+      oo = o;                    
+      return                           % object already trimmed - bye!
+   end
+
+   if (nargin == 1)      
+      corazon.profiler('trim',1);
+   
       switch o.type
          case 'number'
-            oo = TrimNumber(o);
+            oo = Number(o);
          case 'poly'
-            oo = TrimPoly(o);
+            oo = Poly(o);
          case 'ratio'
-            oo = TrimRatio(o);
+            oo = Ratio(o);
          case 'matrix'
-            oo = TrimMatrix(o);
+            oo = Matrix(o);
          otherwise
             error('internal');
       end
       
       oo.work.trim = true;             % mark as trimmed
+      corazon.profiler('trim',0);
    elseif (nargin == 2)
       oo = Trim(o,x);
    elseif (nargin == 4)
-      [oo,y,e] = TrimTriple(o,x,y,e);
+      corazon.profiler('trim',1);
+      [oo,y,e] = Triple(o,x,y,e);
+      corazon.profiler('trim',0);
    end
 end
 
@@ -41,6 +45,29 @@ end
 %==========================================================================
 
 function y = Trim(o,x)                 % Trim Mantissa                 
+%
+% TRIM    Trim mantissa: remove leading mantissa zeros
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
+   end
+end
+function y = QuickTrim(o,x)            % Trim Mantissa                 
+%
+% QUICKTRIM Trim mantissa: remove leading mantissa zeros
+%           Same code as Trim() - use for profiling analysis
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
+   end
+end
+function y = OldTrim(o,x)              % Old Trim Mantissa
 %
 % TRIM    Trim mantissa: remove leading and trailing zeros
 %
@@ -58,7 +85,7 @@ end
 % Trim Mantissa
 %==========================================================================
 
-function o = TrimNumber(o)              % Trim Rational Number         
+function o = Number(o)                 % Trim Rational Number         
 %
 % TRIMOBJ    Trim object: remove leading and trailing zeros and adjust
 %            exponent accordingly
@@ -67,7 +94,7 @@ function o = TrimNumber(o)              % Trim Rational Number
    num  = o.data.num;
    den  = o.data.den;
 
-   [num,den,expo] = TrimTriple(o,num,den,expo);
+   [num,den,expo] = Triple(o,num,den,expo);
 
    o.data.expo = expo;
    o.data.num = num;
@@ -78,13 +105,13 @@ end
 % Trim Triple
 %==========================================================================
 
-function [x,y,e] = TrimTriple(o,x,y,e) % Trim Triple                   
+function [x,y,e] = Triple(o,x,y,e)     % Trim Triple                   
 %
 % TRIMTRIPLE  Trim triple: remove leading and trailing zeros and adjust
 %             exponent accordingly
 %
-   x = trim(o,x);
-   y = trim(o,y);
+   x = QuickTrim(o,x);
+   y = QuickTrim(o,y);
    
    idx = find(x~=0);
    n = length(x);
@@ -109,7 +136,7 @@ end
 % Trim Polynomial
 %==========================================================================
 
-function o = TrimPoly(o)               % Trim Polynomial               
+function o = Poly(o)                   % Trim Polynomial               
 %
 % TRIMPOLY    Trim polynomial: remove leading and trailing zeros and adjust
 %             exponent accordingly
@@ -146,7 +173,7 @@ end
 % Trim Ratio
 %==========================================================================
 
-function o = TrimRatio(o)              % Trim Rational Function        
+function o = Ratio(o)                  % Trim Rational Function        
 %
 % TRIMRATIO   Trim rational function: remove leading and trailing zeros and
 %             adjust exponent accordingly
@@ -167,7 +194,7 @@ end
 % Trim Matrix
 %==========================================================================
 
-function o = TrimMatrix(o)             % Trim Matrix                   
+function o = Matrix(o)                 % Trim Matrix                   
    assert(type(o,{'matrix'}));
 
    M = o.data.matrix;

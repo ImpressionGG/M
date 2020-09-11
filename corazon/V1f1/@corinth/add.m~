@@ -69,6 +69,15 @@ function z = Add(o,x,y)                % Mantissa Addition
    end
 end
 
+function y = Trim(o,x)                 % Trim Mantissa                 
+%
+% TRIM    Trim mantissa: remove leading and trailing zeros
+%
+   idx = find(x~=0);
+   if isempty
+   y = x;
+end
+
 %==========================================================================
 % Add Two Numbers
 %==========================================================================
@@ -174,20 +183,4 @@ function oo = AddMatrix(o1,o2)         % Add Two Matrices
    
    oo = corinth(o1,'matrix');
    oo.data.matrix = M;
-end
-
-%==========================================================================
-% Helpers
-%==========================================================================
-
-function y = Trim(o,x)                 % Trim Mantissa                 
-%
-% TRIM    Trim mantissa: remove leading and trailing zeros
-%
-   idx = find(x~=0);
-   if isempty(idx)
-      y = 0;
-   else
-      y = x(idx(1):end);
-   end
 end

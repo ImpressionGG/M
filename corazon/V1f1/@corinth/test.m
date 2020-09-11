@@ -57,11 +57,14 @@ end
 
 function ok = Mantissa(o)              % Mantissa Arithmetic Tests     
    fprintf('Mantissa arithmetic test ...\n');
+   corazon.profiler([]);
 
    ok = 1;                             % ok = true by default
    ok = ok && Base10(o);               % standard base 10 test 
    ok = ok && Base100(o);              % standard base 100 test 
    ok = ok && Brute(o);                % Brute Force Test              
+
+   corazon.profiler;                   % show profiling results
 
    function ok = Base10(o)             % Base 10 Example               
       ok = 1;                          % ok = true by default
@@ -372,13 +375,17 @@ end
 
 function ok = Gcd(o)                   % GCD Test                  
    RandInt;                            % set random seed to zero
-   o = opt(o,'verbose',2);
+   corazon.profiler([]);
+   
+   o = opt(o,'verbose',4);
    fprintf('GCD test ...\n');
 
    ok = 1;                             % ok = true by default
    %ok = ok && PolyGcd(o);             % polynomial GCD test 
 
-   N = opt(o,{'number.gcd',2});        % number of GCD test loops
+   N = opt(o,{'number.gcd',4});        % number of GCD test loops
+   M = N+2;
+   
    for (i=1:N)
       b = 10^RandInt(6);
 
@@ -387,13 +394,13 @@ function ok = Gcd(o)                   % GCD Test
       m2 = RandInt(3);
 
       msg = sprintf('%g of %g: RandPolyGcd(%g,%g,%g) @ base %g',...
-                    i,2*N, m0,m1,m2, b); 
+                    i,M, m0,m1,m2, b); 
       fprintf('%s\n',msg);
 
       ok = ok && RandPolyGcd(o,m0,m1,m2,b);
    end
 
-   for (i=1:N)
+   for (i=N+1:M)
       b = 1e6;                         % this time fixed base
 
       m0 = RandInt(5);
@@ -401,11 +408,13 @@ function ok = Gcd(o)                   % GCD Test
       m2 = RandInt(8);
 
       msg = sprintf('%g of %g: RandPolyGcd(%g,%g,%g) @ base %g',...
-                    i+N,2*N, m0,m1,m2, b); 
+                    i,M, m0,m1,m2, b); 
       fprintf('%s\n',msg);
 
       ok = ok && RandPolyGcd(o,m0,m1,m2,b);
    end
+   
+   corazon.profiler;                   % show profiling resultss   
    fprintf('Polynomial GCD tests: %s\n',o.iif(ok,'OK','FAIL'));
 
    function ok = PolyGcd(o)            % Polynomial GCD Test           
@@ -427,19 +436,19 @@ function ok = Gcd(o)                   % GCD Test
             
       o = base(o,b);                   % base 1e1,1e2,...1e6 object
 
-      for (i=1:m0)
-         M = 10^(RandInt(11)-6);       % magnitude
-         c0(i) = M*randn;
+      for (k=1:m0)
+         mag = 10^(RandInt(11)-6);       % magnitude
+         c0(k) = mag*randn;
       end
 
-      for (i=1:m1)
-         M = 10^(RandInt(11)-6);       % magnitude
-         c1(i) = M*randn;
+      for (k=1:m1)
+         mag = 10^(RandInt(11)-6);       % magnitude
+         c1(k) = mag*randn;
       end
       
-      for (i=1:m2)
-         M = 10^(RandInt(11)-6);       % magnitude
-         c2(i) = M*randn;
+      for (k=1:m2)
+         mag = 10^(RandInt(11)-6);       % magnitude
+         c2(k) = mag*randn;
       end
       
       p0 = poly(o,c0);

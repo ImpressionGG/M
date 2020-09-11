@@ -11,7 +11,9 @@ function oo = real(o)
          oo = Number(o);
       case 'poly'
          oo = Poly(o);
-      otherwise
+      case 'ratio'
+         oo = Ratio(o);
+       otherwise
          error('implementation')
    end
 end
@@ -54,5 +56,21 @@ function poly = Poly(o)                % Convert Poly to Real Vector
       poly(m-k+1) = Number(oo);
    end
 end
+
+%==========================================================================
+% Convert Rational Function to Real Matrix
+%==========================================================================
+
+function ratio = Ratio(o)              % Convert Ratio to Real Matrix   
+   [on,od,~] = peek(o);
+   num = Poly(on);
+   den = Poly(od);
+
+   n1 = length(num);
+   n2 = length(den);
+   n = max(n1,n2);
+   ratio = [zeros(1,n-n1),num; zeros(1,n-n2),den];
+end
+
 
 

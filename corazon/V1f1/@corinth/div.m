@@ -34,6 +34,7 @@ function [q,r] = div(o,x,y)            % Divide Two Rational Objects
 %
 %       See also: RAT, TRIM, FORM, COMP, ADD, SUB, MUL, DIV
 %
+   o.profiler('div',1);
    o = touch(o);                       % just in case of a copy somewhere
 
    if (nargin == 3)
@@ -63,6 +64,7 @@ function [q,r] = div(o,x,y)            % Divide Two Rational Objects
          r = trim(r);
       end
    end
+   o.profiler('div',0);
 end
 
 %==========================================================================
@@ -82,8 +84,12 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    
       % x and y must be trimmed!
       
-   x = trim(o,x);
-   y = trim(o,y);
+   if (x(1) == 0)
+      x = trim(o,x);
+   end
+   if (y(1) == 0)
+      y = trim(o,y);
+   end
    
       % init base and head, and calculate number of digits
       
@@ -116,8 +122,16 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    
       % trim results and set sign correctly
       
-   q = trim(o,q) * sgnx * sgny;
-   r = trim(o,ri) * sgnx;
+   if (q(1) == 0)
+      q = QuickTrim(o,q);
+   end
+   q = q * sgnx * sgny;
+   
+   r = ri;
+   if (r(1) == 0)
+      r = QuickTrim(o,r);
+   end
+   r = r * sgnx;
 end
 function [q,r] = Division(o,x,y)       % Division Helper               
 %
@@ -155,14 +169,14 @@ function [q,r] = Division(o,x,y)       % Division Helper
       % but if y(2:end) is non zero then q*y could be greater than x!
       % in such cases we have to reduce q until q*y <= x fits
    
-   p = mul(o,q,y);
+   p = Mul(o,q,y);
    a = 0.2;
    while (comp(o,p,x) > 0)             % while q*y > x
       q = q-1;
-      p = mul(o,q,y);
+      p = Mul(o,q,y);
       
       qq = floor((1-a)*q);
-      pp = mul(o,qq,y);
+      pp = Mul(o,qq,y);
       if (comp(o,pp,x) > 0)
          q = qq;
       else
@@ -305,3 +319,70 @@ function [q,r] = DivRatio(ox,oy)       % Divide Two Polynomials
    end
 end
 
+%==========================================================================
+% Helpers
+%==========================================================================
+
+function z = Mul(o,x,y)                % Multiply Mantissa             
+%
+% MUL    Multiply two mantissa; this is exactly the same function as 
+%        the local work horse of the call z=mul(o,x,y). Code has been 
+%        duplicated for profiling analysis reasons
+%
+   if (x(1) == 0)
+      x = QuickTrim(o,x);
+   end
+   if (y(1) == 0)
+      y = QuickTrim(o,y);
+   end
+
+   sign = 1;
+   if any(x< 0)
+      x = -x;  sign = -sign;
+   end
+   if any(y<0)
+      y = -y;  sign = -sign;
+   end
+   
+   base = o.data.base;
+   
+   n = length(x);
+   z = 0*x;                              % init z
+   for (i=1:length(y))
+      z = [z 0];                         % shift intermediate result
+      t = 0*z;                           % temporary result
+      k = length(z);
+      
+      yi = y(i);  
+      carry = 0;
+      for (j=1:length(x))
+         xj = x(n+1-j); 
+         prod = xj * yi + carry;
+         
+         carry = floor(prod/base);
+         remain = prod - carry*base;
+         
+         t(k) = t(k) + remain;
+         k = k-1;
+      end
+      
+      if (k > 0)
+         t(k) = carry;
+      elseif (carry ~= 0)
+         t = [carry t];                % assert(carry == 0);
+      end
+      z = add(o,z,t);
+   end
+   z = sign*z;
+end
+function y = QuickTrim(o,x)            % Trim Mantissa                 
+%
+% QUICKTRIM Trim mantissa: remove leading and trailing zeros
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
+   end
+end

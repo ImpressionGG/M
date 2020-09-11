@@ -35,17 +35,7 @@ function txt = display(o)              % Display Corinthian Object
          if (nargout == 0)
             Ratio(o);
          else
-            [num,den,~] = peek(o);
-            if iseye(den)
-               cnum = real(num);
-               txt = PolyString(o,cnum,'s');
-               txt = ['((',txt,'))'];
-            else
-               cnum = real(num);
-               cden = real(den);
-               txt = RatioString(o,cnum,cden,'s');
-               txt = Trim(o,txt);
-            end
+            txt = Ratio(o);
          end
 
       case 'matrix'  
@@ -192,17 +182,35 @@ end
 % Display Rational Function
 %==========================================================================
 
-function Ratio(o)                      % Display Rational Function                
+function txt = Ratio(o)                % Display Rational Function                
    assert(isequal(o.type,'ratio'));
-   [ox,oy,~] = peek(o);
+   [on,od,~] = peek(o);
    
-   num = real(ox);
-   den = real(oy);
+      % fetch numerator ans denominator objects
+      
+   num = real(on);
+   den = real(od);
+   
+      % compile readable text string; distinguish if denominator equals
+      % one or else      
          
-   if ~opt(o,{'detail',0})
-      fprintf('rational function\n');
+   if iseye(od)
+      txt = PolyString(o,num,'s');
+      txt = ['((',txt,'))'];
+   else
       txt = RatioString(o,num,den,'s');
+      txt = Trim(o,txt);
+   end
+   
+      % depending on calling syntax return readable text string or
+      % print to console
+      
+   if (nargout > 0)
+      return
+   elseif ~opt(o,{'detail',0})
+      fprintf('rational function (%g/%g)\n\n   ',order(on),order(od));
       disp(txt);
+      fprintf('\n');
    else
       Display(o,num,den);
    end

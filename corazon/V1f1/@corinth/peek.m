@@ -13,7 +13,7 @@ function [oo,den,xpo] = peek(o,i,j)    % Peek Corinthian Sub-Object
 %
 %        See also: CORINTH, PEEK, POKE
 %
-   if (nargout == 3)                   % super fast access
+   if (nargout >= 2)                   % super fast access
       data = o.data;  xpo = data.expo;
       oo = data.num;  den = data.den;  
       return

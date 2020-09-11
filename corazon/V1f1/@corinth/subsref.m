@@ -9,11 +9,14 @@ function oo = subsref(o,oper)
 %
 %          See also: CORINTH, MATRIX, SIZE, SUBSASGN
 %
-   if ~type(o,{'matrix','ratio'})
-      error('cannot index non-matrix');
-   end
-
    switch oper.type
+      case '.'                         % normal dot operation
+         if (nargout == 0)
+            eval(['o.',oper.subs,';']);
+         else
+            eval(['oo=o.',oper.subs,';']);
+         end
+         
       case '()'
          subs = oper.subs;
 
@@ -30,8 +33,15 @@ function oo = subsref(o,oper)
                end
                   
             case 'matrix'
-               i = subs{1};  j = subs{2};
-               oo = o.data.matrix{i,j};
+               if (length(subs) == 1)
+                  i = subs{1};
+                  oo = o.data.matrix{i};
+              elseif (length(subs)==2)
+                  i = subs{1};  j = subs{2};
+                  oo = o.data.matrix{i,j};
+               else
+                  error('bad calling sytax');
+               end
             otherwise
                error('bad indexing operation');
          end
