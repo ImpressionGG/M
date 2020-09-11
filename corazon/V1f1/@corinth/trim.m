@@ -55,31 +55,6 @@ function y = Trim(o,x)                 % Trim Mantissa
       y = x(idx(1):end);
    end
 end
-function y = QuickTrim(o,x)            % Trim Mantissa                 
-%
-% QUICKTRIM Trim mantissa: remove leading mantissa zeros
-%           Same code as Trim() - use for profiling analysis
-%
-   idx = find(x~=0);
-   if isempty(idx)
-      y = 0;
-   else
-      y = x(idx(1):end);
-   end
-end
-function y = OldTrim(o,x)              % Old Trim Mantissa
-%
-% TRIM    Trim mantissa: remove leading and trailing zeros
-%
-   while (length(x) > 1)
-      if (x(1) == 0)
-         x(1) = [];
-      else
-         break;
-      end
-   end
-   y = x;
-end
 
 %==========================================================================
 % Trim Mantissa
@@ -110,8 +85,8 @@ function [x,y,e] = Triple(o,x,y,e)     % Trim Triple
 % TRIMTRIPLE  Trim triple: remove leading and trailing zeros and adjust
 %             exponent accordingly
 %
-   x = QuickTrim(o,x);
-   y = QuickTrim(o,y);
+   x = Trim(o,x);
+   y = Trim(o,y);
    
    idx = find(x~=0);
    n = length(x);

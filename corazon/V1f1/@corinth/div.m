@@ -123,13 +123,13 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
       % trim results and set sign correctly
       
    if (q(1) == 0)
-      q = QuickTrim(o,q);
+      q = trim(o,q);
    end
    q = q * sgnx * sgny;
    
    r = ri;
    if (r(1) == 0)
-      r = QuickTrim(o,r);
+      r = trim(o,r);
    end
    r = r * sgnx;
 end
@@ -330,10 +330,10 @@ function z = Mul(o,x,y)                % Multiply Mantissa
 %        duplicated for profiling analysis reasons
 %
    if (x(1) == 0)
-      x = QuickTrim(o,x);
+      x = trim(o,x);
    end
    if (y(1) == 0)
-      y = QuickTrim(o,y);
+      y = trim(o,y);
    end
 
    sign = 1;
@@ -374,15 +374,4 @@ function z = Mul(o,x,y)                % Multiply Mantissa
       z = add(o,z,t);
    end
    z = sign*z;
-end
-function y = QuickTrim(o,x)            % Trim Mantissa                 
-%
-% QUICKTRIM Trim mantissa: remove leading and trailing zeros
-%
-   idx = find(x~=0);
-   if isempty(idx)
-      y = 0;
-   else
-      y = x(idx(1):end);
-   end
 end

@@ -353,6 +353,7 @@ function VersionV1F
 % - corinth/chr: characteristic equation 
 % - pimp corinth/display for pretty matrix display
 % - corinth/phi (transition matrix) - with tests :-)))))
+% - basic profiling added :-)))
 %
 %
 % Known Bugs / Wishlist

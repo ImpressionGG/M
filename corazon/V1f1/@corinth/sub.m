@@ -58,7 +58,7 @@ function z = Sub(o,x,y)                % Mantissa Subtraction
    
    [x,y] = form(o,x,y,1);
    if all(x==y)
-      z = QuickTrim(o,0*x);
+      z = trim(o,0*x);
       return
    end
    
@@ -78,7 +78,7 @@ function z = Sub(o,x,y)                % Mantissa Subtraction
    assert(borrow==0);
 
    if (z(1) == 0)
-      z = QuickTrim(o,z);
+      z = trim(o,z);
    end
 end
 
@@ -185,20 +185,4 @@ function oo = SubMatrix(o1,o2)         % Subtract Two Matrices
    
    oo = corinth(o1,'matrix');
    oo.data.matrix = M;
-end
-
-%==========================================================================
-% Helpers
-%==========================================================================
-
-function y = QuickTrim(o,x)            % Trim Mantissa                 
-%
-% QUICKTRIM Trim mantissa: remove leading and trailing zeros
-%
-   idx = find(x~=0);
-   if isempty(idx)
-      y = 0;
-   else
-      y = x(idx(1):end);
-   end
 end

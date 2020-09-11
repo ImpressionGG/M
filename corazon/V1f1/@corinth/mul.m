@@ -55,10 +55,10 @@ end
 
 function z = Mul(o,x,y)                % Multiply Mantissa             
    if (x(1) == 0)
-      x = QuickTrim(o,x);
+      x = trim(o,x);
    end
    if (y(1) == 0)
-      y = QuickTrim(o,y);
+      y = trim(o,y);
    end
 
    sign = 1;
@@ -224,20 +224,4 @@ function oo = MulMatrix(o1,o2)         % Multiply Two Matrices
    
    oo = corinth(o1,'matrix');
    oo.data.matrix = M;
-end
-
-%==========================================================================
-% Helpers
-%==========================================================================
-
-function y = QuickTrim(o,x)            % Trim Mantissa                 
-%
-% QUICKTRIM Trim mantissa: remove leading and trailing zeros
-%
-   idx = find(x~=0);
-   if isempty(idx)
-      y = 0;
-   else
-      y = x(idx(1):end);
-   end
 end

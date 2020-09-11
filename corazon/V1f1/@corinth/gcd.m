@@ -55,10 +55,10 @@ function cf = Gcd(o,x,y)               % GCD of two Mantissa
       % x and y must be trimmed!
       
    if (x(1) == 0)
-      x = QuickTrim(o,x);
+      x = trim(o,x);
    end
    if (y(1) == 0)
-      y = QuickTrim(o,y);
+      y = trim(o,y);
    end
    
    if (comp(o,x,y) >= 0)
@@ -123,20 +123,4 @@ function oo = GcdPoly(o1,o2)         % GCD of polynomials
       a = b;  b = r;
    end
    oo = a;                             % resulting common factor
-end
-
-%==========================================================================
-% Helpers
-%==========================================================================
-
-function y = QuickTrim(o,x)            % Trim Mantissa                 
-%
-% QUICKTRIM Trim mantissa: remove leading and trailing zeros
-%
-   idx = find(x~=0);
-   if isempty(idx)
-      y = 0;
-   else
-      y = x(idx(1):end);
-   end
 end
