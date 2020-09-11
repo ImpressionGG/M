@@ -147,7 +147,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    end
    r = r * sgnx;
 end
-function [q,r] = Division(o,x,y,verbose)    % Division Helper               
+function [q,r] = Division(o,x,y,verbose)    % Division Helper          
 %
 % DIVISION   Integer division for specific boundary conditions, where
 %            y is non-empty and x has one more digit than y and both x and
@@ -240,7 +240,7 @@ function [q,r] = Division(o,x,y,verbose)    % Division Helper
       end
    end
       
-   if (verbose >= 2)
+   if (verbose >= 3)
       Trace(o,guess);                  % trace guess efficiency
    end
    
@@ -258,7 +258,9 @@ function [q,r] = Division(o,x,y,verbose)    % Division Helper
       % final check: r must be less than divisor y
       
    ok = (comp(o,r,y) < 0);
-   assert(ok);
+   if ~ok
+      assert(ok);
+   end
    
    corazon.profiler('Division',0);
 end
@@ -467,6 +469,14 @@ function [q,r] = DivPoly(ox,oy)        % Divide Two Polynomials
       error('incompatible bases!');
    end
    assert(isequal(ox.type,'poly') && isequal(oy.type,'poly'));
+   
+   ox = can(ox);
+   oy = can(oy);
+   
+   ox = trim(ox);
+   oy = trim(oy);
+   
+   
    nx = order(ox);  ny = order(oy);  
    
    q = corinth(ox,'poly');             % quotient
@@ -507,7 +517,7 @@ end
 % Divide Two Rationals
 %==========================================================================
 
-function [q,r] = DivRatio(ox,oy)       % Divide Two Polynomials      
+function [q,r] = DivRatio(ox,oy)       % Divide Two Polynomials        
 %
 % DIVRATIO  Division of two rational functions
 %
@@ -597,7 +607,7 @@ function z = Mul(o,x,y)                % Multiply Mantissa
    end
    z = sign*z;
 end
-function Trace(o,guess)
+function Trace(o,guess)                % Excess Division Tracing       
    persistent count guesses
    
    if isempty(count)

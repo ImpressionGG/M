@@ -1,26 +1,19 @@
-function [o1,o2] = trffct(o,i,j)
+function oo = trfu(o,i,j)
 %
-% TRFCT   Calculate i-j-th transfer function of a MIMO system
+% TRFU    Calculate i-j-th corinthian transfer function of a MIMO system
 %
-%            Gij = trfct(oo,i,j)            % calc i-j-th transfer function
-%            [num,den] = trfct(oo,i,j)      % calc i-j-th transfer function
+%            Gij = trfu(oo,i,j)             % calc i-j-th transfer function
 %
 %         Example
 %            oo = system(spm,A,B,C,D)
-%            G = trfct(oo,i,j)              % calc i-j-th transfer function
+%            Gij = trfct(oo,i,j)            % calc i-j-th transfer function
 %
-%         Note: Gij = {num,den}
+%         Note: Gij is a corinthian rational function object
 %
 %         See also: SPM
 %
    oo = Partial(o);   
-   [num,den] = TrfFct(oo,i,j);
-   
-   if (nargout >= 2)
-      o1 = num;  o2 = den;
-   else
-      o1 = {num,den};
-   end
+   oo = TrFu(oo,i,j);
 end
 
 %==========================================================================
@@ -60,7 +53,7 @@ function oo = Partial(o)               % Partial Matrices of Modal Form
    oo = var(oo,'A11,A12,A21,A22',A11,A12,A21,A22);
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
 end
-function [num,den] = TrfFct(o,i,j)
+function [num,den] = TrFu(o,i,j)       % Transfer Function             
 %
 % TRFFCT   Calculate transfer function Gij(s) according to
 %
@@ -89,12 +82,14 @@ function [num,den] = TrfFct(o,i,j)
    
       % pick i-th output matrix row and j-th input matrix column
       
-   Ci = C1(i,:);  Bj = B2(:,j);
+   O = corinth;                        % corinthian 1e6 basis object
+   Ci = matrix(O,C1(i,:));  
+   Bj = matrix(O,B2(:,j));
    
       % pick A21 and A22 diagonals
       % remember that psi_i(s) := s^2 + a1(i)*s + a0(i)
       
-   a1 = -diag(A21);   a0 = -diag(A22);
+   a1 = matrix(O,-diag(A21));   a0 = matrix(O,-diag(A22));
    
       % represent eta(s) = s^2 + k1*s + k0
       

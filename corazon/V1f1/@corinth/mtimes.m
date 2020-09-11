@@ -20,6 +20,14 @@ function oo = mtimes(o1,o2)
          o2 = Cast(o1,o2);
       elseif isequal(o2.type,'matrix')
          o1 = Cast(o2,o1);
+      elseif isequal(o1.type,'ratio')
+         o2 = Cast(o1,o2);
+      elseif isequal(o2.type,'ratio')
+         o1 = Cast(o2,o1);
+      elseif isequal(o1.type,'poly')
+         o2 = Cast(o1,o2);
+      elseif isequal(o2.type,'poly')
+         o1 = Cast(o2,o1);
       else
          error('implementation');
       end
@@ -92,7 +100,7 @@ function o = Multiply(o,s)             % Multiply Matrix by Scalar
    
    for (i=1:m)
       for (j=1:n)
-         M{i,j} = mul(M{i,j},s);
+         M{i,j} = M{i,j} * s;
       end
    end
    o.data.matrix = M;

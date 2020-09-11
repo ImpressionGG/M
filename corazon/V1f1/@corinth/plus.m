@@ -53,7 +53,7 @@ function oo = ScalarPlusAny(os,oa)     % Scalar (os) Plus Any (oa)
       [m,n] = size(M);
       for (i=1:m)
          for (j=1:n)
-            M{i,j} = add(M{i,j},os);
+            M{i,j} = M{i,j} + os;
          end
       end
       oo = oa;
@@ -87,7 +87,7 @@ function oo = MatrixPlusMatrix(o1,o2)  % Matrix Plus Matrix
       for (j=1:n1)
          M1ij = M1{i,j};
          M2ij = M2{i,j};
-         Mij = add(M1ij,M2ij);
+         Mij = M1ij + M2ij;
          M{i,j} = Mij;
       end
    end

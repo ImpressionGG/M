@@ -227,12 +227,12 @@ function oo = MulMatrix(o1,o2)         % Multiply Two Matrices
             if (CorinthVerbose >= 2)
                fprintf('-> multiply term %g ...\n',k);
             end
-            M1M2 = mul(M1{i,k},M2{k,j});
+            M1M2 = M1{i,k} * M2{k,j};
 
             if (CorinthVerbose >= 2)
                fprintf('-> add term %g ...\n',k);
             end
-            Mij = add(Mij,M1M2);
+            Mij = Mij + M1M2;
          end
          M{i,j} = Mij;
       end

@@ -118,7 +118,7 @@ function oo = GcdPoly(o1,o2)         % GCD of polynomials
          return                        % bye!
       end
       
-      if (CorinthVerbose >= 2)
+      if (CorinthVerbose >= 3)
          fprintf('      GcdPoly: [q,r] = div(a(%g#%g),b(%g#%g))\n',...
                         order(a),digits(a), order(b),digits(b)); 
       end

@@ -361,7 +361,7 @@ function VersionV1F
 % - terrible, dirty bug fixed in corinth/div/Divide (guess too low!) :-)))
 % - 1 million mantissa tests passed :-)))))
 % - bug fixed: corazon/display - 2nd arg only accepted for display if obj
-%
+% - bug fixed: corinth/div: args were not trimmed
 %
 % Known Bugs / Wishlist
 % - corazon/shell and corazon/rapid generated shells do not refresh

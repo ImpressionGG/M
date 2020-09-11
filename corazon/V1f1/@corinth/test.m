@@ -671,11 +671,11 @@ function ok = Transition(o)            % transition Matrix
    sI = s*I;
    B = sI - A
    
-   fprintf('check: iseye((s*I-A)*Phi)');
+   fprintf('check: iseye((s*I-A)*Phi) ...\n');
    I = B*Phi
    ok = ok && iseye(I);
    
-   fprintf('check: iseye(Phi*(s*I-A)) ...');
+   fprintf('check: iseye(Phi*(s*I-A)) ...\n');
    I = Phi*B
    ok = ok && iseye(I);
 end

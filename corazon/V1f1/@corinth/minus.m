@@ -55,7 +55,7 @@ function oo = ScalarMinusAny(os,oa)    % Scalar (os) Minus Any (oa)
       [m,n] = size(M);
       for (i=1:m)
          for (j=1:n)
-            M{i,j} = sub(os,M{i,j});
+            M{i,j} = os - M{i,j};
          end
       end
       oo = oa;
@@ -78,7 +78,7 @@ function oo = AnyMinusScalar(oa,os)    % Any (oa) Minus Scalar (os)
       [m,n] = size(M);
       for (i=1:m)
          for (j=1:n)
-            M{i,j} = sub(M{i,j},os);
+            M{i,j} = M{i,j} - os;
          end
       end
       oo = oa;
@@ -112,7 +112,7 @@ function oo = MatrixMinusMatrix(o1,o2) % Matrix Minus Matrix
       for (j=1:n1)
          M1ij = M1{i,j};
          M2ij = M2{i,j};
-         Mij = sub(M1ij,M2ij);
+         Mij = M1ij - M2ij;
          M{i,j} = Mij;
       end
    end
