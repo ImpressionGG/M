@@ -12,6 +12,7 @@ function oo = test(o,varargin)         % CORINTHian Arithmetic Tests
 %           ok = test(o,'Cast')        % casting test
 %           ok = test(o,'Gcd')         % GCD test
 %
+%           ok = test(o,'Million')     % 1 million mantissa tests
 %           ok = test(o,'Transition')  % transition matrix
 %
 %           ok = test(0,'Timing')      % timing test
@@ -27,7 +28,7 @@ function oo = test(o,varargin)         % CORINTHian Arithmetic Tests
 %
    [gamma,o] = manage(o,varargin,@All,@Menu,...
                       @Mantissa,@Number,@Poly,@Cast,@Timing,@Gcd,...
-                      @Transition);
+                      @Million,@Transition);
    
       % copy verbose (control) option to global variable
       
@@ -69,6 +70,7 @@ function oo = Menu(o)
    oo = mitem(o,'Cast',    {@test,'Cast'});
    oo = mitem(o,'Gcd',     {@test,'Gcd'});
    oo = mitem(o,'-');
+   oo = mitem(o,'Million',{@test,'Million'});
    oo = mitem(o,'Transition Matrix',{@test,'Transition'});
 end
 
@@ -630,10 +632,26 @@ function ok = Timing(o)                % Timing Test
 end
 
 %==========================================================================
+% Million
+%==========================================================================
+
+function ok = Million(o)               % 1 Million Mantissa Tests      
+   fprintf('1 million mantissa test runs ...\n');
+   fprintf('profiler and verbose mode deactivated!\n');
+   
+   o = opt(o,'number.mantissa',1e6);   % set number option to 1 Mio
+   o = opt(o,'control.verbose',0);
+   mode = o.profiler('off');
+   
+   ok = Mantissa(o);
+   o.profiler(mode);
+end
+
+%==========================================================================
 % Transition Matrix
 %==========================================================================
 
-function ok = Transition(o)            % transition Matrix                   
+function ok = Transition(o)            % transition Matrix             
    RandInt;                            % set random seed to zero
    ok = 1;
    

@@ -359,6 +359,7 @@ function VersionV1F
 % - pimp corazon/profiler to be a bit faster and by default off
 % - add some verbose control for corinth objects
 % - terrible, dirty bug fixed in corinth/div/Divide (guess too low!) :-)))
+% - 1 million mantissa tests passed :-)))))
 %
 %
 % Known Bugs / Wishlist

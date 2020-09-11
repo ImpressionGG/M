@@ -89,7 +89,7 @@ function out = profiler(name,mode)     % CORAZITO Profiler
          GlobCorazonProfiling = 1;
       elseif strcmp(name,'off')
          if nargout > 0
-           out = o.iif(isequal(GlobCorazonProfiling,1),'on','off');
+           out = corazito.iif(isequal(GlobCorazonProfiling,1),'on','off');
          end
          GlobCorazonProfiling = 0;
       elseif strcmp(name,'debug')
