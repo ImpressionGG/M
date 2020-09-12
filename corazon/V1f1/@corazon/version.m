@@ -365,6 +365,7 @@ function VersionV1F
 % - add peek/poke functionality for matrix
 % - bug fixed in can/Matrix and trim/Matrix
 % - add normalizing within cancelation of rational functions
+% - provide mandatory opt field during corinth construction
 %
 % Known Bugs / Wishlist
 % - corazon/shell and corazon/rapid generated shells do not refresh

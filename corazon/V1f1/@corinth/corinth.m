@@ -55,10 +55,16 @@ classdef corinth < corazon             % Corinth Class Definition
          
          o@corazon(arg);               % construct base object
          
-         if ~casted                    % default setup
+            % initialize! make sure that the opt field is always available
+            % which makes inheritance super fast
+            
+         if casted                     % default setup
+            o.work.opt = opt(arg1);
+         else
             o.tag = mfilename;         % tag must equal derived class name
             base = 1e6;              
             o.data.base = base;        % set representation base;
+            o.work.opt = [];           % opt field is always available !!!
          end
          
             % provide defaults
@@ -89,6 +95,7 @@ classdef corinth < corazon             % Corinth Class Definition
                   return
                elseif (isa(arg1,'corinth') && ischar(arg2))
                   o = Construct(arg1,arg2);
+                  o.work.opt = arg1.work.opt;
                   return
                else
                   error('bad arg list!');

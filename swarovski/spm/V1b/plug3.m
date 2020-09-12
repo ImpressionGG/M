@@ -18,7 +18,8 @@ function oo = plug3(o,varargin)        % SPM Plugins
 %
    [gamma,oo] = manage(o,varargin,@Setup,@Register,@Menu,@Basket,...
                        @Callback,@New,@Simu,@Plot,@Stream,@Step,@Ramp,...
-                       @ForceRamp,@AnalyseRamp,@NormRamp,@TransferMatrix);
+                       @ForceRamp,@AnalyseRamp,@NormRamp,...
+                       @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational);
    oo = gamma(oo);
 end              
 
@@ -85,6 +86,7 @@ function o = Menu(o)                   % General Plugin Definitions
    
    oo = Plot(o);                       % add Plot menu items
    oo = Analyse(o);                    % add Analyse menu items
+   oo = Study(o);                      % add Study menu items
 end
 
 %==========================================================================
@@ -265,16 +267,26 @@ function oo = Analyse(o)               % Analyse Menu Setup
       return
    end
    
-   types = {'shell','spm'};            % supported types
+      % delete some Study menu items
+
+   for (label={'Surface','Histogram'})
+      ooo = mseek(oo,label);
+      if ~isempty(ooo)
+         delete(mitem(ooo,inf));
+      end
+   end
+      
+      % add new items
+   
+   types = {'spm'};            % supported types
    
    ooo = mitem(oo,'Ramp Analysis');
+   enable(ooo,type(current(o),types));
    oooo = mitem(ooo,'Force Ramp @ F2',{@Callback,'AnalyseRamp'},2);
 
    ooo = mitem(oo,'Normalized System');
+   enable(ooo,type(current(o),types));
    oooo = mitem(ooo,'Force Ramp @ F2',{@Callback,'NormRamp'},2);
-   
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Transfer Matrix',{@Callback,'TransferMatrix'});
 end
 function o = AnalyseRamp(o)            % Analyse Force Ramp            
    if ~o.is(type(o),{'spm'})
@@ -316,7 +328,63 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
    
    heading(o,sprintf('Analyse Force Ramp: F%g->y - %s',index,Title(o)));
 end
-function o = TransferMatrix(o)
+
+%==========================================================================
+% Analyse Menu Plugins
+%==========================================================================
+
+function oo = Study(o)                 % Study Menu Plugin            
+%
+% STUDY   Add Study menu items
+%
+   oo = mseek(o,{'#','Study'});        % find Select rolldown menu
+   if isempty(oo)
+      return
+   end
+   
+   kids = get(mitem(oo,inf),'Children');
+   delete(kids);                       % delete existing Study menu items
+
+      % start building up new study menu
+      
+   ooo = mitem(oo,'Transition Matrix');
+   oooo = mitem(ooo,'Double',{@Callback,'PhiDouble'});
+   oooo = mitem(ooo,'Rational',{@Callback,'PhiRational'});
+   
+   ooo = mitem(oo,'Transfer Matrix');
+   oooo = mitem(ooo,'Double',{@Callback,'TrfmDouble'});
+   oooo = mitem(ooo,'Rational',{@Callback,'TrfmRational'});   
+end
+
+function o = PhiDouble(o)              % Rational Transition Matrix
+   oo = current(o);
+   oo = brew(oo,'Partial');            % brew partial matrices
+   
+   %[A21,A22,B2,C1,D] = var(oo,'A21,A22,B2,C1,D');
+   
+   [A,B,C,D] = get(oo,'system','A,B,C,D');
+   
+   O = inherit(corinth,o);             % need to access CORINTH methods
+   [n,m] = size(B);
+   for (i=1:m)                         % i indexes B(:,i) (columns of B)
+      [num,den] = ss2tf(A,B,C,D,i);
+      for (j=1:size(den,2))
+         p = poly(O,num(j,:));         % numerator polynomial
+         q = poly(O,den);              % denominator polynomial
+         Gij = ratio(O,p,q);
+         Gij
+      end
+   end     
+end
+function o = PhiRational(o)            % Double Transition Matrix
+   message(o,'PhiRational: not yet implemented');
+end
+
+function o = TrfmDouble(o)             % Double Transfer Matrix        
+   G = trfu(o,3,1);
+   G
+end
+function o = TrfmRational(o)           % Rational Transfer Matrix      
    G = trfu(o,3,1);
    G
 end
@@ -429,4 +497,12 @@ function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
    
    I = eye(m);
    u = I(:,index)*t * Fmax/max(t);
+end
+function ok = Trf                      % is TRF Class Supported?       
+   try
+      oo = trf([1 0],[1 2]);
+      ok = true;
+   catch
+      ok = false;
+   end
 end

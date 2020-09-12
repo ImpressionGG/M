@@ -137,7 +137,7 @@ end
 %==========================================================================
 
 function oo = CanRatio(o)              % Cancel Ratio                  
-   [x,y,e] = peek(o);
+   [x,y] = peek(o);
 
    if iszero(x)
       oo = corinth(o,'ratio');         % return zero ratio

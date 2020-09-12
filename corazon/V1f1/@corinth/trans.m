@@ -63,11 +63,11 @@ function oo = trans(A,B,C,D)
 %
 %        Example 2:
 %
-%           om = [1 2 3]';             % eigen frequencies
-%           delta = [0.1 0.15 0.12]';  % dampings
+%           omega = [1 2 3]';          % eigen (circular) frequencies
+%           zeta = [0.1 0.15 0.12]';   % dampings
 %
-%           a0 = omega.*omega;
-%           a1 = 2*zeta.*omega;
+%           a0 = omega.*omega;         % a0 = [1 4 9]'
+%           a1 = 2*zeta.*omega;        % a1 = [0.2 0.6 0.72 ]
 %
 %           a = matrix(o,[a1;a0]);
 %           Phi = trans(a);            % calculate transition matrix
@@ -86,7 +86,7 @@ function oo = trans(A,B,C,D)
    o = A;                              % some lines are better readable
    [m,n] = size(A);
    if (m > 0 && n == 1)
-      if (rem(n,2) > 0)
+      if (rem(m,2) > 0)
          error('length of [a1;a0] (arg1) must be an even number');
       end
       N = m;  n = N/2;  m = n;
@@ -143,14 +143,30 @@ function Phi = TransitionMatrix(A)
       Phi = inv(sIminusA);
    end
    function Phi = Modal(a)             % Modal Transition Matrix Calc
-      assert(rem(n,2)==0);             % n must be even
-      n = n/2;
-      
-         % setup: a1 = a(1:n), a0 = a(n+1:2*n)
+      N = prod(size(a));
+      assert(rem(N,2)==0);             % n must be even
+      n = N/2;
+            
+         % calculate psi{i} = s^2 + a1*s + a0
          
+      Psi = matrix(o,zeros(n,1));      % init matrix dimensions
+      psi = poly(o,[1 1 1]);           % init poly dimensions
+      
       for (i=1:n)
-         a1{i} = peek(a,i);  a0 = peek(a,i+n);
+         a1 = peek(a,i);               % a1{i} = 2*zeta(i)*omega(i)
+         a0 = peek(a,i+n);             % a0{i} = omega(i)^2
+         
+         psi = poke(psi,a0,0);
+         psi = poke(psi,a1,1);
+         
+            % now: psi(s) = s^2 + a1{i}*s + a0{i}
+            
+         Psi = poke(Psi,psi,i,1);
       end
+      
+         % now we have Psi matrix with characteristic partial polynomials
+         
+      Phi = Psi;       % preliminary ############
    end
 end
 

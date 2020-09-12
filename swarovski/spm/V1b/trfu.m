@@ -10,6 +10,13 @@ function oo = trfu(o,i,j)
 %
 %         Note: Gij is a corinthian rational function object
 %
+%         Options:
+%
+%            double:         create a double arithmetic base transfer
+%                            function
+%
+%         Copyright(c): Bluenetics 2020
+%
 %         See also: SPM
 %
    oo = Partial(o);   
