@@ -201,7 +201,7 @@ end
 
 function txt = Ratio(o)                % Display Rational Function                
    assert(isequal(o.type,'ratio'));
-   [on,od,~] = peek(o);
+   [on,od] = peek(o);
    
       % fetch numerator ans denominator objects
       
@@ -225,8 +225,9 @@ function txt = Ratio(o)                % Display Rational Function
    if (nargout > 0)
       return
    elseif ~opt(o,{'detail',0})
-      fprintf('rational function (%g/%g)\n\n   ',order(on),order(od));
-      disp(txt);
+      fprintf('rational function (%g/%g#%g)\n\n',...
+              order(on),order(od),digits(o));
+      disp([setstr(' '+zeros(size(txt,1),3)),txt]);
       fprintf('\n');
    else
       Display(o,num,den);
@@ -606,10 +607,10 @@ function list = Header(list,G,name,deg_num,deg_den,gain)
    end
 end
 function txt = Trim(o,txt)             % Trim Text                     
-   while (size(txt,1) > 0 && all(txt(:,1)==' '))
+   while (size(txt,2) > 0 && all(txt(:,1)==' '))
       txt(:,1) = [];
    end
-   while (size(txt,1) > 0 && all(txt(:,end)==' '))
+   while (size(txt,2) > 0 && all(txt(:,end)==' '))
       txt(:,end) = [];
    end
 end

@@ -357,6 +357,8 @@ function oo = Study(o)                 % Study Menu Plugin
 end
 
 function o = PhiDouble(o)              % Rational Transition Matrix
+   refresh(o,{@menu,'About'});         % don't come back here!!!
+   
    oo = current(o);
    oo = brew(oo,'Partial');            % brew partial matrices
    
@@ -364,17 +366,40 @@ function o = PhiDouble(o)              % Rational Transition Matrix
    
    [A,B,C,D] = get(oo,'system','A,B,C,D');
    
-   O = inherit(corinth,o);             % need to access CORINTH methods
-   [n,m] = size(B);
-   for (i=1:m)                         % i indexes B(:,i) (columns of B)
-      [num,den] = ss2tf(A,B,C,D,i);
-      for (j=1:size(den,2))
-         p = poly(O,num(j,:));         % numerator polynomial
+   [n,m] = size(B);  [l,~] = size(C);
+
+   O = base(inherit(corinth,o));       % need to access CORINTH methods
+   G = matrix(O,zeros(l,m));
+
+   for (j=1:m)                         % j indexes B(:,j) (columns of B)
+      [num,den] = ss2tf(A,B,C,D,j);
+      assert(l==size(num,1));
+      for (i=1:l)
+         numi = num(i,:);
+         p = poly(O,numi);             % numerator polynomial
          q = poly(O,den);              % denominator polynomial
-         Gij = ratio(O,p,q);
-         Gij
+         
+         Gij = ratio(O,1);
+         Gij = poke(Gij,p,q);          % Gij not canceled and trimmed
+         
+         fprintf('G%g%g(s):\n',i,j)
+         display(Gij);
+         
+         G = poke(G,Gij,i,j);
+         
+         numtag = sprintf('num_%g_%g',i,j);
+         oo = cache(oo,['brew.',numtag],numi);
+
+         dentag = sprintf('den_%g_%g',i,j);
+         oo = cache(oo,['brew.',dentag],den);
       end
-   end     
+   end
+   
+   oo = cache(oo,'brew.G',G);          % store in cache
+   cache(oo,oo);                       % cache store back to shell
+   
+   fprintf('Transfer Matrix (calculated using double)\n');
+   display(var(oo,'G'));
 end
 function o = PhiRational(o)            % Double Transition Matrix
    message(o,'PhiRational: not yet implemented');

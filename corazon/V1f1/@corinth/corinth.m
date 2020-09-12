@@ -78,6 +78,7 @@ classdef corinth < corazon             % Corinth Class Definition
          switch nargin
             case 0                     % supported: o = corinth
                return                  % nothing left to do - bye!
+               
             case 1
                if isa(arg1,'corinth')
                   o = can(o);
@@ -113,7 +114,12 @@ end
 function o = Construct(o,type)         % construct object
    o.type = type;
    o.par = [];
+   
+      % setup a fresh work segment with options restored
+      
+   opti = o.work.opt;
    o.work = [];
+   o.work.opt = opti;
 
    switch type
       case {'number','poly'}

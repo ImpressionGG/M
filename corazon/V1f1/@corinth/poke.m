@@ -13,6 +13,13 @@ function o = poke(o,o1,o2,o3)         % Poke CORINTH Object @ Index
 %           oo = corinth(7)            % coefficient (ratio 7/1)
 %           o = poke(o,oo,i)           % poke i-th coefficient
 %
+%        3) Poke numerator and/or denominator into rational function
+%
+%           o = corinth(o,'ratio')
+%           o = poke(o,p,1)            % poke numerator polynomial p             
+%           o = poke(o,q,2)            % poke denominator polynomial q             
+%           o = poke(o,p,q)            % poke num/den polynomials p/q             
+%
 %        See also: CORINTH, PEEK, POKE
 %
    if ~isobject(o1)                    % super fast access
@@ -30,6 +37,26 @@ function o = poke(o,o1,o2,o3)         % Poke CORINTH Object @ Index
       case 'poly'
          o = PokePoly(o,o1,o2);
 
+      case 'ratio'
+         if (nargin ~= 3)
+            error('3 input args expected');
+         end
+         if ~type(o1,{'poly'})
+            error('polynomial expected for arg2');
+         end
+         
+         if isequal(o2,1)              % o = poke(o,p,1)
+            o.data.num = o1;
+         elseif isequal(o2,2)          % o = poke(o,q,2)
+            o.data.den = o1;
+         elseif type(o2,{'poly'})      % o = poke(o,p,q)
+            o.data.num = o1;
+            o.data.den = o2;
+            o.data.expo = NaN;
+         else
+            error('polynomial expected for arg3');
+         end
+         
       case 'matrix'
          o = PokeMatrix(o,o1,o2,o3);
 

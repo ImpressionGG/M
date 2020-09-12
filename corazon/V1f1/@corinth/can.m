@@ -177,7 +177,7 @@ function oo = CanRatio(o)              % Cancel Ratio
       y = poke(y,oy,0);
    end
 
-   oo = poke(o,e,x,y);
+   oo = poke(o,NaN,x,y);
    
    function [x,y] = Normalize(o,x,y)   % Normalize Rational Function 
       x = trim(touch(x));

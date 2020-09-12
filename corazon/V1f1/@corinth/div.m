@@ -117,7 +117,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    xi = [zeros(1,ny),x];  q = [];
    for (i=1:nx)
       hi = xi(i:i+ny);
-      [qi,ri] = Division(o,hi,y,CorinthVerbose);
+      [qi,ri] = Division(o,hi,y,CorinthVerbose,nx-i);
       q = [q qi];
       xi(i:i+ny) = ri;
    end
@@ -147,7 +147,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    end
    r = r * sgnx;
 end
-function [q,r] = Division(o,x,y,verbose)    % Division Helper          
+function [q,r] = Division(o,x,y,verbose,run)   % Division Helper          
 %
 % DIVISION   Integer division for specific boundary conditions, where
 %            y is non-empty and x has one more digit than y and both x and
@@ -241,7 +241,7 @@ function [q,r] = Division(o,x,y,verbose)    % Division Helper
    end
       
    if (verbose >= 3)
-      Trace(o,guess);                  % trace guess efficiency
+      Trace(o,guess,run);              % trace guess efficiency
    end
    
       % now we have q*y < = x and we can calculate the remainder
@@ -607,7 +607,7 @@ function z = Mul(o,x,y)                % Multiply Mantissa
    end
    z = sign*z;
 end
-function Trace(o,guess)                % Excess Division Tracing       
+function Trace(o,guess,run)            % Excess Division Tracing       
    persistent count guesses
    
    if isempty(count)
@@ -619,6 +619,6 @@ function Trace(o,guess)                % Excess Division Tracing
    
    if (rem(count,2000)==0 || guess >= 2)
       excess = o.rd((guesses/count-1)*100,2);   % excess guess ratio [%]
-      fprintf('   ### %g excess division guesses (%g%%)\n',guess,excess);
+      fprintf('   #%g: div excess guesses: %g (%g%%)\n',count,guess,excess);
    end
 end

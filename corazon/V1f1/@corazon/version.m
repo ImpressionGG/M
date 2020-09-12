@@ -366,6 +366,8 @@ function VersionV1F
 % - bug fixed in can/Matrix and trim/Matrix
 % - add normalizing within cancelation of rational functions
 % - provide mandatory opt field during corinth construction
+% - double based transfer matrix calculation of an order 48 SPM object
+%
 %
 % Known Bugs / Wishlist
 % - corazon/shell and corazon/rapid generated shells do not refresh

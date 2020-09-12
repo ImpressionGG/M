@@ -99,9 +99,18 @@ function oo = PolyReal(o,arg) % Form Polynomial from Reals
       end
    elseif (m*n >= 1)                    % polynomial
       arg = arg(:);
-      m = length(arg);
       
+         % delete all trailing zeros
+         
+      idx = find(arg~=0);
+      if ~isempty(idx)
+         arg(1:idx(1)-1) = [];
+      end
+         
+         % poke all coefficents into polynomial
+         
       o = corinth(o,'poly');
+      m = length(arg);
       for (i=1:m)
          oo = number(o,arg(i));
          j = m-i;                      % index of polynomial coefficient

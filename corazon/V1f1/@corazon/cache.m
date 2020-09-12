@@ -15,6 +15,8 @@ function varargout = cache(o,varargin) % Cache Method
 %         [oo,bag] = cache(oo,oo,'polar')   % cache refresh (hard)
 %         [oo,bag] = cache(oo,oo,[])        % clear cache (hard)
 %
+%         cache(oo,oo)                      % cache storeback to shell
+%
 %         [oo,bag] = cache(o,'polar')       % soft refresh & get bag
 %         [oo,bag] = cache(o,[])            % clear cache (soft)
 %
@@ -141,6 +143,7 @@ function varargout = cache(o,varargin) % Cache Method
 % 4) bag = cache(o,{'polar'})          % empty if not refreshed (obsolete!)
 % 5) r = cache(oo,'polar.r')           % syntactic sugar: get value
 % 6) oo = cache(oo,[])                 % soft clear cache
+% 7) cache(oo,oo)                      % unconditionally store to cuo
 %
    if container(o)
       error('caching not supported for container objects!');
@@ -153,6 +156,9 @@ function varargout = cache(o,varargin) % Cache Method
          end
          seg = list{1};
          varargout{1} = Segment(o,seg);
+         return
+      elseif (isobject(varargin{1}) && nargout == 0) % 7) cache(oo,oo)
+         Current(o,varargin{1});       % hard store back of obj to shell
          return
       elseif isempty(varargin{1})      % 6) oo = cache(oo,[]) 
          [varargout{1},varargout{2},varargout{3}] = SoftRefresh(o,[]);
@@ -313,23 +319,6 @@ function varargout = HardRefresh(o,seg,brewer)
    varargout{1} = oo;                  % updated object
    varargout{2} = bag;                 % cache segment's bag
    varargout{3} = rfr;                 % refresh happened?
-   return                              % as current object
-   
-   function Current(o,oo)              % Store Current Object to Shell
-   %
-   % CURRENT Store current object back to shell (hard operation) while
-   %         making sure that there is no figure refresh!
-   %
-      if ~type(current(o),{'shell'})
-         cb = control(sho,'refresh');     % save refresh callback
-         control(sho,'refresh',{});       % make inactive
-
-         oo = arg(oo,{});                 % clear arg list
-         current(o,oo);                   % refresh current object
-
-         control(sho,'refresh',cb);       % restore refresh callback
-      end
-   end
 end
 
 %==========================================================================
@@ -481,7 +470,22 @@ end
 % Helper
 %==========================================================================
 
-function [seg,brewer,tag] = Split(tag) % Split Tag into Ingredients    
+function Current(o,oo)                 % Store Current Object to Shell
+%
+% CURRENT Store current object back to shell (hard operation) while
+%         making sure that there is no figure refresh!
+%
+   if ~type(current(o),{'shell'})
+      cb = control(sho,'refresh');     % save refresh callback
+      control(sho,'refresh',{});       % make inactive
+
+      oo = arg(oo,{});                 % clear arg list
+      current(o,oo);                   % refresh current object
+
+      control(sho,'refresh',cb);       % restore refresh callback
+   end
+end
+function [seg,brewer,tag] = Split(tag) % Split Tag into Ingredients
    idx = find(tag=='.');
    if isempty(idx)
       seg = tag;
