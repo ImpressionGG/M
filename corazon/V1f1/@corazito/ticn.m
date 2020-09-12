@@ -20,7 +20,7 @@ function [n,nout] = ticn(n)            % Tic for n Runs
 %    Example 1:
 %       [ticn,tocn] = util(corazito,'ticn','tocn');
 %       for (i=1:ticn(10000)) A = magic(88); end
-%       fprintf('%g �s\n',tocn());
+%       fprintf('%g us\n',tocn());
 %
 %    Example 2:
 %       [ticn,tocn] = util(corazito,'ticn','tocn');

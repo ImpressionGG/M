@@ -18,15 +18,19 @@ function time = tocn(msg,digits)       % Toc for n Runs
 %       tocn('A = magic(88)');         % round �s to 0 digits
 %
 %    Example 1:
-%       [ticn,tocn] = util(corazito,'ticn','tocn');
-%       for (i=1:ticn(10000)) A = magic(88); end
-%       fprintf('%g �s\n',tocn());
+%       for (i=1:o.ticn(10000)) A = magic(88); end
+%       fprintf('%g us\n',o.tocn());
 %
 %    Example 2:
 %       [ticn,tocn] = util(corazito,'ticn','tocn');
+%       for (i=1:ticn(10000)) A = magic(88); end
+%       fprintf('%g us\n',tocn());
+%
+%    Example 3:
+%       [ticn,tocn] = util(corazito,'ticn','tocn');
 %       for (i=1:ticn(10000)) A = magic(88); end; tocn();
 %    
-%    Example 3:
+%    Example 4:
 %       [ticn,tocn] = util(corazito,'ticn','tocn');
 %       for (i=1:ticn(10000)) A = magic(88); end; tocn('A = magic(88)');
 %

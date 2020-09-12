@@ -330,10 +330,10 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
 end
 
 %==========================================================================
-% Analyse Menu Plugins
+% Study Menu Plugins
 %==========================================================================
 
-function oo = Study(o)                 % Study Menu Plugin            
+function oo = Study(o)                 % Study Menu Plugin             
 %
 % STUDY   Add Study menu items
 %
@@ -354,9 +354,13 @@ function oo = Study(o)                 % Study Menu Plugin
    ooo = mitem(oo,'Transfer Matrix');
    oooo = mitem(ooo,'Double',{@Callback,'TrfmDouble'});
    oooo = mitem(ooo,'Rational',{@Callback,'TrfmRational'});   
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Arithmetics');
+   oooo = mitem(ooo,'Quick',{@Quick});
 end
 
-function o = PhiDouble(o)              % Rational Transition Matrix
+function o = PhiDouble(o)              % Rational Transition Matrix    
    refresh(o,{@menu,'About'});         % don't come back here!!!
    
    oo = current(o);
@@ -401,7 +405,7 @@ function o = PhiDouble(o)              % Rational Transition Matrix
    fprintf('Transfer Matrix (calculated using double)\n');
    display(var(oo,'G'));
 end
-function o = PhiRational(o)            % Double Transition Matrix
+function o = PhiRational(o)            % Double Transition Matrix      
    message(o,'PhiRational: not yet implemented');
 end
 
@@ -412,6 +416,156 @@ end
 function o = TrfmRational(o)           % Rational Transfer Matrix      
    G = trfu(o,3,1);
    G
+end
+
+function o = Quick(o)                  % Quick Arithmetics Study       
+   RandInt;                            % reset random seed
+   O = base(corinth,10);
+   
+      % prepare numbers
+      
+   N = 1000;  M = 20;
+   for (i=1:N)
+      X{i} = RandDigits(O,M);
+      Y{i} = RandDigits(O,M);
+   end
+
+      % corinthian add benchmark
+      
+   tic
+   for (i=1:N)
+      Z{i} = add(O,X{i},Y{i});
+      assert(isequal(Z{i},Z{i}));
+   end
+   fprintf('corinthian add benchmark: %g us\n',toc/N*1e6);
+   
+      % quick add benchmark
+      
+   tic
+   for (i=1:N)                         % generate numbers
+      S{i} = qadd(O,X{i},Y{i});
+      assert(isequal(S{i},Z{i}));
+   end
+   fprintf('quick add benchmark: %g us\n',toc/N*1e6);
+   
+       % corinthian sub benchmark
+      
+   tic
+   for (i=1:N)
+      Z{i} = sub(O,X{i},Y{i});
+      assert(isequal(Z{i},Z{i}));
+   end
+   fprintf('corinthian sub benchmark: %g us\n',toc/N*1e6);
+   
+      % quick sub benchmark
+      
+   tic
+   for (i=1:N)                         % generate numbers
+      S{i} = qsub(O,X{i},Y{i});
+      assert(isequal(S{i},Z{i}));
+   end
+   fprintf('quick sub benchmark: %g us\n',toc/N*1e6);
+   
+      % corinthian mul benchmark
+      
+   tic
+   for (i=1:N)
+      Z{i} = mul(O,X{i},Y{i});
+      assert(isequal(Z{i},Z{i}));
+   end
+   fprintf('corinthian mul benchmark: %g us\n',toc/N*1e6);
+   
+      % quick mul benchmark
+      
+   tic
+   for (i=1:N)                         % generate numbers
+      S{i} = Qmul(O,X{i},Y{i});
+      assert(isequal(Z{i},S{i}));
+   end
+   fprintf('quick mul benchmark: %g us\n',toc/N*1e6);
+
+   % test done!
+      
+   fprintf('All Quick operations successful :-)\n');
+   
+   function oo = Qadd(o,x,y)           % Quick Addition                
+      b = o.data.base;
+      nx = length(x);  
+      ny = length(y);  
+      n = 1+max(nx,ny);
+      
+      x = [zeros(1,n-nx),x];
+      y = [zeros(1,n-ny),y];
+      
+      %abacus = [x; y];
+      
+      while (any(y~=0))
+         x = x+y;
+         y = (x >= b);
+         x = x - y*b;
+         y = [y(2:end), 0];
+         %abacus = [abacus; nan*x; x; y];        
+      end
+         
+      idx = find(x~=0);
+      if ~isempty(idx)
+         x(1:idx(1)-1) = [];
+      end
+      oo = x;
+   end
+   function z = Qmul(o,x,y)
+      sgn = +1;
+      if any(x < 0)
+         x = -x;  sgn = -sgn;
+      end      
+      if any(y < 0)
+         y = -y;  sgn = -sgn;
+      end
+      
+      z = conv(x,y);
+      z = sgn * qtrim(o,z);
+   end
+   function x = Qtrim(o,x)             % Quick Trim                    
+      b = o.data.base;      
+      c = floor(x/b);                  % carry
+      
+      while any(c)                     % while any non processed carry
+         x = [0 x-c*b];                % selective subtract carry*base
+         c = [c 0];                    % left shift carry 
+         x = x + c;                    % add shifted carry to result
+         c = floor(x/b);               % calculate new carry
+      end
+
+      idx = find(x~=0);
+      if ~isempty(idx)
+         x(1:idx(1)-1) = [];
+      end
+   end
+   function y = Digitize(o,x)          % Digitize Number               
+      b = o.data.base;
+
+      y = [];
+      while (x ~= 0)
+         y(end+1) = rem(x,b);
+         x = floor(x/b);
+      end
+      y = y(length(y):-1:1);
+   end
+   function z = RandDigits(o,m)        % Random Digits Generator       
+      z = [];
+      for (jj=1:m)
+         xpo = RandInt(8);
+         w = RandInt(10^xpo);
+         z = [z Digitize(o,w)];
+      end
+   end
+   function s = RandSign               % Random Sign                   
+      if (randn >= 0)
+         s = +1;
+      else
+         s = -1;
+      end
+   end
 end
 
 %==========================================================================
@@ -529,5 +683,18 @@ function ok = Trf                      % is TRF Class Supported?
       ok = true;
    catch
       ok = false;
+   end
+end
+function r = RandInt(n)                % Random Integer Number         
+%
+% RAND   Random number generation
+%
+%           r = Rand(6)                % random numbers in range 1..6
+%           Rand                       % reset random seed
+%
+   if (nargin == 0)
+      rng(0);                          % set random seed to zero
+   else
+      r = ceil(n*rand);
    end
 end

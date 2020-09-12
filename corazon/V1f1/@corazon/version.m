@@ -367,6 +367,7 @@ function VersionV1F
 % - add normalizing within cancelation of rational functions
 % - provide mandatory opt field during corinth construction
 % - double based transfer matrix calculation of an order 48 SPM object
+% - quick arithmetics: 1 million test passed :-)))
 %
 %
 % Known Bugs / Wishlist

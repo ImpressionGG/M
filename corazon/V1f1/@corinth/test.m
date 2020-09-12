@@ -60,7 +60,7 @@ end
 % Setup Test Menu
 %==========================================================================
 
-function oo = Menu(o)
+function oo = Menu(o)                  % Test Menu                     
    oo = mitem(o,'All',{@test,'All'});
    
    oo = mitem(o,'-');
@@ -168,6 +168,15 @@ function ok = General(o,b,x,y,k)       % Base 100 Example
    d = sub(o,x,z);                     % difference of x and y*q + r
    ok = ok && Check(o,d,0,'x = y*q + r (cross check)');
 
+      % check with quick arithmetics
+      
+   pp = qmul(o,y,q);
+   ok = ok && Check(o,pp,qmul(o,q,y),'y*q = q*y (commutativity)');
+   
+   zz = qadd(o,pp,r);
+   dd = sub(o,x,zz);                   % difference of x and y*q + r
+   ok = ok && Check(o,dd,0,'x = y*q + r (cross check)');
+   
       % verbose talking
 
    if (rem(k,1000)==0)
