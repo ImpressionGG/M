@@ -427,8 +427,7 @@ function ok = Gcd(o)                   % GCD Test
    %ok = ok && PolyGcd(o);             % polynomial GCD test 
 
    N = opt(o,{'number.gcd',4});        % number of GCD test loops
-   M = N+2;
-M=N;   
+   M = N+2;  
    
    for (i=1:N)
       b = 10^RandInt(6);

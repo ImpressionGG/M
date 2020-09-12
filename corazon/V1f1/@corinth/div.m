@@ -198,7 +198,8 @@ function [q,r] = Division(o,x,y,verbose,run)   % Division Helper
       % note that if y(2:end) is non zero then q*y could be greater than x!
       % in such cases we have to reduce q until q*y <= x fits
    
-   p = Mul(o,q,y);
+%  p = Mul(o,q,y);
+   p = qmul(o,q,y);
    a = 0.2;                            % some stupid decay factor
    guess = 0;                          % init guess iterations
    
@@ -206,7 +207,8 @@ function [q,r] = Division(o,x,y,verbose,run)   % Division Helper
       % whether we are faced with such case ...
       
    if (comp(o,p,x) <= 0)
-      pp = add(o,p,y);
+%     pp = add(o,p,y);
+      pp = qadd(o,p,y);
       if (comp(o,pp,x) <= 0)
          p = pp;
          q = q+1;
@@ -221,13 +223,15 @@ function [q,r] = Division(o,x,y,verbose,run)   % Division Helper
          % now decrement estimated quotient and see where we are
          
       q = q-1;                         % decrement quotien
-      p = Mul(o,q,y);
+%     p = Mul(o,q,y);
+      p = qmul(o,q,y);
       
          % in addition try a much bigger decay by reducing q by the
          % factor (1-a), i.e. qq = (1-a)*q. 
          
       qq = floor((1-a)*q);             % do some stupid decay
-      pp = Mul(o,qq,y);
+%     pp = Mul(o,qq,y);
+      pp = qmul(o,qq,y);
 
          % if this works out well we can take over q = qq, otherwise the
          % decay factor a was too big and we reduce a = a/2 to be better
@@ -246,7 +250,8 @@ function [q,r] = Division(o,x,y,verbose,run)   % Division Helper
    
       % now we have q*y < = x and we can calculate the remainder
       
-   r = sub(o,x,p);
+%  r = sub(o,x,p);
+   r = qsub(o,x,p);
    r = [zeros(1,nx-length(r)),r];      % let's have nx digits for r
    
       % final assertion: quotient q must be a digit
@@ -617,7 +622,7 @@ function Trace(o,guess,run)            % Excess Division Tracing
    count = count + 1;  
    guesses = guesses + 1+guess;
    
-   if (rem(count,2000)==0 || guess >= 2)
+   if (rem(count,10000)==0 || guess >= 2)
       excess = o.rd((guesses/count-1)*100,2);   % excess guess ratio [%]
       fprintf('   #%g: div excess guesses: %g (%g%%)\n',count,guess,excess);
    end

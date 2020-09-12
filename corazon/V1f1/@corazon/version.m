@@ -368,6 +368,7 @@ function VersionV1F
 % - provide mandatory opt field during corinth construction
 % - double based transfer matrix calculation of an order 48 SPM object
 % - quick arithmetics: 1 million test passed :-)))
+% - super speed-up of gcd with quick arithmetics
 %
 %
 % Known Bugs / Wishlist
