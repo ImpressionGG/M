@@ -175,9 +175,10 @@ function Poly(o)                       % Display Polynomial
 
    str = PolyString(o,coeff,'s');
    if (size(str,1) == 1)
-      fprintf('\n   polynomial(%g):  %s\n\n',order(o),str);
+      fprintf('\n   polynomial(%g#%g):  %s\n\n',order(o),digits(o),str);
    else
-      fprintf('\n   polynomial (order %g)\n\n',order(o));
+      fprintf('\n   polynomial (order %g, digits: #%g)\n\n',...
+              order(o),digits(o));
       for (i=1:size(str,1))
          fprintf('      %s\n',str(i,:));
       end

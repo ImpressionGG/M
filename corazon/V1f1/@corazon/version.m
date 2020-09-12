@@ -364,6 +364,7 @@ function VersionV1F
 % - bug fixed: corinth/div: args were not trimmed
 % - add peek/poke functionality for matrix
 % - bug fixed in can/Matrix and trim/Matrix
+% - add normalizing within cancelation of rational functions
 %
 % Known Bugs / Wishlist
 % - corazon/shell and corazon/rapid generated shells do not refresh

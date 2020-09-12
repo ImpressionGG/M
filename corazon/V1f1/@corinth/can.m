@@ -148,12 +148,18 @@ function oo = CanRatio(o)              % Cancel Ratio
 
    if (order(y) > 0)
       cf = gcd(x,y);
-      if ~iseye(cf) && ~iszero(cf)  
-         [x,r] = div(x,cf);            % cancel common factor
-         assert(iszero(r));
+      if ~iseye(cf) && ~iszero(cf) 
+         if order(cf) > 0
+            [x,r] = div(x,cf);            % cancel common factor
+            assert(iszero(r));
 
-         [y,r] = div(y,cf);            % cancel common factor
-         assert(iszero(r));
+            [y,r] = div(y,cf);            % cancel common factor
+            assert(iszero(r));
+         end
+         
+            % normalize to highest denominator coefficient = 1
+            
+         [x,y] = Normalize(o,x,y);
       end
    end
 
@@ -172,6 +178,35 @@ function oo = CanRatio(o)              % Cancel Ratio
    end
 
    oo = poke(o,e,x,y);
+   
+   function [x,y] = Normalize(o,x,y)   % Normalize Rational Function 
+      x = trim(touch(x));
+      y = trim(touch(y));
+
+         % pick n-th denominator coefficient 
+         
+      n = order(y);
+      cn = peek(y,n);
+      assert(~iszero(cn));
+
+         % normalize denominator
+         
+      for (k=0:n-1)
+         ck = peek(y,k);            % k-th demoniator coefficient
+         ck = div(ck,cn);           % normaize k-th coeff
+         y = poke(y,ck,k);          % poke back normalized
+      end
+      poke(y,number(o,1),n);        % poke a one to n-th denominator coeff
+
+         % normalize numerator
+         
+      m = order(x);
+      for (k=0:m)
+         ck = peek(x,k);            % k-th demoniator coefficient
+         ck = div(ck,cn);           % normaize k-th coeff
+         x = poke(x,ck,k);          % poke back normalized
+      end
+   end
 end
 
 %==========================================================================
