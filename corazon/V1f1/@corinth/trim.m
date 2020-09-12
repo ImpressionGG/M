@@ -177,7 +177,7 @@ function o = Matrix(o)                 % Trim Matrix
 
    for (i=1:m)
       for (j=1:n)
-         oo = Ratio(M{i,j});
+         oo = trim(M{i,j});
          M{i,j} = oo;
       end
    end

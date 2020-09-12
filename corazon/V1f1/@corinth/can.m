@@ -23,8 +23,7 @@ function [o1,o2] = can(o,x,y)          % Cancel Common Factors
 %       See also: CORINTH, TRIM, FORM, GCDs
 %
    if (nargin == 1)
-      canceled = work(o,'can');        % object already cancelled?
-      if isequal(canceled,true)
+      if isequal(work(o,'can'),1)      % object already cancelled?
          o1 = o;
          return                        % object already canceled - bye!
       end
@@ -187,7 +186,7 @@ function o = CanMatrix(o)              % Cancel Matrix
 
    for (i=1:m)
       for (j=1:n)
-         oo = CanRatio(M{i,j});
+         oo = can(M{i,j});
          M{i,j} = oo;
       end
    end

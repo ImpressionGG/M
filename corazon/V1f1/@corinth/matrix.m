@@ -1,4 +1,4 @@
-function oo = matrix(o,M)
+function oo = matrix(o,M)              % Construct Corinthian Matrix   
 %
 % MATRIX Construct a matrix of rational functions
 %
@@ -103,7 +103,7 @@ end
 % Cast Corinthian Object To a Matrix of Rational Functions
 %==========================================================================
 
-function oo = Cast(o)
+function oo = Cast(o)                  % Cast Corinthian Matrix        
    switch o.type
       case 'number'
          num = poly(o);  den = poly(o,1);

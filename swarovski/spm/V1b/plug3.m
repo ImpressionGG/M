@@ -18,7 +18,7 @@ function oo = plug3(o,varargin)        % SPM Plugins
 %
    [gamma,oo] = manage(o,varargin,@Setup,@Register,@Menu,@Basket,...
                        @Callback,@New,@Simu,@Plot,@Stream,@Step,@Ramp,...
-                       @ForceRamp,@AnalyseRamp,@NormRamp);
+                       @ForceRamp,@AnalyseRamp,@NormRamp,@TransferMatrix);
    oo = gamma(oo);
 end              
 
@@ -272,6 +272,9 @@ function oo = Analyse(o)               % Analyse Menu Setup
 
    ooo = mitem(oo,'Normalized System');
    oooo = mitem(ooo,'Force Ramp @ F2',{@Callback,'NormRamp'},2);
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Transfer Matrix',{@Callback,'TransferMatrix'});
 end
 function o = AnalyseRamp(o)            % Analyse Force Ramp            
    if ~o.is(type(o),{'spm'})
@@ -312,6 +315,10 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
    PlotY(oo);
    
    heading(o,sprintf('Analyse Force Ramp: F%g->y - %s',index,Title(o)));
+end
+function o = TransferMatrix(o)
+   G = trfu(o,3,1);
+   G
 end
 
 %==========================================================================

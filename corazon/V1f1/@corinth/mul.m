@@ -222,7 +222,7 @@ function oo = MulMatrix(o1,o2)         % Multiply Two Matrices
             fprintf('matrix product [%g,%g] of %gx%g ...\n',i,j,m1,n2);
          end
          
-         Mij = ratio(o1,0,1);
+         Mij = number(o1,0,1);
          for (k=1:n1)
             if (CorinthVerbose >= 2)
                fprintf('-> multiply term %g ...\n',k);

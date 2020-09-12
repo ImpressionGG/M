@@ -53,7 +53,7 @@ function oo = Partial(o)               % Partial Matrices of Modal Form
    oo = var(oo,'A11,A12,A21,A22',A11,A12,A21,A22);
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
 end
-function [num,den] = TrFu(o,i,j)       % Transfer Function             
+function oo = TrFu(o,i,j)              % Transfer Function             
 %
 % TRFFCT   Calculate transfer function Gij(s) according to
 %
@@ -89,7 +89,7 @@ function [num,den] = TrFu(o,i,j)       % Transfer Function
       % pick A21 and A22 diagonals
       % remember that psi_i(s) := s^2 + a1(i)*s + a0(i)
       
-   a1 = matrix(O,-diag(A21));   a0 = matrix(O,-diag(A22));
+   a1 = -diag(A21);   a0 = -diag(A22);
    
       % represent eta(s) = s^2 + k1*s + k0
       
@@ -104,27 +104,29 @@ function [num,den] = TrFu(o,i,j)       % Transfer Function
       % Now calculate transfer function Gij(s)
       % start with denominator: den(s) = prod(psi_i(s))
       
-   den = 1;
+   den = poly(O,1);
    for (k=1:n)
-      psi = Psi(k,:);
-      den = conv(den,psi);
+      psi = poly(O,Psi(k,:));
+      den = den*psi;
    end
    
       % numerator is the sum of Ci(k)*Bj(k) * den(s)/psi_k(s)
       
    num = 0;
    for (k=1:n)
-      poly = Ci(k)*Bj(k);
+      term = Ci(k)*Bj(k);
+      term = peek(term,1,1);
+      
       for (p=1:n)
          if (p == k)
             continue;                  % don't multiply with psi_k(s)
          end
-         psi = Psi(p,:);
-         poly = conv(poly,psi);
+         psi = poly(O,Psi(p,:));
+         term = term * psi;
       end
 
-      gap = zeros(1,length(poly)-length(num));
+      gap = zeros(1,length(term)-length(num));
       num = [gap, num];
-      num = num + poly;
+      num = num + term;
    end
 end

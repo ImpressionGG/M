@@ -46,7 +46,7 @@ end
 %==========================================================================
 
 function oo = ScalarPlusAny(os,oa)     % Scalar (os) Plus Any (oa)     
-   os = ratio(os);                     % cast scalar to a ratio
+   %os = ratio(os);                    % cast scalar to a ratio
    
    if isequal(oa.type,'matrix')        % in case oa is a matrix
       M = oa.data.matrix;
@@ -59,7 +59,8 @@ function oo = ScalarPlusAny(os,oa)     % Scalar (os) Plus Any (oa)
       oo = oa;
       oo.data.matrix = M;
    else                                % otherwise oa is a scalar too 
-      oa = ratio(oa);                  % cast oa to a ratio    
+      %oa = ratio(oa);                 % cast oa to a ratio    
+      [os,oa] = Cast(os,oa);
       oo = add(os,oa);                 % add the two ratios
    end
 end
@@ -94,4 +95,55 @@ function oo = MatrixPlusMatrix(o1,o2)  % Matrix Plus Matrix
 
    oo = corinth(o1,'matrix');
    oo.data.matrix = M;
+end
+
+%==========================================================================
+% Cast to Same Types
+%==========================================================================
+
+function [o1,o2] = Cast(o1,o2)
+   kind = max(Kind(o1),Kind(o2));
+   switch kind
+      case 1
+         if ~isequal(o1.type,'number')
+            o1 = number(o1);
+         end
+         if ~isequal(o2.type,'number')
+            o2 = number(o2);
+         end
+         
+      case 2
+         if ~isequal(o1.type,'poly')
+            o1 = poly(o1);
+         end
+         if ~isequal(o2.type,'poly')
+            o2 = poly(o2);
+         end
+
+      case 3
+         if ~isequal(o1.type,'ratio')
+            o1 = ratio(o1);
+         end
+         if ~isequal(o2.type,'ratio')
+            o2 = ratio(o2);
+         end
+         
+      otherwise
+         error('internal');
+   end
+
+   function kind = Kind(o)
+      switch o.type
+         case 'number'
+            kind = 1;
+         case 'poly'
+            kind = 2;
+         case 'ratio'
+            kind = 3;
+         case 'matrix'
+            kind = 4;
+         otherwise
+            kind = NaN;
+      end
+   end
 end
