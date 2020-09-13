@@ -1,14 +1,16 @@
-function oo = brew(o,varargin)
+function oo = brew(o,varargin)         % SPM Brew Method               
 %
 % BREW   Brew data
 %
 %           oo = brew(o);                   % brew all
 %
+%           oo = brew(o,'Data')             % brew up data
 %           oo = brew(o,'Normalize',T0)     % brew time scaled system
 %           oo = brew(o,'Partial')          % brew partial matrices
 %           oo = brew(p,'TrfMatrix')        % brew transfer matrix
 %
-   [gamma,oo] = manage(o,varargin,@Brew,@Normalize,@Partial,@TrfMatrix);
+   [gamma,oo] = manage(o,varargin,@Brew,@Data,@Normalize,@Partial,...
+                                  @TrfMatrix);
    oo = gamma(oo);
 end              
 
@@ -21,9 +23,25 @@ function oo = Brew(o)                  % Brew All
    oo = Normalize(oo);                 % first normalize the system
 end
 
+function oo = Data(o)
+   oo = o;                             % copy to out arg
+   A = get(oo,'system.A');
+   
+   ev = eig(A);       % eigenvalues
+   t = 1:length(ev);
+   x = real(ev);
+   y = imag(ev);
+   [~,idx] = sort(abs(imag(ev)));
+   
+   oo.data.t = t;
+   oo.data.x = x(idx)';
+   oo.data.y = y(idx)';
+end
+
 %==========================================================================
 % Partial and Normalizing
 %==========================================================================
+
 function oo = Partial(o)               % Normalize System              
    [A,B,C] = get(o,'system','A,B,C');
 

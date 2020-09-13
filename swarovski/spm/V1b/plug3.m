@@ -16,8 +16,9 @@ function oo = plug3(o,varargin)        % SPM Plugins
 %
 %          See also: SPM, PLUGIN, SAMPLE
 %
-   [gamma,oo] = manage(o,varargin,@Setup,@Register,@Menu,@Basket,...
-                       @Callback,@New,@Simu,@Plot,@Stream,@Step,@Ramp,...
+   [gamma,oo] = manage(o,varargin,@Setup,@Register,@Menu,@About,...
+                       @WithSho,@WithCuo,@WithBsk,...
+                       @New,@Simu,@Plot,@Stream,@Step,@Ramp,...
                        @ForceRamp,@AnalyseRamp,@NormRamp,...
                        @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational);
    oo = gamma(oo);
@@ -36,32 +37,67 @@ function o = Register(o)               % Plugin Registration
    plugin(o,[tag,'/menu/End'],{mfilename,'Menu'});
    plugin(o,[tag,'/current/Select'],{mfilename,'Menu'});
 end
-function oo = Callback(o)              % General Callback              
+
+%==========================================================================
+% Launch Callbacks
+%==========================================================================
+
+function oo = WithSho(o)               % 'With Shell Object' Callback  
 %
-% CALLBACK   A general callback with refresh function redefinition, 
-%            screen clearing, current object pulling and forwarding
-%            to the executing local function
+% WITHSHO General callback for operation on shell object
+%         with refresh function redefinition, screen
+%         clearing, current object pulling and forwarding to executing
+%         local function, reporting of irregularities, dark mode support
 %
    refresh(o,o);                       % remember to refresh here
    cls(o);                             % clear screen
-   
+ 
+   gamma = eval(['@',mfilename]);
+   oo = gamma(o);                      % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
+end
+function oo = WithCuo(o)               % 'With Current Object' Callback
+%
+% WITHCUO A general callback with refresh function redefinition, screen
+%         clearing, current object pulling and forwarding to executing
+%         local function, reporting of irregularities, dark mode support
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+ 
    oo = current(o);                    % get current object
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+  end
+  dark(o);                            % do dark mode actions
 end
-function o = Basket(o)                 % Acting on the Basket          
+function oo = WithBsk(o)               % 'With Basket' Callback        
 %
-% BASKET  Plot basket, or perform actions on the basket
+% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
+%          current object pulling and forwarding to executing local func-
+%          tion, reporting of irregularities and dark mode support
 %
    refresh(o,o);                       % use this callback for refresh
    cls(o);                             % clear screen
 
    gamma = eval(['@',mfilename]);
    oo = basket(o,gamma);               % perform operation gamma on basket
-   
+ 
    if ~isempty(oo)                     % irregulars happened?
       message(oo);                     % report irregular
    end
+   dark(o);                            % do dark mode actions
 end
 
 %==========================================================================
@@ -74,6 +110,118 @@ function o = Menu(o)                   % General Plugin Definitions
 %        ion. All it needs to be done is to locate a menu item by path and
 %        to insert a new menu item at this location.
 %
+   oo = File(o);                       % add File menu items
+   oo = Select(o);                     % add Select menu items
+   oo = Plot(o);                       % add Plot menu items
+   oo = Analyse(o);                    % add Analyse menu items
+   oo = Study(o);                      % add Study menu items
+end
+
+%==========================================================================
+% File Menu Plugins
+%==========================================================================
+
+function oo = File(o)                  % File Menu                     
+%
+% FILE   Add some File menu items
+%
+   oo = New(o);                        % adapt New menu
+end
+function oo = New(o)                   % New Menu                      
+%
+% NEW   Add some New menu items
+%
+   Invisible(o);                       % make some menu items invisible
+
+      % locate File>New menu, return if not locatable
+      
+   oo = mseek(o,{'#' 'File' 'New'});
+   if isempty(oo)
+      return
+   end
+   
+      % add some new menu items
+      
+   ooo = mitem(oo,'-');
+   ooo = mhead(oo,'Spm');
+   oooo = mitem(ooo,'Academic Sample',{@AcademicSample});
+   oooo = mitem(ooo,'3-Mode Sample',{@Mode3Sample});
+   
+   function o = Invisible(o)           % Make Some Menu Items Invisible
+      oo = mseek(o,{'#' 'File' 'New' 'Stuff'});
+      o.is(oo) && o.is(visible(oo,0));
+
+      oo = mseek(o,{'#' 'File' 'New' 'Spm'});
+      o.is(oo) && o.is(visible(oo,0));
+   end
+end
+function oo = AcademicSample(o)        % Academic Sample                
+   omega = [1 2 3]';                   % circular eigen frequencies
+   zeta = [0.1 0.15 0.2]';             % damping coefficients
+   
+   M = [0 -0.0072 -2.3e-11; 0.0071 0 0; 4.2e-11 -7e-11 0];
+   
+      % calculate system matrices
+      
+   a0 = omega.*omega;                  % a0 = [1 4 9]
+   a1 = 2*zeta.*omega;                 % a1 = [0.2 0.6 1.2]
+   
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a1) -diag(a0)];
+   B = [0*M; M];
+   C = [M' 0*M];
+   D = 0*M;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = 'Academic Sample';
+   
+   oo = set(oo,'system','A,B,C,D',A,B,C,D);
+
+   oo.data = [];                       % make a non-container object
+   oo = brew(oo,'Data');               % brew up object data
+   
+   paste(o,oo);
+end
+function oo = Mode3Sample(o)           % 3-Mode 3 Sample
+%
+% MODE3SAMPLE setup an 3-mode system according to the simulated sample
+%             exported from ANSYS
+%
+   a1 = 1e6*[7.8 47 225]';             % circular eigen frequencies
+   a0 = 1e6*[0.056 0.14 0.3]';         % damping coefficients
+   
+   M = [0 -0.0072 -2.3e-11; 0.0071 0 0; 4.2e-11 -7e-11 0]*1e3;
+   
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a1) -diag(a0)];
+   B = [0*M; M];
+   C = [M' 0*M];
+   D = 0*M;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = '3-Mode Sample';
+   
+   oo = set(oo,'system','A,B,C,D',A,B,C,D);
+   
+   oo.data = [];                       % make a non-container object
+   
+      % so far brew is not a method and we run danger to call the
+      % corazon/brew method instead of calling function brew. To fix this
+      % we cat o to corazita object (corazita has no brew method)
+      
+   O = corazita(oo);
+   oo = brew(O,'Data');                % brew up object data
+   
+   paste(oo);
+end
+
+%==========================================================================
+% Select Menu Plugins
+%==========================================================================
+
+function oo = Select(o)                % Select Menu                   
    oo = mseek(o,{'#','Select'});       % find Select rolldown menu
    if ~isempty(oo)
       ooo = Simu(oo);                  % add Simu parameter menu items
@@ -83,16 +231,7 @@ function o = Menu(o)                   % General Plugin Definitions
       ooo = Constrain(oo);             % add Constrain menu items
       ooo = Brew(oo);                  % add Brew menu items
    end
-   
-   oo = Plot(o);                       % add Plot menu items
-   oo = Analyse(o);                    % add Analyse menu items
-   oo = Study(o);                      % add Study menu items
 end
-
-%==========================================================================
-% Select Menu Plugins
-%==========================================================================
-
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %
 % SIMU   Add simulation parameter menu items
@@ -178,32 +317,52 @@ function oo = Plot(o)                  % Plot Menu Setup
 %
 % PLOT   Add Plot menu items
 %
-   oo = mseek(o,{'#','Plot'});         % find Select rolldown menu
+   Invisible(o);                       % make some menu items invisible
+
+      % locate Plot menu, return if not locatable
+      
+   o = mseek(o,{'#','Plot'});         % find Plot rolldown menu
    if isempty(oo)
       return
    end
    
+      % add other Plot menu items
+      
    types = {'shell','spm'};            % supported types
+
+   oo = mitem(o,'About',{@WithCuo,'About'});
    
-   oo = mitem(oo,'Response');
+   oo = mitem(o,'-');
+   oo = mitem(o,'Response');
         enable(oo,basket(o,types));
         
    ooo = mitem(oo,'Step Response');
-   oooo = mitem(ooo,'F1 Excitation',{@Callback,'Step'},1);
-   oooo = mitem(ooo,'F2 Excitation',{@Callback,'Step'},2);
-   oooo = mitem(ooo,'F3 Excitation',{@Callback,'Step'},3);
+   oooo = mitem(ooo,'F1 Excitation',{@WithCuo,'Step'},1);
+   oooo = mitem(ooo,'F2 Excitation',{@WithCuo,'Step'},2);
+   oooo = mitem(ooo,'F3 Excitation',{@WithCuo,'Step'},3);
 
    ooo = mitem(oo,'Ramp Response');
-   oooo = mitem(ooo,'F1 Excitation',{@Callback,'Ramp'},1);
-   oooo = mitem(ooo,'F2 Excitation',{@Callback,'Ramp'},2);
-   oooo = mitem(ooo,'F3 Excitation',{@Callback,'Ramp'},3);
+   oooo = mitem(ooo,'F1 Excitation',{@WithCuo,'Ramp'},1);
+   oooo = mitem(ooo,'F2 Excitation',{@WithCuo,'Ramp'},2);
+   oooo = mitem(ooo,'F3 Excitation',{@WithCuo,'Ramp'},3);
    
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Force Ramp @ F1',{@Callback,'ForceRamp'},1);
-   ooo = mitem(oo,'Force Ramp @ F2',{@Callback,'ForceRamp'},2);
-   ooo = mitem(oo,'Force Ramp @ F3',{@Callback,'ForceRamp'},3);   
+   ooo = mitem(oo,'Force Ramp @ F1',{@WithCuo,'ForceRamp'},1);
+   ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'ForceRamp'},2);
+   ooo = mitem(oo,'Force Ramp @ F3',{@WithCuo,'ForceRamp'},3);   
+
+   function o = Invisible(o)           % Make Some Menu Items Invisible
+      labels = {'X','Y','XY'};
+      for (i=1:length(labels))
+         oo = mseek(o,{'#','Plot',labels{i}});
+         o.is(oo) && o.is(visible(oo,0));
+      end
+   end
 end
 
+function oo = About(o)                 % Plot Abot Object
+   oo = menu(o,'About');
+end
 function o = Step(o)                   % Step Response                 
    if ~o.is(type(o),{'spm'})
       o = [];  return
@@ -282,11 +441,11 @@ function oo = Analyse(o)               % Analyse Menu Setup
    
    ooo = mitem(oo,'Ramp Analysis');
    enable(ooo,type(current(o),types));
-   oooo = mitem(ooo,'Force Ramp @ F2',{@Callback,'AnalyseRamp'},2);
+   oooo = mitem(ooo,'Force Ramp @ F2',{@WithCuo,'AnalyseRamp'},2);
 
    ooo = mitem(oo,'Normalized System');
    enable(ooo,type(current(o),types));
-   oooo = mitem(ooo,'Force Ramp @ F2',{@Callback,'NormRamp'},2);
+   oooo = mitem(ooo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
 end
 function o = AnalyseRamp(o)            % Analyse Force Ramp            
    if ~o.is(type(o),{'spm'})
@@ -317,8 +476,9 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
 
       % transform system
       
-   o = brew(o,'Normalize',1e-3);
-   
+   o = brew(o,'Normalize');
+   [A,B,C,D]=get(o,'system','A,B,C,D');% for debug
+
    oo = type(corasim(o),'css');        % cast and change type
    t = Time(oo);
    u = RampInput(oo,t,index,Fmax);
@@ -348,12 +508,12 @@ function oo = Study(o)                 % Study Menu Plugin
       % start building up new study menu
       
    ooo = mitem(oo,'Transition Matrix');
-   oooo = mitem(ooo,'Double',{@Callback,'PhiDouble'});
-   oooo = mitem(ooo,'Rational',{@Callback,'PhiRational'});
+   oooo = mitem(ooo,'Double',{@WithCuo,'PhiDouble'});
+   oooo = mitem(ooo,'Rational',{@WithCuo,'PhiRational'});
    
    ooo = mitem(oo,'Transfer Matrix');
-   oooo = mitem(ooo,'Double',{@Callback,'TrfmDouble'});
-   oooo = mitem(ooo,'Rational',{@Callback,'TrfmRational'});   
+   oooo = mitem(ooo,'Double',{@WithCuo,'TrfmDouble'});
+   oooo = mitem(ooo,'Rational',{@WithCuo,'TrfmRational'});   
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Arithmetics');

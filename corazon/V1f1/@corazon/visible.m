@@ -1,4 +1,4 @@
-function visible(o,arg2,types)
+function o = visible(o,arg2,types)
 %
 % VISIBLE  Set menu item visible or invisible
 %

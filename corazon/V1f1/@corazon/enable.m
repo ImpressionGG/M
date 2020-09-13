@@ -1,4 +1,4 @@
-function enable(o,arg2,types)
+function o = enable(o,arg2,types)
 %
 % ENABLE   Enable or disable menu item
 %

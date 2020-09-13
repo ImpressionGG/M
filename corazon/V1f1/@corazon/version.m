@@ -383,6 +383,7 @@ function VersionV1F
 % - set separator=[] during o=mitem(o,hdl) in corazita/corazon */mitem
 % - pimp corazon/mitem to support attribute changes of menu items
 % - updating Corazon V1F release notes
+% - plug3 to deactivate cleanly unused menu items and add useful
 %
 %
 % Known Bugs / Wishlist
