@@ -24,7 +24,7 @@ function oo = Brew(o)                  % Brew All
    oo = Normalize(oo);                 % first normalize the system
 end
 
-function oo = Eigen(o)
+function oo = Eigen(o)                 % Brew Eigenvalues             
    oo = o;                             % copy to out arg
    A = data(oo,'A');
    
@@ -37,8 +37,8 @@ function oo = Eigen(o)
       % store calculated stuff in cache
       
    oo = cache(oo,'eigen.index',i);
-   oo = cache(oo,'eigen.real',x);
-   oo = cache(oo,'eigen.imag',y);
+   oo = cache(oo,'eigen.real',x(idx));
+   oo = cache(oo,'eigen.imag',y(idx));
 end
 
 %==========================================================================

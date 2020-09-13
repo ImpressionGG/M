@@ -11,15 +11,19 @@ function vers = version(o,arg)       % SPMX Class Version
 % Features SPMX/V1A
 % ==================
 %
-% - Toolbox to analyse and study ...
+% - Toolbox to analyse and study SPM data based cutting process models
+% - SPM data comprises a state space model of a cutting setup (apparatus +
+%   kappl + crystal
 %
 %--------------------------------------------------------------------------
 %
 % Roadmap
 % =======
-% - roadmap item 1
-% - roadmap item 2
-% - roadmap item ...
+% - make basic function running
+% - comprehensive plotting of step and ramp responses
+% - make some samples (new menu) for good toolbox test test
+% - transfer matrix calculation
+% - comparison of system matrix simulation and transfer function responses
 %
 %--------------------------------------------------------------------------
 %
@@ -28,6 +32,7 @@ function vers = version(o,arg)       % SPMX Class Version
 %
 % - created: 13-Sep-2020 18:52:03
 % - move A,B,C,D from o.par.sys to o.data; introduce spmx/prew method;
+% - initial plot menu with eigenvalue plotting (Overview)  
 %
 %
 % Known bugs & wishlist

@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPMX Plot Method
 %        See also: SPMX, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                       @Overview,@PlotX,@PlotY,@PlotXY);
+                       @Overview,@About,@Real,@Imag,@Complex);
    oo = gamma(oo);
 end
 
@@ -27,15 +27,18 @@ function oo = Menu(o)                  % Setup Plot Menu
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
 %
+   oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'Overview',{@WithCuo,'Plot'});
    oo = mitem(o,'-');
-   oo = mitem(o,'X',{@WithBsk,'PlotX'});
-   oo = mitem(o,'Y',{@WithBsk,'PlotY'});
-   oo = mitem(o,'XY', {@WithBsk,'PlotXY'});
+   oo = mitem(o,'Eigenvalues');
+   ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
+   ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
 
    oo = Filter(o);                     % add Filter menu to Select menu
 end
-function oo = Filter(o)                % Add Filter Menu Items
+function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off
    setting(o,{'filter.type'},'LowPass2');
    setting(o,{'filter.bandwidth'},5);
@@ -141,88 +144,107 @@ function oo = Plot(o)                  % Default Plot
 
    cls(o);                             % clear screen
    switch o.type
-      case 'smp'
+      case 'spm'
          oo = Overview(o);
-      case 'alt'
-         oo = PlotXY(o);
       otherwise
-         oo = [];  return              % no idea how to plot
+         oo = plot(o,'About');         % no idea how to plot
    end
+end
+
+%==========================================================================
+% Plot Overview and About Object
+%==========================================================================
+
+function o = Overview(o)               % Plot Overview                 
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   o = cache(o,o,'eigen');             % hard refresh 'eigen' cache segment
+   
+   Real(o,[2 2 1]);
+   Imag(o,[2 2 3]);
+   Complex(o,[1 2 2]);
+
+   heading(o);
+end
+function oo = About(o)                 % About Object                  
+   oo = menu(o,'About');               % keep it simple
 end
 
 %==========================================================================
 % Local Plot Functions (are checking type)
 %==========================================================================
 
-function oo = Overview(o)              % Plot Overview                 
-   if ~o.is(o.type,{'smp','alt'})
-      oo = []; return                  % no idea how to plot this type
+function o = Real(o,sub)               % Plot Real Part of Eigenvalues  
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
    end
+   
+   if (nargin < 2)
+      sub = [1 1 1];                   % default subplot full canvas
+   end
+   subplot(o,sub);
+   
+   index = cache(o,'eigen.index');
+   real = cache(o,'eigen.real');
+   
+   plot(o,index,real,'r2');
 
-   oo = opt(o,'subplot',[2 2 1]);
-   PlotX(oo);
-
-   oo = opt(oo,'subplot',[2 2 3]);
-   oo = opt(oo,'title',' ');           % prevent from drawing a title
-   PlotY(oo);
-
-   oo = opt(oo,'subplot',[1 2 2]);
-   oo = opt(oo,'title','X/Y-Orbit');   % override title
-   PlotXY(oo);
-
+   title('Real Part of System Eigenvalues');
+   xlabel('index');  ylabel('real part');
+   
    heading(o);
 end
-function oo = PlotX(o)                 % Stream Plot X                 
+function o = Imag(o,sub)               % Plot Imag Part of Eigenvalues 
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   if (nargin < 2)
+      sub = [1 1 1];                   % default subplot full canvas
+   end
+   subplot(o,sub);
+   
+   index = cache(o,'eigen.index');
+   imag = cache(o,'eigen.imag');
+   
+   plot(o,index,imag,'g2');
+
+   title('Imaginary Part of System Eigenvalues');
+   xlabel('index');  ylabel('real part');
+  
+   heading(o);
+end
+function o = Complex(o,sub)            % Eigenvalues in Complex Plane                
    if ~type(o,{'spm'})
       oo = plot(o,'About');
       return                           % no idea how to plot this type
    end
 
-   oo = Stream(o,'real','r');
-   heading(o);
-end
-function oo = PlotY(o)                 % Stream Plot Y                 
-   if ~type(o,{'spm'})
-      oo = []; return                  % no idea how to plot this type
+   if (nargin < 2)
+      sub = [1 1 1];                   % default subplot full canvas
    end
+   subplot(o,sub);
+   
+   real = cache(o,'eigen.real');
+   imag = cache(o,'eigen.imag');
 
-   oo = Stream(o,'y','bc');
-   heading(o);
-end
-function oo = PlotXY(o)                % Scatter Plot                  
-   if ~type(o,{'spm'})
-      oo = []; return                  % no idea how to plot this type
-   end
+   plot(o,real,imag,'yyyrx');
+   hold on;
+   plot(o,real,imag,'yyyro');
 
-   x = cache(o,'eigen.real');
-   x = cache(o,'eigen.imag');
-
-   oo = corazon(o);
-   oo = opt(oo,'color',opt(o,'style.scatter'));
-   plot(oo,x,y,'ko');
-%  set(gca,'DataAspectRatio',[1 1 1]);
-   title('Eigenvalue Location');
+   title('Eigenvalues in Complex Plane');
    xlabel('real part');  ylabel('imaginary part');
 
+%  set(gca,'DataAspectRatio',[1 1 1]);
    heading(o);
 end
 
 %==========================================================================
-% Plot Helpers (no more type check)
+% Helper
 %==========================================================================
 
-function oo = Stream(o,seg,sym,col)    % Stream Plot                   
-   i = cache(o,'eigen.index');
-   d = cache(o,['eigen.',sym]);
-   
-   plot(o,i,d,col);
-
-   if o.is(sym,'x')
-      title('Real Part of System Eigenvalues');
-      ylab = 'real part';
-   else
-      title('Imaginary Part of System Eigenvalues');
-      ylab = 'imaginary part';
-   end
-   xlabel('index');  ylabel(ylab);
-end
