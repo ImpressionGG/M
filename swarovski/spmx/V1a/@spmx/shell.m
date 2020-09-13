@@ -15,7 +15,7 @@ function o = Shell(o)                  % Shell Setup
    oo = File(o);                       % add File menu
    oo = menu(o,'Edit');                % add Edit menu
    oo = View(o);                       % add View menu
-   oo = menu(o,'Select');              % add Select menu
+   oo = Select(o);                     % add Select menu
    oo = Plot(o);                       % add Plot menu
    oo = Analyse(o);                    % add Analyse menu
    oo = Study(o);                      % add Study menu
@@ -114,6 +114,42 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Style');             % add plot style sub menu
 
    plugin(o,'spmx/shell/View');       % plug point
+end
+
+%==========================================================================
+% Select Menu
+%==========================================================================
+
+function oo = Select(o)                % Select Menu                   
+   oo = menu(o,'Select');              % add Select menu
+   ooo = Filter(oo);                   % add Filter sub menu
+end
+function oo = Filter(o)                % Add Filter Menu Items         
+   setting(o,{'filter.mode'},'raw');   % filter mode off
+   setting(o,{'filter.type'},'LowPass2');
+   setting(o,{'filter.bandwidth'},5);
+   setting(o,{'filter.zeta'},0.6);
+   setting(o,{'filter.method'},1);
+
+   oo = o;
+   ooo = mitem(oo,'-');
+
+   ooo = mhead(oo,'Filter');
+   oooo = mitem(ooo,'Mode','','filter.mode');
+   choice(oooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
+                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Type',{},'filter.type');
+   choice(oooo,{{'Order 2 Low Pass','LowPass2'},...
+                {'Order 2 High Pass','HighPass2'},...
+                {'Order 4 Low Pass','LowPass4'},...
+                {'Order 4 High Pass','HighPass4'}},{});
+   oooo = mitem(ooo,'Bandwidth',{},'filter.bandwidth');
+   charm(oooo,{});
+   oooo = mitem(ooo,'Zeta',{},'filter.zeta');
+   charm(oooo,{});
+   oooo = mitem(ooo,'Method',{},'filter.method');
+   choice(oooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
 
 %==========================================================================

@@ -1,4 +1,4 @@
-function oo = plot(o,varargin)         % SPMX Plot Method
+function oo = plot(o,varargin)         % SPMX Plot Method              
 %
 % PLOT   SPMX plot method
 %
@@ -14,7 +14,8 @@ function oo = plot(o,varargin)         % SPMX Plot Method
 %        See also: SPMX, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                       @Overview,@About,@Real,@Imag,@Complex);
+                       @Overview,@About,@Real,@Imag,@Complex,...
+                       @ForceRamp,@AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
 
@@ -22,7 +23,7 @@ end
 % Plot Menu
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Plot Menu
+function oo = Menu(o)                  % Setup Plot Menu               
 %
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
@@ -36,34 +37,26 @@ function oo = Menu(o)                  % Setup Plot Menu
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
 
-   oo = Filter(o);                     % add Filter menu to Select menu
-end
-function oo = Filter(o)                % Add Filter Menu Items         
-   setting(o,{'filter.mode'},'raw');   % filter mode off
-   setting(o,{'filter.type'},'LowPass2');
-   setting(o,{'filter.bandwidth'},5);
-   setting(o,{'filter.zeta'},0.6);
-   setting(o,{'filter.method'},1);
-
-   oo = mseek(o,{'#','Select'});
    ooo = mitem(oo,'-');
-
-   ooo = mitem(oo,'Filter');
-   oooo = mitem(ooo,'Mode','','filter.mode');
-   choice(oooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   oooo = mitem(ooo,'-');
-   oooo = mitem(ooo,'Type',{},'filter.type');
-   choice(oooo,{{'Order 2 Low Pass','LowPass2'},...
-                {'Order 2 High Pass','HighPass2'},...
-                {'Order 4 Low Pass','LowPass4'},...
-                {'Order 4 High Pass','HighPass4'}},{});
-   oooo = mitem(ooo,'Bandwidth',{},'filter.bandwidth');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Zeta',{},'filter.zeta');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Method',{},'filter.method');
-   choice(oooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
+   ooo = StepResponse(o);              % step response sub-menu
+   ooo = RampResponse(o);              % ramp response sub-menu
+end
+function oo = StepResponse(o)          % Step Response Menu            
+   oo = mitem(o,'Step Response');
+   oo = mitem(oo,'F1 Excitation',{@WithCuo,'Step'},1);
+   oo = mitem(oo,'F2 Excitation',{@WithCuo,'Step'},2);
+   oo = mitem(oo,'F3 Excitation',{@WithCuo,'Step'},3);
+end
+function oo = RampResponse(o)          % Ramp Response Menu            
+   oo = mitem(o,'Ramp Response');
+   ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Ramp'},1);
+   ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Ramp'},2);
+   ooo = mitem(oo,'F3 Excitation',{@WithCuo,'Ramp'},3);
+ 
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Force Ramp @ F1',{@WithCuo,'ForceRamp'},1);
+   ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'ForceRamp'},2);
+   ooo = mitem(oo,'Force Ramp @ F3',{@WithCuo,'ForceRamp'},3);   
 end
 
 %==========================================================================
@@ -174,10 +167,10 @@ function oo = About(o)                 % About Object
 end
 
 %==========================================================================
-% Local Plot Functions (are checking type)
+% Plot Eigenvalues
 %==========================================================================
 
-function o = Real(o,sub)               % Plot Real Part of Eigenvalues  
+function o = Real(o,sub)               % Plot Real Part of Eigenvalues 
    if ~type(o,{'spm'})
       plot(o,'About');
       return                           % no idea how to plot this type
@@ -242,6 +235,60 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
 
 %  set(gca,'DataAspectRatio',[1 1 1]);
    heading(o);
+end
+
+%==========================================================================
+% Plot Menu Plugins
+%==========================================================================
+
+function o = Step(o)                   % Step Response                 
+   if ~o.is(type(o),{'spm'})
+      o = [];  return
+   end
+   
+   oo = type(cast(o,'corasim'),'css');
+   
+   index = arg(o,1);
+   t = Time(o);
+   u = StepInput(oo,t,index);
+
+   oo = sim(oo,u,[],t);
+   plot(oo);
+   heading(o,sprintf('Step Response: F%g->y (%s)',index,Title(o)));
+end
+function o = Ramp(o)                   % Ramp Response                 
+   if ~o.is(type(o),{'spm'})
+      o = [];  return
+   end
+   
+   oo = type(cast(o,'corasim'),'css');
+   
+   index = arg(o,1);
+   t = Time(o);
+   u = RampInput(oo,t,index);
+
+   oo = sim(oo,u,[],t);
+   plot(oo);
+   
+   heading(o,sprintf('Ramp Response: F%g->y (%s)',index,Title(o)));
+end
+
+function o = ForceRamp(o)              % Force Ramp Response           
+   if ~o.is(type(o),{'spm'})
+      o = [];  return
+   end
+   
+   oo = type(cast(o,'corasim'),'css');
+   
+   index = arg(o,1);                   % get force component index
+   Fmax = opt(o,{'Fmax',100});
+   t = Time(o);
+   u = RampInput(oo,t,index,Fmax);
+   
+   oo = sim(oo,u,[],t);
+   PlotY(oo);
+   
+   heading(o,sprintf('Ramp Response: F%g->y - %s',index,Title(o)));
 end
 
 %==========================================================================

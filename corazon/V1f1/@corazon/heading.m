@@ -33,7 +33,6 @@ function hdl = heading(o,msg)
             delete(kid);
          end
       end
-      
    end
 
    oldhax = gca;                       % save current axes
@@ -62,4 +61,5 @@ function hdl = heading(o,msg)
    shelf(o,hax,'closeup',false);       % prevents closeup control
    
    axes(oldhax);                       % restore old axes
+   dark(o,'Axes');
 end
