@@ -335,8 +335,18 @@ function VersionV1F
 % Release Notes Corazon/V1F
 % =========================
 %
-% - Pretty polynomial display
+% - Bug free functionality of corinth class including pretty display of
+%   polynomials, rational functions and corinthian matrices. comprehen-
+%   sive peek/poke functionality to access object parts. extensive test
+%   functionality and a corinth shell for analysing and testing
 %
+% - extension of corazon/display method with second argument to display
+%   other class objects (e.g used for corinth objects, which have usually
+%   their own display method but shell objects are displayed in the usual
+%   corazon format
+%
+% - extension of corazon/mitem to support easy change of menu item attri-
+%   butes, e.g
 %
 % Change Log V1f:
 %
@@ -372,6 +382,7 @@ function VersionV1F
 % - replace o = mitem(o) syntax by o = mitem(o,gcf) syntax
 % - set separator=[] during o=mitem(o,hdl) in corazita/corazon */mitem
 % - pimp corazon/mitem to support attribute changes of menu items
+% - updating Corazon V1F release notes
 %
 %
 % Known Bugs / Wishlist
