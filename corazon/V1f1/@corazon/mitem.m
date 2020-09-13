@@ -24,6 +24,7 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %
 %       hdl = mitem(o,inf)             % get graphics handle
 %       o = mitem(o,hdl)               % set graphics handle
+%       o = mitem(o,gcf)               % set up as a figure root
 %
 %    Choice functionality:
 %
@@ -33,6 +34,14 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %       oo = mitem(o,'View');
 %       ooo = mitem(oo,'Color','view.color');
 %       choice(ooo,{{'Red','r'},{'Blue','b'}}});   % no refresh
+%
+%    Get/Set menu item stuff
+%
+%      oo = mseek(o,{'#' 'Plot' 'Overview})
+%      stuff = mitem(oo)              % get mitem stuff
+%
+%      stuff = {'Overview',{@plot 'MyOvw},1,'visible','on','enable','on'}
+%      mitem(oo,stuff)                % set menu item stuff
 %
 %    Alternatively
 %
@@ -111,7 +120,8 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %   
    while (nargin == 2) && ~ischar(label)
       hdl = label;                     % label is a graphics handle
-      if isinf(hdl)
+      %if isinf(hdl)
+      if isequal(hdl,inf)
          oo = work(o,'mitem');
       else
          oo = work(o,'mitem',hdl);
@@ -178,6 +188,15 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %
 % handle separator
 %
+end
+
+%==========================================================================
+% Get/Set Menu Stuff
+%==========================================================================
+
+function bag = Get(o)                  % Get Menu Item Stuff           
+end
+function Set(o,bag)                    % Set Menu Item Stuff           
 end
 
 %==========================================================================

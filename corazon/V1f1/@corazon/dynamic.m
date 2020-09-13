@@ -148,7 +148,8 @@ function ShowMenus(o,oo);              % Dynamic Menu Show
    %  return
    %end
    
-   o = mitem(o);                       % setup as a figure root
+%  o = mitem(o);                       % setup as a figure root
+   o = mitem(o,gcf);                   % setup as a figure root
    fig = figure(o);                    % get seek root handle
    for (i=1:length(slist))
       label = slist{i};                % get i-th label

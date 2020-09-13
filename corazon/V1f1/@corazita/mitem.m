@@ -17,8 +17,9 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %
 %    Get/set graphics handle
 %
-%       hdl = work(o,'mitem')          % get graphics handle
-%       o = work(o,'mitem',hdl)        % set graphics handle
+%       hdl = mitem(o,inf)             % get graphics handle
+%       o = mitem(o,hdl)               % set graphics handle
+%       o = mitem(o,gcf)               % set graphics root (figure)
 %
 %    Copyright(c): Bluenetics 2020 
 %
@@ -37,6 +38,19 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
       end
       oo = work(o,tag,h);
       return
+   end
+% Two input args and arg2 is not a string
+% a) hdl = mitem(o,inf) % get graphics handle
+% b) o = mitem(o,hdl) % set graphics handle
+%   
+   while (nargin == 2) && ~ischar(label)
+      hdl = label;                     % label is a graphics handle
+      if isequal(hdl,inf)
+         oo = work(o,'mitem');
+      else
+         oo = work(o,'mitem',hdl);
+      end
+      return      
    end
 %
 % Intermezzo with separator

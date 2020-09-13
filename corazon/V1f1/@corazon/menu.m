@@ -51,7 +51,7 @@ function oo = menu(o,varargin)         % Corazon Menu Building Blocks
 %        See also: CORAZON, SHELL, MITEM, CHECK, CHOICE, CHARM
 %
    [gamma,o] = manage(o,varargin,@Begin,@End,@Dynamic,@Bar,@File,@Open,...
-                     @Save,@Edit,@LaunchCb,@CopyCb,@CutCb,@ClearCb,...
+                     @New,@Save,@Edit,@LaunchCb,@CopyCb,@CutCb,@ClearCb,...
                      @PasteCb,@View,@Grid,@Dark,@Style,...
                      @Select,@Objects,@Organize,@Basket,@Class,@Type,...
                      @Plot,@Title,@Home,@About,@What,@Page,@Gallery,...
@@ -138,7 +138,20 @@ function oo = File(o)                  % File Menu
    ooo = menu(oo,'Exit');              % add Exit menu item
    o.profiler('File',0);
 end
-function oo = Open(o)                  % Add Open Menu Item            
+function oo = New(o)                   % Add New Menu                  
+   oo = mhead(o,'New');                % Add New Menu item head
+%  oo = mitem(o,'New');                % Add New Menu item head
+   ooo = mitem(oo,'Shell',{@ShellCb}); % open another corazon shell
+   return
+   
+   function oo = ShellCb(o)            % Shell Callback                
+      tag = class(o);
+      oo = eval(tag);                  % new empty container object
+      oo.type = o.type;                % copy type
+      launch(oo);                      % launch a new shell
+   end
+end
+function oo = Open(o)                  % Add Open Menu Item
    oo = mitem(o,'Open ...',{@OpenCallback});
    return
    

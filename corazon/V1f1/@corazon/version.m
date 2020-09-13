@@ -369,6 +369,7 @@ function VersionV1F
 % - double based transfer matrix calculation of an order 48 SPM object
 % - quick arithmetics: 1 million test passed :-)))
 % - super speed-up of gcd with quick arithmetics
+% - replace o = mitem(o) syntax by o = mitem(o,gcf) syntax
 %
 %
 % Known Bugs / Wishlist

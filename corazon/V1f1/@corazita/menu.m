@@ -66,7 +66,8 @@ function oo = Begin(o)                 % Begin Menu
       setting(o,opts);                 % initialize settings with options
       o = push(o);                     % push object into figure
    end
-   oo = mitem(o);                      % init for top level (figure handle)
+   %oo = mitem(o);                     % init for top level (figure handle)
+   oo = mitem(o,gcf);                  % init for top level (figure handle)
 end  
 function oo = End(o)                   % End Menu Setup                
    if ~var(o,{'rebuild',0})            % if not a menu rebuild process
@@ -94,8 +95,8 @@ function oo = File(o)                  % File Menu
    ooo = menu(oo,'Exit');              % add Exit menu item
 end
 function oo = New(o)                   % Add New Menu                  
-   oo = mhead(o,'New');                % Add New Menu item head
-%  oo = mitem(o,'New');                % Add New Menu item head
+%  oo = mhead(o,'New');                % Add New Menu item head
+   oo = mitem(o,'New');                % Add New Menu item head
    ooo = mitem(oo,'Shell',{@ShellCb}); % open another corazon shell
    return
    
