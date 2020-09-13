@@ -370,6 +370,7 @@ function VersionV1F
 % - quick arithmetics: 1 million test passed :-)))
 % - super speed-up of gcd with quick arithmetics
 % - replace o = mitem(o) syntax by o = mitem(o,gcf) syntax
+% - set separator=[] during o=mitem(o,hdl) in corazita/corazon */mitem
 %
 %
 % Known Bugs / Wishlist

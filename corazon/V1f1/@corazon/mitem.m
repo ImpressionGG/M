@@ -64,8 +64,8 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
       if (nargout == 0)
          Show(o);                      % show menu item info
       else
-         h = gcf;
-         oo = work(o,tag,h);
+         %h = gcf;
+         %oo = work(o,tag,h);
          separator = [];               % reset separator
       end
       o.profiler('mitem',0);           % end profiling
@@ -125,6 +125,7 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
          oo = work(o,'mitem');
       else
          oo = work(o,'mitem',hdl);
+         separator = [];               % reset separator
       end
       o.profiler('mitem',0);           % end profiling
       return      
@@ -261,6 +262,9 @@ function Show(o,hdl)                   % Show Menu Item Details
       path = {};
       while ~isfigure(hdl)
          label = get(hdl,'label');
+         if isempty(label)
+            break
+         end
          path{end+1} = label;
          hdl = get(hdl,'parent');
       end

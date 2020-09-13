@@ -49,6 +49,7 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
          oo = work(o,'mitem');
       else
          oo = work(o,'mitem',hdl);
+         separator = [];               % reset separator
       end
       return      
    end
