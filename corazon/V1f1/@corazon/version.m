@@ -371,6 +371,7 @@ function VersionV1F
 % - super speed-up of gcd with quick arithmetics
 % - replace o = mitem(o) syntax by o = mitem(o,gcf) syntax
 % - set separator=[] during o=mitem(o,hdl) in corazita/corazon */mitem
+% - pimp corazon/mitem to support attribute changes of menu items
 %
 %
 % Known Bugs / Wishlist

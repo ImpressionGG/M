@@ -35,17 +35,36 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %       ooo = mitem(oo,'Color','view.color');
 %       choice(ooo,{{'Red','r'},{'Blue','b'}}});   % no refresh
 %
-%    Get/Set menu item stuff
-%
-%      oo = mseek(o,{'#' 'Plot' 'Overview})
-%      stuff = mitem(oo)              % get mitem stuff
-%
-%      stuff = {'Overview',{@plot 'MyOvw},1,'visible','on','enable','on'}
-%      mitem(oo,stuff)                % set menu item stuff
-%
 %    Alternatively
 %
 %       choice(ooo,{{'Red','r'},{'Blue','b'}}},{});   % with refresh
+%
+%    Get/Set menu item stuff
+%
+%       oo = mseek(o,{'#' 'Plot' 'Overview})
+%       stuff = mitem(oo)              % get mitem stuff
+%
+%       stuff = {'Overview',{@plot 'MyOvw},1,'visible','on','enable','on'}
+%       mitem(oo,stuff)                % set menu item stuff
+% 
+%          bag.label = 'Overview'
+%          bag.callback = callback(o,{@Overview})
+%          bag.userdata = []
+%          bag.enable = 'on'
+%          bag.visible = 'on'
+%
+%          mitem(o,bag)                % set menu stuff
+%
+%       Syntactic sugar for change of menu item attributes
+%
+%          mitem(o,{'Overview')        % change label
+%          mitem(o,{'Overview',{@Overview},userdata})
+%          mitem(o,{'Overview',{@Overview},userdata,'on','on'})
+%
+%       Example
+%
+%          oo = mseek(sho,{'#' 'Plot' 'Overview'}
+%          mitem(oo,{'Magic',{@(o) disp(magic(3)) }})
 %
 %    Copyright (c): Bluenetics 2020 
 %
@@ -66,7 +85,8 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
       else
          %h = gcf;
          %oo = work(o,tag,h);
-         separator = [];               % reset separator
+         %separator = [];              
+         oo = Get(o)                   % get menu item stuff       
       end
       o.profiler('mitem',0);           % end profiling
       return
@@ -120,9 +140,12 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %   
    while (nargin == 2) && ~ischar(label)
       hdl = label;                     % label is a graphics handle
+      bag = label;                     % or a bag of attributes
       %if isinf(hdl)
       if isequal(hdl,inf)
          oo = work(o,'mitem');
+      elseif iscell(bag) || isstruct(bag)
+         oo = Set(o,bag);
       else
          oo = work(o,'mitem',hdl);
          separator = [];               % reset separator
@@ -196,8 +219,128 @@ end
 %==========================================================================
 
 function bag = Get(o)                  % Get Menu Item Stuff           
+   hdl = mitem(o,inf);
+   
+   bag.label = get(hdl,'label');
+   bag.callback = get(hdl,'callback');
+   bag.userdata = get(hdl,'userdata');
+   bag.visible = get(hdl,'visible');
+   bag.enable = get(hdl,'enable');
+   bag.separator = get(hdl,'separator');
+   bag.hdl = mitem(o,inf);
 end
-function Set(o,bag)                    % Set Menu Item Stuff           
+function o = Set(o,bag)                % Set Menu Item Stuff           
+%
+% SET   Set menu item stuff
+%
+%          bag.label = 'Overview'
+%          bag.callback = callback(o,{@Overview})
+%          bag.userdata = []
+%          bag.enaable = 'on'
+%          bag.visible = 'on'
+%
+%          mitem(o,bag)                % set menu stuff
+%
+%       Alternatively
+%
+%          mitem(o,{'Overview',{@Overview},usedata,'on','on'})
+%          mitem(o,{'Overview',{@Overview},usedata})
+%
+   if iscell(bag)
+      list = bag;
+      bag = [];
+      
+      if (length(list) >= 1)
+         bag.label = list{1}
+      end
+      if (length(list) >= 2)
+         bag.callback = list{2}
+      end
+      if (length(list) >= 3)
+         bag.userdata = list{3}
+      end
+      if (length(list) >= 4)
+         bag.enable = list{4}
+      end
+      if (length(list) >= 5)
+         bag.visible = list{5}
+      end
+   end
+   
+      % make handle available
+   
+   if ~isfield(bag,'hdl')
+      bag.hdl = mitem(o,inf);
+   end
+   
+   if isempty(bag.hdl)
+      return
+   end
+   
+         % set defaults for missing fields
+
+   if ~isfield(bag,'callback')
+      bag.callback = {};
+   end
+   if ~isfield(bag,'userdata')
+      bag.userdata = [];
+   end
+   if ~isfield(bag,'enable')
+      bag.enable = 'on';
+   end
+   if ~isfield(bag,'visible')
+      bag.visible = 'on';
+   end
+   if ~isfield(bag,'separator')
+      bag.separator = 'off';
+   end
+
+      % perform type/value checks
+      
+   if ~ischar(bag.label)
+      error('char string expected for label field');
+   end
+   if ~(isequal(bag.enable,'on') || isequal(bag.enable,'off'))
+      error('''on'' or ''off'' expected for enable field');
+   end
+   if ~(isequal(bag.visible,'on') || isequal(bag.visible,'off'))
+      error('''on'' or ''off'' expected for visible field');
+   end
+   if ~(isequal(bag.separator,'on') || isequal(bag.separator,'off'))
+      error('''on'' or ''off'' expected for separator field');
+   end
+
+      % set menu item stuff
+
+   hdl = bag.hdl;                   % short hand
+
+      % special treatment of callback
+
+   if ~IsMasterCallback(o,bag.callback)
+      bag.callback = call(o,class(o),bag.callback);
+   end
+
+      % set attributes
+      
+   set(hdl,'label',bag.label);
+   set(hdl,'callback',bag.callback);
+   set(hdl,'userdata',bag.userdata);
+   set(hdl,'visible',bag.visible);
+   set(hdl,'enable',bag.enable);
+   set(hdl,'separator',bag.separator);
+   
+   function ok = IsMasterCallback(o,callback)
+      ok = false;                      % by defaut
+      if (iscell(callback) && ~isempty(callback))
+         arg1 = callback{1};
+         
+         if isa(arg1,'function_handle')
+            if isequal(char(arg1),'corazito.master')
+               ok = true;              % yes - master callback!
+            end
+         end
+      end
+   end
 end
 
 %==========================================================================
