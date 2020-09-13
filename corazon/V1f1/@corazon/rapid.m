@@ -1102,7 +1102,7 @@ function PlotTemplate                  % Plot Template
 % %==========================================================================
 %
 % function oo = Overview(o)              % Plot Overview
-%    if ~o.is(o.type,{'smp','alt'})
+%    if ~type(o,{'smp','alt'})
 %       oo = []; return                  % no idea how to plot this type
 %    end
 %
@@ -1120,7 +1120,7 @@ function PlotTemplate                  % Plot Template
 %    heading(o);
 % end
 % function oo = PlotX(o)                 % Stream Plot X
-%    if ~o.is(o.type,{'smp','alt'})
+%    if ~type(o,{'smp','alt'})
 %       oo = []; return                  % no idea how to plot this type
 %    end
 %
@@ -1128,7 +1128,7 @@ function PlotTemplate                  % Plot Template
 %    heading(o);
 % end
 % function oo = PlotY(o)                 % Stream Plot Y%
-%    if ~o.is(o.type,{'smp','alt'})
+%    if ~type(o,{'smp','alt'})
 %       oo = []; return                  % no idea how to plot this type
 %    end
 %
@@ -1136,7 +1136,7 @@ function PlotTemplate                  % Plot Template
 %    heading(o);
 % end
 % function oo = PlotXY(o)                % Scatter Plot
-%    if ~o.is(o.type,{'smp','alt'})
+%    if ~type(o,{'smp','alt'})
 %       oo = []; return                  % no idea how to plot this type
 %    end
 %

@@ -34,6 +34,7 @@ function use(tag,version)
       version.trf = 'V2a';
       
       version.spm = 'V1b';
+      version.spmx = 'V1a';
       
       version.pll = 'V1a';
       version.kalman = 'V1a';
@@ -115,11 +116,18 @@ function use(tag,version)
       case 'trf'
          use cordoba
          addpath([mhome,'/trf/',version.trf]);
-         fprintf(['   using TRF toolbox ',version.trf,'\n']);   
+         fprintf(['   using TRF toolbox ',version.trf,'\n']);  
+         
       case 'spm'
          use corazon
          addpath([mhome,'/swarovski/spm/',version.spm]);
          fprintf(['   using SPM toolbox ',version.spm,'\n']);   
+      case 'spmx'
+         use corazon
+         addpath([mhome,'/swarovski/spmx/',version.spmx]);
+         fprintf(['   using SPMX toolbox ',version.spmx,'\n']);   
+         
+         
       case 'uled'
          use corazon
          addpath([mhome,'/besi/uled/',version.uled]);

@@ -27,8 +27,11 @@ function hdl = heading(o,msg)
    for (i=1:length(kids))
       kid = kids(i);
       type = get(kid,'Type');
-      if (isequal(type,'axes') && isequal(get(kid,'UserData'),'*heading*'))
-         delete(kid);
+      if (isequal(type,'axes')) 
+         kind = shelf(o,kid,'kind');   % which kind of axes?
+         if isequal(kind,'heading')
+            delete(kid);
+         end
       end
       
    end

@@ -384,6 +384,7 @@ function VersionV1F
 % - pimp corazon/mitem to support attribute changes of menu items
 % - updating Corazon V1F release notes
 % - plug3 to deactivate cleanly unused menu items and add useful
+% - fine tune corazon/rapid to generate plot method with ~type(o,{}) syntax 
 %
 %
 % Known Bugs / Wishlist

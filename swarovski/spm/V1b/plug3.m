@@ -155,11 +155,11 @@ function oo = New(o)                   % New Menu
       o.is(oo) && o.is(visible(oo,0));
    end
 end
-function oo = AcademicSample(o)        % Academic Sample                
+function oo = OldAcademicSample(o)     % Academic Sample                
    omega = [1 2 3]';                   % circular eigen frequencies
    zeta = [0.1 0.15 0.2]';             % damping coefficients
    
-   M = [0 -0.0072 -2.3e-11; 0.0071 0 0; 4.2e-11 -7e-11 0];
+   M = [0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
    
       % calculate system matrices
       
@@ -167,13 +167,15 @@ function oo = AcademicSample(o)        % Academic Sample
    a1 = 2*zeta.*omega;                 % a1 = [0.2 0.6 1.2]
    
    n = length(a0);
-   A = [zeros(n) eye(n); -diag(a1) -diag(a0)];
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
    B = [0*M; M];
    C = [M' 0*M];
    D = 0*M;
 
    oo = spm('spm');                    % new spm typed object
    oo.par.title = 'Academic Sample';
+   oo.par.comment = {'A: 6x6, B: 6x3, C: 3x6, D:3x3',...
+                     'omega = [1 2 3]'', zeta =[0.1 0.15 0.2]'''};
    
    oo = set(oo,'system','A,B,C,D',A,B,C,D);
 
@@ -182,20 +184,56 @@ function oo = AcademicSample(o)        % Academic Sample
    
    paste(o,oo);
 end
+function oo = AcademicSample(o)        % 3-Mode 3 Sample
+%
+% MODE3SAMPLE setup an 3-mode system according to the simulated sample
+%             exported from ANSYS
+%
+   a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
+   a1 = [56 137 300]';                 % damping terms
+   
+   M = [0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
+   
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M];
+   D = 0*M;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = 'Academic Sample - 3 Modes';
+   oo.par.comment = {'A: 6x6, B: 6x3, C: 3x6, D:3x3',...
+                     'omega = [1 2 3]'', zeta =[0.1 0.15 0.2]'''};
+   
+   oo = set(oo,'system','A,B,C,D',A,B,C,D);
+   
+   oo.data = [];                       % make a non-container object
+   
+      % so far brew is not a method and we run danger to call the
+      % corazon/brew method instead of calling function brew. To fix this
+      % we cat o to corazita object (corazita has no brew method)
+      
+   O = corazita(oo);
+   oo = brew(O,'Data');                % brew up object data
+   
+   paste(oo);
+end
 function oo = Mode3Sample(o)           % 3-Mode 3 Sample
 %
 % MODE3SAMPLE setup an 3-mode system according to the simulated sample
 %             exported from ANSYS
 %
-   a1 = 1e6*[7.8 47 225]';             % circular eigen frequencies
-   a0 = 1e6*[0.056 0.14 0.3]';         % damping coefficients
+   a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
+   a1 = [56 137 300]';                 % damping terms
    
-   M = [0 -0.0072 -2.3e-11; 0.0071 0 0; 4.2e-11 -7e-11 0]*1e3;
+   M = [0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
    
       % calculate system matrices
          
    n = length(a0);
-   A = [zeros(n) eye(n); -diag(a1) -diag(a0)];
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
    B = [0*M; M];
    C = [M' 0*M];
    D = 0*M;
@@ -514,6 +552,10 @@ function oo = Study(o)                 % Study Menu Plugin
    ooo = mitem(oo,'Transfer Matrix');
    oooo = mitem(ooo,'Double',{@WithCuo,'TrfmDouble'});
    oooo = mitem(ooo,'Rational',{@WithCuo,'TrfmRational'});   
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'A,B,C,D');
+   oooo = mitem(ooo,'Inspect B',{@InspectB});
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Arithmetics');
@@ -576,6 +618,27 @@ end
 function o = TrfmRational(o)           % Rational Transfer Matrix      
    G = trfu(o,3,1);
    G
+end
+
+function o = InspectB(o)
+   o = sho;
+   if length(o.data) < 2
+      message(o,'At least 2 Objects to be loaded!');
+      return
+   end
+   
+   o1 = o.data{1};
+   [A,B,C,D] = get(o1,'system','A,B,C,D');
+   B2 = B(4:end,:);  B2(1,2) = 0;  B2(2,1) = 0;
+   
+   o2 = o.data{2};
+   [AA,BB,CC,DD] = get(o2,'system','A,B,C,D');
+   BB2 = BB(4:end,:);  BB2(1,2) = 0;  BB2(2,1) = 0;
+   
+   K = 1e11;
+   B2_1=round(K*B2),B2_2=round(K*BB2)
+   
+   
 end
 
 function o = Quick(o)                  % Quick Arithmetics Study       
