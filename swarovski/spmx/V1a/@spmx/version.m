@@ -37,7 +37,9 @@ function vers = version(o,arg)       % SPMX Class Version
 % - force step response overview implemented
 % - Plot>Transfer_Matrix menu item added
 % - orbit plot added for step response andramp response
-% - add 3-Mode Sample, Version B 
+% - add 3-Mode Sample, Version A/B/C
+% - add academic model #1
+% - add academic model #2
 %
 %
 % Known bugs & wishlist
