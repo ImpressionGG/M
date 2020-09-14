@@ -34,6 +34,7 @@ function vers = version(o,arg)       % SPMX Class Version
 % - move A,B,C,D from o.par.sys to o.data; introduce spmx/prew method;
 % - initial plot menu with eigenvalue plotting (Overview) 
 % - full portation of spm @ plug3 to spmx shell
+% - force step response overview implemented
 %
 %
 % Known bugs & wishlist

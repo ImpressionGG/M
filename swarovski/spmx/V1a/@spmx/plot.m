@@ -44,7 +44,9 @@ function oo = Menu(o)                  % Setup Plot Menu
 end
 function oo = StepResponse(o)          % Step Response Menu            
    oo = mitem(o,'Step Response');
-   
+   ooo = mitem(oo,'Force Step Overview',{@WithCuo,'ForceStep'},0);
+
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Force Step @ F1',{@WithCuo,'ForceStep'},1);
    ooo = mitem(oo,'Force Step @ F2',{@WithCuo,'ForceStep'},2);
    ooo = mitem(oo,'Force Step @ F3',{@WithCuo,'ForceStep'},3);    
@@ -270,9 +272,14 @@ function o = ForceStep(o)              % Force Step Response
       plot(o,'About');
       return
    end
-      
-   oo = Corasim(o);                    % convert to corasim object      
+
    index = arg(o,1);                   % get force component index
+   if (index == 0)
+      ForceStepOverview(o);
+      return
+   end
+   
+   oo = Corasim(o);                    % convert to corasim object      
    Fmax = opt(o,{'Fmax',100});
    t = Time(o);
    u = StepInput(oo,t,index,Fmax);
@@ -312,6 +319,36 @@ function o = ForceStep(o)              % Force Step Response
       diagram(o,'Elongation',sym,t,y(i,:),[m 3 3*i]);
    end   
    
+   heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
+end
+function o = ForceStepOverview(o)      % Force Step Response Overview           
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+      
+   B = data(o,'B');
+   m = size(B,2);                      % number of inputs
+   
+   for (index=1:m)   
+      oo = Corasim(o);                 % convert to corasim object      
+      Fmax = opt(o,{'Fmax',100});
+      t = Time(o);
+      u = StepInput(oo,t,index,Fmax);
+
+      oo = sim(oo,u,[],t);
+      [t,u,y,x] = data(oo,'t,u,y,x');
+
+         % plot output signals (elongations)
+
+      l = size(y,1);
+      for (i=1:l)
+         sym = sprintf('y%g',i);
+         diagram(o,'Elongation',sym,t,y(i,:),[l m (i-1)*m+index]);
+         title(sprintf('Elongation y%g (F%g)',i,index));
+      end   
+   end
+
    heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
 end
 
