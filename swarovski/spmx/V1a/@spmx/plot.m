@@ -15,7 +15,8 @@ function oo = plot(o,varargin)         % SPMX Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @Overview,@About,@Real,@Imag,@Complex,...
-                       @ForceRamp,@AnalyseRamp,@NormRamp);
+                       @Step,@Ramp,@ForceRamp,@ForceStep,...
+                       @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
 
@@ -37,26 +38,33 @@ function oo = Menu(o)                  % Setup Plot Menu
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
 
-   ooo = mitem(oo,'-');
-   ooo = StepResponse(o);              % step response sub-menu
-   ooo = RampResponse(o);              % ramp response sub-menu
+   oo = mitem(o,'-');
+   oo = StepResponse(o);               % step response sub-menu
+   oo = RampResponse(o);               % ramp response sub-menu
 end
 function oo = StepResponse(o)          % Step Response Menu            
    oo = mitem(o,'Step Response');
-   oo = mitem(oo,'F1 Excitation',{@WithCuo,'Step'},1);
-   oo = mitem(oo,'F2 Excitation',{@WithCuo,'Step'},2);
-   oo = mitem(oo,'F3 Excitation',{@WithCuo,'Step'},3);
+   
+   ooo = mitem(oo,'Force Step @ F1',{@WithCuo,'ForceStep'},1);
+   ooo = mitem(oo,'Force Step @ F2',{@WithCuo,'ForceStep'},2);
+   ooo = mitem(oo,'Force Step @ F3',{@WithCuo,'ForceStep'},3);    
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Step'},1);
+   ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Step'},2);
+   ooo = mitem(oo,'F3 Excitation',{@WithCuo,'Step'},3);
 end
 function oo = RampResponse(o)          % Ramp Response Menu            
    oo = mitem(o,'Ramp Response');
-   ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Ramp'},1);
-   ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Ramp'},2);
-   ooo = mitem(oo,'F3 Excitation',{@WithCuo,'Ramp'},3);
- 
-   ooo = mitem(oo,'-');
+
    ooo = mitem(oo,'Force Ramp @ F1',{@WithCuo,'ForceRamp'},1);
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'ForceRamp'},2);
    ooo = mitem(oo,'Force Ramp @ F3',{@WithCuo,'ForceRamp'},3);   
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Ramp'},1);
+   ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Ramp'},2);
+   ooo = mitem(oo,'F3 Excitation',{@WithCuo,'Ramp'},3);
 end
 
 %==========================================================================
@@ -242,11 +250,12 @@ end
 %==========================================================================
 
 function o = Step(o)                   % Step Response                 
-   if ~o.is(type(o),{'spm'})
-      o = [];  return
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
    end
    
-   oo = type(cast(o,'corasim'),'css');
+   oo = Corasim(o);                    % convert to corasim object
    
    index = arg(o,1);
    t = Time(o);
@@ -256,13 +265,62 @@ function o = Step(o)                   % Step Response
    plot(oo);
    heading(o,sprintf('Step Response: F%g->y (%s)',index,Title(o)));
 end
+function o = ForceStep(o)              % Force Step Response           
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+      
+   oo = Corasim(o);                    % convert to corasim object      
+   index = arg(o,1);                   % get force component index
+   Fmax = opt(o,{'Fmax',100});
+   t = Time(o);
+   u = StepInput(oo,t,index,Fmax);
+   
+   oo = sim(oo,u,[],t);
+   [t,u,y,x] = data(oo,'t,u,y,x');
+   
+      % plot input signals (forces)
+      
+   m = size(u,1);
+   for (i=1:m)
+      sym = sprintf('F%g',i);
+      diagram(o,'Force',sym,t,u(i,:),[m 3 3*i-2]);
+      set(gca,'Ylim',[0 1.2*Fmax]);
+   end
+
+      % plot modes (internal state variables)
+   
+   modes = opt(o,{'view.modes',5});
+   n = size(x,1);
+   nx = min(modes,n/2);
+   
+   if (n/2 <= modes)
+      for (i=1:nx)
+         sym = sprintf('x%g',i);
+         diagram(o,'Mode',sym,t,x(i,:),[nx 3 3*i-1]);
+      end
+   else
+      diagram(o,'Mode','x',t,x,[1 3 2]);
+   end
+      
+      % plot output signals (elongations)
+      
+   l = size(y,1);
+   for (i=1:l)
+      sym = sprintf('y%g',i);
+      diagram(o,'Elongation',sym,t,y(i,:),[m 3 3*i]);
+   end   
+   
+   heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
+end
+
 function o = Ramp(o)                   % Ramp Response                 
    if ~o.is(type(o),{'spm'})
       o = [];  return
    end
    
-   oo = type(cast(o,'corasim'),'css');
-   
+   oo = Corasim(o);                    % convert to corasim object   
    index = arg(o,1);
    t = Time(o);
    u = RampInput(oo,t,index);
@@ -272,14 +330,62 @@ function o = Ramp(o)                   % Ramp Response
    
    heading(o,sprintf('Ramp Response: F%g->y (%s)',index,Title(o)));
 end
-
 function o = ForceRamp(o)              % Force Ramp Response           
-   if ~o.is(type(o),{'spm'})
-      o = [];  return
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+      
+   oo = Corasim(o);                    % convert to corasim object      
+   index = arg(o,1);                   % get force component index
+   Fmax = opt(o,{'Fmax',100});
+   t = Time(o);
+   u = RampInput(oo,t,index,Fmax);
+   
+   oo = sim(oo,u,[],t);
+   [t,u,y,x] = data(oo,'t,u,y,x');
+   
+      % plot input signals (forces)
+      
+   m = size(u,1);
+   for (i=1:m)
+      sym = sprintf('F%g',i);
+      diagram(o,'Force',sym,t,u(i,:),[m 3 3*i-2]);
+      set(gca,'Ylim',[0 1.2*Fmax]);
+   end
+
+      % plot modes (internal state variables)
+   
+   modes = opt(o,{'view.modes',5});
+   n = size(x,1);
+   nx = min(modes,n/2);
+   
+   if (n/2 <= modes)
+      for (i=1:nx)
+         sym = sprintf('x%g',i);
+         diagram(o,'Mode',sym,t,x(i,:),[nx 3 3*i-1]);
+      end
+   else
+      diagram(o,'Mode','x',t,x,[1 3 2]);
+   end
+      
+      % plot output signals (elongations)
+      
+   l = size(y,1);
+   for (i=1:l)
+      sym = sprintf('y%g',i);
+      diagram(o,'Elongation',sym,t,y(i,:),[m 3 3*i]);
+   end   
+   
+   heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
+end
+function o = OldForceRamp(o)           % Force Ramp Response           
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
    end
    
-   oo = type(cast(o,'corasim'),'css');
-   
+   oo = Corasim(o);                    % convert to corasim object      
    index = arg(o,1);                   % get force component index
    Fmax = opt(o,{'Fmax',100});
    t = Time(o);
@@ -292,6 +398,122 @@ function o = ForceRamp(o)              % Force Ramp Response
 end
 
 %==========================================================================
+% Plot Output Signals
+%==========================================================================
+
+function o = PlotY(o)                  % Plot Output Signals           
+   Kms = var(o,{'Kms',1});             % time scaling correction
+   ms = Kms*0.001;                     % factor ms/s
+   um = 1e-6;
+   
+   o = corazon(o);                     % use CORAZON plot method
+   [t,u,y] = data(o,'t,u,y');
+   
+   Plot11(o);                          % Elongation 1
+   Plot12(o);                          % Elongation 2
+   Plot21(o);                          % Elongation 3
+   Plot22(o);                          % Input
+   
+   function Plot11(o)                  % Elongation 1                                              
+      subplot(221);
+      plot(o,t/ms,y(1,:)/um,'g');
+      title('Output (Elongation 1)');
+      xlabel('t [ms]');  ylabel('y1 [um]');
+      grid(o);
+   end
+   function Plot12(o)                  % Elongation 2                                              
+      subplot(222);
+      plot(o,t/ms,y(2,:)/um,'c');
+      title('Output (Elongation 2)');
+      xlabel('t [ms]');  ylabel('y2 [um]');
+      grid(o);
+   end
+   function Plot21(o)                  % Elongation 3                                              
+      subplot(223);
+      plot(o,t/ms,y(3,:)/um,'r');
+      title('Output (Elongation 3)');
+      xlabel('t [ms]');  ylabel('y3 [um]');
+      grid(o);
+   end
+   function Plot22(o)                                                  
+      subplot(224);
+      plot(o,t/ms,u,'b');
+      title('Input (Force)');
+      xlabel('t [ms]');  ylabel('F [N]');
+      grid(o);
+   end
+end
+
+%==========================================================================
 % Helper
 %==========================================================================
+
+function title = Title(o)              % Get Object Title              
+   title = get(o,{'title',[class(o),' object']});
+   
+   dir = get(o,'dir');   
+   idx = strfind(dir,'@');
+   if ~isempty(dir)
+      [package,typ,name] = split(o,dir(idx(1):end));
+      title = [title,' - [',package,']'];
+   end
+end
+function t = Time(o)                   % Get Time Vector               
+   T = opt(o,{'simu.dt',0.00005});
+   tmax = opt(o,{'simu.tmax',0.01});
+   t = 0:T:tmax;
+end
+function oo = Corasim(o)               % Convert To Corasim Object     
+   oo = type(cast(o,'corasim'),'css');
+   [A,B,C,D] = data(o,'A,B,C,D');
+   oo = system(oo,A,B,C,D);
+end
+function u = StepInput(o,t,index,Fmax) % Get Step Input Vector         
+%
+% STEPINPUT   Get step input vector (and optional time vector)
+%
+%                u = StepInput(o,t,index)
+%                u = StepInput(o,t,index,Fmax)
+%
+   if (nargin < 4)
+      Fmax = 1;
+   end
+   
+   [~,m] = size(o);                   % number of inputs
+
+   if (index > m)
+      title = sprintf('Output #%g not supported!',index);
+      comment = {sprintf('number of outputs: %g',m)};
+      message(o,title,comment);
+      error(title);
+      return
+   end
+
+   I = eye(m);
+   u = Fmax * I(:,index)*ones(size(t));
+end
+function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector         
+%
+% RAMPINPUT   Get ramp input vector (and optional time vector)
+%
+%                u = RampInput(o,t,index)
+%                u = RampInput(o,t,index,Fmax)
+%
+   if (nargin < 4)
+      Fmax = max(t);
+   end
+   
+   [~,m] = size(o);                   % number of inputs
+   
+   if (index > m)
+      title = sprintf('Output #%g not supported!',index);
+      comment = {sprintf('number of outputs: %g',m)};
+      message(o,title,comment);
+      error(title);
+      return
+   end
+   
+   I = eye(m);
+   u = I(:,index)*t * Fmax/max(t);
+end
 

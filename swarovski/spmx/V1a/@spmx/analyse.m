@@ -13,7 +13,7 @@ function oo = analyse(o,varargin)     % Graphical Analysis
 %    See also: SPMX, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@Surf,@Histo);
+                                 @WithBsk,@AnalyseRamp,@NormRamp);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -22,8 +22,9 @@ end
 %==========================================================================
 
 function oo = Menu(o)
-   oo = mitem(o,'Surface',{@WithCuo,'Surf'},[]);
-   oo = mitem(o,'Histogram',{@WithCuo,'Histo'},[]);
+   oo = mitem(o,'Normalized System');
+   %enable(ooo,type(current(o),types));
+   ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
 end
 
 %==========================================================================
@@ -89,25 +90,105 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 end
 
 %==========================================================================
-% Actual Analysis
+% Analyse Menu Plugins
 %==========================================================================
 
-function o = Surf(o)                   % Surf Plot
-   x = cook(o,'x');
-   y = cook(o,'y');
 
-   idx = 1:ceil(length(x)/50):length(x);
-   idy = 1:ceil(length(y)/50):length(y);
-   z = x(idx)'.*y(idy);
-   surf(x(idx),y(idy),z);
+function o = NormRamp(o)               % Normalized System's Force Ramp
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+      % fetch some simulation parameters
+      
+   index = arg(o,1);                   % get force component index
+   Fmax = opt(o,{'Fmax',100});
+
+      % transform system
+      
+   o = brew(o,'Normalize');
+   [A,B,C,D]=get(o,'system','A,B,C,D');% for debug
+
+   oo = type(corasim(o),'css');        % cast and change type
+   t = Time(oo);
+   u = RampInput(oo,t,index,Fmax);
+   
+   oo = sim(oo,u,[],t);
+   PlotY(oo);
+   
+   heading(o,sprintf('Analyse Force Ramp: F%g->y - %s',index,Title(o)));
 end
-function o = Histo(o)                  % Histogram
-   t = cook(o,':');
-   x = cook(o,'x');
-   y = cook(o,'y');
 
-   subplot(211);
-   plot(with(corazon(o),'style'),t,sort(x),'r');
-   subplot(212);
-   plot(with(corazon(o),'style'),t,sort(y),'b');
+%==========================================================================
+% Helper
+%==========================================================================
+
+function title = Title(o)              % Get Object Title              
+   title = get(o,{'title',[class(o),' object']});
+   
+   dir = get(o,'dir');   
+   idx = strfind(dir,'@');
+   if ~isempty(dir)
+      [package,typ,name] = split(o,dir(idx(1):end));
+      title = [title,' - [',package,']'];
+   end
+end
+function t = Time(o)                   % Get Time Vector               
+   T = opt(o,{'simu.dt',0.00005});
+   tmax = opt(o,{'simu.tmax',0.01});
+   t = 0:T:tmax;
+end
+function oo = Corasim(o)               % Convert To Corasim Object     
+   oo = type(cast(o,'corasim'),'css');
+   [A,B,C,D] = data(o,'A,B,C,D');
+   oo = system(oo,A,B,C,D);
+end
+function u = StepInput(o,t,index,Fmax) % Get Step Input Vector         
+%
+% STEPINPUT   Get step input vector (and optional time vector)
+%
+%                u = StepInput(o,t,index)
+%                u = StepInput(o,t,index,Fmax)
+%
+   if (nargin < 4)
+      Fmax = 1;
+   end
+   
+   [~,m] = size(o);                   % number of inputs
+
+   if (index > m)
+      title = sprintf('Output #%g not supported!',index);
+      comment = {sprintf('number of outputs: %g',m)};
+      message(o,title,comment);
+      error(title);
+      return
+   end
+
+   I = eye(m);
+   u = Fmax * I(:,index)*ones(size(t));
+end
+function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector         
+%
+% RAMPINPUT   Get ramp input vector (and optional time vector)
+%
+%                u = RampInput(o,t,index)
+%                u = RampInput(o,t,index,Fmax)
+%
+   if (nargin < 4)
+      Fmax = max(t);
+   end
+   
+   [~,m] = size(o);                   % number of inputs
+   
+   if (index > m)
+      title = sprintf('Output #%g not supported!',index);
+      comment = {sprintf('number of outputs: %g',m)};
+      message(o,title,comment);
+      error(title);
+      return
+   end
+   
+   I = eye(m);
+   u = I(:,index)*t * Fmax/max(t);
 end

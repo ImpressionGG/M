@@ -122,7 +122,26 @@ end
 
 function oo = Select(o)                % Select Menu                   
    oo = menu(o,'Select');              % add Select menu
+   ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu
+end
+function oo = Simu(o)                  % Simulation Parameter Menu     
+%
+% SIMU   Add simulation parameter menu items
+%
+   setting(o,{'simu.tmax'},0.01);
+   setting(o,{'simu.Fmax'},100);
+   setting(o,{'simu.dt'},0.00005);
+
+   oo = mitem(o,'Simulation');
+   ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
+          choice(ooo,[0.001,0.002,0.005,0.01,0.02,0.05,0.1],{});
+   ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
+          choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4],{});
+          
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
+          choice(ooo,[1 2 5 10 20 50 100 200 500 1000],{});
 end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off

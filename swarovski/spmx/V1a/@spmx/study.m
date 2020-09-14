@@ -12,8 +12,7 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: SPMX, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @Study1,@Study2,@Study3,@Study4,@Study5,...
-                        @Study6,@Study7,@Study8,@Study9,@Study10);
+                       @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -22,17 +21,24 @@ end
 %==========================================================================
 
 function oo = Menu(o)
-   oo = mitem(o,'Raw',{@WithCuo,'Study1'},[]);
-   oo = mitem(o,'Raw & Filtered',{@WithCuo,'Study2'},[]);
-   oo = mitem(o,'Filtered',{@WithCuo,'Study3'},[]);
-   oo = mitem(o,'Noise',{@WithCuo,'Study4'},[]);
+   oo = mitem(o,'Transition Matrix');
+   ooo = mitem(oo,'Double',{@WithCuo,'PhiDouble'});
+   ooo = mitem(oo,'Rational',{@WithCuo,'PhiRational'});
+   enable(ooo,0);
+   
+   oo = mitem(o,'Transfer Matrix');
+   ooo = mitem(oo,'Double',{@WithCuo,'TrfmDouble'});
+   enable(ooo,0);
+   ooo = mitem(oo,'Rational',{@WithCuo,'TrfmRational'});   
+   enable(ooo,0);
+
    oo = mitem(o,'-');
-   oo = mitem(o,'Study5',{@WithCuo,'Study5'},[]);
-   oo = mitem(o,'Study6',{@WithCuo,'Study6'},[]);
-   oo = mitem(o,'Study7',{@WithCuo,'Study7'},[]);
-   oo = mitem(o,'Study8',{@WithCuo,'Study8'},[]);
-   oo = mitem(o,'Study9',{@WithCuo,'Study9'},[]);
-   oo = mitem(o,'Study10',{@WithCuo,'Study10'},[]);
+   oo = mitem(o,'A,B,C,D');
+   ooo = mitem(oo,'Inspect B',{@InspectB});
+   
+   oo = mitem(o,'-');
+   oo = mitem(o,'Arithmetics');
+   ooo = mitem(oo,'Quick',{@Quick});
 end
 
 %==========================================================================
@@ -101,83 +107,250 @@ end
 % Studies
 %==========================================================================
 
-function o = Study1(o)                 % Study 1: Raw Signal
-   t = cook(o,':');
-   x = cook(o,'x');
-   y = cook(o,'y');
+function o = PhiDouble(o)              % Rational Transition Matrix    
+   refresh(o,{@menu,'About'});         % don't come back here!!!
+   
+   oo = current(o);
+   oo = brew(oo,'Partial');            % brew partial matrices
+   
+   %[A21,A22,B2,C1,D] = var(oo,'A21,A22,B2,C1,D');
+   
+   [A,B,C,D] = data(oo,'A,B,C,D');
+   
+   [n,m] = size(B);  [l,~] = size(C);
 
-   subplot(211);
-   plot(with(corazon(o),'style'),t,x,'r');
-   title('Raw Signal X');
-   xlabel('t');
+   O = base(inherit(corinth,o));       % need to access CORINTH methods
+   G = matrix(O,zeros(l,m));
 
-   subplot(212);
-   plot(with(corazon(o),'style'),t,y,'b');
-   title('Raw Signal Y');
-   xlabel('t');
-end
-function o = Study2(o)                 % Study 2: Raw & Filtered Signal
-   t = cook(o,':');
-   [x,xf] = cook(o,'x');
-   [y,yf] = cook(o,'y');
+   for (j=1:m)                         % j indexes B(:,j) (columns of B)
+      [num,den] = ss2tf(A,B,C,D,j);
+      assert(l==size(num,1));
+      for (i=1:l)
+         numi = num(i,:);
+         p = poly(O,numi);             % numerator polynomial
+         q = poly(O,den);              % denominator polynomial
+         
+         Gij = ratio(O,1);
+         Gij = poke(Gij,p,q);          % Gij not canceled and trimmed
+         
+         fprintf('G%g%g(s):\n',i,j)
+         display(Gij);
+         
+         G = poke(G,Gij,i,j);
+         
+         numtag = sprintf('num_%g_%g',i,j);
+         oo = cache(oo,['brew.',numtag],numi);
 
-   subplot(211);
-   plot(t,x,'r');  hold on;
-   plot(with(corazon(o),'style'),t,xf,'k');
-   title('Raw & Filtered Signal X');
-   xlabel('t');
+         dentag = sprintf('den_%g_%g',i,j);
+         oo = cache(oo,['brew.',dentag],den);
+      end
+   end
+   
+   oo = cache(oo,'brew.G',G);          % store in cache
+   cache(oo,oo);                       % cache store back to shell
+   
+   fprintf('Transfer Matrix (calculated using double)\n');
+   display(var(oo,'G'));
+end
+function o = PhiRational(o)            % Double Transition Matrix      
+   message(o,'PhiRational: not yet implemented');
+end
 
-   subplot(212);
-   plot(t,y,'r');  hold on;
-   plot(with(corazon(o),'style'),t,yf,'k');
-   title('Raw & Filtered Signal Y');
-   xlabel('t');
+function o = TrfmDouble(o)             % Double Transfer Matrix        
+   G = trfu(o,3,1);
+   G
 end
-function o = Study3(o)                 % Study 3: Filtered Signal
-   t = cook(o,':');
-   [~,xf] = cook(o,'x');
-   [~,yf] = cook(o,'y');
+function o = TrfmRational(o)           % Rational Transfer Matrix      
+   G = trfu(o,3,1);
+   G
+end
 
-   subplot(211);
-   plot(with(corazon(o),'style'),t,xf,'r');
-   title('Filtered Signal X');
-   xlabel('t');
+function o = InspectB(o)               % System Matrix Inspection      
+   o = sho;
+   if length(o.data) < 2
+      message(o,'At least 2 Objects to be loaded!');
+      return
+   end
+   
+   o1 = o.data{1};
+   [A,B,C,D] = get(o1,'system','A,B,C,D');
+   B2 = B(4:end,:);  B2(1,2) = 0;  B2(2,1) = 0;
+   
+   o2 = o.data{2};
+   [AA,BB,CC,DD] = get(o2,'system','A,B,C,D');
+   BB2 = BB(4:end,:);  BB2(1,2) = 0;  BB2(2,1) = 0;
+   
+   K = 1e11;
+   B2_1=round(K*B2),B2_2=round(K*BB2)
+   
+   
+end
 
-   subplot(212);
-   plot(with(corazon(o),'style'),t,yf,'b');
-   title('Filtered Signal Y');
-   xlabel('t');
-end
-function o = Study4(o)                 % Study 4: Noise
-   t = cook(o,':');
-   [x,xf] = cook(o,'x');
-   [y,yf] = cook(o,'y');
+function o = Quick(o)                  % Quick Arithmetics Study       
+   RandInt;                            % reset random seed
+   O = base(corinth,10);
+   
+      % prepare numbers
+      
+   N = 1000;  M = 20;
+   for (i=1:N)
+      X{i} = RandDigits(O,M);
+      Y{i} = RandDigits(O,M);
+   end
 
-   subplot(211);
-   plot(with(corazon(o),'style'),t,x-xf,'r');
-   title('Noise Signal X');
-   xlabel('t');
+      % corinthian add benchmark
+      
+   tic
+   for (i=1:N)
+      Z{i} = add(O,X{i},Y{i});
+      assert(isequal(Z{i},Z{i}));
+   end
+   fprintf('corinthian add benchmark: %g us\n',toc/N*1e6);
+   
+      % quick add benchmark
+      
+   tic
+   for (i=1:N)                         % generate numbers
+      S{i} = qadd(O,X{i},Y{i});
+      assert(isequal(S{i},Z{i}));
+   end
+   fprintf('quick add benchmark: %g us\n',toc/N*1e6);
+   
+       % corinthian sub benchmark
+      
+   tic
+   for (i=1:N)
+      Z{i} = sub(O,X{i},Y{i});
+      assert(isequal(Z{i},Z{i}));
+   end
+   fprintf('corinthian sub benchmark: %g us\n',toc/N*1e6);
+   
+      % quick sub benchmark
+      
+   tic
+   for (i=1:N)                         % generate numbers
+      S{i} = qsub(O,X{i},Y{i});
+      assert(isequal(S{i},Z{i}));
+   end
+   fprintf('quick sub benchmark: %g us\n',toc/N*1e6);
+   
+      % corinthian mul benchmark
+      
+   tic
+   for (i=1:N)
+      Z{i} = mul(O,X{i},Y{i});
+      assert(isequal(Z{i},Z{i}));
+   end
+   fprintf('corinthian mul benchmark: %g us\n',toc/N*1e6);
+   
+      % quick mul benchmark
+      
+   tic
+   for (i=1:N)                         % generate numbers
+      S{i} = Qmul(O,X{i},Y{i});
+      assert(isequal(Z{i},S{i}));
+   end
+   fprintf('quick mul benchmark: %g us\n',toc/N*1e6);
 
-   subplot(212);
-   plot(with(corazon(o),'style'),t,y-yf,'b');
-   title('Noise Signal Y');
-   xlabel('t');
+   % test done!
+      
+   fprintf('All Quick operations successful :-)\n');
+   
+   function oo = Qadd(o,x,y)           % Quick Addition                
+      b = o.data.base;
+      nx = length(x);  
+      ny = length(y);  
+      n = 1+max(nx,ny);
+      
+      x = [zeros(1,n-nx),x];
+      y = [zeros(1,n-ny),y];
+      
+      %abacus = [x; y];
+      
+      while (any(y~=0))
+         x = x+y;
+         y = (x >= b);
+         x = x - y*b;
+         y = [y(2:end), 0];
+         %abacus = [abacus; nan*x; x; y];        
+      end
+         
+      idx = find(x~=0);
+      if ~isempty(idx)
+         x(1:idx(1)-1) = [];
+      end
+      oo = x;
+   end
+   function z = Qmul(o,x,y)
+      sgn = +1;
+      if any(x < 0)
+         x = -x;  sgn = -sgn;
+      end      
+      if any(y < 0)
+         y = -y;  sgn = -sgn;
+      end
+      
+      z = conv(x,y);
+      z = sgn * qtrim(o,z);
+   end
+   function x = Qtrim(o,x)             % Quick Trim                    
+      b = o.data.base;      
+      c = floor(x/b);                  % carry
+      
+      while any(c)                     % while any non processed carry
+         x = [0 x-c*b];                % selective subtract carry*base
+         c = [c 0];                    % left shift carry 
+         x = x + c;                    % add shifted carry to result
+         c = floor(x/b);               % calculate new carry
+      end
+
+      idx = find(x~=0);
+      if ~isempty(idx)
+         x(1:idx(1)-1) = [];
+      end
+   end
+   function y = Digitize(o,x)          % Digitize Number               
+      b = o.data.base;
+
+      y = [];
+      while (x ~= 0)
+         y(end+1) = rem(x,b);
+         x = floor(x/b);
+      end
+      y = y(length(y):-1:1);
+   end
+   function z = RandDigits(o,m)        % Random Digits Generator       
+      z = [];
+      for (jj=1:m)
+         xpo = RandInt(8);
+         w = RandInt(10^xpo);
+         z = [z Digitize(o,w)];
+      end
+   end
+   function s = RandSign               % Random Sign                   
+      if (randn >= 0)
+         s = +1;
+      else
+         s = -1;
+      end
+   end
 end
-function o = Study5(o)                 % Study 5
-   message(o,'Study 5');
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function r = RandInt(n)                % Random Integer Number         
+%
+% RAND   Random number generation
+%
+%           r = Rand(6)                % random numbers in range 1..6
+%           Rand                       % reset random seed
+%
+   if (nargin == 0)
+      rng(0);                          % set random seed to zero
+   else
+      r = ceil(n*rand);
+   end
 end
-function o = Study6(o)                 % Study 6
-   message(o,'Study 6');
-end
-function o = Study7(o)                 % Study 7
-   message(o,'Study 7');
-end
-function o = Study8(o)                 % Study 8
-   message(o,'Study 8');
-end
-function o = Study9(o)                 % Study 9
-   message(o,'Study 9');
-end
-function o = Study10(o)                % Study 10
-   message(o,'Study 10');
-end
+

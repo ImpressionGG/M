@@ -46,7 +46,7 @@ end
 %==========================================================================
 
 function oo = Partial(o)               % Normalize System              
-   [A,B,C] = get(o,'system','A,B,C');
+   [A,B,C] = data(o,'A,B,C');
 
    n = floor(length(A)/2);
    i1 = 1:n;  i2 = n+1:2*n;

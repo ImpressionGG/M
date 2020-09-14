@@ -620,7 +620,7 @@ function o = TrfmRational(o)           % Rational Transfer Matrix
    G
 end
 
-function o = InspectB(o)
+function o = InspectB(o)               % 
    o = sho;
    if length(o.data) < 2
       message(o,'At least 2 Objects to be loaded!');
