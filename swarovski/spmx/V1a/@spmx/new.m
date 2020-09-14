@@ -31,10 +31,11 @@ function oo = Menu(o)                  % New Menu
 %
    oo = mitem(o,'-');
    oo = mhead(o,'Spm');
-   ooo = mitem(oo,'Academic Sample',{@Create 'Academic'});
    ooo = mitem(oo,'3-Mode Sample (A)',{@Create 'Mode3A'});
    ooo = mitem(oo,'3-Mode Sample (B)',{@Create 'Mode3B'});
    ooo = mitem(oo,'3-Mode Sample (C)',{@Create 'Mode3C'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Academic Sample',{@Create 'Academic'});
 
    function o = Create(o)
       gamma = eval(['@',arg(o,1)]);
@@ -85,7 +86,6 @@ function oo = Mode3A(o)                % 3-Mode Sample, Version A
    a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
    a1 = [56 137 300]';                 % damping terms
    
-   %M = 1e3*[0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
    M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
   
       % calculate system matrices
@@ -105,19 +105,17 @@ function oo = Mode3A(o)                % 3-Mode Sample, Version A
 end
 function oo = Mode3B(o)                % 3-Mode Sample, Version B      
 %
-% MODE3SAMPLEA setup an 3-mode system according to the simulated sample
-%              exported from ANSYS. Version A is as close to the ANSYS
-%              model
+% MODE3SAMPLEB setup an 3-mode system according to the simulated sample
+%              exported from ANSYS. Version B is as close to the ANSYS
+%              model, and is derived froom eigenfrequencies & dampings
 %
+   zeta = [0.01 0.01 0.01]';           % damping coefficients
    f = [444 1091 2387]';               % eigen frequencies
    omega = 2*pi*f;                     % circular eigen frequencies
 
-%  a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
    a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
+   a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
    
-   a1 = [56 137 300]';                 % damping terms
-   
-   %M = 1e3*[0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
    M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
   
       % calculate system matrices
