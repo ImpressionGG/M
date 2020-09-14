@@ -36,6 +36,7 @@ function vers = version(o,arg)       % SPMX Class Version
 % - full portation of spm @ plug3 to spmx shell
 % - force step response overview implemented
 % - Plot>Transfer_Matrix menu item added
+% - orbit plot added for step response andramp response
 %
 %
 % Known bugs & wishlist

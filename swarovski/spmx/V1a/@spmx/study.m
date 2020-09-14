@@ -107,7 +107,7 @@ end
 % Studies
 %==========================================================================
 
-function o = PhiDouble(o)              % Rational Transition Matrix 
+function o = PhiDouble(o)              % Rational Transition Matrix    
    G = cache(o,'trfm.G');
    disp(G);
    
@@ -121,7 +121,7 @@ function o = PhiDouble(o)              % Rational Transition Matrix
    end
    message(o,'Transferfunction G(1,1)',comment);
 end
-function o = OldPhiDouble(o)              % Rational Transition Matrix    
+function o = OldPhiDouble(o)           % Rational Transition Matrix    
    refresh(o,{@menu,'About'});         % don't come back here!!!
    
    oo = current(o);
@@ -187,17 +187,15 @@ function o = InspectB(o)               % System Matrix Inspection
    end
    
    o1 = o.data{1};
-   [A,B,C,D] = get(o1,'system','A,B,C,D');
+   [A,B,C,D] = data(o1,'A,B,C,D');
    B2 = B(4:end,:);  B2(1,2) = 0;  B2(2,1) = 0;
    
    o2 = o.data{2};
-   [AA,BB,CC,DD] = get(o2,'system','A,B,C,D');
+   [AA,BB,CC,DD] = data(o2,'A,B,C,D');
    BB2 = BB(4:end,:);  BB2(1,2) = 0;  BB2(2,1) = 0;
    
    K = 1e11;
-   B2_1=round(K*B2),B2_2=round(K*BB2)
-   
-   
+   B2_1=round(K*B2),B2_2=round(K*BB2) 
 end
 
 function o = Quick(o)                  % Quick Arithmetics Study       

@@ -68,6 +68,11 @@ function oo = StepResponse(o)          % Step Response Menu
    ooo = mitem(oo,'Force Step @ F1',{@WithCuo,'ForceStep'},1);
    ooo = mitem(oo,'Force Step @ F2',{@WithCuo,'ForceStep'},2);
    ooo = mitem(oo,'Force Step @ F3',{@WithCuo,'ForceStep'},3);    
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F-Step Orbit @ F1',{@WithCuo,'ForceStep'},10);
+   ooo = mitem(oo,'F-Step Orbit @ F2',{@WithCuo,'ForceStep'},20);
+   ooo = mitem(oo,'F-Step Orbit @ F3',{@WithCuo,'ForceStep'},30);    
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Step'},1);
@@ -76,11 +81,18 @@ function oo = StepResponse(o)          % Step Response Menu
 end
 function oo = RampResponse(o)          % Ramp Response Menu            
    oo = mitem(o,'Ramp Response');
+   ooo = mitem(oo,'Force Ramp Overview',{@WithCuo,'ForceRamp'},0);
 
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Force Ramp @ F1',{@WithCuo,'ForceRamp'},1);
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'ForceRamp'},2);
    ooo = mitem(oo,'Force Ramp @ F3',{@WithCuo,'ForceRamp'},3);   
 
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F-Ramp Orbit @ F1',{@WithCuo,'ForceRamp'},10);
+   ooo = mitem(oo,'F-Ramp Orbit @ F2',{@WithCuo,'ForceRamp'},20);
+   ooo = mitem(oo,'F-Ramp Orbit @ F3',{@WithCuo,'ForceRamp'},30);    
+   
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Ramp'},1);
    ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Ramp'},2);
@@ -311,6 +323,9 @@ function o = ForceStep(o)              % Force Step Response
    if (index == 0)
       ForceStepOverview(o);
       return
+   elseif (index >= 10)
+      ForceStepOrbit(o,index/10);
+      return
    end
    
    oo = Corasim(o);                    % convert to corasim object      
@@ -385,6 +400,44 @@ function o = ForceStepOverview(o)      % Force Step Response Overview
 
    heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
 end
+function o = ForceStepOrbit(o,index)   % Force Step Orbit              
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+
+   oo = Corasim(o);                    % convert to corasim object      
+   Fmax = opt(o,{'Fmax',100});
+   t = Time(o);
+   u = StepInput(oo,t,index,Fmax);
+   
+   oo = sim(oo,u,[],t);
+   [t,u,y,x] = data(oo,'t,u,y,x');
+   
+      % plot input signals (forces)
+      
+   m = size(u,1);
+   for (i=1:m)
+      sym = sprintf('F%g',i);
+      diagram(o,'Force',sym,t,u(i,:),[m 3 3*(i-1)+1]);
+      set(gca,'Ylim',[0 1.2*Fmax]);
+   end
+      
+      % plot output signals (elongations)
+      
+   l = size(y,1);
+   for (i=1:l)
+      sym = sprintf('y%g',i);
+      diagram(o,'Elongation',sym,t,y(i,:),[m 3 3*(i-1)+2]);
+   end
+   
+      % plot output orbits (elongations)
+      
+   diagram(o,'Orbit','y3(y1)',y(1,:),y(3,:),[2 3 3]);
+   diagram(o,'Orbit','y2(y1)',y(1,:),y(2,:),[2 3 6]);
+   
+   heading(o,sprintf('Step Response/Orbit: F%g->y - %s',index,Title(o)));
+end
 
 function o = Ramp(o)                   % Ramp Response                 
    if ~o.is(type(o),{'spm'})
@@ -406,9 +459,17 @@ function o = ForceRamp(o)              % Force Ramp Response
       plot(o,'About');
       return
    end
-      
-   oo = Corasim(o);                    % convert to corasim object      
+
    index = arg(o,1);                   % get force component index
+   if (index == 0)
+      ForceRampOverview(o);
+      return
+   elseif (index >= 10)
+      ForceRampOrbit(o,index/10);
+      return
+   end
+   
+   oo = Corasim(o);                    % convert to corasim object      
    Fmax = opt(o,{'Fmax',100});
    t = Time(o);
    u = RampInput(oo,t,index,Fmax);
@@ -450,22 +511,73 @@ function o = ForceRamp(o)              % Force Ramp Response
    
    heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
 end
-function o = OldForceRamp(o)           % Force Ramp Response           
+function o = ForceRampOverview(o)      % Force Ramp Response Overview  
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
+      
+   B = data(o,'B');
+   m = size(B,2);                      % number of inputs
    
+   for (index=1:m)   
+      oo = Corasim(o);                 % convert to corasim object      
+      Fmax = opt(o,{'Fmax',100});
+      t = Time(o);
+      u = RampInput(oo,t,index,Fmax);
+
+      oo = sim(oo,u,[],t);
+      [t,u,y,x] = data(oo,'t,u,y,x');
+
+         % plot output signals (elongations)
+
+      l = size(y,1);
+      for (i=1:l)
+         sym = sprintf('y%g',i);
+         diagram(o,'Elongation',sym,t,y(i,:),[l m (i-1)*m+index]);
+         title(sprintf('Elongation y%g (F%g)',i,index));
+      end   
+   end
+
+   heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
+end
+function o = ForceRampOrbit(o,index)   % Force Ramp Orbit              
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+
    oo = Corasim(o);                    % convert to corasim object      
-   index = arg(o,1);                   % get force component index
    Fmax = opt(o,{'Fmax',100});
    t = Time(o);
    u = RampInput(oo,t,index,Fmax);
    
    oo = sim(oo,u,[],t);
-   PlotY(oo);
+   [t,u,y,x] = data(oo,'t,u,y,x');
    
-   heading(o,sprintf('Ramp Response: F%g->y - %s',index,Title(o)));
+      % plot input signals (forces)
+      
+   m = size(u,1);
+   for (i=1:m)
+      sym = sprintf('F%g',i);
+      diagram(o,'Force',sym,t,u(i,:),[m 3 3*(i-1)+1]);
+      set(gca,'Ylim',[0 1.2*Fmax]);
+   end
+      
+      % plot output signals (elongations)
+      
+   l = size(y,1);
+   for (i=1:l)
+      sym = sprintf('y%g',i);
+      diagram(o,'Elongation',sym,t,y(i,:),[m 3 3*(i-1)+2]);
+   end
+   
+      % plot output orbits (elongations)
+      
+   diagram(o,'Orbit','y3(y1)',y(1,:),y(3,:),[2 3 3]);
+   diagram(o,'Orbit','y2(y1)',y(1,:),y(2,:),[2 3 6]);
+   
+   heading(o,sprintf('Ramp Response/Orbit: F%g->y - %s',index,Title(o)));
 end
 
 %==========================================================================

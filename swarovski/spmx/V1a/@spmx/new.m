@@ -10,7 +10,7 @@ function oo = new(o,varargin)          % SPMX New Method
 %
 %       See also: SPMX, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Mode3,@Academic,...
+   [gamma,oo] = manage(o,varargin,@Mode3A,@Mode3B,@Mode3C,@Academic,...
                        @Menu);
    oo = gamma(oo);
 end
@@ -32,7 +32,9 @@ function oo = Menu(o)                  % New Menu
    oo = mitem(o,'-');
    oo = mhead(o,'Spm');
    ooo = mitem(oo,'Academic Sample',{@Create 'Academic'});
-   ooo = mitem(oo,'3-Mode Sample',{@Create 'Mode3'});
+   ooo = mitem(oo,'3-Mode Sample (A)',{@Create 'Mode3A'});
+   ooo = mitem(oo,'3-Mode Sample (B)',{@Create 'Mode3B'});
+   ooo = mitem(oo,'3-Mode Sample (C)',{@Create 'Mode3C'});
 
    function o = Create(o)
       gamma = eval(['@',arg(o,1)]);
@@ -74,6 +76,92 @@ function oo = OldAcademicSample(o)     % Academic Sample
    
    paste(o,oo);
 end
+function oo = Mode3A(o)                % 3-Mode Sample, Version A      
+%
+% MODE3SAMPLEA setup an 3-mode system according to the simulated sample
+%              exported from ANSYS. Version A is as close to the ANSYS
+%              model
+%
+   a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
+   a1 = [56 137 300]';                 % damping terms
+   
+   %M = 1e3*[0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
+   M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
+  
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M];
+   D = 0*M;
+
+   oo = spmx('spm');                   % new spm typed object
+   oo.par.title = '3-Mode Sample A';
+    
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+function oo = Mode3B(o)                % 3-Mode Sample, Version B      
+%
+% MODE3SAMPLEA setup an 3-mode system according to the simulated sample
+%              exported from ANSYS. Version A is as close to the ANSYS
+%              model
+%
+   f = [444 1091 2387]';               % eigen frequencies
+   omega = 2*pi*f;                     % circular eigen frequencies
+
+%  a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
+   a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
+   
+   a1 = [56 137 300]';                 % damping terms
+   
+   %M = 1e3*[0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
+   M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
+  
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M];
+   D = 0*M;
+
+   oo = spmx('spm');                   % new spm typed object
+   oo.par.title = '3-Mode Sample A';
+    
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+function oo = Mode3C(o)                % 3-Mode Sample, Version C      
+%
+% MODE3SAMPLEA setup an 3-mode system according to the simulated sample
+%              exported from ANSYS. Version A is as close to the ANSYS
+%              model
+%
+   a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
+   a1 = [56 137 300]';                 % damping terms
+   
+   %M = 1e3*[0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
+   M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
+  
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M];
+   D = 0*M;
+
+   oo = spmx('spm');                   % new spm typed object
+   oo.par.title = '3-Mode Sample A';
+    
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
 function oo = Academic(o)              % Academic Sample               
 %
 % MODE3SAMPLE setup an 3-mode system according to the simulated sample
@@ -101,28 +189,4 @@ function oo = Academic(o)              % Academic Sample
  
    oo = data(oo,'A,B,C,D',A,B,C,D);
 end
-function oo = Mode3(o)                 % 3-Mode Sample                 
-%
-% MODE3SAMPLE setup an 3-mode system according to the simulated sample
-%             exported from ANSYS
-%
-   a0 = [7.8e6 47e6 225e6]';           % circular eigen frequencies
-   a1 = [56 137 300]';                 % damping terms
-   
-   M = [0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
-   
-      % calculate system matrices
-         
-   n = length(a0);
-   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
-   B = [0*M; M];
-   C = [M' 0*M];
-   D = 0*M;
 
-   oo = spmx('spm');                   % new spm typed object
-   oo.par.title = '3-Mode Sample';
-    
-      % finally set data
-      
-   oo = data(oo,'A,B,C,D',A,B,C,D);   
-end

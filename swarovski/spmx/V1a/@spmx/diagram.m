@@ -10,7 +10,7 @@ function o = diagram(o,varargin)
 %
 %           See also: SPMX, PLOT
 %
-   [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode);
+   [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit);
    oo = gamma(oo);
 end
 
@@ -68,7 +68,7 @@ end
 % Mode
 %==========================================================================
 
-function o = Mode(o)                   % Mode Diagram            
+function o = Mode(o)                   % Mode Diagram                  
    Kms = var(o,{'Kms',1});             % time scaling correction
    ms = Kms*0.001;                     % factor ms/s
    um = 1e-6;
@@ -96,6 +96,38 @@ function o = Mode(o)                   % Mode Diagram
    title(['Mode ',sym]);
    xlabel('time [ms]');
    ylabel([sym,' [um]']);
+   
+   grid(o);
+   heading(o);
+end
+
+%==========================================================================
+% Orbit
+%==========================================================================
+
+function o = Orbit(o)                  % Orbit Diagram                 
+   Kms = var(o,{'Kms',1});             % time scaling correction
+   ms = Kms*0.001;                     % factor ms/s
+   um = 1e-6;
+ 
+   sym = arg(o,1);
+   ya = arg(o,2);
+   yb = arg(o,3);
+   sub = o.either(arg(o,4),[1 1 1]);
+   
+   subplot(o,sub);
+   plot(o,ya/um,yb/um,'g');
+   
+   try
+      sym1 = sym(4:5);
+      sym2 = sym(1:2);
+   catch
+      sym1 = 'ya';  sym2 = 'yb';
+   end
+   
+   title(['Orbit ',sym2,' (',sym1,')']);
+   xlabel([sym1,' [ms]']);
+   ylabel([sym2,' [um]']);
    
    grid(o);
    heading(o);

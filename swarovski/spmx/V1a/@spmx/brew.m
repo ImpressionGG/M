@@ -2,16 +2,16 @@ function oo = brew(o,varargin)         % SPMX Brew Method
 %
 % BREW   Brew data
 %
-%           oo = brew(o);                   % brew all
+%           oo = brew(o);              % brew all
 %
-%           oo = brew(o,'Eigen')            % brew eigen values
-%           oo = brew(o,'Normalize')        % brew time scaled system
-%           oo = brew(o,'Partial')          % brew partial matrices
-%           oo = brew(p,'Trfm')             % brew transfer matrix
+%           oo = brew(o,'Eigen')       % brew eigen values
+%           oo = brew(o,'Normalize')   % brew time scaled system
+%           oo = brew(o,'Partial')     % brew partial matrices
+%           oo = brew(p,'Trfm')        % brew transfer matrix
 %
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partial,...
-                                  @Trfm,@TrfMatrix);
+                                  @Trfm);
    oo = gamma(oo);
 end              
 
@@ -93,21 +93,8 @@ end
 % Transfer Matrix
 %==========================================================================
 
-function oo = TrfMatrix(o)             % Transfer Matrix               
-   [A,B,C] = get(o,'system','A,B,C');
-   n = length(A)/2;  [m,l] = size(C*B);
-   
-   for (i=1:m)
-      for (j=1:l)
-         Gij = trffct(o,i,j);
-         G{i,j} = Gij;
-Gij = set(trf(Gij{1},Gij{2}),'title',sprintf('G%d%d(s)',i,j));
-can(Gij)
-      end
-   end
-   oo = var(o,'G',G);
-end
-function oo = Trfm(o)             % Transfer Matrix               
+function oo = Trfm(o)                  % Transfer Matrix               
+   message(o,'Brewing Transfer matrix ...');
    oo = PhiDouble(o);
    cache(oo,oo);
 end
@@ -130,6 +117,10 @@ function oo = PhiDouble(o)             % Rational Transition Matrix
       [num,den] = ss2tf(A,B,C,D,j);
       assert(l==size(num,1));
       for (i=1:l)
+         run = (j-1)*m+i;
+         msg = sprintf('%g of %g: brewing G(%g,%g)',run,l*m,i,j);
+         progress(o,msg,(run-1)/(l*m)*100);
+         
          numi = num(i,:);
          p = poly(O,numi);             % numerator polynomial
          q = poly(O,den);              % denominator polynomial
@@ -148,6 +139,7 @@ function oo = PhiDouble(o)             % Rational Transition Matrix
          dentag = sprintf('den_%g_%g',i,j);
          oo = cache(oo,['trfm.',dentag],den);
       end
+      progress(o);                     % complete!
    end
    
    oo = cache(oo,'trfm.G',G);          % store in cache
