@@ -35,6 +35,7 @@ function vers = version(o,arg)       % SPMX Class Version
 % - initial plot menu with eigenvalue plotting (Overview) 
 % - full portation of spm @ plug3 to spmx shell
 % - force step response overview implemented
+% - Plot>Transfer_Matrix menu item added
 %
 %
 % Known bugs & wishlist

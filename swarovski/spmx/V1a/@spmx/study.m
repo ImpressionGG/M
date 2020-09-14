@@ -107,7 +107,21 @@ end
 % Studies
 %==========================================================================
 
-function o = PhiDouble(o)              % Rational Transition Matrix    
+function o = PhiDouble(o)              % Rational Transition Matrix 
+   G = cache(o,'trfm.G');
+   disp(G);
+   
+   Gij = peek(G,1,1);
+   Gij = opt(Gij,'maxlen',200);
+   str = display(Gij);
+   
+   comment = {};
+   for (i=1:size(str,1))
+      comment{i} = str(i,:);
+   end
+   message(o,'Transferfunction G(1,1)',comment);
+end
+function o = OldPhiDouble(o)              % Rational Transition Matrix    
    refresh(o,{@menu,'About'});         % don't come back here!!!
    
    oo = current(o);

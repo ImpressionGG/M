@@ -8,6 +8,8 @@ function txt = display(o)              % Display Corinthian Object
 %          Options:
 %
 %             detail:    display coefficients in detail (default: 0)
+%             minlen:    minimum length of string (default 10)
+%             maxlen:    maximum length of string (default 70)
 %
 %          Copyright(c): Bluenetics 2020
 %

@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPMX Plot Method
 %        See also: SPMX, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                       @Overview,@About,@Real,@Imag,@Complex,...
+                       @Overview,@About,@Real,@Imag,@Complex,@ShowTff,...
                        @Step,@Ramp,@ForceRamp,@ForceStep,...
                        @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -37,11 +37,29 @@ function oo = Menu(o)                  % Setup Plot Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
+   oo = TransferMatrix(o);
 
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
    oo = RampResponse(o);               % ramp response sub-menu
 end
+function oo = TransferMatrix(o)        % Transfer Matrix Menu          
+   oo = current(o);
+   [B,C] = data(oo,'B,C');
+   [~,m] = size(B);
+   [l,~] = size(C);
+   
+   oo = mhead(o,'Transfer Matrix');
+   for (i=1:l)
+      for (j=1:m)
+         ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'ShowTff',i,j});
+      end
+      if (i < l)
+         ooo = mitem(oo,'-');
+      end
+   end
+end
+   
 function oo = StepResponse(o)          % Step Response Menu            
    oo = mitem(o,'Step Response');
    ooo = mitem(oo,'Force Step Overview',{@WithCuo,'ForceStep'},0);
@@ -177,7 +195,7 @@ function oo = About(o)                 % About Object
 end
 
 %==========================================================================
-% Plot Eigenvalues
+% Plot Eigenvalues and Transfer Matrix
 %==========================================================================
 
 function o = Real(o,sub)               % Plot Real Part of Eigenvalues 
@@ -222,7 +240,7 @@ function o = Imag(o,sub)               % Plot Imag Part of Eigenvalues
   
    heading(o);
 end
-function o = Complex(o,sub)            % Eigenvalues in Complex Plane                
+function o = Complex(o,sub)            % Eigenvalues in Complex Plane  
    if ~type(o,{'spm'})
       oo = plot(o,'About');
       return                           % no idea how to plot this type
@@ -245,6 +263,22 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
 
 %  set(gca,'DataAspectRatio',[1 1 1]);
    heading(o);
+end
+function o = ShowTff(o)                % Show Transfer Function        
+   i = arg(o,1);
+   j = arg(o,2);
+
+   G = cache(o,'trfm.G');
+
+   Gij = peek(G,i,j);
+   Gij = opt(Gij,'maxlen',200);
+   str = display(Gij);
+
+   comment = {get(o,{'title',''}),' '};
+   for (k=1:size(str,1))
+      comment{end+1} = str(k,:);
+   end
+   message(o,sprintf('Transfer Function G(%g,%g)',i,j),comment);
 end
 
 %==========================================================================
@@ -321,7 +355,7 @@ function o = ForceStep(o)              % Force Step Response
    
    heading(o,sprintf('Step Response: F%g->y - %s',index,Title(o)));
 end
-function o = ForceStepOverview(o)      % Force Step Response Overview           
+function o = ForceStepOverview(o)      % Force Step Response Overview  
    if ~type(o,{'spm'})
       plot(o,'About');
       return

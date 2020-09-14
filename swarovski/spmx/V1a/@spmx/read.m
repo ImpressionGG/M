@@ -109,6 +109,8 @@ function oo = ReadSpmSpm(o)            % Read Driver for .spm File
    
    header = sprintf('System: A[%dx%d], B[%dx%d], C[%dx%d], D[%dx%d]',...
                     size(A),size(B),size(C),size(D));
+
+   oo.par.title = file;
    oo.par.comment = {header,['file: ',file,ext],['directory: ',dir]};
                  
    oo.data.A = A;

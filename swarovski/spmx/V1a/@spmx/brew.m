@@ -7,11 +7,11 @@ function oo = brew(o,varargin)         % SPMX Brew Method
 %           oo = brew(o,'Eigen')            % brew eigen values
 %           oo = brew(o,'Normalize')        % brew time scaled system
 %           oo = brew(o,'Partial')          % brew partial matrices
-%           oo = brew(p,'TrfMatrix')        % brew transfer matrix
+%           oo = brew(p,'Trfm')             % brew transfer matrix
 %
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partial,...
-                                  @TrfMatrix);
+                                  @Trfm,@TrfMatrix);
    oo = gamma(oo);
 end              
 
@@ -106,4 +106,52 @@ can(Gij)
       end
    end
    oo = var(o,'G',G);
+end
+function oo = Trfm(o)             % Transfer Matrix               
+   oo = PhiDouble(o);
+   cache(oo,oo);
+end
+function oo = PhiDouble(o)             % Rational Transition Matrix    
+   refresh(o,{@menu,'About'});         % don't come back here!!!
+   
+   oo = current(o);
+   oo = brew(oo,'Partial');            % brew partial matrices
+   
+   %[A21,A22,B2,C1,D] = var(oo,'A21,A22,B2,C1,D');
+   
+   [A,B,C,D] = data(oo,'A,B,C,D');
+   
+   [n,m] = size(B);  [l,~] = size(C);
+
+   O = base(inherit(corinth,o));       % need to access CORINTH methods
+   G = matrix(O,zeros(l,m));
+
+   for (j=1:m)                         % j indexes B(:,j) (columns of B)
+      [num,den] = ss2tf(A,B,C,D,j);
+      assert(l==size(num,1));
+      for (i=1:l)
+         numi = num(i,:);
+         p = poly(O,numi);             % numerator polynomial
+         q = poly(O,den);              % denominator polynomial
+         
+         Gij = ratio(O,1);
+         Gij = poke(Gij,p,q);          % Gij not canceled and trimmed
+         
+         fprintf('G%g%g(s):\n',i,j)
+         display(Gij);
+         
+         G = poke(G,Gij,i,j);
+         
+         numtag = sprintf('num_%g_%g',i,j);
+         oo = cache(oo,['trfm.',numtag],numi);
+
+         dentag = sprintf('den_%g_%g',i,j);
+         oo = cache(oo,['trfm.',dentag],den);
+      end
+   end
+   
+   oo = cache(oo,'trfm.G',G);          % store in cache
+   
+   fprintf('Transfer Matrix (calculated using double)\n');
+   display(cache(oo,'trfm.G'));
 end
