@@ -1,4 +1,4 @@
-function oo = plot(o,varargin)
+function oo = plot(o,varargin)         % Corazon Plot Method           
 %
 % PLOT   CORAZON plot method. Extension of MATLAB plot function by
 %        extended color strings denoting color, line width and line type
@@ -91,6 +91,14 @@ function oo = plot(o,varargin)
 %           plot(o,'Show')             % show object
 %           plot(o,'Animation')        % animation of object
 %           plot(o,'Basket')           % plot all objects of basket
+%
+%        Options:
+%
+%           title:           plot title  (default: '' - no title)
+%           xlabel:          plot xlabel (default: '' - no xlabel)
+%           ylabel:          plot ylabel (default: '' - no ylabel)
+%           xscale:          x-scaling factor (default: 1)
+%           yscale:          y-scaling factor (default: 1)
 %
 %        Copyright (c): Bluenetics 2020 
 %
@@ -185,12 +193,14 @@ end
 %==========================================================================
 
 function oo = Plot(o)                  % Default Plot Function         
-   if isobject(arg(o,1))               % forward calling syntax?
-      ilist = arg(arg(o,1));
+   oo = arg(o,1);
+   if isobject(oo)                     % forward calling syntax?
+      ilist = arg(oo);
       if ~iscell(ilist) || length(ilist) < 2 || ...
          ~isa(ilist{1},'double') || isempty(ilist{1})
          oo = [];  return              % then no arglist for corazon/plot
       end
+      o = inherit(o,oo);               % inherit opts from arg2 object
    else
       ilist = arg(o);                  % the normal way of getting args
    end
@@ -242,6 +252,13 @@ function oo = Plot(o)                  % Default Plot Function
       
    bullets = opt(o,'bullets');
    o = opt(o,'dark',dark(o));          % provide 'dark' option
+   
+      % add object with options to ilist
+      
+   ilist =  [{o},ilist];
+   
+      % preparations complete - plot now ...
+      
    if ~isempty(bullets)
       if isequal(bullets,1)
          if dark(o)

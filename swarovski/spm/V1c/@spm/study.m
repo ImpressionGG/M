@@ -9,6 +9,7 @@ function oo = study(o,varargin)        % Do Some Studies
 %    See also: SPM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
+                       @Step,@Ramp,...
                        @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational);
    oo = gamma(o);                   % invoke local function
 end
@@ -17,7 +18,7 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)
+function oo = Menu(o)                  % Setup Study Menu              
    oo = mitem(o,'Transition Matrix');
    ooo = mitem(oo,'Double',{@WithCuo,'PhiDouble'});
    ooo = mitem(oo,'Rational',{@WithCuo,'PhiRational'});
@@ -29,6 +30,16 @@ function oo = Menu(o)
    ooo = mitem(oo,'Rational',{@WithCuo,'TrfmRational'});   
    enable(ooo,0);
 
+   oo = mitem(oo,'-');
+   oo = mitem(o,'Step Response');
+   ooo = mitem(oo,'Force Step F1',{@WithCuo,'Step'},1);
+   ooo = mitem(oo,'Force Step F2',{@WithCuo,'Step'},2);
+   ooo = mitem(oo,'Force Step F3',{@WithCuo,'Step'},3);
+   oo = mitem(o,'Ramp Response');
+   ooo = mitem(oo,'Force Ramp F1',{@WithCuo,'Ramp'},1);
+   ooo = mitem(oo,'Force Ramp F2',{@WithCuo,'Ramp'},2);
+   ooo = mitem(oo,'Force Ramp F3',{@WithCuo,'Ramp'},3);
+   
    oo = mitem(o,'-');
    oo = mitem(o,'A,B,C,D');
    ooo = mitem(oo,'Inspect B',{@InspectB});
@@ -101,7 +112,7 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 end
 
 %==========================================================================
-% Studies
+% Transfer Matrix
 %==========================================================================
 
 function o = PhiDouble(o)              % Rational Transition Matrix    
@@ -175,6 +186,21 @@ function o = TrfmRational(o)           % Rational Transfer Matrix
    G = trfu(o,3,1);
    G
 end
+
+%==========================================================================
+% Step/Ramp Responses
+%==========================================================================
+
+function o = Step(o)                   % Step Response                 
+   plot(o,'Step',arg(o,1));            % forward to plot mmethod
+end
+function o = Ramp(o)                   % Ramp Response                 
+   plot(o,'Ramp',arg(o,1));            % forward to plot mmethod
+end
+
+%==========================================================================
+% Data Inspection
+%==========================================================================
 
 function o = InspectB(o)               % System Matrix Inspection      
    o = sho;

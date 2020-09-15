@@ -66,6 +66,40 @@ end
 % Release Notes
 %==========================================================================
 
+function CorazonPowerFeatures
+%
+% - universal data model with type, tag, parameters, data and working
+%   variables. easy casting of an object from one class to another class
+%
+% - graphical roll down menu based shell for the management of a list of
+%   data objects
+%
+% - automatic graphics refresh on change of menu settings
+%
+% - data objects can be organized as a plain list or as a hierarchical list
+%   grouped by so called packages
+%
+% - basic plot functions to deal with symbolic colors, line width, line
+%   types, stem plots, options for labeling and scaling (options can be
+%   assigned with default settings, to be setup in the menu)
+%
+% - cook method: to summarize data access raw data, calculated and cached
+%   data
+%
+% - cache functionality with user defined cache segments
+%
+% - data brewer, fully integrated into cache mechanism
+%
+% - easy menu build-up with user definable menu building blocks
+%
+% - event method to control selective menu refresh
+%
+% - plugin generation 
+%
+% - rapid toolbox or plugin generation
+%
+end
+
 function VersionV1A                                                    
 %--------------------------------------------------------------------------
 %
@@ -386,6 +420,7 @@ function VersionV1F
 % - plug3 to deactivate cleanly unused menu items and add useful
 % - fine tune corazon/rapid to generate plot method with ~type(o,{}) syntax
 % - pimp corazon/heading to call dark(o,'Axes') at the end
+% - add xscale & yscale option to corazito/plot
 %
 %
 % Known Bugs / Wishlist

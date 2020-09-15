@@ -7,9 +7,8 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
 %           plot(o,'Overview')         % Overview about eigenvalues of SPM
 %
-%           plot(o,'PlotX')            % stream plot X
-%           plot(o,'PlotY')            % stream plot Y
-%           plot(o,'PlotXY')           % scatter plot
+%           plot(o,'Step')             % force step response
+%           plot(o,'Ramp')             % force ramp response
 %
 %        See also: SPM, SHELL
 %
@@ -73,11 +72,6 @@ function oo = StepResponse(o)          % Step Response Menu
    ooo = mitem(oo,'F-Step Orbit @ F1',{@WithCuo,'ForceStep'},10);
    ooo = mitem(oo,'F-Step Orbit @ F2',{@WithCuo,'ForceStep'},20);
    ooo = mitem(oo,'F-Step Orbit @ F3',{@WithCuo,'ForceStep'},30);    
-   
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Step'},1);
-   ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Step'},2);
-   ooo = mitem(oo,'F3 Excitation',{@WithCuo,'Step'},3);
 end
 function oo = RampResponse(o)          % Ramp Response Menu            
    oo = mitem(o,'Ramp Response');
@@ -92,11 +86,6 @@ function oo = RampResponse(o)          % Ramp Response Menu
    ooo = mitem(oo,'F-Ramp Orbit @ F1',{@WithCuo,'ForceRamp'},10);
    ooo = mitem(oo,'F-Ramp Orbit @ F2',{@WithCuo,'ForceRamp'},20);
    ooo = mitem(oo,'F-Ramp Orbit @ F3',{@WithCuo,'ForceRamp'},30);    
-   
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F1 Excitation',{@WithCuo,'Ramp'},1);
-   ooo = mitem(oo,'F2 Excitation',{@WithCuo,'Ramp'},2);
-   ooo = mitem(oo,'F3 Excitation',{@WithCuo,'Ramp'},3);
 end
 
 %==========================================================================

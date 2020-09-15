@@ -36,7 +36,7 @@ function o = Init(o)                   % Init Object
    o = launch(o,mfilename);            % setup launch function
    o = control(o,{'dark'},1);          % run in dark mode
 
-   o = provide(o,'par.title','Spmx Shell');
+   o = provide(o,'par.title','SPM Toolbox');
    o = provide(o,'par.comment',{'Playing around with SPM objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
@@ -112,8 +112,44 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Dark');              % add Dark mode menu item
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
+   ooo = Scale(oo);                    % add Scale sub-menu
 
    plugin(o,'spm/shell/View');         % plug point
+end
+function oo = Scale(o)                 % Scale Sub-Menu                
+   setting(o,{'view.xunit'},'ms');     % time scaling unit
+   setting(o,{'view.xscale'},1e3);     % time scaling factor
+   setting(o,{'view.yunit'},'um');     % elongation scaling unit
+   setting(o,{'view.yscale'},1e6);     % elongation scaling factor
+
+   oo = mitem(o,'Scale');
+   ooo = mitem(oo,'Time Scale',{},'view.xunit');
+   choice(ooo,{{'s','s'},{'ms','ms'}},{@XscaleCb});
+   ooo = mitem(oo,'Elongation Scale',{},'view.yunit');
+   choice(ooo,{{'m','m'},{'mm','mm'},{'um','um'}},{@YscaleCb});
+   
+   function o = XscaleCb(o)
+      unit = setting(o,'view.xunit');
+      switch unit
+         case 's'
+            setting(o,'view.xscale',1);
+         case 'ms'
+            setting(o,'view.xscale',1e3);
+      end
+      refresh(o);
+   end
+   function o = YscaleCb(o)
+      unit = setting(o,'view.yunit');
+      switch unit
+         case 'm'
+            setting(o,'view.yscale',1);
+         case 'mm'
+            setting(o,'view.yscale',1e3);
+         case 'um'
+            setting(o,'view.yscale',1e6);
+      end
+      refresh(o);
+   end
 end
 
 %==========================================================================

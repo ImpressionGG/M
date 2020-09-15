@@ -1,4 +1,4 @@
-function out = plot(varargin)
+function out = plot(varargin)          % Corazita Plot Method          
 %
 % PLOT   CORAZITO PLOT method. Extension of MATLAB plot function by
 %        extended color strings denoting color, line width and line type
@@ -70,10 +70,22 @@ function out = plot(varargin)
 %           ry    orange
 %           ryy   Gold
 %
+%        Options: An additional object can be provided as first argument
+%                 to pass options
+%
+%           xscale:          x-scaling factor (default: 1)
+%           yscale:          y-scaling factor (default: 1)
+%
+%        Example:
+%
+%           o = opt(corazita,'xscale',10,'yscale',0.1);
+%           hdl = corazito.plot(o,hax,x1,y1,'r',x2,y2,'b|o',...)
+%           hdl = corazito.plot(o,x1,y1,'r',x2,y2,'b|o',...)
+%
 %        Copyright(c): Bluenetics 2020 
 %
 %        See also: CORAZITO, CORAZITO.COLOR
-%
+%      
    color = @corazito.color;            % short hand
    bullets = [];                       % no bullet plotting
    
@@ -94,6 +106,22 @@ function out = plot(varargin)
    else
       ilist = varargin;
    end
+   
+      % if first arg of ilist is an object we pick object and delete
+      % first element of ilist. object is used to pass options. Use 
+      % default settings if no object is passed.
+      
+   if isobject(ilist{1})               % object with options provided? 
+      o = ilist{1};                    % pick object
+      ilist(1) = [];                   % delete ilist head 
+      xscale = opt(o,{'xscale',1});    % x-scaling factor
+      yscale = opt(o,{'yscale',1});    % y-scaling factor
+   else                                % no object!
+      xscale = 1;  yscale = 1;         % go with default values
+   end
+   
+      % check if first arg of ilist is an axes handle
+   
    hax = gca;
    if isa(ilist{1},'matlab.graphics.axis.Axes')
       hax = ilist{1};
@@ -111,6 +139,8 @@ function out = plot(varargin)
    for (i=1:length(list))
       entry = list{i};
       x = entry{1};  y = entry{2};  col = entry{3};
+      x = x*xscale;  y = y*yscale;
+      
       [rgb,lwid,ltyp] = color(col);    % get line attributes
       
       idx = find(ltyp=='~');
@@ -142,7 +172,7 @@ function out = plot(varargin)
    end
 end
 
-function list = Chunks(ilist)
+function list = Chunks(ilist)          % Access Arg List Chunks        
 %
 % CHUNKS   Get the particular list of parameter chunks and make sure
 %          the args have proper type.
@@ -187,7 +217,7 @@ function list = Chunks(ilist)
    end
 end
 
-function hdl = Plot(hax,x,y,rgb,lwid,ltyp) % Plot graph and hold
+function hdl = Plot(hax,x,y,rgb,lwid,ltyp) % Plot graph and hold       
 %
    if isempty(ltyp)
       ltyp = '-';                      % solid by default
@@ -235,7 +265,7 @@ function hdl = Plot(hax,x,y,rgb,lwid,ltyp) % Plot graph and hold
       end
    end
 end
-function hdl = MultiColorPlot(hax,x,y,lwid,ltyp)
+function hdl = MultiColorPlot(hax,x,y,lwid,ltyp)                       
    color = @corazito.color;            % short hand
    if isempty(ltyp)
       ltyp = '-';

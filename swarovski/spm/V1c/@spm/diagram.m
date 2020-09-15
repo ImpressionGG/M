@@ -19,9 +19,8 @@ end
 %==========================================================================
 
 function o = Force(o)                  % Force Diagram                 
-   Kms = var(o,{'Kms',1});             % time scaling correction
-   ms = Kms*0.001;                     % factor ms/s
-   N = 1;                              % factor N/N
+   o = with(o,'view');                 % unwrap view options
+   o = opt(o,'yscale',1,'yunit','N');
  
    sym = arg(o,1);
    t = arg(o,2);
@@ -29,14 +28,9 @@ function o = Force(o)                  % Force Diagram
    sub = o.either(arg(o,4),[1 1 1]);
    
    subplot(o,sub);
-   plot(o,t/ms,F/N,'yyr');
+   plot(o,t,F,'yyr');
    
-   title(['Force ',sym]);
-   xlabel('time [ms]');
-   ylabel([sym,' [N]']);
-   
-   grid(o);
-   heading(o);
+   Epilog(o,['Force ',sym],sym);
 end
 
 %==========================================================================
@@ -44,24 +38,17 @@ end
 %==========================================================================
 
 function o = Elongation(o)             % Elongation Diagram            
-   Kms = var(o,{'Kms',1});             % time scaling correction
-   ms = Kms*0.001;                     % factor ms/s
-   um = 1e-6;
- 
+   o = with(o,'view');                 % unwrap view options
+   
    sym = arg(o,1);
    t = arg(o,2);
    y = arg(o,3);
    sub = o.either(arg(o,4),[1 1 1]);
    
    subplot(o,sub);
-   plot(o,t/ms,y/um,'g');
+   plot(o,t,y,'g');
    
-   title(['Elongation ',sym]);
-   xlabel('time [ms]');
-   ylabel([sym,' [um]']);
-   
-   grid(o);
-   heading(o);
+   Epilog(o,['Elongation ',sym],sym);
 end
 
 %==========================================================================
@@ -69,9 +56,7 @@ end
 %==========================================================================
 
 function o = Mode(o)                   % Mode Diagram                  
-   Kms = var(o,{'Kms',1});             % time scaling correction
-   ms = Kms*0.001;                     % factor ms/s
-   um = 1e-6;
+   o = with(o,'view');                 % unwrap view options
  
    colors = {'r','y','bc','m','gc','rw','yw','bcw','mw','gcw',...
              'rk','yk','bck','mk','gck'};
@@ -88,17 +73,12 @@ function o = Mode(o)                   % Mode Diagram
    
    subplot(o,sub);
    if (size(x,1) == 1)
-      plot(o,t/ms,x/um,col);
+      plot(o,t,x,col);
    else
-      plot(t/ms,x/um);
+      plot(t,x);
    end
    
-   title(['Mode ',sym]);
-   xlabel('time [ms]');
-   ylabel([sym,' [um]']);
-   
-   grid(o);
-   heading(o);
+   Epilog(o,['Mode ',sym],sym);
 end
 
 %==========================================================================
@@ -106,17 +86,17 @@ end
 %==========================================================================
 
 function o = Orbit(o)                  % Orbit Diagram                 
-   Kms = var(o,{'Kms',1});             % time scaling correction
-   ms = Kms*0.001;                     % factor ms/s
-   um = 1e-6;
- 
+   o = with(o,'view');                 % unwrap view options
+   o = opt(o,'xscale',opt(o,'yscale'));% copy y-scaling factor
+   o = opt(o,'xunit',opt(o,'yunit'));  % copy y-unit
+   
    sym = arg(o,1);
    ya = arg(o,2);
    yb = arg(o,3);
    sub = o.either(arg(o,4),[1 1 1]);
    
    subplot(o,sub);
-   plot(o,ya/um,yb/um,'g');
+   plot(o,ya,yb,'g');
    
    try
       sym1 = sym(4:5);
@@ -124,10 +104,24 @@ function o = Orbit(o)                  % Orbit Diagram
    catch
       sym1 = 'ya';  sym2 = 'yb';
    end
+  
+   Epilog(o,['Orbit ',sym2,' (',sym1,')'],sym1,sym2);
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function o = Epilog(o,tit,sym1,sym2)   % Epilog Tasks for Diagrams     
+   title(tit);
    
-   title(['Orbit ',sym2,' (',sym1,')']);
-   xlabel([sym1,' [ms]']);
-   ylabel([sym2,' [um]']);
+   if (nargin == 3)
+      xlabel(['time [',opt(o,{'xunit','?'}),']']);
+      ylabel([sym1,' [',opt(o,{'yunit','?'}),']']);
+   elseif (nargin == 4)
+      xlabel([sym1,' [',opt(o,{'xunit','?'}),']']);
+      ylabel([sym2,' [',opt(o,{'yunit','?'}),']']);
+   end
    
    grid(o);
    heading(o);

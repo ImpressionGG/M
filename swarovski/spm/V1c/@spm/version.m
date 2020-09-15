@@ -42,6 +42,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - add academic model #2
 % - add Select event registration in shell/Select menu
 % - move all spmx/V1a stuff to new spm/V1c version
+% - add View/Scale menu
+% - move plot/Excitation stuff to Study menu
 %
 %
 % Known bugs & wishlist
