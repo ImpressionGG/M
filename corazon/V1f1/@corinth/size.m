@@ -14,7 +14,7 @@ function [m,n] = size(o,i)
    switch o.type
       case 'matrix'
          [m,n] = size(o.data.matrix);
-      case {'number','poly','ratio'}
+      case {'trf','number','poly','ratio'}
          m = 1;  n = 1;
       otherwise
          error('implementation');

@@ -17,6 +17,8 @@ function [oo,y,e] = trim(o,x,y,e)      % Trim CORINTH Object or Mantissa
       corazon.profiler('trim',1);
    
       switch o.type
+         case 'trf'
+            oo = Trf(o);
          case 'number'
             oo = Number(o);
          case 'poly'
@@ -54,6 +56,19 @@ function y = Trim(o,x)                 % Trim Mantissa
    else
       y = x(idx(1):end);
    end
+end
+
+%==========================================================================
+% Trim Transfer Function
+%==========================================================================
+
+function o = Trf(o)                    % Trim Transfer Function         
+%
+% TRF        Trim transfer function object: remove leading zeros
+%            in numerator and denominator.
+%
+   o.data.num = Trim(o,o.data.num);
+   o.data.den = Trim(o,o.data.den);
 end
 
 %==========================================================================

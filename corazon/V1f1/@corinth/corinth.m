@@ -16,6 +16,7 @@ classdef corinth < corazon             % Corinth Class Definition
 %
 %           Supported types:
 %
+%              'trf'       double valued transfer function
 %              'number'    rational number (integer ratio)
 %              'poly'      polynomial (with rational coefficients)
 %              'ratio'     rational function
@@ -25,8 +26,10 @@ classdef corinth < corazon             % Corinth Class Definition
 %                   construct corinthian objects
 %
 %           Examples:
+%
 %              o = base(corinth,100)   % define base (default: 1e6)
 %
+%              G = trf(o,[2 3],[1 2])
 %              n = number(o,8.88)      % number 888/100
 %              n = number(o,5,6)       % number 5/6
 %
@@ -122,7 +125,7 @@ function o = Construct(o,type)         % construct object
    o.work.opt = opti;
 
    switch type
-      case {'number','poly'}
+      case {'trf','number','poly'}
          o.data.expo = 0;
          o.data.num = 0;
          o.data.den = 1;

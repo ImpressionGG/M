@@ -8,6 +8,9 @@ function n = order(o)                  % Order of CORINTH Object
 %         See also: CORINTH, DIGITS, SIZE, TRIM, FORM
 %
    switch o.type
+      case 'trf'
+         [num,den] = peek(o);
+         n = max(length(num)-1,length(den)-1);
       case 'number'
          n = 0;
       case 'poly'

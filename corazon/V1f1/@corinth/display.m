@@ -21,6 +21,13 @@ function txt = display(o)              % Display Corinthian Object
    end
    
    switch o.type
+      case 'trf'      
+         if (nargout == 0)
+            Trf(o);
+         else
+            txt = Trf(o);
+         end
+         
       case 'number'
          if (nargout == 0)
             fprintf('   rational number:\n');
@@ -56,6 +63,40 @@ function txt = display(o)              % Display Corinthian Object
          end
       otherwise
          disp(o)                       % display in corazon style
+   end
+end
+
+%==========================================================================
+% Display Transfer Function
+%==========================================================================
+
+function txt = Trf(o)                  % Display Transfer Function                
+   assert(isequal(o.type,'trf'));
+   [num,den] = peek(o);
+      
+      % compile readable text string; distinguish if denominator equals
+      % one or else      
+         
+   if isequal(den,1)
+      txt = PolyString(o,num,'s');
+      txt = ['((',txt,'))'];
+   else
+      txt = RatioString(o,num,den,'s');
+      txt = Trim(o,txt);
+   end
+   
+      % depending on calling syntax return readable text string or
+      % print to console
+      
+   if (nargout > 0)
+      return
+   elseif ~opt(o,{'detail',0})
+      fprintf('rational function (%g/%g)\n\n',...
+              length(num)-1,length(den)-1);
+      disp([setstr(' '+zeros(size(txt,1),3)),txt]);
+      fprintf('\n');
+   else
+      Display(o,num,den);
    end
 end
 
@@ -323,12 +364,12 @@ function Display(o,num,den)            % Display Rational Function
      
    name = get(o,'name');
    if ~isempty(name)                   % name provided
-      Trf(o,G,name);
+      Trfct(o,G,name);
    else
-      Trf(o,G);
+      Trfct(o,G);
    end
 end
-function out = Trf(o,G,name)           % Display Transfer Funcion      
+function out = Trfct(o,G,name)           % Display Transfer Funcion      
 %
 % TRFDISP Display transfer function. 
 %

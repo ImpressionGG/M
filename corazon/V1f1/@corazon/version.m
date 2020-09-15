@@ -421,6 +421,7 @@ function VersionV1F
 % - fine tune corazon/rapid to generate plot method with ~type(o,{}) syntax
 % - pimp corazon/heading to call dark(o,'Axes') at the end
 % - add xscale & yscale option to corazito/plot
+% - implement corinthian trf type (construct,add,can,trim)
 %
 %
 % Known Bugs / Wishlist
