@@ -235,7 +235,14 @@ function oo = Academic2(o)             % Academic Sample #2
    oo.par.title = 'Academic Sample #2';
    oo.par.comment = {sprintf('omega = [%g %g %g],  zeta = %g',...
                               omega(1),omega(2),omega(3),zeta(1)),...
-                     'Set simulation time: 10s'};
+                     'Set simulation time: 10s',...
+                     'M = [0 -2 -1;  2 0 1;  1 -1 0]'};
+                  
+      % store some parameters as info
+      
+   oo.par.omega = omega;
+   oo.par.zeta = zeta;
+   oo.par.M = M;
     
       % finally set data
       
