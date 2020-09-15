@@ -1,4 +1,4 @@
-function oo = shell(o,varargin)        % SPMX shell
+function oo = shell(o,varargin)        % SPM Shell                     
    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
                                  @Plot,@PlotCb,@Analysis,@Study);
    oo = gamma(o);                      % invoke local function
@@ -37,7 +37,7 @@ function o = Init(o)                   % Init Object
    o = control(o,{'dark'},1);          % run in dark mode
 
    o = provide(o,'par.title','Spmx Shell');
-   o = provide(o,'par.comment',{'Playing around with SPMX objects'});
+   o = provide(o,'par.comment',{'Playing around with SPM objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus         
@@ -64,7 +64,7 @@ function oo = New(o)                   % New Menu
 end
 function oo = Import(o)                % Import Menu Items             
    oo = mhead(o,'Import');             % locate Import menu header
-   ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spmx});
+   ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spm});
    return
 
    function o = ImportCb(o)            % Import Log Data Callback
@@ -84,7 +84,7 @@ function oo = Export(o)                % Export Menu Items
    ooo = mitem(oo,'Spmx');
    enable(ooo,0);
 
-   oooo = mitem(ooo,'Log Data (.dat)',{@ExportCb,'WriteGenDat','.dat',@spmx});
+   oooo = mitem(ooo,'Log Data (.dat)',{@ExportCb,'WriteGenDat','.dat',@spm});
    return
 
    function oo = ExportCb(o)           % Export Log Data Callback
@@ -113,7 +113,7 @@ function oo = View(o)                  % View Menu
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
 
-   plugin(o,'spmx/shell/View');       % plug point
+   plugin(o,'spm/shell/View');         % plug point
 end
 
 %==========================================================================
@@ -188,7 +188,7 @@ function oo = Plot(o)                  % Plot Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = plot(oo,'Menu');              % setup plot menu
 
-   plugin(o,'spmx/shell/Plot');       % plug point
+   plugin(o,'spm/shell/Plot');         % plug point
 end
 
 %==========================================================================
@@ -200,7 +200,7 @@ function oo = Analyse(o)               % Analyse Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = analyse(oo,'Menu');           % setup analyse menu
 
-   plugin(o,'spmx/shell/Analyse');    % plug point
+   plugin(o,'spm/shell/Analyse');      % plug point
 end
 
 %==========================================================================
@@ -212,7 +212,7 @@ function oo = Study(o)                 % Study Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = study(oo,'Menu');             % setup study menu
 
-   plugin(o,'spmx/shell/Study');      % plug point
+   plugin(o,'spm/shell/Study');        % plug point
 end
 
 %==========================================================================
@@ -222,8 +222,8 @@ end
 function oo = Info(o)                  % Info Menu                     
    oo = menu(o,'Info');                % add Info menu
    ooo = mseek(oo,{'Version'});
-   oooo = mitem(ooo,['Spmx Class: Version ',version(spmx)]);
-   ooooo = mitem(oooo,'Edit Release Notes','edit spmx/version');
+   oooo = mitem(ooo,['Spmx Class: Version ',version(spm)]);
+   ooooo = mitem(oooo,'Edit Release Notes','edit spm/version');
 
-   plugin(o,'spmx/shell/Info');       % plug point
+   plugin(o,'spm/shell/Info');         % plug point
 end

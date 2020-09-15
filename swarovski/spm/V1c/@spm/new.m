@@ -1,18 +1,17 @@
-function oo = new(o,varargin)          % SPMX New Method              
+function oo = new(o,varargin)          % SPM New Method                
 %
-% NEW   New SPMX object
+% NEW   New SPM object
 %
 %           oo = new(o,'Menu')         % menu setup
 %
-%           o = new(spmx,'Simple')    % some simple data
-%           o = new(spmx,'Wave')      % some wave data
-%           o = new(spmx,'Beat')      % some beat data
+%           o = new(spm,'Simple')     % some simple data
+%           o = new(spm,'Wave')       % some wave data
+%           o = new(spm,'Beat')       % some beat data
 %
-%       See also: SPMX, PLOT, ANALYSIS, STUDY
+%       See also: SPM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Mode3A,@Mode3B,@Mode3C,...
-                       @Academic1,@Academic2,...
-                       @Menu);
+                       @Academic1,@Academic2,@Menu);
    oo = gamma(oo);
 end
 
@@ -98,7 +97,7 @@ function oo = Mode3A(o)                % 3-Mode Sample, Version A
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spmx('spm');                   % new spm typed object
+   oo = spm('spm');                    % new spm typed object
    oo.par.title = '3-Mode Sample A';
     
       % finally set data
@@ -128,7 +127,7 @@ function oo = Mode3B(o)                % 3-Mode Sample, Version B
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spmx('spm');                   % new spm typed object
+   oo = spm('spm');                    % new spm typed object
    oo.par.title = '3-Mode Sample B';
     
       % finally set data
@@ -160,7 +159,7 @@ function oo = Mode3C(o)                % 3-Mode Sample, Version C
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spmx('spm');                   % new spm typed object
+   oo = spm('spm');                    % new spm typed object
    oo.par.title = '3-Mode Sample C';
     
       % finally set data
@@ -193,7 +192,7 @@ function oo = Academic1(o)             % Academic Sample #1
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spmx('spm');                   % new spm typed object
+   oo = spm('spm');                    % new spm typed object
    oo.par.title = 'Academic Sample #1';
    oo.par.comment = {'omega = [3 7 15],  zeta = 0.01',...
                      'Set simulation time: 10s'};
@@ -232,7 +231,7 @@ function oo = Academic2(o)             % Academic Sample #2
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spmx('spm');                   % new spm typed object
+   oo = spm('spm');                    % new spm typed object
    oo.par.title = 'Academic Sample #2';
    oo.par.comment = {sprintf('omega = [%g %g %g],  zeta = %g',...
                               omega(1),omega(2),omega(3),zeta(1)),...
