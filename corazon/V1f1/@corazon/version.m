@@ -422,6 +422,7 @@ function VersionV1F
 % - pimp corazon/heading to call dark(o,'Axes') at the end
 % - add xscale & yscale option to corazito/plot
 % - implement corinthian trf type (construct,add,can,trim)
+% - implement plus, minus, mtimes, mul, div, inv for corynthian trf
 %
 %
 % Known Bugs / Wishlist

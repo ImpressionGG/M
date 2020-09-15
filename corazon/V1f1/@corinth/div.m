@@ -43,6 +43,9 @@ function [q,r] = div(o,x,y)            % Divide Two Rational Objects
    else
       x = touch(x);
       switch o.type
+         case 'trf'
+            [q,r] = DivTrf(o,x);
+
          case 'number'
             o.profiler('numbdiv',1);
             [q,r] = DivNumber(o,x);
@@ -147,7 +150,7 @@ function [q,r] = Div(o,x,y)            % Mantissa Division
    end
    r = r * sgnx;
 end
-function [q,r] = Division(o,x,y,verbose,run)   % Division Helper          
+function [q,r] = Division(o,x,y,verbose,run)   % Division Helper       
 %
 % DIVISION   Integer division for specific boundary conditions, where
 %            y is non-empty and x has one more digit than y and both x and
@@ -427,6 +430,34 @@ q = q1;
    end
    
    corazon.profiler('Division',0);
+end
+
+%==========================================================================
+% Multiplication Two Transfer Functions
+%==========================================================================
+
+function [q,r] = DivTrf(o1,o2)         % Division Of Transfer Functions 
+%   
+   if (o1.data.base ~= o2.data.base)
+      error('incompatible bases!');
+   end
+   
+   oo = o1;
+
+   [num1,den1] = peek(o1);
+   [num2,den2] = peek(o2);
+   
+   num = conv(num1,den2);
+   den = conv(den1,num2);
+      
+   oo = poke(oo,0,num,den);
+   
+   oo = can(oo);
+   q = trim(oo);
+   
+   if (nargout > 1)
+      r = corinth(o1,'trf');           % zero
+   end
 end
 
 %==========================================================================

@@ -1,4 +1,4 @@
-function oo = minus(o1,o2)
+function oo = minus(o1,o2)             % Corinthias Minus              
 %
 % MINUS    Overloaded operator + for CORINTH objects (rational objects)
 %
@@ -12,9 +12,9 @@ function oo = minus(o1,o2)
 %          See also: CORINTH, PLUS, MINUS, MTIMES, MRDIVIDE
 %
    if (~isa(o1,'corinth'))
-      o1 = corinth(o2,o1);
+      [o2,o1] = Cast(o2,o1);
    elseif (~isa(o2,'corinth'))
-      o2 = corinth(o1,o2);
+      [o1,o2] = Cast(o1,o2);
    end
     
    assert(isa(o1,'corinth') && isa(o2,'corinth'));
@@ -47,8 +47,8 @@ end
 % Scalar Minus Any
 %==========================================================================
 
-function oo = ScalarMinusAny(os,oa)    % Scalar (os) Minus Any (oa)     
-   os = ratio(os);                     % cast scalar to a ratio
+function oo = ScalarMinusAny(os,oa)    % Scalar (os) Minus Any (oa)    
+   %os = ratio(os);                     % cast scalar to a ratio
    
    if isequal(oa.type,'matrix')        % in case oa is a matrix
       M = oa.data.matrix;
@@ -61,7 +61,8 @@ function oo = ScalarMinusAny(os,oa)    % Scalar (os) Minus Any (oa)
       oo = oa;
       oo.data.matrix = M;
    else                                % otherwise oa is a scalar too 
-      oa = ratio(oa);                  % cast oa to a ratio    
+      %oa = ratio(oa);                 % cast oa to a ratio    
+      [os,oa] = Cast(os,oa);
       oo = sub(os,oa);                 % subtract the two ratios
    end
 end
@@ -70,8 +71,8 @@ end
 % Any Minus Scalar
 %==========================================================================
 
-function oo = AnyMinusScalar(oa,os)    % Any (oa) Minus Scalar (os)     
-   os = ratio(os);                     % cast scalar to a ratio
+function oo = AnyMinusScalar(oa,os)    % Any (oa) Minus Scalar (os)    
+   %os = ratio(os);                     % cast scalar to a ratio
    
    if isequal(oa.type,'matrix')        % in case oa is a matrix
       M = oa.data.matrix;
@@ -84,7 +85,8 @@ function oo = AnyMinusScalar(oa,os)    % Any (oa) Minus Scalar (os)
       oo = oa;
       oo.data.matrix = M;
    else                                % otherwise oa is a scalar too 
-      oa = ratio(oa);                  % cast oa to a ratio    
+      %oa = ratio(oa);                 % cast oa to a ratio    
+      [os,oa] = Cast(os,oa);
       oo = sub(oa,os);                 % subtract the two ratios
    end
 end
@@ -93,7 +95,7 @@ end
 % Matrix Plus Matrix
 %==========================================================================
 
-function oo = MatrixMinusMatrix(o1,o2) % Matrix Minus Matrix            
+function oo = MatrixMinusMatrix(o1,o2) % Matrix Minus Matrix           
    if ~isequal(o1.type,'matrix') || ~isequal(o2.type,'matrix')
       error('matrix type expected');
    end
@@ -119,4 +121,74 @@ function oo = MatrixMinusMatrix(o1,o2) % Matrix Minus Matrix
 
    oo = corinth(o1,'matrix');
    oo.data.matrix = M;
+end
+
+%==========================================================================
+% Cast to Same Types
+%==========================================================================
+
+function [o1,o2] = Cast(o1,o2)         % Cast Objects to be Compatible 
+   if isa(o2,'double');
+      if isequal(o1.type,'trf')
+         o2 = trf(o1,o2);
+         return
+      else
+         o2 = number(o1,o2);
+      end
+   end
+   
+   kind = max(Kind(o1),Kind(o2));
+   switch kind
+      case 0
+         if ~isequal(o1.type,'trf')
+            o1 = trf(o1);
+         end
+         if ~isequal(o2.type,'trf')
+            o2 = trf(o2);
+         end
+         
+      case 1
+         if ~isequal(o1.type,'number')
+            o1 = number(o1);
+         end
+         if ~isequal(o2.type,'number')
+            o2 = number(o2);
+         end
+         
+      case 2
+         if ~isequal(o1.type,'poly')
+            o1 = poly(o1);
+         end
+         if ~isequal(o2.type,'poly')
+            o2 = poly(o2);
+         end
+
+      case 3
+         if ~isequal(o1.type,'ratio')
+            o1 = ratio(o1);
+         end
+         if ~isequal(o2.type,'ratio')
+            o2 = ratio(o2);
+         end
+         
+      otherwise
+         error('internal');
+   end
+
+   function kind = Kind(o)
+      switch o.type
+         case 'trf'
+            kind = 0;
+         case 'number'
+            kind = 1;
+         case 'poly'
+            kind = 2;
+         case 'ratio'
+            kind = 3;
+         case 'matrix'
+            kind = 4;
+         otherwise
+            kind = NaN;
+      end
+   end
 end

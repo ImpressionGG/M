@@ -69,6 +69,10 @@ function o = Trf(o)                    % Trim Transfer Function
 %
    o.data.num = Trim(o,o.data.num);
    o.data.den = Trim(o,o.data.den);
+   
+   if isequal(o.data.num,0)
+      o.data.den = 1;
+   end
 end
 
 %==========================================================================

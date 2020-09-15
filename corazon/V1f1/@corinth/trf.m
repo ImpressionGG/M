@@ -39,9 +39,8 @@ function oo = trf(o,num,den)
       if iscell(num)
          oo = Matrix(o,num);
       elseif isa(num,'double')
-         p = poly(o,num);
-         q = poly(o,1);
-         oo = Trf(p,q);
+         p = num;  q = 1;
+         oo = Trf(o,p,q);
       else
          p = o;  q = num;              % rename args
          oo = Trf(o,p,q);
@@ -102,19 +101,29 @@ end
 
 function oo = Cast(o)
    switch o.type
+      case 'trf'
+         oo = o;                       % easy :-)
+         
       case 'number'
          num = poly(o);  den = poly(o,1);
          oo = ratio(o,num,den);        % ratio of two polynomials
+         
       case 'poly'
          num = o;  den = poly(o,1);
          oo = ratio(o,num,den);        % ratio of two polynomials
-      case 'trf'
-         oo = o;                       % easy :-)
+         
+      case 'ratio'
+         [on,od] = peek(o);
+         num = real(on);
+         den = real(od);
+         oo = trf(o,num,den);          % trf of two row vectors
+         
       case 'matrix'
          if (prod(size(o)) ~= 1)
             error('cannot cast non-scalar matrix to ratio');
          end
          oo = o.data.matrix{1};
+         
       otherwise
          error('internal')
    end

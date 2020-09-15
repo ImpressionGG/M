@@ -12,9 +12,9 @@ function oo = plus(o1,o2)
 %          See also: CORINTH, PLUS, MINUS, MTIMES, MRDIVIDE
 %
    if (~isa(o1,'corinth'))
-      o1 = corinth(o2,o1);
+      [o2,o1] = Cast(o2,o1);
    elseif (~isa(o2,'corinth'))
-      o2 = corinth(o1,o2);
+      [o1,o2] = Cast(o1,o2);
    end
    
    assert(isa(o1,'corinth') && isa(o2,'corinth'));
@@ -101,9 +101,26 @@ end
 % Cast to Same Types
 %==========================================================================
 
-function [o1,o2] = Cast(o1,o2)
+function [o1,o2] = Cast(o1,o2)         % Cast Objects to be Compatible 
+   if isa(o2,'double');
+      if isequal(o1.type,'trf')
+         o2 = trf(o1,o2);
+         return
+      else
+         o2 = number(o1,o2);
+      end
+   end
+   
    kind = max(Kind(o1),Kind(o2));
    switch kind
+      case 0
+         if ~isequal(o1.type,'trf')
+            o1 = trf(o1);
+         end
+         if ~isequal(o2.type,'trf')
+            o2 = trf(o2);
+         end
+         
       case 1
          if ~isequal(o1.type,'number')
             o1 = number(o1);
@@ -134,6 +151,8 @@ function [o1,o2] = Cast(o1,o2)
 
    function kind = Kind(o)
       switch o.type
+         case 'trf'
+            kind = 0;
          case 'number'
             kind = 1;
          case 'poly'

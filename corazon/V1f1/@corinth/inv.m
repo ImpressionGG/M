@@ -16,6 +16,9 @@ function oo = inv(o,M)
 %        See also: CORINTH,POLY, MATRIX, DET
 %
    switch o.type
+      case 'trf'
+         [num,den] = peek(o);
+         oo = poke(o,0,den,num);
       case 'number'
          [num,den,xpo] = peek(o);
          oo = poke(o,-xpo,den,num);

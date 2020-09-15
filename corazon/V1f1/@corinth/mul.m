@@ -29,6 +29,8 @@ function oo = mul(o,x,y)               % Multiply Two Rational Objects
    else
       x = touch(x);
       switch o.type
+         case 'trf'
+            oo = MulTrf(o,x);
          case 'number'
             oo = MulNumber(o,x);
          case 'poly'
@@ -99,6 +101,30 @@ function z = Mul(o,x,y)                % Multiply Mantissa
       z = add(o,z,t);
    end
    z = sign*z;
+end
+
+%==========================================================================
+% Multiplication Two Transfer Functions
+%==========================================================================
+
+function oo = MulTrf(o1,o2)            % Product Of Transfer Functions 
+%   
+   if (o1.data.base ~= o2.data.base)
+      error('incompatible bases!');
+   end
+   
+   oo = o1;
+
+   [num1,den1] = peek(o1);
+   [num2,den2] = peek(o2);
+   
+   num = conv(num1,num2);
+   den = conv(den1,den2);
+      
+   oo = poke(oo,0,num,den);
+   
+   oo = can(oo);
+   oo = trim(oo);
 end
 
 %==========================================================================

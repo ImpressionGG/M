@@ -57,6 +57,15 @@ end
 %==========================================================================
 
 function oo = Cast(o,x)                % Cast to Higher Order Corinth
+   if isa(x,'double');
+      if isequal(o.type,'trf')
+         oo = trf(o,x);
+         return
+      else
+         x = number(o,x);
+      end
+   end
+   
    if isa(x,'double')
       assert(prod(size(x))==1);
 

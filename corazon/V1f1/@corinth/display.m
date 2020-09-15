@@ -79,7 +79,11 @@ function txt = Trf(o)                  % Display Transfer Function
          
    if isequal(den,1)
       txt = PolyString(o,num,'s');
-      txt = ['((',txt,'))'];
+      if isequal(o.type,'trf')
+         txt = ['[[',txt,']]'];
+      else
+         txt = ['((',txt,'))'];
+      end
    else
       txt = RatioString(o,num,den,'s');
       txt = Trim(o,txt);
@@ -91,7 +95,7 @@ function txt = Trf(o)                  % Display Transfer Function
    if (nargout > 0)
       return
    elseif ~opt(o,{'detail',0})
-      fprintf('rational function (%g/%g)\n\n',...
+      fprintf('transfer function (%g/%g)\n\n',...
               length(num)-1,length(den)-1);
       disp([setstr(' '+zeros(size(txt,1),3)),txt]);
       fprintf('\n');

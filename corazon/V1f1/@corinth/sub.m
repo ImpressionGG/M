@@ -20,6 +20,8 @@ function oo = sub(o,x,y)               % Subtract Two Rational Objects
    else
       x = touch(x);
       switch o.type
+         case 'trf'
+            oo = SubTrf(o,x);
          case 'number'
             oo = SubNumber(o,x);
          case 'poly'
@@ -83,7 +85,36 @@ function z = Sub(o,x,y)                % Mantissa Subtraction
 end
 
 %==========================================================================
-% Subtract Two Objects
+% Add Two Transfer Functions
+%==========================================================================
+
+function oo = SubTrf(o1,o2)            % Subraction Of Trf. Functions  
+%   
+   if (o1.data.base ~= o2.data.base)
+      error('incompatible bases!');
+   end
+   
+   oo = o1;
+
+   [num1,den1] = peek(o1);
+   [num2,den2] = peek(o2);
+   
+   p1 = conv(num1,den2);
+   p2 = conv(num2,den1);
+   
+   n1 = length(p1);  n2 = length(p2);  n = max(n1,n2);
+   
+   num = [zeros(1,n-n1),p1] - [zeros(1,n-n2),p2];
+   den = conv(den1,den2);
+   
+   oo = poke(oo,0,num,den);
+   
+   oo = can(oo);
+   oo = trim(oo);
+end
+
+%==========================================================================
+% Subtract Two Numbers
 %==========================================================================
 
 function oo = SubNumber(o1,o2)         % Subtract Rational Numbers     
