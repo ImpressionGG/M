@@ -77,7 +77,7 @@ end
 
 function oo = CanTrf(o)                % Cancel Transfer Function          
    oo = o;                             % just in case
-   caneps = opt(o,{'eps',1e-7});
+   caneps = opt(o,{'eps',1e-3});
    
       % calculate numerator and denominator roots
       
@@ -103,7 +103,13 @@ function oo = CanTrf(o)                % Cancel Transfer Function
 
    D = [];
    for (i = 1:degden)
-      D = [D, abs(rnum - rden(i))];	 % distance matrix
+      avg = abs((rnum + rden(i))/2);
+      dT = abs(rnum - rden(i));
+      idx = find(avg > eps);
+      if ~isempty(idx)
+         dT(idx) = dT(idx) ./ avg(idx);
+      end
+      D = [D, dT];	 % distance matrix
    end
 
       % prepare cancellation
@@ -111,7 +117,10 @@ function oo = CanTrf(o)                % Cancel Transfer Function
    idx_den = 1:degden;  idx_num = 1:degnum;
 
    for (j = 1:length(rden))
+      
       found = find( abs(D(:,j)) < caneps );
+      
+      
       for ( k = 1:length(found) )
 	      i = found(k);
 	      if ( idx_num(i) ~= 0  &  idx_den(j) ~= 0 )

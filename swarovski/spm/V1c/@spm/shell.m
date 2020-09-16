@@ -53,6 +53,8 @@ function oo = File(o)                  % File Menu
    ooo = New(oo);                      % add New menu
    ooo = Import(oo);                   % add Import menu items
    ooo = Export(oo);                   % add Export menu items
+   ooo = Tools(oo);
+   ooo = Extras(oo);
 end
 function oo = New(o)                   % New Menu                      
    oo = mseek(o,{'New'});
@@ -98,6 +100,23 @@ function oo = Export(o)                % Export Menu Items
          export(cast(oo),drv,ext);     % export object to file
       end
    end
+end
+function oo = Tools(o)
+   oo = mseek(o,{'Tools'});
+   ooo = mitem(oo,'Cache Reset',{@CacheReset});
+   
+   function o = CacheReset(o)
+      o = pull(o);
+      for (i=1:length(o.data))
+         oo = o.data{i};
+         cache(oo,oo,[]);              % cache hard reset
+      end
+      message(o,'All Caches Cleared!');
+   end
+end
+function oo = Extras(o)
+   oo = mseek(o,{'Extras'});
+   enable(oo,0);                       % disable Extras menu
 end
 
 %==========================================================================

@@ -131,10 +131,10 @@ function o = PokeMatrix(o,oo,i,j)     % Poke Matrix Element
    M = o.data.matrix;
    [m,n] = size(M);
    
-   if (i < 1 || i > m)
+   if (i < 1)
       error('bad row index');
    end
-   if (j < 1 || j > n)
+   if (j < 1)
       error('bad column index');
    end
    

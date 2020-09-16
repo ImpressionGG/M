@@ -19,16 +19,13 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Study Menu              
-   oo = mitem(o,'Transition Matrix');
-   ooo = mitem(oo,'Double',{@WithCuo,'PhiDouble'});
-   ooo = mitem(oo,'Rational',{@WithCuo,'PhiRational'});
-   enable(ooo,0);
-   
+   %oo = mitem(o,'Transition Matrix');
+   %ooo = mitem(oo,'Double',{@WithCuo,'PhiDouble'});
+   %ooo = mitem(oo,'Rational',{@WithCuo,'PhiRational'});
+
    oo = mitem(o,'Transfer Matrix');
    ooo = mitem(oo,'Double',{@WithCuo,'TrfmDouble'});
-   enable(ooo,0);
    ooo = mitem(oo,'Rational',{@WithCuo,'TrfmRational'});   
-   enable(ooo,0);
 
    oo = mitem(oo,'-');
    oo = mitem(o,'Step Response');
@@ -115,7 +112,7 @@ end
 % Transfer Matrix
 %==========================================================================
 
-function o = PhiDouble(o)              % Rational Transition Matrix    
+function o = OldPhiDouble(o)              % Rational Transition Matrix    
    G = cache(o,'trfm.G');
    disp(G);
    
@@ -129,7 +126,7 @@ function o = PhiDouble(o)              % Rational Transition Matrix
    end
    message(o,'Transferfunction G(1,1)',comment);
 end
-function o = OldPhiDouble(o)           % Rational Transition Matrix    
+function o = VeryOldPhiDouble(o)           % Rational Transition Matrix    
    refresh(o,{@menu,'About'});         % don't come back here!!!
    
    oo = current(o);
@@ -174,17 +171,47 @@ function o = OldPhiDouble(o)           % Rational Transition Matrix
    fprintf('Transfer Matrix (calculated using double)\n');
    display(var(oo,'G'));
 end
-function o = PhiRational(o)            % Double Transition Matrix      
+function o = OldPhiRational(o)            % Double Transition Matrix      
    message(o,'PhiRational: not yet implemented');
 end
 
 function o = TrfmDouble(o)             % Double Transfer Matrix        
-   G = trfu(o,3,1);
-   G
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   G = cache(o,'trfd.G');
+   disp(G);
+   
+   Gij = peek(G,1,1);
+   Gij = opt(Gij,'maxlen',200);
+   str = display(Gij);
+   
+   comment = {};
+   for (i=1:size(str,1))
+      comment{i} = str(i,:);
+   end
+   message(o,'Transfer Function G(1,1)',comment);
 end
 function o = TrfmRational(o)           % Rational Transfer Matrix      
-   G = trfu(o,3,1);
-   G
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   G = cache(o,'trfr.G');
+   disp(G);
+   
+   Gij = peek(G,1,1);
+   Gij = opt(Gij,'maxlen',200);
+   str = display(Gij);
+   
+   comment = {};
+   for (i=1:size(str,1))
+      comment{i} = str(i,:);
+   end
+   message(o,'Transfer Function G(1,1)',comment);
 end
 
 %==========================================================================

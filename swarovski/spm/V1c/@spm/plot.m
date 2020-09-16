@@ -13,9 +13,10 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %        See also: SPM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                       @Overview,@About,@Real,@Imag,@Complex,@ShowTff,...
-                       @Step,@Ramp,@ForceRamp,@ForceStep,...
-                       @AnalyseRamp,@NormRamp);
+                   @Overview,@About,@Real,@Imag,@Complex,...
+                   @Trfd,@Trfr,@Consd,@Consr,...
+                   @Step,@Ramp,@ForceRamp,@ForceStep,...
+                   @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
 
@@ -36,7 +37,9 @@ function oo = Menu(o)                  % Setup Plot Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
+   
    oo = TransferMatrix(o);
+   oo = ConstrainMatrix(o);
 
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
@@ -49,15 +52,61 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'Transfer Matrix');
+   ooo = mitem(oo,'Double');
+   oooo = mitem(ooo,sprintf('G(s)'),{@WithCuo,'Trfd',0,0});
+   oooo = mitem(ooo,'-');
    for (i=1:l)
       for (j=1:m)
-         ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'ShowTff',i,j});
+         oooo = mitem(ooo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfd',i,j});
       end
       if (i < l)
-         ooo = mitem(oo,'-');
+         oooo = mitem(oo,'-');
       end
    end
-end
+   
+   ooo = mitem(oo,'Rational');
+   oooo = mitem(ooo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
+   oooo = mitem(ooo,'-');
+   for (i=1:l)
+      for (j=1:m)
+         oooo = mitem(ooo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfr',i,j});
+      end
+      if (i < l)
+         oooo = mitem(oo,'-');
+      end
+   end
+ end
+function oo = ConstrainMatrix(o)       % Transfer Matrix Menu          
+   oo = current(o);
+   [B,C] = data(oo,'B,C');
+   [~,m] = size(B);
+   [l,~] = size(C);
+   
+   oo = mhead(o,'Constrained Matrix');
+   ooo = mitem(oo,'Double');
+   oooo = mitem(ooo,sprintf('H(s)'),{@WithCuo,'Consd',0,0});
+   oooo = mitem(ooo,'-');
+   for (i=1:l)
+      for (j=1:m)
+         oooo = mitem(ooo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consd',i,j});
+      end
+      if (i < l)
+         oooo = mitem(oo,'-');
+      end
+   end
+   
+   ooo = mitem(oo,'Rational');
+   oooo = mitem(ooo,sprintf('H(s)'),{@WithCuo,'Consr',0,0});
+   oooo = mitem(ooo,'-');
+   for (i=1:l)
+      for (j=1:m)
+         oooo = mitem(ooo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consr',i,j});
+      end
+      if (i < l)
+         oooo = mitem(oo,'-');
+      end
+   end
+ end
    
 function oo = StepResponse(o)          % Step Response Menu            
    oo = mitem(o,'Step Response');
@@ -265,11 +314,35 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
 %  set(gca,'DataAspectRatio',[1 1 1]);
    heading(o);
 end
-function o = ShowTff(o)                % Show Transfer Function        
+
+function o = Trfd(o)                   % Double Transfer Function      
    i = arg(o,1);
    j = arg(o,2);
 
-   G = cache(o,'trfm.G');
+   G = cache(o,'trfd.G');
+   if (i == 0 || j == 0)
+      G = opt(G,'maxlen',200);
+      str = display(G);
+      sym = 'G';
+   else
+      Gij = peek(G,i,j);
+      Gij = opt(Gij,'maxlen',200);
+      str = display(Gij);
+      sym = sprintf('G(%g,%g)',i,j);
+   end
+
+
+   comment = {get(o,{'title',''}),' '};
+   for (k=1:size(str,1))
+      comment{end+1} = str(k,:);
+   end
+   message(o,sprintf('Double Transfer Function %s',sym),comment);
+end
+function o = Trfr(o)                   % Rational Transfer Function    
+   i = arg(o,1);
+   j = arg(o,2);
+
+   G = cache(o,'trfr.G');
 
    Gij = peek(G,i,j);
    Gij = opt(Gij,'maxlen',200);
@@ -279,7 +352,58 @@ function o = ShowTff(o)                % Show Transfer Function
    for (k=1:size(str,1))
       comment{end+1} = str(k,:);
    end
-   message(o,sprintf('Transfer Function G(%g,%g)',i,j),comment);
+   message(o,sprintf('rational Transfer Function G(%g,%g)',i,j),comment);
+end
+
+function o = Consd(o)                  % Double Constrained Trf Fct    
+   i = arg(o,1);
+   j = arg(o,2);
+
+   H = cache(o,'consd.H');
+   if (i == 0 || j == 0)
+      H = opt(H,'maxlen',200);
+      str = display(H);
+      sym = 'H(s)';
+   else
+      Hij = peek(H,i,j);
+      Hij = opt(Hij,'maxlen',200);
+      str = display(Hij);
+      sym = sprintf('H(%g,%g)',i,j);
+   end
+
+
+   comment = {get(o,{'title',''}),' '};
+   for (k=1:size(str,1))
+      comment{end+1} = str(k,:);
+   end
+   message(o,sprintf('Constrained Transfer Function %s (Double)',sym),...
+                     comment);
+end
+function o = Consr(o)                  % Rational Constrained Trf Funct
+   message(o,'Rational Constrained Transfer Matrix Not Yet Implemented!');
+   return
+   
+   i = arg(o,1);
+   j = arg(o,2);
+
+   H = cache(o,'consr.H');
+   if (i == 0 || j == 0)
+      H = opt(H,'maxlen',200);
+      str = display(H);
+      sym = 'H(s)';
+   else
+      Hij = peek(H,i,j);
+      Hij = opt(Hij,'maxlen',200);
+      str = display(Hij);
+      sym = sprintf('H(%g,%g)',i,j);
+   end
+
+   comment = {get(o,{'title',''}),' '};
+   for (k=1:size(str,1))
+      comment{end+1} = str(k,:);
+   end
+   message(o,sprintf('Constrained Transfer Function %s (Rational)',sym),...
+                     comment);
 end
 
 %==========================================================================

@@ -45,6 +45,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add View/Scale menu
 % - move plot/Excitation stuff to Study menu
 % - pimped spm/new with extra info for Academic #2 sample
+% - menu File>Tools>Cache_Reset added
 %
 %
 % Known bugs & wishlist

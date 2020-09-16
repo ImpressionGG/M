@@ -59,7 +59,8 @@ function txt = display(o)              % Display Corinthian Object
             Matrix(o);
          else
             [m,n] = size(o);
-            txt = sprintf('%g x %g rational matrix',m,n);
+            %txt = sprintf('%g x %g rational matrix',m,n);
+            txt = Matrix(o);
          end
       otherwise
          disp(o)                       % display in corazon style
@@ -300,19 +301,28 @@ function OldMatrix(o)                  % Display Matrix
       end
    end
 end
-function Matrix(o)                     % Display Matrix                
+function txt = Matrix(o)               % Display Matrix                
    assert(isequal(o.type,'matrix'));
    
    M = o.data.matrix;
    [m,n] = size(M);
 
-   fprintf('\n');
+   if (nargout == 0)
+      fprintf('\n');
+   end
+   
+   width = 0;
    for (i=1:m)
       paragraph = [];
       txt = {};  rows = 0;
-      for (j=1:n)        
-         txt{j} = display(M{i,j});     % display rational function
-         rows = max(rows,size(txt{j},1));      % estimate max rows
+      for (j=1:n)
+         if isempty(M{i,j})
+            txt{j} = '[]';
+         else
+            txt{j} = display(M{i,j});  % display rational function
+         end
+         r = size(txt{j},1);
+         rows = max(rows,r);           % estimate max rows
       end
 
          % add n (horizontal) blocks to paragraph      
@@ -336,10 +346,31 @@ function Matrix(o)                     % Display Matrix
 
          % print paragraph
 
-      for (i=1:size(paragraph,1))
-         fprintf('   %s\n',paragraph(i,:));
+      if (nargout > 0)
+         paragraphs{i} = paragraph;
+         width = max(width,size(paragraph,2));
+      else
+         for (i=1:size(paragraph,1))
+            fprintf('   %s\n',paragraph(i,:));
+         end
+         fprintf('\n');
       end
-      fprintf('\n');
+   end
+   
+         % compile full text array if outarg provided
+         
+   if (nargout >= 1)
+      txt = [];
+      for (i=1:length(paragraphs))
+         paragraph = paragraphs{i};
+         [m,n] = size(paragraph);
+         tab = floor((width-n)/2);
+         space = setstr(' '+zeros(m,width));
+         if (i > 1)
+            txt = [txt;space(1,:)];
+         end
+         txt = [txt; [space(:,1:tab),paragraph,space(:,1:width-n-tab)]];
+      end
    end
 end
 
