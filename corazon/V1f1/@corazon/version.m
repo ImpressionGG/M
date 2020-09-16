@@ -426,6 +426,7 @@ function VersionV1F
 % - corinthian methods num & den added
 % - bug fix: corazon/cast -> duplicate to corinth/cast
 % - corinth/mrdivide and corinth/mldivide correct implementation 
+% - bug fix in corinth/cast: older version replaced by newest Cast fct
 %
 %
 % Known Bugs / Wishlist

@@ -1,9 +1,9 @@
-function oo = step(o)
+function out = step(o)
 %
 % STEP   Plot step response
 %
 %           G = trf(o,1,[1,1])
-%           step(o);
+%           step(G);
 %
 %        Options:
 %           in:     input index  (default 1)
@@ -24,16 +24,20 @@ function oo = step(o)
          error('implementation');
    end
    
-   in = opt(o,{'in',1});
-   out = opt(o,{'out',1});
+   in = opt(oo,{'in',1});
+   out = opt(oo,{'out',1});
 
-   t = Time(o);
+   t = Time(oo);
    u = StepInput(oo,t,in);
 
    oo = sim(oo,u,[],t);
-   plot(oo);
-
-   dark(o);
+   
+   if (nargout == 0)
+      plot(oo);
+      dark(o);
+   else
+      out = oo;
+   end
 end
 
 %==========================================================================
@@ -52,7 +56,7 @@ function title = Title(o)              % Get Object Title
    end
 end
 function t = Time(o)                   % Get Time Vector               
-   A = get(o,'system.A');
+   A = get(o,'system.A');   
    ev = eig(A);
    tmax = 5*max(1./abs(ev));
 

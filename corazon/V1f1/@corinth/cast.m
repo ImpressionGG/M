@@ -64,10 +64,10 @@ end
 % Cast to Same Type
 %==========================================================================
 
-function oo = Cast(o,x)                % Cast to Higher Order Corinth
+function [o,x] = OldCast(o,x)             % Cast to Higher Order Corinth
    if isa(x,'double');
       if isequal(o.type,'trf')
-         oo = trf(o,x);
+         x = trf(o,x);
          return
       else
          x = number(o,x);
@@ -79,24 +79,24 @@ function oo = Cast(o,x)                % Cast to Higher Order Corinth
 
       switch o.type
          case 'number'
-            oo = number(o,x);
+            x = number(o,x);
          case 'poly'
-            oo = poly(o,x);
+            x = poly(o,x);
          case 'ratio'
-            oo = ratio(o,x,1);
+            x = ratio(o,x,1);
          case 'matrix'
-            oo = poly(o,x);
+            x = poly(o,x);
          otherwise
             error('internal');
       end
    elseif isobject(x)
       switch x.type
          case 'number'
-            oo = ratio(o,x,1);
+            x = ratio(o,x,1);
          case 'poly'
-            oo = ratio(x,poly(o,1));
+            x = ratio(x,poly(o,1));
          case 'ratio'
-            oo = x;
+            x = x;
          case 'matrix'
             error('what ....?');
          otherwise
@@ -104,5 +104,70 @@ function oo = Cast(o,x)                % Cast to Higher Order Corinth
       end
    else
       error('bad args');
+   end
+end
+function [o1,o2] = Cast(o1,o2)            % Cast Objects to be Compatible 
+   if isa(o2,'double');
+      if isequal(o1.type,'trf')
+         o2 = trf(o1,o2);
+         return
+      else
+         o2 = number(o1,o2);
+      end
+   end
+   
+   kind = max(Kind(o1),Kind(o2));
+   switch kind
+      case 0
+         if ~isequal(o1.type,'trf')
+            o1 = trf(o1);
+         end
+         if ~isequal(o2.type,'trf')
+            o2 = trf(o2);
+         end
+         
+      case 1
+         if ~isequal(o1.type,'number')
+            o1 = number(o1);
+         end
+         if ~isequal(o2.type,'number')
+            o2 = number(o2);
+         end
+         
+      case 2
+         if ~isequal(o1.type,'poly')
+            o1 = poly(o1);
+         end
+         if ~isequal(o2.type,'poly')
+            o2 = poly(o2);
+         end
+
+      case 3
+         if ~isequal(o1.type,'ratio')
+            o1 = ratio(o1);
+         end
+         if ~isequal(o2.type,'ratio')
+            o2 = ratio(o2);
+         end
+         
+      otherwise
+         error('internal');
+   end
+
+   function kind = Kind(o)
+      switch o.type
+         case 'trf'
+            kind = 0;
+         case 'number'
+            kind = 1;
+         case 'poly'
+            kind = 2;
+         case 'ratio'
+            kind = 3;
+         case 'matrix'
+            kind = 4;
+         otherwise
+            kind = NaN;
+      end
    end
 end
