@@ -47,6 +47,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimped spm/new with extra info for Academic #2 sample
 % - menu File>Tools>Cache_Reset added
 % - print transfer function and constrained trf to console
+% - comparison of step responses: Gij(s) <-> Hij(s)
 %
 %
 % Known bugs & wishlist

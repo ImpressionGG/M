@@ -27,8 +27,9 @@ function o = message(o,title,varargin)
 %           => set o = opt(o,'subplot',1) for messaging into a subpolot
 %
 %           Options:
-%              fontsize.title        default: 14
-%              fontsize.comment      default:  8
+%              fontsize.title        font size of title (default: 14)
+%              fontsize.comment      font size of comment (default:  8)
+%              subplot               subplot identifier (default [1 1 1])
 %
 %           Copyright(c): Bluenetics 2020 
 %
@@ -98,8 +99,12 @@ function Message(o)                    % Display Screen Message
       o = figure(o,gcf(o));            % set figure handle if not set
    end
    figure(figure(o));
-   if ~opt(o,{'subplot',0})
+
+   sub = opt(o,'subplot');
+   if isempty(sub)
       cls(o,'off');                    % clear screen, axes off
+   else
+      subplot(o,sub);
    end
    
    darkmode = dark(o);

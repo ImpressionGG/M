@@ -58,7 +58,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    ooo = mitem(oo,'-');
    for (i=1:l)
       for (j=1:m)
-         ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfd',i,j});
+         ooo = mitem(oo,sprintf('G%g%g(s)',i,j),{@WithCuo,'Trfd',i,j});
       end
       if (i < l)
          ooo = mitem(oo,'-');
@@ -91,7 +91,7 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    ooo = mitem(oo,'-');
    for (i=1:l)
       for (j=1:m)
-         ooo = mitem(oo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consd',i,j});
+         ooo = mitem(oo,sprintf('H%g%g(s)',i,j),{@WithCuo,'Consd',i,j});
       end
       if (i < l)
          ooo = mitem(oo,'-');
@@ -322,6 +322,7 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
 end
 
 function o = Trfd(o)                   % Double Transfer Function      
+   o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
@@ -340,19 +341,18 @@ function o = Trfd(o)                   % Double Transfer Function
             fprintf('\n');
          end
       end
+      diagram(o,'Trf',sym,G,111);
    else
       Gij = peek(G,i,j);
       Gij = opt(Gij,'maxlen',200);
       str = display(Gij);
-      sym = sprintf('G(%g,%g)',i,j);
+      sym = sprintf('G%g%g(s)',i,j);
+      
+      diagram(o,'Trf',sym,Gij,2111);
+      diagram(o,'Step',sym,Gij,2221);
+      diagram(o,'Rloc',sym,Gij,2222);
    end
-
-
-   comment = {get(o,{'title',''}),' '};
-   for (k=1:size(str,1))
-      comment{end+1} = str(k,:);
-   end
-   message(o,sprintf('Double Transfer Function %s',sym),comment);
+   heading(o);
 end
 function o = Trfr(o)                   % Rational Transfer Function    
    i = arg(o,1);
@@ -372,10 +372,13 @@ function o = Trfr(o)                   % Rational Transfer Function
 end
 
 function o = Consd(o)                  % Double Constrained Trf Fct    
+   o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
+   G = cache(o,'trfd.G');
    H = cache(o,'consd.H');
+   
    if (i == 0 || j == 0)
       H = opt(H,'maxlen',200);
       str = display(H);
@@ -390,7 +393,9 @@ function o = Consd(o)                  % Double Constrained Trf Fct
             fprintf('\n');
          end
       end
+      diagram(o,'Trf',sym,H,111);
    else
+      Gij = peek(G,i,j);
       Hij = peek(H,i,j);
       
       Hij = set(Hij,'name',sprintf('H%g%g(s)',i,j));
@@ -398,16 +403,16 @@ function o = Consd(o)                  % Double Constrained Trf Fct
 
       Hij = opt(Hij,'maxlen',200);
       str = display(Hij);
-      sym = sprintf('H(%g,%g)',i,j);
-   end
+      
+      Hsym = sprintf('H%g%g(s)',i,j);
+      Gsym = sprintf('G%g%g(s)',i,j);
 
-
-   comment = {get(o,{'title',''}),' '};
-   for (k=1:size(str,1))
-      comment{end+1} = str(k,:);
+      diagram(o,'Trf', Hsym,Hij,2111);
+      diagram(o,'Step',Gsym,Gij,2221);
+      diagram(o,'Step',Hsym,Hij,2221);   
+      diagram(o,'Rloc',Hsym,Hij,2222);
    end
-   message(o,sprintf('%s: Constrained Transfer Function (Double)',sym),...
-                     comment);
+   heading(o);
 end
 function o = Consr(o)                  % Rational Constrained Trf Funct
    message(o,'Rational Constrained Transfer Matrix Not Yet Implemented!');

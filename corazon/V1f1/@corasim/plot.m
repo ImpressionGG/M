@@ -19,7 +19,7 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Plot Menu               
-   oo = mitem(o,'Step Response',{@Basket,'Step'});
+   oo = mitem(o,'Step Response',{@WithBsk,'Step'});
 %  oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
 
    oo = Style(o);                      % add Style menu to Select menu
@@ -66,14 +66,34 @@ function oo = Style(o)                 % Add Style Menu Items
 end
 
 %==========================================================================
-% General Callback and Acting on Basket
+% Launch Callbacks
 %==========================================================================
 
-function oo = Callback(o)              % General Callback              
+function oo = WithSho(o)               % 'With Shell Object' Callback  
 %
-% CALLBACK   A general callback with refresh function redefinition, screen
-%            clearing, current object pulling and forwarding to executing
-%            local function, reporting of irregularities, dark mode support
+% WITHSHO General callback for operation on shell object
+%         with refresh function redefinition, screen
+%         clearing, current object pulling and forwarding to executing
+%         local function, reporting of irregularities, dark mode support
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+  
+   gamma = eval(['@',mfilename]);
+   oo = gamma(o);                      % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
+end
+function oo = WithCuo(o)               % 'With Current Object' Callback
+%
+% WITHCUO A general callback with refresh function redefinition, screen
+%         clearing, current object pulling and forwarding to executing
+%         local function, reporting of irregularities, dark mode support
 %
    refresh(o,o);                       % remember to refresh here
    cls(o);                             % clear screen
@@ -89,11 +109,11 @@ function oo = Callback(o)              % General Callback
    end
    dark(o);                            % do dark mode actions
 end
-function o = Basket(o)                 % Acting on the Basket          
+function oo = WithBsk(o)               % 'With Basket' Callback        
 %
-% BASKET  Plot basket, or perform actions on the basket, screen clearing, 
-%         current object pulling and forwarding to executing local func-
-%         tion, reporting of irregularities and dark mode support
+% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
+%          current object pulling and forwarding to executing local func-
+%          tion, reporting of irregularities and dark mode support
 %
    refresh(o,o);                       % use this callback for refresh
    cls(o);                             % clear screen
@@ -141,7 +161,7 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
       title(sprintf('Input (%d)',ni));
       xlabel('t');  ylabel('u');
       set(gca,'xlim',[min(t),max(t)]);
-      grid(o);                         % set grid on/off
+      subplot(o);                      % subplot complete
    end
    function Plot312(o)                 % Subplot State                 
       subplot(312);
@@ -150,7 +170,7 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
       title(sprintf('State (%d)',n));
       xlabel('t');  ylabel('x');
       set(gca,'xlim',[min(t),max(t)]);
-      grid(o);                         % set grid on/off
+      subplot(o);                      % subplot complete
    end
    function Plot313(o)                 % Subplot Output                
       subplot(313);
@@ -159,7 +179,7 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
       title(sprintf('Output (%d)',no));
       xlabel('t');  ylabel('y');
       set(gca,'xlim',[min(t),max(t)]);
-      grid(o);                         % set grid on/off
+      subplot(o);                      % subplot complete
    end
 end
 function o = PlotDss(o)                % Plot Discrete State Space Sys 
@@ -192,7 +212,7 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
       title(sprintf('Input (%d)',ni));
       xlabel('t');  ylabel('u');
       set(gca,'xlim',[min(t),max(t)]);
-      grid(o);                         % set grid on/off
+      subplot(o);                      % subplot complete
    end
    function Plot312(o)                 % Subplot State                 
       subplot(312);
@@ -201,7 +221,7 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
       title(sprintf('State (%d)',n));
       xlabel('t');  ylabel('x');
       set(gca,'xlim',[min(t),max(t)]);
-      grid(o);                         % set grid on/off
+      subplot(o);                      % subplot complete
    end
    function Plot313(o)                 % Subplot Output                
       subplot(313);
@@ -210,7 +230,7 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
       title(sprintf('Output (%d)',no));
       xlabel('t');  ylabel('y');
       set(gca,'xlim',[min(t),max(t)]);
-      grid(o);                         % set grid on/off
+      subplot(o);                      % subplot complete
    end
 end
 

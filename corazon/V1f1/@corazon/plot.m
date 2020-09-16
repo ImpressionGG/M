@@ -230,14 +230,15 @@ function oo = Plot(o)                  % Default Plot Function
       % optional subplot selection
       
    if ~isempty(sub)
-      if (isa(sub,'double') && length(sub) == 1 && sub > 100)
-         sub = [floor(sub/100),rem(floor(sub/10),10),rem(sub,10)];
-      end
-      
-      if (length(sub) ~= 3)
-         error('subplot option must be 3-vector!');
-      end
-      hax = subplot(sub(1),sub(2),sub(3));
+      %if (isa(sub,'double') && length(sub) == 1 && sub > 100)
+      %   sub = [floor(sub/100),rem(floor(sub/10),10),rem(sub,10)];
+      %end
+      %
+      %if (length(sub) ~= 3)
+      %   error('subplot option must be 3-vector!');
+      %end
+      %hax = subplot(sub(1),sub(2),sub(3));
+      hax = subplot(o,sub);
       set(hax,'color',o.iif(dark(o),0,1)*[1 1 1]);
    else                                % manage canvas color
       hax = gca;

@@ -7,7 +7,7 @@ function onoff = grid(o)
 %
 %        Copyright(c): Bluenetics 2020 
 %
-%        See also: CORAZON, PLOT, DARK
+%        See also: CORAZON, PLOT, DARK, DONE
 %
    onoff = opt(o,'view.grid');
    

@@ -12,7 +12,7 @@ function mode = dark(o,mode)
 %
 %           dark(o,'Axes');
 %
-%        See also: TRADE
+%        See also: CORAZON, GRID, DONE, CLS
 %
    if (nargin == 2 && (isa(mode,'double') || isa(mode,'logical')))
       if (mode)

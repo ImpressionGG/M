@@ -1,16 +1,22 @@
-function o = diagram(o,varargin)
+function o = diagram(o,varargin)                                       
 %
 % DIAGRAM   Plot diagram
 %
 %              diagram(o,'Force','F1',t,F1,sub)       % force 1
 %              diagram(o,'Elongation','x2',t,x2,sub)  % elongation 2
-%              diagram(o,'Mode','x4',t,x4,sub)        % mode 4
+%              diagram(o,'Mode','x4',t,x4,sub)        % mode plot (mode 4)
+%              diagram(o,'Orbit','y2(y1)',y1,y2,sub)  % orbit plot
+%
+%              diagram(o,'Trf','G11',G11,sub)         % transfer function
+%              diagram(o,'Step','G11',G11,sub)        % step response
+%              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %
 %           Copyright(c): Bluenetics 2020
 %
 %           See also: SPM, PLOT
 %
-   [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit);
+   [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit,...
+                       @Trf,@Step,@Rloc);
    oo = gamma(oo);
 end
 
@@ -82,7 +88,7 @@ function o = Mode(o)                   % Mode Diagram
 end
 
 %==========================================================================
-% Orbit
+% Orbit Diagram
 %==========================================================================
 
 function o = Orbit(o)                  % Orbit Diagram                 
@@ -106,6 +112,124 @@ function o = Orbit(o)                  % Orbit Diagram
    end
   
    Epilog(o,['Orbit ',sym2,' (',sym1,')'],sym1,sym2);
+end
+
+%==========================================================================
+% Transfer Function Diagram
+%==========================================================================
+
+function o = Trf(o)                    % Transfer Function Diagram     
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+   
+   o = opt(o,'subplot',sub);
+   comment = display(G);
+   message(o,[sym,': Transfer Function'],comment);
+   axis off;
+end
+
+%==========================================================================
+% Step Response Diagram
+%==========================================================================
+
+function o = Step(o)                   % Transfer Function Diagram     
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+   
+   G = set(G,'name',sym); 
+   G = inherit(G,o);
+   
+   if isequal(sym(1),'H')
+      G = opt(G,'color','m');
+   else
+      G = opt(G,'color','g');
+   end
+   step(G,sub);
+end
+
+%==========================================================================
+% Root Locus Diagram
+%==========================================================================
+
+function o = Rloc(o)                   % Root Locus Diagram                             
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+   
+   o = opt(o,'subplot',sub);
+   G = set(G,'name',sym); 
+
+   subplot(o,sub);
+   p = roots(den(G));                  % poles
+   col = o.iif(dark(o),'yx','gx');
+   plot(corazon(o),real(p),imag(p),col);
+   hold on;
+
+   z = roots(num(G));                  % zeros
+   oo = corazon(o);
+   col = o.iif(dark(o),'yo','go');
+   plot(oo,real(z),imag(z),col);
+   hold on;
+   
+   title('Root Locus');
+   
+   t = 0:1/10:100;
+   K = 10.^t - 1;
+   
+   %[p,q] = peek(G);
+   %np = length(p);  nq = length(q);  n = max(np,nq);
+   %p = [zeros(1,n-np), p];
+   %q = [zeros(1,n-nq), q];
+   
+   %z = [0 z];  p = [0 p];
+   
+   %rmax = max(max(abs(p)),max(abs(z)));
+   %xmin = min(min(real(p)),min(real(z)));
+   %xmax = max(max(real(p)),max(real(z)));
+   %ymin = min(min(imag(p)),min(imag(z)));
+   %ymax = max(max(imag(p)),max(imag(z)));
+   
+   %set(gca,'Xlim',1.2*[xmin-1,xmax+1]);
+   %set(gca,'Ylim',1.2*[ymin-1,ymax+1]);
+   
+   for (i=1:length(p))
+      plot(o,[0 real(p(i))],[0 imag(p(i))],'r');
+      hold on
+   end
+   for (i=1:length(z))
+      plot(o,[0 real(z(i))],[0 imag(z(i))],'r');
+      hold on
+   end
+   
+   return;
+   
+   for (i=length(K):-1:1)
+      poly = K(i)*p + q;
+      r = roots(poly);
+
+      if (max(abs(r)) < rmax)
+         x = real(r);  y = imag(r);
+         plot(oo,x,y,'r.');
+      elseif (i > 10)
+         i = i - 10;
+      end
+
+      poly = -K(i)*p + q;
+      r = roots(poly);
+
+      if (max(abs(r)) < rmax)
+         x = real(r);  y = imag(r);
+         plot(oo,x,y,'bc.');
+      elseif (i > 10)
+         i = i - 10;
+      end
+      
+      if rem(i,50) == 0;
+         idle(o);
+      end
+   end  
 end
 
 %==========================================================================
