@@ -46,7 +46,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - move plot/Excitation stuff to Study menu
 % - pimped spm/new with extra info for Academic #2 sample
 % - menu File>Tools>Cache_Reset added
-% - print trandfer function and constrained trf to console
+% - print transfer function and constrained trf to console
 %
 %
 % Known bugs & wishlist

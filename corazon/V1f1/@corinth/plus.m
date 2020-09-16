@@ -101,7 +101,7 @@ end
 % Cast to Same Types
 %==========================================================================
 
-function [o1,o2] = Cast(o1,o2)         % Cast Objects to be Compatible 
+function [o1,o2] = OldCast(o1,o2)      % Cast Objects to be Compatible 
    if isa(o2,'double');
       if isequal(o1.type,'trf')
          o2 = trf(o1,o2);
@@ -165,4 +165,7 @@ function [o1,o2] = Cast(o1,o2)         % Cast Objects to be Compatible
             kind = NaN;
       end
    end
+end
+function [o1,o2] = Cast(o1,o2)         % Cast to Higher Order Corinth  
+   [o1,o2] = cast(o1,o2);              % delegate corinthian cast method
 end

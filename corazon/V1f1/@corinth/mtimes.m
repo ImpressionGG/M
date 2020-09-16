@@ -11,6 +11,46 @@ function oo = mtimes(o1,o2)
 %
 %          See also: CORINTH, PLUS, MINUS, MTIMES, MRDIVIDE
 %
+   [o1,o2] = Comply(o1,o2);            % make compiant to each other
+   
+      % now we are sure to deal with CORINTH objects only
+
+   o1 = touch(o1);                     % just in case of a copy somewhere
+   o2 = touch(o2);                     % just in case of a copy somewhere
+
+   if (isequal(o1.type,'matrix') && isequal(o2.type,'ratio'))
+      oo = Multiply(o1,o2);            % matrix x scalar
+   elseif (isequal(o2.type,'matrix') && isequal(o1.type,'ratio'))
+      oo = Multiply(o2,o1);            % matrix x scalar
+   else
+      oo = mul(o1,o2);
+   end
+
+   oo = can(oo);
+   oo = trim(oo);
+end
+
+%==========================================================================
+% Multiply Scalar With Matrix
+%==========================================================================
+
+function o = Multiply(o,s)             % Multiply Matrix by Scalar     
+   M = o.data.matrix;
+   [m,n] = size(M);
+   
+   for (i=1:m)
+      for (j=1:n)
+         M{i,j} = M{i,j} * s;
+      end
+   end
+   o.data.matrix = M;
+end
+
+%==========================================================================
+% Make Args Compiant To Each Other
+%==========================================================================
+
+function [o1,o2] = Comply(o1,o2)       % Make Compiant to Each Other   
    if (~isa(o1,'corinth'))
       o1 = Cast(o2,o1);
    elseif (~isa(o2,'corinth'))
@@ -35,83 +75,7 @@ function oo = mtimes(o1,o2)
     
    assert(isa(o1,'corinth') && isa(o2,'corinth'));
    
-      % now we are sure to deal with CORINTH objects only
-
-   o1 = touch(o1);                     % just in case of a copy somewhere
-   o2 = touch(o2);                     % just in case of a copy somewhere
-
-   if (isequal(o1.type,'matrix') && isequal(o2.type,'ratio'))
-      oo = Multiply(o1,o2);            % matrix x scalar
-   elseif (isequal(o2.type,'matrix') && isequal(o1.type,'ratio'))
-      oo = Multiply(o2,o1);            % matrix x scalar
-   else
-      oo = mul(o1,o2);
-   end
-
-   oo = can(oo);
-   oo = trim(oo);
-end
-
-%==========================================================================
-% Cast real number to higher order CORINTH type
-%==========================================================================
-
-function oo = Cast(o,x)                % Cast to Higher Order Corinth
-   if isa(x,'double');
-      if isequal(o.type,'trf')
-         oo = trf(o,x);
-         return
-      else
-         x = number(o,x);
-      end
-   end
-   
-   if isa(x,'double')
-      assert(prod(size(x))==1);
-
-      switch o.type
-         case 'number'
-            oo = number(o,x);
-         case 'poly'
-            oo = poly(o,x);
-         case 'ratio'
-            oo = ratio(o,x,1);
-         case 'matrix'
-            oo = poly(o,x);
-         otherwise
-            error('internal');
-      end
-   elseif isobject(x)
-      switch x.type
-         case 'number'
-            oo = ratio(o,x,1);
-         case 'poly'
-            oo = ratio(x,poly(o,1));
-         case 'ratio'
-            oo = x;
-         case 'matrix'
-            error('what ....?');
-         otherwise
-            error('internal');
-      end
-   else
-      error('bad args');
+   function oo = Cast(o,x)             % Cast to Higher Order Corinth  
+      [~,oo] = cast(o,x);              % delegate corinthian cast method
    end
 end
-
-%==========================================================================
-% Multiply Scalar With Matrix
-%==========================================================================
-
-function o = Multiply(o,s)             % Multiply Matrix by Scalar     
-   M = o.data.matrix;
-   [m,n] = size(M);
-   
-   for (i=1:m)
-      for (j=1:n)
-         M{i,j} = M{i,j} * s;
-      end
-   end
-   o.data.matrix = M;
-end
-

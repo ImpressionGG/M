@@ -1,13 +1,13 @@
-function oo = mrdivide(o1,o2)
+function oo = lrdivide(o1,o2)
 %
-% MRDIVIDE Overloaded operator / for CORINTH objects (rational objects)
+% LRDIVIDE Overloaded operator \ for CORINTH objects (rational objects)
 %
 %             o1 = corinth(1,6);       % ratio 1/6
 %             o2 = corinth(2,6);       % ratio 2/6
 %
-%             oo = o1 / o2;            % divide two ratios
-%             oo = o1 / 7;             % divide real number to ratio
-%             oo = 5 / o2;             % divide ratio to real number
+%             oo = o1 \ o2;            % left divide two ratios
+%             oo = o1 \ 7;             % left divide real number to ratio
+%             oo = 5 \ o2;             % left divide ratio to real number
 %
 %          See also: CORINTH, PLUS, MINUS, MTIMES, MRDIVIDE
 %
@@ -18,7 +18,7 @@ function oo = mrdivide(o1,o2)
    o1 = touch(o1);                     % just in case of a copy somewhere
    o2 = touch(o2);                     % just in case of a copy somewhere
 
-   oo = o1 * inv(o2);  
+   oo = inv(o1) * o2;  
 
    oo = can(oo);
    oo = trim(oo);

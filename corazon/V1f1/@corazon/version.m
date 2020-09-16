@@ -424,6 +424,8 @@ function VersionV1F
 % - implement corinthian trf type (construct,add,can,trim)
 % - implement plus, minus, mtimes, mul, div, inv for corynthian trf
 % - corinthian methods num & den added
+% - bug fix: corazon/cast -> duplicate to corinth/cast
+% - corinth/mrdivide and corinth/mldivide correct implementation 
 %
 %
 % Known Bugs / Wishlist

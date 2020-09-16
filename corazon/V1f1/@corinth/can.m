@@ -49,14 +49,6 @@ function [o1,o2] = can(o,x,y)          % Cancel Common Factors
       o1.work.can = true;              % object is cancelled
       
     elseif (nargin == 3)
-%persistent count
-%if isempty(count)
-%   count = 0;
-%end                  % ######## dirty bug hunt ########
-%count = count+1;
-%if (count == 2527)
-%   'break';
-%end
       cf = gcd(o,x,y);                 % common factor
       
       [o1,r] = div(o,x,cf);            % cancel common factor
@@ -83,17 +75,10 @@ function oo = CanTrf(o)                % Cancel Transfer Function
       
    [rnum,rden] = Roots(o,1);
    dirty = 0;		     % dirty bit
-%  m = length(G);
-
 
    degnum = length(rnum);
    degden = length(rden);
    
-   %den = den(m-deg_den-1:m-1);
-
-   %Gc = tffnew(num,den);
-   %Gc(:,1) = G(:,1);
-
    if ( degden == 0  ||  degnum == 0 ) 
       oo = o;
       return; 
@@ -118,11 +103,12 @@ function oo = CanTrf(o)                % Cancel Transfer Function
 
    for (j = 1:length(rden))
       
-      found = find( abs(D(:,j)) < caneps );
-      
+      delta = abs(D(:,j));
+      found = find( delta < caneps );  
       
       for ( k = 1:length(found) )
 	      i = found(k);
+         
 	      if ( idx_num(i) ~= 0  &  idx_den(j) ~= 0 )
 	         dirty = 1;
 	         re = real(rnum(i));  im = imag(rnum(i));
@@ -145,7 +131,7 @@ function oo = CanTrf(o)                % Cancel Transfer Function
 		            fprintf(' - i %g',-im);
                end
             end
-	         fprintf('\n');
+	         fprintf(' (delta: %g)\n',delta(i));
 	         idx_num(i) = 0;
             idx_den(j) = 0;
             break;

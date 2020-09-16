@@ -29,7 +29,7 @@ function [oo,ooo] = cast(o,classname)
 %
 %        Copyright(c): Bluenetics 2020 
 %
-%        See also: CORAZON, CONSTRUCT
+%        See also: CORINTH, CONSTRUCT
 %
    if (nargin == 1)                    % cast object back to original
       if isequal(o.tag,class(o))       % any job to be done ?
@@ -64,68 +64,45 @@ end
 % Cast to Same Type
 %==========================================================================
 
-function [o1,o2] = Cast(o1,o2)         % Cast Objects to be Compatible 
-   if isa(o2,'double');
-      if isequal(o1.type,'trf')
-         o2 = trf(o1,o2);
+function oo = Cast(o,x)                % Cast to Higher Order Corinth
+   if isa(x,'double');
+      if isequal(o.type,'trf')
+         oo = trf(o,x);
          return
       else
-         o2 = number(o1,o2);
+         x = number(o,x);
       end
    end
    
-   kind = max(Kind(o1),Kind(o2));
-   switch kind
-      case 0
-         if ~isequal(o1.type,'trf')
-            o1 = trf(o1);
-         end
-         if ~isequal(o2.type,'trf')
-            o2 = trf(o2);
-         end
-         
-      case 1
-         if ~isequal(o1.type,'number')
-            o1 = number(o1);
-         end
-         if ~isequal(o2.type,'number')
-            o2 = number(o2);
-         end
-         
-      case 2
-         if ~isequal(o1.type,'poly')
-            o1 = poly(o1);
-         end
-         if ~isequal(o2.type,'poly')
-            o2 = poly(o2);
-         end
+   if isa(x,'double')
+      assert(prod(size(x))==1);
 
-      case 3
-         if ~isequal(o1.type,'ratio')
-            o1 = ratio(o1);
-         end
-         if ~isequal(o2.type,'ratio')
-            o2 = ratio(o2);
-         end
-         
-      otherwise
-         error('internal');
-   end
-
-   function kind = Kind(o)
       switch o.type
-         case 'trf'
-            kind = 0;
          case 'number'
-            kind = 1;
+            oo = number(o,x);
          case 'poly'
-            kind = 2;
+            oo = poly(o,x);
          case 'ratio'
-            kind = 3;
+            oo = ratio(o,x,1);
          case 'matrix'
-            kind = 4;
+            oo = poly(o,x);
          otherwise
-            kind = NaN;
+            error('internal');
       end
+   elseif isobject(x)
+      switch x.type
+         case 'number'
+            oo = ratio(o,x,1);
+         case 'poly'
+            oo = ratio(x,poly(o,1));
+         case 'ratio'
+            oo = x;
+         case 'matrix'
+            error('what ....?');
+         otherwise
+            error('internal');
+      end
+   else
+      error('bad args');
    end
 end
