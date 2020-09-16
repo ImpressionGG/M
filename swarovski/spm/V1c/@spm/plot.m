@@ -52,30 +52,33 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'Transfer Matrix');
-   ooo = mitem(oo,'Double');
-   oooo = mitem(ooo,sprintf('G(s)'),{@WithCuo,'Trfd',0,0});
-   oooo = mitem(ooo,'-');
+   ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfd',0,0});
+   ooo = Double(oo);                   % Double submenu
+   
+   ooo = mitem(oo,'-');
    for (i=1:l)
       for (j=1:m)
-         oooo = mitem(ooo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfd',i,j});
+         ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfd',i,j});
       end
       if (i < l)
-         oooo = mitem(oo,'-');
+         ooo = mitem(oo,'-');
       end
    end
    
-   ooo = mitem(oo,'Rational');
-   oooo = mitem(ooo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
-   oooo = mitem(ooo,'-');
-   for (i=1:l)
-      for (j=1:m)
-         oooo = mitem(ooo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfr',i,j});
+   function oo = Double(o)             % Double Sub Menu               
+      oo = mitem(o,'Rational');
+      ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
+      ooo = mitem(oo,'-');
+      for (i=1:l)
+         for (j=1:m)
+            ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfr',i,j});
+         end
+         if (i < l)
+            ooo = mitem(oo,'-');
+         end
       end
-      if (i < l)
-         oooo = mitem(oo,'-');
-      end
-   end
- end
+   end   
+end
 function oo = ConstrainMatrix(o)       % Transfer Matrix Menu          
    oo = current(o);
    [B,C] = data(oo,'B,C');
@@ -83,27 +86,30 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'Constrained Matrix');
-   ooo = mitem(oo,'Double');
-   oooo = mitem(ooo,sprintf('H(s)'),{@WithCuo,'Consd',0,0});
-   oooo = mitem(ooo,'-');
+   ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Consd',0,0});
+   ooo = Rational(oo);
+   ooo = mitem(oo,'-');
    for (i=1:l)
       for (j=1:m)
-         oooo = mitem(ooo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consd',i,j});
+         ooo = mitem(oo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consd',i,j});
       end
       if (i < l)
-         oooo = mitem(oo,'-');
+         ooo = mitem(oo,'-');
       end
    end
    
-   ooo = mitem(oo,'Rational');
-   oooo = mitem(ooo,sprintf('H(s)'),{@WithCuo,'Consr',0,0});
-   oooo = mitem(ooo,'-');
-   for (i=1:l)
-      for (j=1:m)
-         oooo = mitem(ooo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consr',i,j});
-      end
-      if (i < l)
-         oooo = mitem(oo,'-');
+   
+   function oo = Rational(o)           % Rational Submenu              
+      oo = mitem(o,'Rational');
+      ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Consr',0,0});
+      ooo = mitem(oo,'-');
+      for (i=1:l)
+         for (j=1:m)
+            ooo = mitem(oo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consr',i,j});
+         end
+         if (i < l)
+            ooo = mitem(oo,'-');
+         end
       end
    end
  end
@@ -324,6 +330,16 @@ function o = Trfd(o)                   % Double Transfer Function
       G = opt(G,'maxlen',200);
       str = display(G);
       sym = 'G';
+
+      [m,n] = size(G);
+      for (i=1:n)
+         for (j=1:m)
+            Gij = peek(G,i,j);
+            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+            disp(Gij);
+            fprintf('\n');
+         end
+      end
    else
       Gij = peek(G,i,j);
       Gij = opt(Gij,'maxlen',200);
@@ -364,8 +380,22 @@ function o = Consd(o)                  % Double Constrained Trf Fct
       H = opt(H,'maxlen',200);
       str = display(H);
       sym = 'H(s)';
+      
+      [m,n] = size(H);
+      for (i=1:n)
+         for (j=1:m)
+            Hij = peek(H,i,j);
+            Hij = set(Hij,'name',sprintf('H%g%g(s)',i,j));
+            disp(Hij);
+            fprintf('\n');
+         end
+      end
    else
       Hij = peek(H,i,j);
+      
+      Hij = set(Hij,'name',sprintf('H%g%g(s)',i,j));
+      display(Hij);
+
       Hij = opt(Hij,'maxlen',200);
       str = display(Hij);
       sym = sprintf('H(%g,%g)',i,j);
@@ -376,7 +406,7 @@ function o = Consd(o)                  % Double Constrained Trf Fct
    for (k=1:size(str,1))
       comment{end+1} = str(k,:);
    end
-   message(o,sprintf('Constrained Transfer Function %s (Double)',sym),...
+   message(o,sprintf('%s: Constrained Transfer Function (Double)',sym),...
                      comment);
 end
 function o = Consr(o)                  % Rational Constrained Trf Funct

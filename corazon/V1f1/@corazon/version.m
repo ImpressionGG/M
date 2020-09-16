@@ -423,6 +423,7 @@ function VersionV1F
 % - add xscale & yscale option to corazito/plot
 % - implement corinthian trf type (construct,add,can,trim)
 % - implement plus, minus, mtimes, mul, div, inv for corynthian trf
+% - corinthian methods num & den added
 %
 %
 % Known Bugs / Wishlist

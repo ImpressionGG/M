@@ -96,8 +96,9 @@ function txt = Trf(o)                  % Display Transfer Function
    if (nargout > 0)
       return
    elseif ~opt(o,{'detail',0})
-      fprintf('transfer function (%g/%g)\n\n',...
-              length(num)-1,length(den)-1);
+      name = o.iif(get(o,'name'),[get(o,'name'),': '],'');
+      fprintf('%stransfer function (%g/%g)\n\n',...
+              name,length(num)-1,length(den)-1);
       disp([setstr(' '+zeros(size(txt,1),3)),txt]);
       fprintf('\n');
    else

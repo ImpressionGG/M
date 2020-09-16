@@ -103,7 +103,7 @@ function oo = Trfd(o)                  % Double Transfer Matrix
    
      % make cache segment as variables available
      
-   [oo,bag,rfr] = cache(oo,'trfd');    % get bag
+   [oo,bag,rfr] = cache(oo,'trfd');    % get bag of cached variables
    tags = fields(bag);
    for (i=1:length(tags))
       tag = tags{i};
@@ -254,6 +254,18 @@ end
 function oo = Consd(o)                 % Double Costrained Trf. Matrix 
    message(o,'Brewing Double Constrained Transfer Matrix ...');
    oo = ConstrainedDouble(o);
+
+     % make cache segment as variables available
+     
+   [oo,bag,rfr] = cache(oo,'consd');   % get bag of cached variables
+   tags = fields(bag);
+   for (i=1:length(tags))
+      tag = tags{i};
+      oo = var(oo,tag,bag.(tag));      % copy cached variable to variables
+   end
+   
+      % unconditional hard refresh of cache
+   
    cache(oo,oo);                       % hard refresh cache
 end
 function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix 

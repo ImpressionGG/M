@@ -1,4 +1,4 @@
-function display(o,oo)
+function display(o,oo)                 % Display Corazon Object        
 %
 % DISPLAY   Display a CORAZON object
 %
