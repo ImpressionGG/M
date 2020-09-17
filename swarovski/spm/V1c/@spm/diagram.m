@@ -173,6 +173,7 @@ function o = Rloc(o)                   % Root Locus Diagram
    plot(oo,real(z),imag(z),col);
    hold on;
    
+   center = sum(real([p(:);z(:)]))/(length(p)+length(z));
    title('Root Locus');
    
    t = 0:1/10:100;
@@ -195,11 +196,11 @@ function o = Rloc(o)                   % Root Locus Diagram
    %set(gca,'Ylim',1.2*[ymin-1,ymax+1]);
    
    for (i=1:length(p))
-      plot(o,[0 real(p(i))],[0 imag(p(i))],'r');
+      plot(o,[center real(p(i))],[0 imag(p(i))],'r');
       hold on
    end
    for (i=1:length(z))
-      plot(o,[0 real(z(i))],[0 imag(z(i))],'r');
+      plot(o,[center real(z(i))],[0 imag(z(i))],'cb');
       hold on
    end
    

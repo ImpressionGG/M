@@ -101,7 +101,7 @@ function oo = Export(o)                % Export Menu Items
       end
    end
 end
-function oo = Tools(o)
+function oo = Tools(o)                 % Tools Menu Items              
    oo = mseek(o,{'Tools'});
    ooo = mitem(oo,'Cache Reset',{@CacheReset});
    
@@ -114,7 +114,7 @@ function oo = Tools(o)
       message(o,'All Caches Cleared!');
    end
 end
-function oo = Extras(o)
+function oo = Extras(o)                % Extras Menu Items             
    oo = mseek(o,{'Extras'});
    enable(oo,0);                       % disable Extras menu
 end
@@ -183,6 +183,8 @@ function oo = Select(o)                % Select Menu
       % must keep the order !!!
       
    event(o,'Select',o);                % call Objects on 'Select' event
+
+   ooo = mitem(oo,'-');
    ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu
 end
@@ -192,7 +194,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
 %
    setting(o,{'simu.tmax'},0.01);
    setting(o,{'simu.Fmax'},100);
-   setting(o,{'simu.dt'},0.00005);
+   setting(o,{'simu.dt'},5e-6);
 
    oo = mitem(o,'Simulation');
    ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
@@ -213,25 +215,22 @@ function oo = Filter(o)                % Add Filter Menu Items
    setting(o,{'filter.zeta'},0.6);
    setting(o,{'filter.method'},1);
 
-   oo = o;
-   ooo = mitem(oo,'-');
-
-   ooo = mhead(oo,'Filter');
-   oooo = mitem(ooo,'Mode','','filter.mode');
-   choice(oooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
+   oo = mhead(o,'Filter');
+   ooo = mitem(oo,'Mode','','filter.mode');
+   choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
                 {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   oooo = mitem(ooo,'-');
-   oooo = mitem(ooo,'Type',{},'filter.type');
-   choice(oooo,{{'Order 2 Low Pass','LowPass2'},...
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Type',{},'filter.type');
+   choice(ooo,{{'Order 2 Low Pass','LowPass2'},...
                 {'Order 2 High Pass','HighPass2'},...
                 {'Order 4 Low Pass','LowPass4'},...
                 {'Order 4 High Pass','HighPass4'}},{});
-   oooo = mitem(ooo,'Bandwidth',{},'filter.bandwidth');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Zeta',{},'filter.zeta');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Method',{},'filter.method');
-   choice(oooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
+   ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
+   charm(ooo,{});
+   ooo = mitem(oo,'Zeta',{},'filter.zeta');
+   charm(ooo,{});
+   ooo = mitem(oo,'Method',{},'filter.method');
+   choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
 
 %==========================================================================

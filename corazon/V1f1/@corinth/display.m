@@ -80,10 +80,11 @@ function txt = Trf(o)                  % Display Transfer Function
          
    if isequal(den,1)
       txt = PolyString(o,num,'s');
+      col = 0*txt(:,1:2);
       if isequal(o.type,'trf')
-         txt = ['[[',txt,']]'];
+         txt = [setstr('['+col),txt,setstr(']'+col)];
       else
-         txt = ['((',txt,'))'];
+         txt = [setstr('('+col),txt,setstr(')'+col)];
       end
    else
       txt = RatioString(o,num,den,'s');

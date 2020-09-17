@@ -61,8 +61,16 @@ function oo = Partial(o)               % Normalize System
    B1 = B(i1,:);  B2 = B(i2,:);   
    C1 = C(:,i1);  C2 = C(:,i2);
   
+   if (norm(B2-C1') ~= 0)
+      fprintf('*** warning: B2 differs from C1''!\n');
+   end
+   
+   M = B2;  a0 = -diag(A21);  a1 = -diag(A22);
+   omega = sqrt(a0);  zeta = a1./omega/2;
+   
    oo = var(o,'A11,A12,A21,A22',A11,A12,A21,A22);
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
+   oo = var(oo,'M,a0,a1,omega,zeta',M,a0,a1,omega,zeta);
 end
 function oo = Normalize(o)             % Normalize System              
    T0 = opt(o,{'brew.T0',1e-3});       % normalization time constant
@@ -182,7 +190,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
       end
    end
  
-   for (k=1:n)
+   for (k=1:length(psi))
       Gk = trf(G,1,psi(k,:));
       sym = sprintf('G%g',k);
       oo = cache(oo,['trfd.',sym],Gk);
