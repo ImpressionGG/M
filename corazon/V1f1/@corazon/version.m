@@ -430,6 +430,7 @@ function VersionV1F
 % - subplot pimped for 4 arguments
 % - pimp sho to inherit shell options with one input arg
 % - add corasim/modal and corasim/peek methods
+% - bug fix: corasim/modal (was a hard job) :-)))
 %
 %
 % Known Bugs / Wishlist

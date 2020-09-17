@@ -14,7 +14,9 @@ function o = sim(o,u,x0,t)
 %             o = set(type(o,'dss'),'system','A,B,C,D,T', A,B,C,D,T);
 %
 %             u = ones(1,20);
-%             o = sim(o,u,x0);
+%             oo = sim(o,u,x0);
+%
+%             [t,u,x,y] = var(oo,'t,x,u,y');
 %
 %          See also: SIMU
 %
@@ -46,10 +48,10 @@ function o = sim(o,u,x0,t)
       
    if (nargin <= 3)
       [y,x] = Dlsim(o,A,B,C,D,u,x0);
-      o = data(o,'t,x,u,y',[],x,u,y);
+      o = var(o,'t,x,u,y',[],x,u,y);
    else
       [y,x] = Dlsim(o,A,B,C,D,u,x0);
-      o = data(o,'t,x,u,y',t,x,u,y);
+      o = var(o,'t,x,u,y',t,x,u,y);
    end
 end
 

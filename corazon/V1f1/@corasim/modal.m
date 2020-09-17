@@ -1,4 +1,4 @@
-function [a0,a1,M,N,omega,zeta] = modal(o,num,den)
+function [a0,a1,M,N,omega,zeta] = modal(o,num,den)                     
 %
 % MODAL   Modal representation of a rational function
 %
@@ -42,28 +42,29 @@ function [a0,a1,M,N,omega,zeta] = modal(o,num,den)
 %        See also: CORASIM, SIMU
 %
    if (nargin == 3)
-      [a0,a1,M,N,omega,zeta] = Modal(o,num,den);
+      oo = Modal(o,num,den);
    else
       error('1 or 3 input args expected');
    end
-   
+ 
+   [a0,a1,M,N,omega,zeta] = var(oo,'a0,a1,M,N,omega,zeta');
+    
    if (nargout <= 1)
       n = length(a0);
       A21 = -diag(a0);  A22 = -diag(a1);  
       A = [zeros(n),eye(n); A21 A22];
       B = [0*N; M];  C = [M', N'];  D = 0;
       
-      oo = system(o,A,B,C,D);
-      oo = var(oo,'a0,a1,M,N,omega,zeta',a0,a1,M,N,omega,zeta);
+      oo = system(oo,A,B,C,D);
       a0 = oo;                         % output arg1
    end
 end
 
 %==========================================================================
-% Modal Decomposition
+% Modal Representation
 %==========================================================================
 
-function [a0,a1,M,N,omega,zeta] = Modal(o,num,den)
+function oo = Modal(o,num,den)         % Modal Representation          
    num = Trim(o,num);                  % remove leading numerator zeros
    den = Trim(o,den);                  % remove leading denominator zeros
    
@@ -116,34 +117,55 @@ function [a0,a1,M,N,omega,zeta] = Modal(o,num,den)
       qi = 1;
       for (j=1:n)
          if (j ~= i)
-            qi = conv(qi,Psi(j,:));
+            qi = Mul(o,qi,Psi(j,:));
          end
       end
       
          % now we have reduced qi(s) = q(s) / psi_i(s) 
          
-      ri = roots(psi);                 % roots of characteristic factor
-      ps = [Eval(o,num,ri(1)) Eval(o,num,ri(2))];
-      qs = [Eval(o,qi ,ri(1)) Eval(o,qi ,ri(2))];
-      c = ps ./ qs;
+      r = roots(psi);                  % roots of characteristic factor
+      s(i,1) = r(1);                   % first root (of 2)
+      qi = Mul(o,qi,[1 -s(i)']);
       
-         % ci is a 2-row containing conjugate complex residual coefficients
-         % next step is to calculate the residual factor
-         
-      ci = conv([1 -c(1)],[1 -c(2)]);
-      if any(imag(ci)~=0)
-         fprintf('*** warning: numerical issues (2)\n');
-      end
-      
-         % calculate M and N vectors 
-         
-      c1 = ci(2);  c0 = ci(3);
-      if (c0 == 0)
-         M(i,1) = 0;  N(i,1) = 0;
-      else
-         M(i,1) = sqrt(c0);  N(i,1) = c1/M(i); 
-      end
+      ps = Eval(o,num,s(i));
+      qs = Eval(o,qi, s(i));
+      c(i,1) = ps ./ qs;
+      cs(i,1) = c(i) * s(i)';
    end
+   
+   M = sqrt(-2*real(cs));
+   N = 2*real(c)./M;
+   
+      % reconstruct q(s)
+      
+   p = 0;  q = 1;
+   for (i=1:length(c))
+      psi = Mul(o,[1 -s(i)],[1 -s(i)']);
+      q = Mul(o,q,psi);
+      
+      qi = 1;
+      for (j=1:n)
+         if (j ~= i)
+            psi = Psi(j,:);
+            qi = Mul(o,qi,psi);
+         end
+      end
+      
+      pi = -2*real(c(i)) + 2*real(c(i)*s(i))';
+      p = Add(o,p,Mul(o,qi,pi));
+   end
+   
+   err = norm(q-den) / norm(q);
+   if (err > 1e3*eps)
+      fprintf('*** warning: numerical issues @ denominator calc (3)\n');
+   end
+   
+   err = norm(p-num) / norm(p);
+   if (err > 1e3*eps)
+      fprintf('*** warning: numerical issues @ numerator calc (4)\n');
+   end
+   
+   oo = var(o,'a0,a1,M,N,omega,zeta,Psi',a0,a1,M,N,omega,zeta,Psi);
 end
 
 %==========================================================================

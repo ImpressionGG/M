@@ -1,4 +1,4 @@
-function [num,den] = peek(o)
+function [num,den] = peek(o)           % Peek Numerator/Denominator    
 %
 % PEEK   Peek numerator and denominator from a corasim system
 %
@@ -22,7 +22,7 @@ end
 % Convert State Space Representation to transfer Function
 %==========================================================================
 
-function [num, den] = Ss2tf(o,varargin)
+function [num, den] = Ss2tf(o,varargin) % State Space to Transfer Fct. 
 %
 % SS2TF  State-space to transfer function conversion.
 %        [num,den] = Ss2tf(A,B,C,D,iu) calculates the transfer function:
@@ -65,13 +65,16 @@ function [num, den] = Ss2tf(o,varargin)
          num(j,lden-numel(zj):lden) = k(j) * poly(zj);
       end
    end
+   
+   num = Trim(o,num);
+   den = Trim(o,den);
 end
 
 %==========================================================================
 % Convert State Space Representation to Zero/Pole Representation
 %==========================================================================
 
-function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
+function [z,p,k] = Ss2zp(o,a,b,c,d,iu) % State Space to Zero/Pole      
 %
 %   SS2ZP	State-space to zero-pole conversion.
 %
@@ -138,5 +141,21 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
       i = find(k==0);
       k(i) = markov(i);
       CAn = CAn*a;
+   end
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function y = Trim(o,x)                 % Trim Mantissa                 
+%
+% TRIM    Trim mantissa: remove leading mantissa zeros
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
    end
 end

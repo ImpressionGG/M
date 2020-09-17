@@ -11,7 +11,7 @@ function oo = study(o,varargin)        % Do Some Studies
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @Step,@Ramp,...
                        @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational,...
-                       @Quick,@Modal);
+                       @Quick,@Modal1,@Modal2,@Modal3);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -45,7 +45,11 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'-');
    oo = mitem(o,'Arithmetics');
    ooo = mitem(oo,'Quick',{@Quick});
-   ooo = mitem(oo,'Modal',{@Modal});
+
+   oo = mitem(o,'Modal Form');
+   ooo = mitem(oo,'Modal 1',{@Modal1});
+   ooo = mitem(oo,'Modal 2',{@Modal2});
+   ooo = mitem(oo,'Modal 3',{@Modal3});
 end
 
 %==========================================================================
@@ -114,7 +118,7 @@ end
 % Transfer Matrix
 %==========================================================================
 
-function o = OldPhiDouble(o)              % Rational Transition Matrix    
+function o = OldPhiDouble(o)           % Rational Transition Matrix    
    G = cache(o,'trfm.G');
    disp(G);
    
@@ -128,7 +132,7 @@ function o = OldPhiDouble(o)              % Rational Transition Matrix
    end
    message(o,'Transferfunction G(1,1)',comment);
 end
-function o = VeryOldPhiDouble(o)           % Rational Transition Matrix    
+function o = VeryOldPhiDouble(o)       % Rational Transition Matrix    
    refresh(o,{@menu,'About'});         % don't come back here!!!
    
    oo = current(o);
@@ -173,7 +177,7 @@ function o = VeryOldPhiDouble(o)           % Rational Transition Matrix
    fprintf('Transfer Matrix (calculated using double)\n');
    display(var(oo,'G'));
 end
-function o = OldPhiRational(o)            % Double Transition Matrix      
+function o = OldPhiRational(o)         % Double Transition Matrix      
    message(o,'PhiRational: not yet implemented');
 end
 
@@ -403,23 +407,142 @@ function o = Quick(o)                  % Quick Arithmetics Study
       end
    end
 end
-function o = Modal(o)                  % Modal arithmetics Study       
-   a = [1 0.4 4];  b = [1 0.6 9];
-   c = [1 0.8 16]; d = [1 1 25];  e  = [1 1.2 36];
+
+%==========================================================================
+% Modal Representation
+%==========================================================================
+
+function o = Modal1(o)                 % Modal Representation 1        
+%
+% MODAL1   Modal form of the following transfer function
+%
+%                     p(s)        4          16          20 s^2 + 100 
+%             G(s) = ------ = --------- + --------- = -------------------
+%                     q(s)     s^2 + 4     s^2 + 9     s^4 + 13 s^2 + 36
+%
+   num = [20 0 100];  den = [1 0 13 0 36];
    
+   oo = inherit(corasim,o);
+   oo = modal(oo,num,den);
+   oo
+end
+function o = Modal2(o)                 % Modal Representation 2        
    s = @(a)a(2)/2 + sqrt(-a(3)+a(2)^2/4);
-   
-   sa = s(a);  sb = s(b);
-   
-   am = [1 s(a)];  bm = [1 s(b)];  cm = [1 s(c)];  dm = [1 s(d)];
-   x = conv(am,bm) + conv(am,dm);
-   y = conv(x,x')';
-   
-      % modal decomposition
+
+      % set simulation parameters ...
       
-   num = conv(a,b) + conv(c,d);
-   den = conv(conv(a,b),conv(c,d));
-   oo = modal(corasim,num,den);
+   o = opt(o,'simu.tmax',10,'simu.dt',0.001); 
+
+      % define characteristic factors and M matrix
+      
+   psi1 = [1 0.4 4];  psi2 = [1 0.6 9];  psi3 = [1 0.8 16];
+   M = [2 3 4]';
+
+      % calculate numerator and denominator
+      
+   p1 = M(1)^2 * conv(psi2,psi3);      % p1(s) = M(1)^2 * psi2(s)*psi3(s)
+   p2 = M(2)^2 * conv(psi1,psi3);      % p2(s) = M(2)^2 * psi1(s)*psi3(s)
+   p3 = M(3)^2 * conv(psi1,psi2);      % p3(s) = M(3)^2 * psi1(s)*psi2(s)
+   
+   num = p1 + p2 + p3;                 % num(s) = p1(s) + p2(s) + p3(s)
+   den = conv(psi1,conv(psi2,psi3));   % den(s) = psi1(s)*psi2(s)*psi3(s)
+   
+      % create transfer function system 1
+      
+   o1 = system(corasim,{num,den});
+   o1 = step(inherit(o1,o));           % simulate step responses
+   [t1,y1]=var(o1,'t,y');              % simulation results
+
+      % plot results of system 1
+      
+   cls(o);
+   plot(o,t1,y1,'r');
+   hold on;
+   subplot(o);
+   
+      % calculate & plot characteristic transfer functions
+      
+   Characteristic1(o);                 % characteristic trf version 1
+   Characteristic2(o);                 % characteristic trf version 2
+   
+      % modal representation
+      
+   o2 = modal(corasim,num,den);
+   o2 = step(inherit(o2,o));           % simulate step responses
+   [t2,y2] = var(o2,'t,y');            % simulation results
+         
+   plot(o,t2,y2,'bc-.');
+   
+   function Characteristic1(o)         % Char Transfer Functions       
+      o_1 = system(corasim,{M(1)^2,psi1});
+      o_1 = step(inherit(o_1,o));      % simulate step responses
+      [t_1,~,y_1]=var(o_1,'t,x,y,u');  % simulation results
+
+      o_2 = system(corasim,{M(2)^2,psi2});
+      o_2 = step(inherit(o_2,o));      % simulate step responses
+      [t_2,~,y_2]=var(o_2,'t,x,y,u');  % simulation results
+
+      o_3 = system(corasim,{M(3)^2,psi3});
+      o_3 = step(inherit(o_3,o));      % simulate step responses
+      [t_3,~,y_3]=var(o_3,'t,x,y,u');  % simulation results
+      
+      plot(o,t_1,y_1,'ggwwww5');
+      plot(o,t_2,y_2,'gbwwww5');
+      plot(o,t_3,y_3,'gcwwww5');
+      
+         % plot overal step response
+         
+      plot(o,t_1,y_1+y_2+y_3,'y5');
+   end
+   function Characteristic2(o)         % Char Transfer Functions       
+      O_1 = system(corasim,{p1,den});
+      O_1 = step(inherit(O_1,o));      % simulate step responses
+      [T_1,Y_1]=var(O_1,'t,y');        % simulation results
+
+      O_2 = system(corasim,{p2,den});
+      O_2 = step(inherit(O_2,o));      % simulate step responses
+      [T_2,Y_2]=var(O_2,'t,y');        % simulation results
+
+      O_3 = system(corasim,{p3,den});
+      O_3 = step(inherit(O_3,o));      % simulate step responses
+      [T_3,Y_3]=var(O_3,'t,y');        % simulation results
+      
+      plot(o,T_1,Y_1,'bk-.');
+      plot(o,T_2,Y_2,'bk-.');
+      plot(o,T_3,Y_3,'bk-.');
+   end
+end
+function o = Modal3(o)                 % Modal Representation 3        
+   o1 = new(corasim,'Modal');          % modal system representation
+   o1.par.system.D = 0;                % make system strictly proper
+   
+      % set simulation parameters ...
+      
+   o = opt(o,'simu.tmax',10,'simu.dt',0.001); 
+
+      % step response of modal form system ...
+   
+   o1 = step(inherit(o1,o));           % simulation @ inherit simu param's
+   [t1,x1,y1,u1]=var(o1,'t,x,y,u');    % simulation results
+      
+      % make a new system based on numerator/denominator
+      
+   [num,den] = peek(o1);               % peek numerator/denominator
+   o2 = system(corasim,{num,den});
+   o2 = step(inherit(o2,o));           % simulation @ inherit simu param's
+   [t2,x2,y2,u2]=var(o1,'t,x,y,u');    % simulation results
+   
+      % let's check whether simulation results are the same
+      
+   err = norm(y2-y1);
+   if (err ~= 0)
+      error('differing simulation results');
+   end      
+   
+      % create a modal system using corasim/modal method
+      % the system in modal form is created from num/den
+      
+   o3 = modal(corasim,num,den);
 end
 
 %==========================================================================

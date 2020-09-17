@@ -46,7 +46,16 @@ function oo = Step(o)                  % Calculate Step Response
    oo = corasim(oo);                   % cast to corasim object
    oo = system(oo,{num,den});          % set system parameters
 
-   oo = step(oo);
+   ooo = step(oo);
+   
+   if (nargout >= 1)
+      bag = var(ooo);
+      tags = fields(bag);
+      for (i=1:length(tags))
+         tag = tags{i};
+         oo = var(oo,tag,bag.(tag));
+      end
+   end
 end
 
 %==========================================================================
