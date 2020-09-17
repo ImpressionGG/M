@@ -428,6 +428,8 @@ function VersionV1F
 % - corinth/mrdivide and corinth/mldivide correct implementation 
 % - bug fix in corinth/cast: older version replaced by newest Cast fct
 % - subplot pimped for 4 arguments
+% - pimp sho to inherit shell options with one input arg
+% - add corasim/modal and corasim/peek methods
 %
 %
 % Known Bugs / Wishlist

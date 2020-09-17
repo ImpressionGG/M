@@ -1,4 +1,18 @@
 classdef corasim < corazon             % Corasim Class Definition
+%
+% CORASIM   Class objects for linear & nonlinear system simulation
+%
+%           Supported types:
+%
+%              css:          continuous state space representation
+%              dss:          discrete state space representation
+%              strf:         s-transfer function
+%              ztrf:         z-transfer function
+%
+%           Copyright(c): Bluenetics 2020
+%
+%           See also: CORAZON, SYSTEM, PEEK, SIM, PLOT, MODAL
+%
    methods                             % public methods
       function o = corasim(arg)        % corasim constructor
          if (nargin == 0)

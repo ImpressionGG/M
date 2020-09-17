@@ -10,7 +10,8 @@ function oo = study(o,varargin)        % Do Some Studies
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @Step,@Ramp,...
-                       @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational);
+                       @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational,...
+                       @Quick,@Modal);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -44,6 +45,7 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'-');
    oo = mitem(o,'Arithmetics');
    ooo = mitem(oo,'Quick',{@Quick});
+   ooo = mitem(oo,'Modal',{@Modal});
 end
 
 %==========================================================================
@@ -248,6 +250,10 @@ function o = InspectB(o)               % System Matrix Inspection
    B2_1=round(K*B2),B2_2=round(K*BB2) 
 end
 
+%==========================================================================
+% Arithmetics
+%==========================================================================
+
 function o = Quick(o)                  % Quick Arithmetics Study       
    RandInt;                            % reset random seed
    O = base(corinth,10);
@@ -396,6 +402,24 @@ function o = Quick(o)                  % Quick Arithmetics Study
          s = -1;
       end
    end
+end
+function o = Modal(o)                  % Modal arithmetics Study       
+   a = [1 0.4 4];  b = [1 0.6 9];
+   c = [1 0.8 16]; d = [1 1 25];  e  = [1 1.2 36];
+   
+   s = @(a)a(2)/2 + sqrt(-a(3)+a(2)^2/4);
+   
+   sa = s(a);  sb = s(b);
+   
+   am = [1 s(a)];  bm = [1 s(b)];  cm = [1 s(c)];  dm = [1 s(d)];
+   x = conv(am,bm) + conv(am,dm);
+   y = conv(x,x')';
+   
+      % modal decomposition
+      
+   num = conv(a,b) + conv(c,d);
+   den = conv(conv(a,b),conv(c,d));
+   oo = modal(corasim,num,den);
 end
 
 %==========================================================================

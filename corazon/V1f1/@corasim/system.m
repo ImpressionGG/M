@@ -64,10 +64,13 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
       o = set(o,'system','A,B,C,D,T', A,B,C,D,T);
       o.data = [];
    else
+      T = 0;
       o = type(o,'css');
       o = set(o,'system', 'A,B,C,D', A,B,C,D);
       o.data = [];
    end
+   
+   o = var(o,'A,B,C,D,T',A,B,C,D,T);
 end
 
 %==========================================================================

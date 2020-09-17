@@ -1,9 +1,10 @@
-function o = sho
+function o = sho(o)
 %
 % SHO   Shell Object: Get (current) shell object: pulls shell object from
 %       current shell
 %
-%          o = sho     % same as o = pull(corazon)
+%          o = sho                     % same as o = pull(corazon)
+%          oo = sho(oo)                % inherit shell options to oo
 %
 %       Remark: use 'sho' only in the command console! In program code use
 %       method 'pull' instead:
@@ -14,5 +15,10 @@ function o = sho
 %
 %       See also: CORAZON, PULL, CURRENT
 %
-   o = pull(corazon);
+   if (nargin == 0)
+      o = pull(corazon);
+   else
+      o = inherit(o,sho);              % inherit shell settings as options
+      o = opt(o,'inherit',true);       % additionally set inherit option
+   end
 end

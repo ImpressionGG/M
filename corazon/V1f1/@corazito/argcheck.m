@@ -1,4 +1,4 @@
-function argcheck(low,high,number)
+function ok = argcheck(low,high,number)
 %
 % ARGCHECK   Check number of input arguments. Raise error if not between
 %            low and high.
@@ -12,4 +12,5 @@ function argcheck(low,high,number)
    elseif (number > high)
       error('Too many input arguments.')
    end
+   ok = false;
 end
