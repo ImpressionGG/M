@@ -195,6 +195,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    setting(o,{'simu.tmax'},0.01);
    setting(o,{'simu.Fmax'},100);
    setting(o,{'simu.dt'},5e-6);
+   setting(o,{'simu.plot'},inf);      % number of points to plot
 
    oo = mitem(o,'Simulation');
    ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
@@ -203,10 +204,12 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
           choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4,...
                       1e-3,2e-3,5e-3, 1e-2,2e-2,5e-2, 1e-2,2e-2,5e-2],{});
+   ooo = mitem(oo,'Number of Points to Plot',{},'simu.plot');
+          choice(ooo,[50 100 200 500 1000 inf],{});
           
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
-          choice(ooo,[1 2 5 10 20 50 100 200 500 1000],{});
+          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off

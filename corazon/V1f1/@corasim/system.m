@@ -16,6 +16,12 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
 %             and continuous state space systems will be marked with type 
 %             'css'
 %
+%          Options
+%             sskind         defines the kind of state space representation
+%                            during casting (e.g. oo = system(o) call).
+%                            valus are: 'standard1', 'standard2' & 'modal'.
+%                            default is 'modal'
+%
 %          See also: CORASIM
 %
    if (nargin == 1)
@@ -77,8 +83,21 @@ end
 % Cast to a State Space System
 %==========================================================================
 
-function oo = Cast(o)                  % Cast to a State Space System
-   oo = Standard1(o);
+function oo = Cast(o)                  % Cast to a State Space System   
+   kind = opt(o,{'sskind','tf2ss'});
+  
+   switch kind
+      case 'tf2ss'
+         oo = Tf2ss(o);
+      case 'standard1'
+         oo = Standard1(o);
+      case 'standard2'
+         oo = Standard2(o);
+      case 'modal'
+         oo = Modal(o);
+      otherwise
+         error('bad ''sskind'' option');
+   end
 end
 function oo = Standard1(o)             % Brew 1st Standard Form        
 %
@@ -147,4 +166,131 @@ function oo = Standard1(o)             % Brew 1st Standard Form
    oo = type(o,typ);                   % set output type ('css' or 'dss')
    oo.par.system = [];
    oo = set(oo,'system','A,B,C,D,T',A,B,C,D,T);
+end
+function oo = Standard2(o)             % Brew 2nd Standard Form        
+   oo = Standard1(o);
+   [AT,CT,BT] = get(oo,'system','A,B,C');
+   A = AT';  B = BT';  C = CT';        % transpose all matrices
+   oo = set(oo,'A,B,C',A,B,C);
+end
+function oo = Modal(o)                 % Brew Modal Form               
+   [num,den] = peek(o);
+   oo = modal(o,num,den);
+end
+function oo = Tf2ss(o)
+%
+% TF2SS  Transfer function to state-space conversion.
+%
+%           o = system(corasim,{num,den})
+%           oo = Tf2ss(o) 
+%           [A,B,C,D] = get(oo,'system','A,B,C,D');
+%
+%        calculates the state-space representation:
+%           .
+%           x = Ax + Bu
+%           y = Cx + Du
+%
+%        of the system
+%
+%                   num(s)
+%           G(s) = --------
+%                   den(s)
+%
+%        from a single input. Vector den must contain the coefficients of
+%        the denominator in descending powers of s.  Matrix NUM must
+%        contain the numerator coefficients with as many rows as there are
+%        outputs y. The A,B,C,D matrices are returned in controller
+%        canonical form. This calculation also works for discrete systems.
+%
+%        For discrete-time transfer functions, it is highly recommended to
+%        make the length of the numerator and denominator equal to ensure
+%        correct results.  You can do this using the function EQTFLENGTH in
+%        the Signal Processing Toolbox.  However, this function only handles
+%        single-input single-output systems.
+%
+   [num,den] = peek(o);                % peek numerator/denominator
+   
+      % null system - Both numerator and denominator are empty
+      
+   if isempty(num) && isempty(den)
+       a = zeros(0,'like',den);
+       b = [];
+       c = zeros(0,'like',num) + zeros(0,'like',den);
+       d = zeros(0,'like',num) + zeros(0,'like',den);
+       oo = set(oo,'system','A,B,C,D',a,b,c,d);
+       return
+   end
+   
+      % dealing with a non-null system
+      
+   denRow = den(:).';
+
+    % Index of first non zero element of denominator
+
+   startIndexDen = find(denRow,1);
+
+    % Denominator should not be zero or empty
+
+   if isempty(startIndexDen)
+      error('invalid range');
+   end
+
+    % strip denominator of leading zeros
+
+   denStrip = denRow(startIndexDen(1):end);
+   [mnum,nnum] = size(num);
+   nden = size(denStrip,2);
+
+   % check for proper numerator
+
+   if (nnum > nden)
+      if any(num(:,1:(nnum - nden)) ~= 0,'all')
+         error('denominator invalid order');
+      end
+
+        % try to strip leading zeros to make proper
+
+      numStrip = num(:,(nnum-nden+1):nnum);
+   else
+
+        % pad numerator with leading zeroes, to make it have same
+        % number of columns as the denominator
+
+     numStrip = [zeros(mnum,nden-nnum) num];
+   end
+
+      % Normalize numerator and denominator such that first element of
+      % Denominator is one
+
+   numNorm = numStrip./denStrip(1);
+   denNorm = denStrip./denStrip(1);
+
+   if mnum == 0
+     d = zeros(0,'like',numNorm);
+     c = zeros(0,'like',numNorm);
+   else
+     d = numNorm(:,1);
+     c = numNorm(:,2:nden) - numNorm(:,1) * denNorm(2:nden);
+   end
+
+   if nden == 1
+     a = zeros(0,'like',denNorm);
+     b = [];
+     c = zeros(0,'like',numNorm);
+   else
+     a = [-denNorm(2:nden);eye(nden-2,nden-1)];
+     b = eye(nden-1,1);
+   end
+   
+      % set output args and converted type
+      
+   oo = set(o,'system','A,B,C,D',a,b,c,d);
+   switch oo.type
+      case {'strf','css'}              % continuous system
+         oo.type = 'css';              % output type: continuous SS
+      case {'ztrf','dss'}              % discrete system
+         oo.type = 'dss';              % output type: discrete SS
+      otherwise
+         error('bad type');
+   end
 end

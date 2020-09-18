@@ -192,7 +192,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
  
    for (k=1:length(psi))
       Gk = trf(G,1,psi(k,:));
-      sym = sprintf('G%g',k);
+      sym = sprintf('G_%g',k);
       oo = cache(oo,['trfd.',sym],Gk);
    end
     

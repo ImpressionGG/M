@@ -482,7 +482,7 @@ function o = ForceStep(o)              % Force Step Response
    u = StepInput(oo,t,index,Fmax);
    
    oo = sim(oo,u,[],t);
-   [t,u,y,x] = data(oo,'t,u,y,x');
+   [t,u,y,x] = var(oo,'t,u,y,x');
    
       % plot input signals (forces)
       
@@ -534,7 +534,7 @@ function o = ForceStepOverview(o)      % Force Step Response Overview
       u = StepInput(oo,t,index,Fmax);
 
       oo = sim(oo,u,[],t);
-      [t,u,y,x] = data(oo,'t,u,y,x');
+      [t,u,y,x] = var(oo,'t,u,y,x');
 
          % plot output signals (elongations)
 
@@ -560,7 +560,7 @@ function o = ForceStepOrbit(o,index)   % Force Step Orbit
    u = StepInput(oo,t,index,Fmax);
    
    oo = sim(oo,u,[],t);
-   [t,u,y,x] = data(oo,'t,u,y,x');
+   [t,u,y,x] = var(oo,'t,u,y,x');
    
       % plot input signals (forces)
       
@@ -623,7 +623,7 @@ function o = ForceRamp(o)              % Force Ramp Response
    u = RampInput(oo,t,index,Fmax);
    
    oo = sim(oo,u,[],t);
-   [t,u,y,x] = data(oo,'t,u,y,x');
+   [t,u,y,x] = var(oo,'t,u,y,x');
    
       % plot input signals (forces)
       
@@ -675,7 +675,7 @@ function o = ForceRampOverview(o)      % Force Ramp Response Overview
       u = RampInput(oo,t,index,Fmax);
 
       oo = sim(oo,u,[],t);
-      [t,u,y,x] = data(oo,'t,u,y,x');
+      [t,u,y,x] = var(oo,'t,u,y,x');
 
          % plot output signals (elongations)
 
@@ -701,7 +701,7 @@ function o = ForceRampOrbit(o,index)   % Force Ramp Orbit
    u = RampInput(oo,t,index,Fmax);
    
    oo = sim(oo,u,[],t);
-   [t,u,y,x] = data(oo,'t,u,y,x');
+   [t,u,y,x] = var(oo,'t,u,y,x');
    
       % plot input signals (forces)
       

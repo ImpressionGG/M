@@ -18,6 +18,11 @@ function oo = step(o,sub)              % Step Respone
 %           tmax:            max simulation time
 %           dt:              simulation time increment
 %
+%           xscale:          x-scaling factor (default: 1)
+%           yscale:          y-scaling factor (default: 1)
+%           xunit:           x-axis unit (default: 's')
+%           yunit:           y-axis unit (default: 's')
+%
 %        Copyright(c): Bluenetics 2020
 %
 %        See also: CORINTH, PLOT, RAMP
@@ -66,13 +71,17 @@ function oo = Plot(o)                  % Plot Step Response
    if ~isequal(shelf(o,gca,'kind'),'step')
       %cls(o);
    end
-         
-   [t,y] = data(o,'t,y');
-   col = opt(o,{'color','r'});
-   xscale = opt(o,{'xscale',1});
-   yscale = opt(o,{'yscale',1});
+      
+   [t,y] = var(o,'t,y');
 
-   plot(corazon(o),t*xscale,y*yscale,col);
+      % reduce plot vectors if plot delta is larger than simulation
+      % delta
+      
+   [t,y] = Subset(o,t,y);
+         
+   col = opt(o,{'color','r'});
+
+   plot(corazon(o),t,y,col);
    name = get(o,'name');
    if ~isempty(name)
       title([name,':  Step Response']);
@@ -88,6 +97,50 @@ function oo = Plot(o)                  % Plot Step Response
    shelf(o,gca,'kind','step');         % set gca kind: 'step'                
    hold on;                            % hold for next plot
    subplot(o);                         % subplot complete
+end
+
+function varargout = Subset(o,varargin)
+%
+% SUBSET  returns index of subset vectors to be plotted
+%
+%            idx = Subset(o,t)
+%            [t,y] = Subset(o,t,y);
+%
+   if ~((nargin==2 && nargout <= 1) || (nargin == 1+nargout))
+      error('bad number of input/output args');
+   end
+   
+   idx = [];                           % default: empty
+   t = varargin{1};
+   
+   dt = opt(o,'simu.dt');
+   plot = opt(o,'simu.plot');
+      
+   if ~isempty(dt) && ~isempty(plot) && (dt < max(t)/plot)
+      n = length(t);
+      delta = floor(n/plot);
+      if (~isempty(delta) && delta >= 1)
+         idx = 1:delta:n;
+         if (length(idx) > 0 && idx(end) ~= n)
+            idx(end+1) = n;
+         end
+      end
+   end
+   
+      % set output args
+      
+   if (nargout <= 1)
+      varargout{1} = idx;              % return idx
+   elseif isempty(idx)
+      for (i=1:length(varargin))
+         varargout{i} = varargin{i};
+      end
+   else
+      for (i=1:length(varargin))
+         d = varargin{i};              % data stream
+         varargout{i} = d(idx);        % replace by subset
+      end
+   end
 end
 
 %==========================================================================

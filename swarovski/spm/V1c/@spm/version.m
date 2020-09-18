@@ -48,6 +48,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - menu File>Tools>Cache_Reset added
 % - print transfer function and constrained trf to console
 % - comparison of step responses: Gij(s) <-> Hij(s)
+% - bug fixed: oo = var(oo,'G_1') instead of var(oo,'G1')
+% - add number of plot points in simu menu
 %
 %
 % Known bugs & wishlist

@@ -61,6 +61,7 @@ function t = Time(o)                   % Get Time Vector
    tmax = 5*max(1./abs(ev));
 
    T = opt(o,{'simu.dt',tmax/1000});
+   T = T(1);
    tmax = opt(o,{'simu.tmax',tmax});
    t = 0:T:tmax;
 end

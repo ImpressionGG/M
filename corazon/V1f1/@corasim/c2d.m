@@ -26,7 +26,7 @@ function [Phi,H] = c2d(o,A,B,T)        % Convert Continuous to Discrete
 %          
 %       See also: CORASIM
 %
-   o.argcheck(2,4,nargin)
+   o.argcheck(2,4,nargin);
 
    if (nargin == 2)
       if isequal(o.type,'strf')
