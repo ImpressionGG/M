@@ -73,11 +73,7 @@ function oo = Plot(o)                  % Plot Step Response
    end
       
    [t,y] = var(o,'t,y');
-
-      % reduce plot vectors if plot delta is larger than simulation
-      % delta
-      
-   [t,y] = Subset(o,t,y);
+   [t,y] = reduce(o,t,y);              % reduce number of data points
          
    col = opt(o,{'color','r'});
 

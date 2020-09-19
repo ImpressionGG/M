@@ -355,11 +355,11 @@ function oo = Select(o)                % Select Menu
    event(o,'select',o);                % call Select on 'select' event
 
    oo = [];                            % empty by default
-   if container(o)                     % only in case of container object
+%  if container(o)                     % only in case of container object
       oo = mhead(o,'Select');          % add roll down header menu item
       ooo = menu(oo,'Objects');        % add Open menu item
       ooo = menu(oo,'Basket');         % add Basket menu
-   end
+%  end
    
    if isempty(oo)
       Title(o);
@@ -374,10 +374,10 @@ function oo = Objects(o)               % Objects Menu
    [iif,either] = util(o,'iif','either');   % need some utils
    packages = isequal(opt(o,'mode.organized'),'packages'); 
    
-   if ~container(o)
-      oo = o;
-      return                           % no Traces menu if no container!
-   end
+%  if ~container(o)
+%     oo = o;
+%     return                           % no Objects menu if no container!
+%  end
 
    n = data(o,inf);                    % number of objects
    control(o,{'current'},iif(n,1,0));  % provide a default value

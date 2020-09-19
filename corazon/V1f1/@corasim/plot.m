@@ -21,48 +21,6 @@ end
 function oo = Menu(o)                  % Setup Plot Menu               
    oo = mitem(o,'Step Response',{@WithBsk,'Step'});
 %  oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
-
-   oo = Style(o);                      % add Style menu to Select menu
-end
-function oo = Style(o)                 % Add Style Menu Items          
-   setting(o,{'style.bullets'},1);     % provide bullets default
-   setting(o,{'style.linewidth'},1);   % provide linewidth default
-   setting(o,{'style.scatter'},'k');   % provide scatter color default
-
-      % filter settings
-     
-   setting(o,{'filter.mode'},'raw');   % filter mode off
-   setting(o,{'filter.type'},'LowPass2');
-   setting(o,{'filter.bandwidth'},5);
-   setting(o,{'filter.zeta'},0.6);
-   setting(o,{'filter.method'},1);
-
-   oo = mseek(o,{'#','Select'});
-
-   ooo = mitem(oo,'-');
-
-   ooo = mitem(oo,'Style');
-   oooo = mitem(ooo,'Bullets','','style.bullets');
-   check(oooo,{});
-   oooo = mitem(ooo,'Line Width','','style.linewidth');
-   choice(oooo,[1:3],{});
-   oooo = mitem(ooo,'Scatter Color','','style.scatter');
-   charm(oooo,{});
-
-   ooo = mitem(oo,'Filter');
-   oooo = mitem(ooo,'Mode','','filter.mode');
-   choice(oooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   oooo = mitem(ooo,'-');
-   oooo = mitem(ooo,'Type',{},'filter.type');
-   choice(oooo,{{'Order 2 Low Pass','LowPass2'},{'Order 2 High Pass','HighPass2'},...
-               {'Order 4 Low Pass','LowPass4'},{'Order 4 High Pass','HighPass4'}},{});
-   oooo = mitem(ooo,'Bandwidth',{},'filter.bandwidth');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Zeta',{},'filter.zeta');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Method',{},'filter.method');
-   choice(oooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
 
 %==========================================================================
@@ -145,8 +103,8 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
    o = with(corazon(o),'style');       % cast object and unpack style opts
 
    [n,ni,no] = size(cast(o,'corasim'));
-   [t,x,y] = data(o,'t,x,y');
-   u = data(o,{'u',zeros(ni,length(t))});
+   [t,x,y] = var(o,'t,x,y');
+   u = var(o,{'u',zeros(ni,length(t))});
    
    Plot311(o);                         % plot input
    Plot312(o);                         % plot state
@@ -188,7 +146,7 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
    [n,ni,no] = size(cast(o,'corasim'));
    T = get(o,{'system.T',1});
    
-   [x,y] = data(o,'x,y');
+   [x,y] = var(o,'x,y');
    if (isempty(x))
       m = size(y,2);
    else
@@ -196,8 +154,8 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
    end
    
    t = T*(0:m-1);                      % default in case t is not provided
-   t = data(o,{'t',t});
-   u = data(o,{'u',zeros(ni,m)});
+   t = var(o,{'t',t});
+   u = var(o,{'u',zeros(ni,m)});
    
    Plot311(o);                         % plot input
    Plot312(o);                         % plot state

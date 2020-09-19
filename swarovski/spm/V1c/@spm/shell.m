@@ -195,7 +195,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    setting(o,{'simu.tmax'},0.01);
    setting(o,{'simu.Fmax'},100);
    setting(o,{'simu.dt'},5e-6);
-   setting(o,{'simu.plot'},inf);      % number of points to plot
+   setting(o,{'simu.plot'},500);       % number of points to plot
 
    oo = mitem(o,'Simulation');
    ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
