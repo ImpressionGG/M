@@ -100,12 +100,16 @@ function o = Plot(o)                   % Plot Object
    end
 end
 function o = PlotCss(o)                % Plot Contin.  State Space Sys 
-   o = with(corazon(o),'style');       % cast object and unpack style opts
-
    [n,ni,no] = size(cast(o,'corasim'));
    [t,x,y] = var(o,'t,x,y');
-   u = var(o,{'u',zeros(ni,length(t))});
    
+   u = var(o,{'u',zeros(ni,length(t))});
+   [t,x,y,u] = reduce(o,t,x,y,u);      % reduce number of data points
+   
+      % cast object to prepare for corazon/plot calls
+
+   o = with(corazon(o),'style');       % cast object and unpack style opts
+
    Plot311(o);                         % plot input
    Plot312(o);                         % plot state
    Plot313(o);                         % plot output
@@ -141,8 +145,6 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
    end
 end
 function o = PlotDss(o)                % Plot Discrete State Space Sys 
-   o = with(corazon(o),'style');       % cast object and unpack style opts
-   
    [n,ni,no] = size(cast(o,'corasim'));
    T = get(o,{'system.T',1});
    
@@ -156,6 +158,12 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
    t = T*(0:m-1);                      % default in case t is not provided
    t = var(o,{'t',t});
    u = var(o,{'u',zeros(ni,m)});
+   
+   [t,x,y,u] = reduce(o,t,x,y,u);      % reduce number of data points
+   
+      % cast object to prepare for corazon/plot calls
+      
+   o = with(corazon(o),'style');       % cast object and unpack style opts
    
    Plot311(o);                         % plot input
    Plot312(o);                         % plot state

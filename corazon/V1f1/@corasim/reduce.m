@@ -70,7 +70,7 @@ function varargout = reduce(o,varargin)
    else
       for (i=1:length(varargin))
          d = varargin{i};              % data stream
-         varargout{i} = d(idx);        % replace by subset
+         varargout{i} = d(:,idx);      % replace by reduced subset
       end
    end
 end

@@ -138,7 +138,28 @@ end
 function oo = Select(o)                % Select Menu                     
    oo = mhead(o,'Select');             % add roll down header item
    dynamic(oo);                        % make this a dynamic menu
+   
    oo = menu(o,'Select');
+   ooo = Simu(oo);
+end
+function oo = Simu(o)                  % Simulation Parameter Menu     
+%
+% SIMU   Add simulation parameter menu items
+%
+   setting(o,{'simu.tmax'},0.01);
+   setting(o,{'simu.dt'},5e-6);
+   setting(o,{'simu.plot'},200);       % number of points to plot
+
+   oo = mitem(o,'Simulation');
+   ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
+          choice(ooo,[1000,2000,5000, 100,200,500,10,20,50, 1,2,5,...
+                      0.1,0.2,0.5, 0.01,0.02,0.05, 0.001,0.002,0.005],{});
+   ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
+          choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4,...
+                      1e-3,2e-3,5e-3, 1e-2,2e-2,5e-2, 1e-2,2e-2,5e-2],{});
+   ooo = mitem(oo,'Number of Points to Plot',{},'simu.plot');
+          choice(ooo,{{'50',50},{'100',100},{'200',200},{'500',500},...
+                      {'1000',1000},{},{'Maximum',inf}},{});
 end
 
 %==========================================================================
@@ -148,6 +169,7 @@ end
 function oo = Plot(o)                  % Plot Menu                     
    oo = mhead(o,'Plot');               % add roll down header menu item
    dynamic(oo);                        % make this a dynamic menu
+   
    ooo = plot(oo,'Menu');              % setup plot menu
 end
 
@@ -158,6 +180,7 @@ end
 function oo = Analysis(o)              % Analysis Menu                 
    oo = mhead(o,'Analysis');           % add roll down header menu item
    dynamic(oo);                        % make this a dynamic menu
+   
 %  ooo = analysis(oo,'Menu');          % setup analysis menu
 end
 

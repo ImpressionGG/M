@@ -432,6 +432,7 @@ function VersionV1F
 % - add corasim/modal and corasim/peek methods
 % - bug fix: corasim/modal (was a hard job) :-)))
 % - bug fix: corazon/menu/Select no more container check (critical !!!)
+% - add corasim/reduce method
 %
 %
 % Known Bugs / Wishlist
