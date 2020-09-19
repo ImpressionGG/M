@@ -24,7 +24,7 @@ function display(o)
          fprintf('z-type transfer function (T = %g):\n',T);
          Display(o,num,den,T);
       otherwise
-         disp(o)                       % display in corazon style
+         display(corazon,o);           % display in corazon style
    end
 end
 

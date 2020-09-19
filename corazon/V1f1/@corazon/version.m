@@ -433,6 +433,7 @@ function VersionV1F
 % - bug fix: corasim/modal (was a hard job) :-)))
 % - bug fix: corazon/menu/Select no more container check (critical !!!)
 % - add corasim/reduce method
+% - bug fix: set tmax max(tmax,10*Ts) for discrete time step response
 %
 %
 % Known Bugs / Wishlist

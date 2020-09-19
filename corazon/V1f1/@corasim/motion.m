@@ -52,7 +52,9 @@ function varargout = motion(o,varargin)
 %
 %             motion(o,{200,0:0.001:0.2},1e3,10e3,0.03);  % 200mm, 1000m/s,  10000mm/s2, S-time=30ms
 %
-%          See also: CARASIM, DUTY
+%          Copyright(c): Bluenetics 2020
+%
+%          See also: CORASIM, DUTY
 %
    [oo,gamma] = Manage(o,varargin,nargout);     % handle input args
    olist = gamma(oo);                  % invoke local handler function
@@ -331,9 +333,9 @@ function o = Plot(o)                   % Plot Profile
    si = bag.si;
 
    if (bag.refmode)
-      cls(carasim);
+      cls(corasim);
    else
-      %carasim.motmenu({carasim.iif(isempty(si),smax,si),vmax,amax,[tj algo],unit,infotext},'motion');  % add motion menus
+      %corasim.motmenu({corasim.iif(isempty(si),smax,si),vmax,amax,[tj algo],unit,infotext},'motion');  % add motion menus
    end
 
    subplot(211);
@@ -766,7 +768,7 @@ function o = AlternativeProfile(o)     % Alternative ETEL Profile
 end
 
 %=======================================================================================================
-% Auxillary functions
+% Helper
 %=======================================================================================================
 
 function y = Rd(x)                     % Round To One Digit After Comma
@@ -894,7 +896,7 @@ sz0 = sv0-vmax*tj;
    
    cls(o);
    axes;
-   %carasim.motmenu({smax,vmax,amax,[tj algo],unit,infotext},'motion map');  % add motion menus
+   %corasim.motmenu({smax,vmax,amax,[tj algo],unit,infotext},'motion map');  % add motion menus
    
    for (i=1:length(idx))
       patch([0 s max(s)],[0 Tnorm(idx(i),:)*1000, 0],colors{i});

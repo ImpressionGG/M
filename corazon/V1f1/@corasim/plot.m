@@ -232,6 +232,8 @@ function o = Step(o)                   % Step Plot
    function o = StepDss(o)             % Step Plot for Discrete SS     
       tmax = opt(o,{'tmax',5});
       Ts = get(o,'system.T');
+      tmax = max(tmax,10*Ts);
+      
       N = floor(tmax/Ts);
       
       [~,m] = size(o);                 % number of inputs

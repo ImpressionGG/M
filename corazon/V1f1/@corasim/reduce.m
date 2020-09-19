@@ -45,16 +45,18 @@ function varargout = reduce(o,varargin)
    idx = [];                           % default: empty
    t = varargin{1};
    
-   dt = opt(o,'simu.dt');
-   plot = opt(o,'simu.plot');
-      
-   if ~isempty(dt) && ~isempty(plot) && (dt < max(t)/plot)
-      n = length(t);
-      delta = floor(n/plot);
-      if (~isempty(delta) && delta >= 1)
-         idx = 1:delta:n;
-         if (length(idx) > 0 && idx(end) ~= n)
-            idx(end+1) = n;
+   if ~isempty(t)
+      dt = opt(o,'simu.dt');
+      plot = opt(o,'simu.plot');
+
+      if ~isempty(dt) && ~isempty(plot) && (dt < max(t)/plot)
+         n = length(t);
+         delta = floor(n/plot);
+         if (~isempty(delta) && delta >= 1)
+            idx = 1:delta:n;
+            if (length(idx) > 0 && idx(end) ~= n)
+               idx(end+1) = n;
+            end
          end
       end
    end
