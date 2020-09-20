@@ -105,7 +105,7 @@ function oo = plot(o,varargin)         % Corazon Plot Method
 %        See also: CORAZON, LABEL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithSho,@WithCuo,@WithBsk,...
-                       @Show,@Animation,@Draw,@Overview);
+                       @Show,@Animation,@Draw,@Overview,@About);
    oo = gamma(oo);
 end
 
@@ -116,13 +116,14 @@ end
 function oo = Menu(o)                  % Setup Plot Menu               
    setting(o,{'plot.handles'},[]);     % provide empty plot handles default
    
+   oo = mitem(o,'About',{@plot,'About'});
+   oo = mitem(o,'-');
+
    oo = mitem(o,'Show',{@WithBsk,'Show'});
         enable(oo,basket(oo),{'shell','weird','ball','cube','txy'});
 
    oo = mitem(o,'Animation',{@Animation});
         enable(oo,basket(oo),{'shell','weird','ball','cube'});
-
-   oo = mitem(o,'-');
    plugin(o,'corazon/shell/Plot');     % plug point
 end
 
@@ -328,6 +329,9 @@ function oo = Plot(o)                  % Default Plot Function
    end
    
    oo = hdl;
+end
+function oo = About(o)                 % Plot About Object             
+   oo = menu(o,'About');
 end
 
 %==========================================================================

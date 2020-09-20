@@ -437,6 +437,7 @@ function VersionV1F
 % - corasim: reworked data representation
 % - bug fix: corazon shell - dynamic Select menu
 % - pimp corasim: stepo response plots, max time rounding, menus
+% - corazon plot/Menu: plot/About added, also in corasim plot/Menu
 %
 %
 % Known Bugs / Wishlist

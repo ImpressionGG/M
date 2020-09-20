@@ -8,6 +8,7 @@ classdef corasim < corazon             % Corasim Class Definition
 %              dss:          discrete state space representation
 %              strf:         s-transfer function
 %              ztrf:         z-transfer function
+%              motion:       motion objects
 %
 %           Copyright(c): Bluenetics 2020
 %

@@ -18,7 +18,9 @@ end
 % Plot Menu
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Plot Menu               
+function oo = Menu(o)                  % Setup Plot Menu   
+   oo = mitem(o,'About',{@plot,'About'});
+   oo = mitem(o,'-');
    oo = mitem(o,'Step Response',{@WithBsk,'Step'});
 %  oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
 end
