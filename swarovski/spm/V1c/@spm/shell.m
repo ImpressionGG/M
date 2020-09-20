@@ -187,6 +187,7 @@ function oo = Select(o)                % Select Menu
    ooo = mitem(oo,'-');
    ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu
+   ooo = Motion(oo);                   % add Motion sub menu
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %
@@ -234,6 +235,22 @@ function oo = Filter(o)                % Add Filter Menu Items
    charm(ooo,{});
    ooo = mitem(oo,'Method',{},'filter.method');
    choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
+end
+function oo = Motion(o)                % Add Motion Menu Items         
+   setting(o,{'motion.smax'},100e-6); % 100 um stroke
+   setting(o,{'motion.vmax'},0.15e-3);% 0.15mm/s max velocity
+   setting(o,{'motion.amax'},1e-3);   % 1mm/s2 max acceleration
+   setting(o,{'motion.tj'},0.02);     % 20 ms jerk time
+
+   oo = mitem(o,'Motion');
+   ooo = mitem(oo,'Stroke (smax)',{},'motion.smax');
+        choice(ooo,[100e-6 200e-6 300e-6 400e-6 500e-6],{});
+   ooo = mitem(oo,'Max. Velocity [m/s]',{},'motion.vmax');
+        choice(ooo,[0.15e-3],{});
+   ooo = mitem(oo,'Max. Acceleration [m/s2]',{},'motion.amax');
+        choice(ooo,[1e-3],{});
+   ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
+        choice(ooo,[0.02],{});
 end
 
 %==========================================================================

@@ -11,7 +11,7 @@ function oo = study(o,varargin)        % Do Some Studies
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @Step,@Ramp,...
                        @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational,...
-                       @Quick,@Modal1,@Modal2,@Modal3);
+                       @Quick,@Modal1,@Modal2,@Modal3,@MotionOverview);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -50,6 +50,10 @@ function oo = Menu(o)                  % Setup Study Menu
    ooo = mitem(oo,'Modal 1',{@Modal1});
    ooo = mitem(oo,'Modal 2',{@Modal2});
    ooo = mitem(oo,'Modal 3',{@Modal3});
+
+   oo = mitem(o,'-');
+   oo = mitem(o,'Motion');
+   ooo = mitem(oo,'Motion Overview',{@WithCuo,'MotionOverview'});
 end
 
 %==========================================================================
@@ -545,6 +549,18 @@ function o = Modal3(o)                 % Modal Representation 3
    o3 = modal(corasim,num,den);
 end
 
+%==========================================================================
+% Motion Overview
+%==========================================================================
+
+function o = MotionOverview(o)         % Motion Overview               
+   [smax,vmax,amax,tj] = opt(with(o,'motion'),'smax,vmax,amax,tj');
+   oo = inherit(corasim,o);
+   oo = data(oo,'smax,vmax,amax,tj',smax,vmax,amax,tj);
+   oo = data(oo,'tunit,sunit','s','mm');
+   oo.par.title = 'Motion Overview';
+   motion(oo,'Overview');
+end
 %==========================================================================
 % Helper
 %==========================================================================

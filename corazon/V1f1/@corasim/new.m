@@ -11,6 +11,10 @@ function oo = new(o,varargin)          % CORASIM New Method
 %
 %           o = new(corasim,'Modal')   % modal form (continuous)
 %
+%           o = new(corasim,'Motion100mm')
+%           o = new(corasim,'Motion200mm')
+%           o = new(corasim,'Motion100um')
+%
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Css,@Dss,@Filter2,...

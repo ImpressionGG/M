@@ -50,6 +50,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - comparison of step responses: Gij(s) <-> Hij(s)
 % - bug fixed: oo = var(oo,'G_1') instead of var(oo,'G1')
 % - add number of plot points in simu menu
+% - add Study>Motion menu
 %
 %
 % Known bugs & wishlist
