@@ -435,6 +435,7 @@ function VersionV1F
 % - add corasim/reduce method
 % - bug fix: set tmax max(tmax,10*Ts) for discrete time step response
 % - corasim: reworked data representation
+% - bug fix: corazon shell - dynamic Select menu
 %
 %
 % Known Bugs / Wishlist
