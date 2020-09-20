@@ -237,16 +237,17 @@ function oo = Filter(o)                % Add Filter Menu Items
    choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
 function oo = Motion(o)                % Add Motion Menu Items         
-   setting(o,{'motion.smax'},100e-6); % 100 um stroke
-   setting(o,{'motion.vmax'},0.15e-3);% 0.15mm/s max velocity
-   setting(o,{'motion.amax'},1e-3);   % 1mm/s2 max acceleration
-   setting(o,{'motion.tj'},0.02);     % 20 ms jerk time
+   setting(o,{'motion.smax'},100e-6);  % 100 um stroke
+   setting(o,{'motion.vmax'},0.15e-3); % 0.15mm/s max velocity
+   setting(o,{'motion.amax'},1e-3);    % 1mm/s2 max acceleration
+   setting(o,{'motion.tj'},0.02);      % 20 ms jerk time
+   setting(o,{'motion.unit'},'mm');    % stroke unit = mm
 
    oo = mitem(o,'Motion');
    ooo = mitem(oo,'Stroke (smax)',{},'motion.smax');
-        choice(ooo,[100e-6 200e-6 300e-6 400e-6 500e-6],{});
+        choice(ooo,[100 200 300 400 500]*1e-6,{});
    ooo = mitem(oo,'Max. Velocity [m/s]',{},'motion.vmax');
-        choice(ooo,[0.15e-3],{});
+        choice(ooo,[0.05 0.10 0.15 0.2 0.3 0.4 0.5]*1e-3,{});
    ooo = mitem(oo,'Max. Acceleration [m/s2]',{},'motion.amax');
         choice(ooo,[1e-3],{});
    ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');

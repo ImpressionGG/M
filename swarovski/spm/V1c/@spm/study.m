@@ -11,7 +11,8 @@ function oo = study(o,varargin)        % Do Some Studies
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @Step,@Ramp,...
                        @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational,...
-                       @Quick,@Modal1,@Modal2,@Modal3,@MotionOverview);
+                       @Quick,@Modal1,@Modal2,@Modal3,...
+                       @MotionOverview,@MotionProfile);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -54,6 +55,7 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'-');
    oo = mitem(o,'Motion');
    ooo = mitem(oo,'Motion Overview',{@WithCuo,'MotionOverview'});
+   ooo = mitem(oo,'Motion Profile',{@WithCuo,'MotionProfile'});
 end
 
 %==========================================================================
@@ -561,6 +563,12 @@ function o = MotionOverview(o)         % Motion Overview
    oo.par.title = 'Motion Overview';
    motion(oo,'Overview');
 end
+function o = MotionProfile(o)          % Plot Motion Profile
+   oo = inherit(type(corasim,'motion'),o);
+   oo = data(oo,opt(o,'motion'));
+   plot(oo);
+end
+
 %==========================================================================
 % Helper
 %==========================================================================
