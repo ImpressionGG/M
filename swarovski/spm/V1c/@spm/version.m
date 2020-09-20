@@ -51,6 +51,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fixed: oo = var(oo,'G_1') instead of var(oo,'G1')
 % - add number of plot points in simu menu
 % - add Study>Motion menu
+% - bug fix: motion Overview reacting on tmax setting
 %
 %
 % Known bugs & wishlist

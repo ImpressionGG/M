@@ -612,7 +612,7 @@ function o = Simu(o,t)                 % Finish Calculations
    
    if (length(t) > length(a))
       one = 1+0*(length(a)+1:length(t));
-      j = [0*one];
+      j = [j,0*one];
       a = [a,a(end)*one];
       v = [v,v(end)*one];
       s = [s,s(end)*one];

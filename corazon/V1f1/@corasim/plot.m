@@ -131,7 +131,8 @@ end
 function o = Overview(o)               % Plot Overview                 
    switch o.type
       case 'motion'
-         motion(o,'Overview');
+         oo = with(o,'simu');
+         motion(oo,'Overview');
       otherwise
          Plot(o);
    end
@@ -301,6 +302,7 @@ function o = Motion(o)                 % Plot Motion Profile
    end
  
    [smax,vmax,amax,tj] = data(o,'smax,vmax,amax,tj');
+   
    motion(o,smax*1000,1000*vmax,amax*1000,tj); 
    
    heading(o);
