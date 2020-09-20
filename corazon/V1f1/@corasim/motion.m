@@ -1,22 +1,40 @@
-function varargout = motion(o,varargin)                   
+function varargout = motion(o,varargin)                                
 %function [tout,tsvajd,out3,vaj] = motion(o,smax,vmax,amax,tj,unit,infotext)
 %
-% MOTION   Calculate (plot) motion profile comprising jerk, acceleration, velocity and distance over time.
-%          Either plot profile or return duration to perform motion.
+% MOTION   Calculate (plot) motion profile comprising jerk, acceleration,
+%          velocity and distance over time. Either plot profile or return
+%          duration to perform motion.
 %
 %             motion(o,smax,vmax,amax,tj,unit)
 %             motion(o,smax,vmax,amax,tj,unit,text)
 %             motion(o,smax,vmax,amax,[tj algo],unit)   % specify algorithm 
 %
-%             t = motion(o,smax,vmax,amax,tj,unit)      % return time to perform motion
-%             t = motion(o,[s1..sn],vmax,amax,tj,unit)  % return times to reach positions s1 .. sn
-%                                                       % performing motion to distance max(s1,..,sn)
+%          Brew variables
+%
+%             oo = motion(o,'Brew');
+%
+%          Plot Overview
+%
+%             motion(o,'Overview');
+%
+%          Return time to perform motion:
+%
+%             t = motion(o,smax,vmax,amax,tj,unit)      
+%
+%          Return times to reach positions s1 .. sn
+%
+%             t = motion(o,[s1..sn],vmax,amax,tj,unit)  
+%              
+%          Performing motion to distance max(s1,..,sn)
+%
 %             motion(o,NaN,vmax,amax,[tj mode]);        % plot motion map
 %   
-%             [t,tsvajd,tref] = motion(o,[s1..sn],vmax,amax,tj,unit)    % retrieve internal variables
+%          Retrieve internal variables:
 %
-%             motion(o,smax)          % vmax = 1000 mm/s, amax = 10000 mm/s2
-%                                     % tj = 0, unit = 'mm'
+%             [t,tsvajd,tref] = motion(o,[s1..sn],vmax,amax,tj,unit)   
+%
+%             motion(o,smax)           % vmax = 1000 mm/s, amax = 1e4 mm/s2
+%                                      % tj = 0, unit = 'mm'
 %
 %          To calculate values of s, v, a and j at time stamps t
 %          use the following syntax:
@@ -59,8 +77,12 @@ function varargout = motion(o,varargin)
    [oo,gamma] = Manage(o,varargin,nargout);     % handle input args
    olist = gamma(oo);                  % invoke local handler function
    
-   for (i=1:length(olist))
-      varargout{i} = olist{i};
+   if isobject(olist)
+      varargout{1} = olist;
+   else
+      for (i=1:length(olist))
+         varargout{i} = olist{i};
+      end
    end
 end
 
@@ -69,10 +91,16 @@ end
 %==========================================================================
 
 function olist = Motion(o)             % Classical Motion Work Horse   
+%
+% MPOTION Motion work horse
+%
+%            [tout,tsvajd,out3,vaj,o] = Motion(o)
+%
    o = CornerStones(o);                % calculate corner stones     
    
       % calculate presignal times
       
+   vaj = [];                           % default init
    if ~isempty(var(o,'si'))
       [ti,vaj] = PreSignalTimes(o);
       o = var(o,'ti',ti);
@@ -100,6 +128,9 @@ function olist = Motion(o)             % Classical Motion Work Horse
       end
       if (nout >= 4)
          olist{4} = vaj;
+      end
+      if (nout >= 5)
+         olist{5} = o;
       end
    end
 end
@@ -160,6 +191,201 @@ function olist = Trace(o)              % Calculate Motion Trace
    o = var(o,bag);
    olist = {o};
 end
+
+%==========================================================================
+% Plot
+%==========================================================================
+
+function oo = Overview(o)              % Plot Overview
+   oo = Brew(o);
+
+   [t,s,v,a,j] = var(oo,'t,s,v,a,j');
+   [tunit,sunit] = data(o,'tunit,sunit');
+   
+   switch sunit
+      case 'mm'
+         oo = opt(oo,'yscale',1e3,'yunit',sunit);
+      case 'um'
+         oo = opt(oo,'yscale',1e6,'yunit',sunit);
+      otherwise
+         oo = opt(oo,'yscale',1e0,'yunit',sunit);
+   end
+   
+   cls(o);
+   PlotV(oo,2211);
+   PlotS(oo,2221);
+   PlotJ(oo,2212);
+   PlotA(oo,2222);
+   heading(o);
+   
+   function PlotS(o,sub)
+      subplot(o,sub);
+      plot(o,t,s,'g');
+      title('Stroke');
+      xlabel(['time [',o.either(tunit,'1'),']']);
+      ylabel(['s [',o.either(sunit,'1'),']']);
+      set(gca,'Xlim',[min(t),max(t)]);
+      subplot(o);                      % subplot done
+   end
+   function PlotV(o,sub)
+      subplot(o,sub);
+      plot(o,t,v,'bc');
+      title('Velocity');
+      xlabel(['time [',o.either(tunit,'1'),']']);
+      ylabel(['s [',o.either(sunit,'1'),'/s]']);
+      set(gca,'Xlim',[min(t),max(t)]);
+      subplot(o);                      % subplot done
+   end
+   function PlotA(o,sub)
+      subplot(o,sub);
+      plot(o,t,a,'r');
+      title('Acceleration');
+      xlabel(['time [',o.either(tunit,'1'),']']);
+      ylabel(['s [',o.either(sunit,'1'),'/s2]']);
+      set(gca,'Xlim',[min(t),max(t)]);
+      subplot(o);                      % subplot done
+   end
+   function PlotJ(o,sub)
+      subplot(o,sub);
+      plot(o,t,j,'yyr');
+      title('Jerk');
+      xlabel(['time [',o.either(tunit,'1'),']']);
+      ylabel(['j [',o.either(sunit,'1'),'/s3]']);
+      set(gca,'Xlim',[min(t),max(t)]);
+      subplot(o);                      % subplot done
+   end
+end
+function o = Plot(o)                   % Plot Profile                  
+   ti = []; vi = []; unit = [];        % local variables
+   unit = [];  smax = [];
+   
+   [t,s,v,T,S,V,TT,SS,VV,si] = var(o,'t,s,v,T,S,V,TT,SS,VV,si');
+   [vfac,angle,unit1,unit] = var(o,'vfac,angle,unit1,unit');
+   [tref,tadd,tmax] = var(o,'tref,tadd,tmax');
+   [smax,vmax,amax] = var(o,'smax,vmax,amax');
+   [vm,am,tj,lcolor,algo] = var(o,'vm,am,tj,lcolor,algo');
+
+   refmode = var(o,'refmode');
+   if (refmode)
+      cls(o);
+   end
+
+   Velocity(o,211);                    % plot velocity
+   Vlabels(o,211);                     % velocity labels
+
+   Stroke(o,212);                      % plot stroke
+   Slabels(o,212);                     % stroke labels
+
+   PreSignals(o,211);                  % plot pre-signals
+
+   function o = Velocity(o,sub)        % Plot Velocity Profile         
+      subplot(o,sub);
+      hold on;
+
+      for (i=1:length(T))
+         plot(o,[T(i) T(i)]*1000,[0 V(i)]*vfac,[lcolor,'K:']);
+         hold on
+      end
+      plot(o,t*1000,v*vfac,lcolor, TT*1000,VV*vfac,[lcolor,'Ko']);
+      subplot(o);                      % subplot done
+   end
+   function o = Stroke(o,sub)          % Plot Stroke Profile           
+      subplot(o,sub);
+      hold on
+
+      for (i=1:length(T)) 
+         plot(o,[T(i) T(i)]*1000,[0 S(i)],[lcolor,':']);
+      end
+      plot(o,t*1000,s,lcolor, TT*1000,SS,[lcolor,'o']);
+      subplot(o);                      % subplot done
+   end
+   function o = Vlabels(o,sub)         % Velocity Labels               
+      subplot(o,sub);
+      infotext = var(o,'infotext');
+      title(sprintf(['%s: %g ',unit,' / %g ms (%g ms + %g ms)'],infotext,Rd(smax),Rd(tmax*1000),Rd(tref*1000),Rd(tadd*1000)));
+
+
+      if angle
+         xlabel(sprintf(['n_m = %g ',unit1,'/s (%g),   a_m = %g ',...
+                         unit1,'/s^2 (%g), t_j = %g ms (%g)'],...
+                         Rd(vm/360),Rd(vmax/360),Rd(am/360),...
+                         Rd(amax/360),Rd(tj*1000),Rd(tj*1000)));
+         ylabel(['n [',unit1,'/s]']);
+      else
+         xlabel(sprintf(['v_m = %g ',unit,'/s (%g),   a_m = %g ',unit,'/s^2 (%g), t_j = %g ms (%g)'],Rd(vm),Rd(vmax),Rd(am),Rd(amax),Rd(tj*1000),Rd(tj*1000)));
+         ylabel(['v [',unit,'/s]']);
+      end
+      ylim = get(gca,'ylim'); set(gca,'ylim',[0 ylim(2)]);
+
+      hold on
+      ta = T(4);  vm = max(V);  tv = max(T)-2*ta;
+      plot(o,[ta ta]*1000,[0 vm]*vfac,'K:');
+      plot(o,[ta+tv ta+tv]*1000,[0 vm]*vfac,'K:');
+      plot([0 ta ta+tv 0]*1000,[0 vm vm 0]*vfac,'Ko');
+      set(gca,'xlim',[0 tmax*1000]);
+      subplot(o);                      % subplot done
+   end
+   function o = Slabels(o,sub)         % Stroke Labels                 
+      subplot(o,sub);
+      if (var(o,'refmode'))
+         ta = T(4);  vm = max(V);  tv = max(T)-2*ta;
+         plot(o,[ta ta 0]*1000,[0 S(4) S(4)],'K:');
+         plot(o,[ta+tv ta+tv 0]*1000,[0 S(5) S(5)],'K:');
+         plot(o,[tmax tmax 0]*1000,[0 smax smax],'K:');
+         plot(o,[0 ta ta+tv tmax]*1000,[0 S(4) S(5), smax],'Ko');
+      end
+
+      if (isempty(si))
+         [tduty,acont,dut] = duty(o,smax,vmax,amax,[tj algo],unit,var(o,'infotext'));
+         xlabel(sprintf(['T_{duty}= %g ms,   a_{cont}= %g %s/s^2,   duty = %g %%'],Rd(tduty*1000),Rd(acont*vfac),unit1,Rd(dut*100)));
+      end
+
+      if angle
+         ylabel(['phi [',unit,']']);
+      else
+         ylabel(['s [',unit,']']);
+      end
+
+      set(gca,'xlim',[0 tmax*1000]);
+      subplot(o);                      % subplot done
+   end
+   function o = PreSignals(o,sub)      % Plot Pre-Signals              
+      if ~isempty(si)
+         subplot(211);
+         plot(o,[1;1]*[ti(:)*1000]',[0*vi(:) vi(:)]'*vfac,'r:', [0;1]*[ti(:)*1000]',[vi(:) vi(:)]'*vfac,'r:');
+         plot(ti*1000,vi*vfac,'ro');
+
+         subplot(212);
+         plot([1;1]*[ti(:)*1000]',[0*si(:) si(:)]','r:', [0;1]*[ti(:)*1000]',[si(:) si(:)]','r:');
+         plot(ti*1000,si,'ro');
+
+         nsi = min(length(si),4);
+         if (nsi == 1) xlab = 'pre signal: '; else xlab = 'pre signals: '; end 
+         for i=1:nsi
+            xlab = [xlab,sprintf(['%g',unit,':%g ms'],Rd(si(i)),Rd(ti(i)*1000))];
+            if (i<nsi) xlab = [xlab,', ']; end
+         end
+         xlabel(xlab);         
+      end
+      subplot(o);                      % subplot done
+   end
+end
+
+%==========================================================================
+% Brew Variables
+%==========================================================================
+
+function oo = Brew(o)                  % Brew Variables                
+   [smax,vmax,amax,tj,unit] = data(o,'smax,vmax,amax,tj,sunit');
+   [tmax,tsvajd,tref,~,o] = motion(o,smax,vmax,amax,tj,unit);   
+   
+   tmax = opt(o,{'tmax',tmax});
+   dt = opt(o,{'dt',tmax/1000});
+   
+   t = 0:dt:tmax;
+   o = Simu(o,t);
+   oo = o;
+end
 function o = CornerStones(o)           % Calculate Corner Stones       
    o = ReferenceTime(o);               % Calculate Reference Time     
    o = Convert(o);                     % convert according to unit
@@ -182,12 +408,13 @@ function o = CornerStones(o)           % Calculate Corner Stones
    else
       error(sprintf('Bad argument algo: %g',algo));
    end
-   o = Finish(o);                      % finish calculations
+   
+   o = Finish(o);                      % calc intermediate values
 end
 
-%=======================================================================================================
+%==========================================================================
 % Some Work Horse Functions
-%=======================================================================================================
+%==========================================================================
 
 function o = Pack(o,smax,vmax,amax,tj) % Pack Parameters into Vars     
    bag = var(o);                       % get bag of variables
@@ -210,7 +437,7 @@ function o = Store(o,T,J,D,tmax)       % Store Motion Core Parameters
    bag.T = T;                          % store Time vector
    bag.J = J;                          % store Jerk vector
    bag.D = D;                          % store Dirac vector
-   o = var(o,bag);                     % reszore modified variables
+   o = var(o,bag);                     % restore modified variables
 end
 function o = Convert(o)                % Convert According to Unit     
    [smax,vmax,amax,tj] = Unpack(o);    % unpack variables
@@ -247,7 +474,7 @@ function o = ReferenceTime(o)          % Calculate Reference Time
          unit = var(o,'unit');
          motion(o,smax(length(smax)),vmax,amax,NaN,unit);
       end                              % plot reference motion      
-      lcolor = 'b';
+      lcolor = 'bc';
    else
       tref = 0;  tj = 0;  lcolor = 'g';
       o = var(o,'tj',tj);
@@ -270,7 +497,6 @@ function o = Finish(o)                 % Finish Calculations
 % symmetric conditions define the rest of the time vector and jerk profile
 
    T = [T(1:4), tmax-T(4:-1:1), tmax];
-%  T = [T(1:4), tmax(end)-T(4:-1:1), tmax(end)];
    J = [J(1:4), 0, J(4:-1:1)];
    D = [D(1:4), 0, D(4:-1:1)];
    
@@ -325,116 +551,87 @@ function o = Finish(o)                 % Finish Calculations
    bag.D = D;  bag.DD = DD; 
    o = var(o,bag);
 end
-function o = Plot(o)                   % Plot Profile                  
-   bag = var(o);
-   t = bag.t;  s = bag.s;  v = bag.v;
-   T = bag.T;  S = bag.S;  V = bag.V; 
-   TT = bag.TT;  SS = bag.SS;  VV = bag.VV;
-   si = bag.si;
-
-   if (bag.refmode)
-      cls(corasim);
-   else
-      %corasim.motmenu({corasim.iif(isempty(si),smax,si),vmax,amax,[tj algo],unit,infotext},'motion');  % add motion menus
-   end
-
-   subplot(211);
-   hold on;
-
+function o = Simu(o,t)                 % Finish Calculations           
+   [smax,vmax,amax,tj] = Unpack(o);
    tref = var(o,'tref');
-   tadd = var(o,'tadd');   
    tmax = var(o,'tmax');
-   smax = var(o,'smax');
    vmax = var(o,'vmax');
-   amax = var(o,'amax');
-   vfac = var(o,'vfac');
-   angle = var(o,'angle');
-   unit1 = var(o,'unit');
-   unit = var(o,'unit');
-   vm = var(o,'vm');
-   am = var(o,'am');
-   tj = var(o,'tj');
-   lcolor = var(o,'lcolor');
-   algo = var(o,'algo');
+   tadd = tmax-tref;		   % additional time to jerk-less motion profile
+   T = var(o,'T');
+   J = var(o,'J');
+   D = var(o,'D');
+   epsi = var(o,'epsi');
    
-   for (i=1:length(T))
-      plot([T(i) T(i)]*1000,[0 V(i)]*vfac,[lcolor,':']); 
+% symmetric conditions define the rest of the time vector and jerk profile
+
+   T = [T(1:4), tmax-T(4:-1:1), tmax];
+   J = [J(1:4), 0, J(4:-1:1)];
+   D = [D(1:4), 0, D(4:-1:1)];
+   
+   for (i=2:9)
+      if (abs(T(i)-T(i-1))<epsi) J(i) = 0; end        % clear jerk if no relevant time for it
    end
-   plot(t*1000,v*vfac,lcolor, TT*1000,VV*vfac,[lcolor,'o']);
+   
+% jerk profile is now defined, so calculate the rest of the motion profile
 
-   subplot(212);
-   hold on
-%        plot([t1 t2 t3 t4 t5 t6 t7 t8 t9]*1000,[s1 s2 s3 s4 s5 s6 s7 s8 s9],'b');
-   for (i=1:length(T)) 
-      plot([T(i) T(i)]*1000,[0 S(i)],[lcolor,':']);
-   end
-   plot(t*1000,s,lcolor, TT*1000,SS,[lcolor,'o']);
+      % shift right vectors to artificially provide T(0), J(0), A(0), V(0), S(0) bei shifting left
 
-   % continue with labeling
-
-   subplot(211);
-   title(sprintf(['%s: %g ',unit,' / %g ms (%g ms + %g ms)'],bag.infotext,Rd(smax),Rd(tmax*1000),Rd(tref*1000),Rd(tadd*1000)));
-
-
-   if angle
-      xlabel(sprintf(['n_m = %g ',unit1,'/s (%g),   a_m = %g ',unit1,'/s^2 (%g), t_j = %g ms (%g)'],Rd(vm/360),Rd(vmax/360),Rd(am/360),Rd(amax/360),Rd(tj*1000),Rd(tj*1000)));
-      ylabel(['n [',unit1,'/s]']);
-   else
-      xlabel(sprintf(['v_m = %g ',unit,'/s (%g),   a_m = %g ',unit,'/s^2 (%g), t_j = %g ms (%g)'],Rd(vm),Rd(vmax),Rd(am),Rd(amax),Rd(tj*1000),Rd(tj*1000)));
-      ylabel(['v [',unit,'/s]']);
-   end
-   ylim = get(gca,'ylim'); set(gca,'ylim',[0 ylim(2)]);
-
-   hold on
-   ta = T(4);  vm = max(V);  tv = max(T)-2*ta;
-   plot([ta ta]*1000,[0 vm]*vfac,'k:');
-   plot([ta+tv ta+tv]*1000,[0 vm]*vfac,'k:');
-   plot([0 ta ta+tv 0]*1000,[0 vm vm 0]*vfac,'ko');
-   set(gca,'xlim',[0 tmax*1000]);
-
-   subplot(212);
-   if (bag.refmode)
-      plot([ta ta 0]*1000,[0 S(4) S(4)],'k:');
-      plot([ta+tv ta+tv 0]*1000,[0 S(5) S(5)],'k:');
-      plot([tmax tmax 0]*1000,[0 smax smax],'k:');
-      plot([0 ta ta+tv tmax]*1000,[0 S(4) S(5), smax],'ko');
-   end
-
-   if (isempty(si))
-      [tduty,acont,dut] = duty(o,smax,vmax,amax,[tj algo],unit,bag.infotext);
-      xlabel(sprintf(['T_{duty}= %g ms,   a_{cont}= %g %s/s^2,   duty = %g %%'],Rd(tduty*1000),Rd(acont*vfac),unit1,Rd(dut*100)));
-      %xlabel(sprintf(['t_j= %g ms,  t_p= %g ms,  t_n= %g ms,  t_h= %g ms,  t_v= %g ms'],Rd(tj*1000),Rd(tp*1000),Rd(tn*1000),Rd(th*1000),Rd(tv*1000)));
-   end
-
-   if angle
-      ylabel(['phi [',unit,']']);
-   else
-      ylabel(['s [',unit,']']);
-   end
-
-   set(gca,'xlim',[0 tmax*1000]);
-
-% plot pre signals
-
-   if ~isempty(si)
-      subplot(211);
-      plot([1;1]*[ti(:)*1000]',[0*vi(:) vi(:)]'*vfac,'r:', [0;1]*[ti(:)*1000]',[vi(:) vi(:)]'*vfac,'r:');
-      plot(ti*1000,vi*vfac,'ro');
-
-      subplot(212);
-      plot([1;1]*[ti(:)*1000]',[0*si(:) si(:)]','r:', [0;1]*[ti(:)*1000]',[si(:) si(:)]','r:');
-      plot(ti*1000,si,'ro');
-
-      nsi = min(length(si),4);
-      if (nsi == 1) xlab = 'pre signal: '; else xlab = 'pre signals: '; end 
-      for i=1:nsi
-         xlab = [xlab,sprintf(['%g',unit,':%g ms'],Rd(si(i)),Rd(ti(i)*1000))];
-         if (i<nsi) xlab = [xlab,', ']; end
+   T = [0 T];   % shift right time vector (to provide 'T(0) = 0')
+   J = [0 J];   % shift jerk vector (to provide 'J(0) = 0')
+   D = [0 D];   % shift Dirac vector (to provide 'D(0) = 0')
+   A = 0*T;     % initialize acceleration vector
+   V = 0*T;     % initialize velocity vector
+   S = 0*T;     % initialize distance vector
+      
+   j = [];  a = [];  v = [];  s = [];
+      
+   for (i=2:10)  % since we use right shifted vectors, we run i in the range 2:8 instead of 1:7
+      A(i) = [D(i)+A(i-1)] + J(i)*[T(i)-T(i-1)];
+      V(i) = V(i-1) + [D(i)+A(i-1)]*[T(i)-T(i-1)] + J(i)/2*[T(i)-T(i-1)]^2;
+      S(i) = S(i-1) + V(i-1)*[T(i)-T(i-1)] + [D(i)+A(i-1)]/2*[T(i)-T(i-1)]^2 + J(i)/6*[T(i)-T(i-1)]^3;
+         
+      %tt = T(i-1):[T(i)-T(i-1)]/10:T(i);
+      
+      if (i < 10)
+         idx = find(t >= T(i-1) & t < T(i));
+      else
+         idx = find(t >= T(i-1) & t <= T(i));
       end
-      xlabel(xlab);         
+      
+      tt = t(idx);
+      
+      if ~isempty(tt)
+         jj = 0*tt + J(i);
+         aa = [D(i)+A(i-1)] + J(i)*[tt-T(i-1)];
+         vv = V(i-1) + [D(i)+A(i-1)]*[tt-T(i-1)] + J(i)/2*[tt-T(i-1)].^2;
+         ss = S(i-1) + V(i-1)*[tt-T(i-1)] + [D(i)+A(i-1)]/2*[tt-T(i-1)].^2 + J(i)/6*[tt-T(i-1)].^3;
+         
+         j = [j jj];  a = [a aa];  v = [v vv];  s = [s ss];
+      end
    end
+   
+   if (length(t) > length(a))
+      one = 1+0*(length(a)+1:length(t));
+      j = [0*one];
+      a = [a,a(end)*one];
+      v = [v,v(end)*one];
+      s = [s,s(end)*one];
+   end
+      
+% save in variables TT, JJ, AA, VV, SS and reduce T(0), J(0), A(0), V(0), S(0) bei shifting left
 
-   %shg
+   TT = T;  DD = D;  JJ = J;  AA = A;  VV = V;  SS = S;
+   T(1) = [];  D(1) = [];  J(1) = [];  A(1) = [];  V(1) = [];  S(1) = [];
+      
+   vm = max(V);  am = max(A);  tm = max(T);
+      
+   if (any(A>amax+epsi)) fprintf('invariant violation am  = %g > amax (smax: %g, vmax: %g, amax: %g, tj: %g)\n',max(A),max(smax),vmax,amax,tj); end
+   if (any(V>vmax+epsi)) fprintf('invariant violation vm  = %g > vmax (smax: %g, vmax: %g, amax: %g, tj: %g)\n',max(V),max(smax),vmax,amax,tj); end
+   if (any(S>max(smax)+epsi)) fprintf('invariant violation sm  = %g > smax (smax: %g, vmax: %g, amax: %g, tj: %g)\n',max(S),max(smax),vmax,amax,tj); end
+      
+   o = var(o,'T,TT,t,S,SS,s',T,TT,t,S,SS,s);
+   o = var(o,'V,VV,v,A,AA,a',V,VV,v,A,AA,a);
+   o = var(o,'J,JJ,j,D,DD',J,JJ,j,D,DD);   
 end
 function [ti,vaj] = PreSignalTimes(o)  % Calculate Pre-Signal Times    
    bag = var(o);
@@ -467,6 +664,14 @@ function [ti,vaj] = PreSignalTimes(o)  % Calculate Pre-Signal Times
 end
 
 function [o,gamma] = Manage(o,inargs,nout)  % Handle Input Args        
+   if isequal(inargs,{'Brew'})
+      gamma = @Brew;
+      return
+   elseif isequal(inargs,{'Overview'})
+      gamma = @Overview;
+      return
+   end
+   
    if length(inargs) == 1 && iscell(inargs{1})
       nin = 1;  smax = inargs{1};
    else
@@ -767,9 +972,9 @@ function o = AlternativeProfile(o)     % Alternative ETEL Profile
    o = Store(o,T,J,D,tmax);            % store motion core parameters
 end
 
-%=======================================================================================================
+%==========================================================================
 % Helper
-%=======================================================================================================
+%==========================================================================
 
 function y = Rd(x)                     % Round To One Digit After Comma
    y = round(10*x)/10;

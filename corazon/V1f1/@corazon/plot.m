@@ -210,21 +210,22 @@ function oo = Plot(o)                  % Default Plot Function
    
       % invert all 'K' or 'w' color specifiers
       
-   if (dark(o))
-      for (i=1:length(ilist))
-         argi = ilist{i};
-         if ischar(argi)
-            ixk = find(argi=='k');
-            ixw = find(argi=='w');
-            
-            if ~isempty(ixk)           % is there black color spec 
-               argi(ixk) = setstr(0*ixk+'w');
-            end
-            if ~isempty(ixw)           % is there white color spec
-               argi(ixw) = setstr(0*ixw+'k');
-            end
-            ilist{i} = argi;
+   colk = o.iif(dark(o),'w','k');      % black color
+   colw = o.iif(dark(o),'k','w');      % white color
+   
+   for (i=1:length(ilist))
+      argi = ilist{i};
+      if ischar(argi)
+         ixk = find(argi=='K');
+         ixw = find(argi=='W');
+
+         if ~isempty(ixk)           % is there black color spec 
+            argi(ixk) = setstr(0*ixk+colk);
          end
+         if ~isempty(ixw)           % is there white color spec
+            argi(ixw) = setstr(0*ixw+colw);
+         end
+         ilist{i} = argi;
       end
    end
    

@@ -1,4 +1,4 @@
-classdef corazon < corazita & corazito  % Corazon Class                
+classdef corazon < corazita & corazito % Corazon Class                 
 %
 %    CORAZON  Class constructor for CORAZON class. CORAZON class is both
 %             derived from CORAZITO and CORAZINO
@@ -14,7 +14,7 @@ classdef corazon < corazita & corazito  % Corazon Class
          if (nargin == 0)
             arg = 'shell';             % 'shell' type by default
          end
-         o@corazita(arg);               % construct Corazita base object
+         o@corazita(arg);              % construct Corazita base object
          o@corazito;                   % construct Corazito base object
          o.tag = mfilename;            % tag must equal derived class name
          

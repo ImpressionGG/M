@@ -13,7 +13,9 @@ function oo = new(o,varargin)          % CORASIM New Method
 %
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Filter2,@Modal,@Menu);
+   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Filter2,...
+                       @Motion100mm,@Motion200mm,@Motion100um,...
+                       @Modal,@Menu);
    oo = gamma(oo);
 end
 
@@ -26,6 +28,10 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'Discrete State Space (dss)',{@Callback,'Dss'},[]);
    oo = mitem(o,'-');
    oo = mitem(o,'Continuous Order 2 Filter',{@Callback,'Filter2'},[]);
+   oo = mitem(o,'-');
+   oo = mitem(o,'100 mm Motion',{@Callback,'Motion100mm'},[]);
+   oo = mitem(o,'200 mm Motion',{@Callback,'Motion200mm'},[]);
+   oo = mitem(o,'100 um Motion',{@Callback,'Motion100um'},[]);
 end
 function oo = Callback(o)              % Launch Callback               
    mode = arg(o,1);
@@ -35,7 +41,7 @@ function oo = Callback(o)              % Launch Callback
 end
 
 %==========================================================================
-% New Object
+% New Dynamic System
 %==========================================================================
 
 function oo = Css(o)                   % New css object                
@@ -75,4 +81,48 @@ function oo = Modal(o)                 % New css Object in Modal Form
                           datestr(now));
    oo.par.comment = {'Modal Form',...
      'omega = [1 2 3], zeta = [0.1 0.1 0.1],  M = [1 -1 1],  N = [2 3 4]'};
+end
+
+%==========================================================================
+% New Motion Object
+%==========================================================================
+
+function oo = Motion100mm(o)           % 100 mm Motion                 
+   oo = corasim('motion');             % continuous state space
+   oo.data.smax = 0.1;                 % 0.1 m
+   oo.data.vmax = 1;                   % 1 m/s
+   oo.data.amax = 10;                  % 10 m/s2
+   oo.data.tj = 0.02;                  % 20 ms jerk time
+   
+   oo.data.tunit = 'ms';               % time unit
+   oo.data.sunit = 'mm';               % stroke unit
+   
+   oo.par.title = sprintf('Motion 100 mm (%s)',datestr(now));
+   oo.par.comment = {'vmax: 1m/s, amax: 10 m/s2, Tj = 20 ms'};
+end
+function oo = Motion200mm(o)           % 200 mm Motion                 
+   oo = corasim('motion');             % continuous state space
+   oo.data.smax = 0.2;                 % 200 mm
+   oo.data.vmax = 1;                   % 1 m/s
+   oo.data.amax = 10;                  % 10 m/s2
+   oo.data.tj = 0.02;                  % 20 ms jerk time
+   
+   oo.data.tunit = 'ms';               % time unit
+   oo.data.sunit = 'mm';               % stroke unit
+   
+   oo.par.title = sprintf('Motion 200 mm (%s)',datestr(now));
+   oo.par.comment = {'vmax: 1m/s, amax: 10 m/s2, Tj = 20 ms'};
+end
+function oo = Motion100um(o)           % 100 um Motion                 
+   oo = corasim('motion');             % continuous state space
+   oo.data.smax = 100e-6;              % 100 um
+   oo.data.vmax = 0.15e-3;             % 0.15 mm/s
+   oo.data.amax = 1e-3;                % 10 m/s2
+   oo.data.tj = 0.02;                  % 20 ms jerk time
+   
+   oo.data.tunit = 'ms';               % time unit
+   oo.data.sunit = 'mm';               % stroke unit
+   
+   oo.par.title = sprintf('Motion 100 um (%s)',datestr(now));
+   oo.par.comment = {'vmax: 0.15mm/s, amax: 1 mm/s2, Tj = 20 ms'};
 end

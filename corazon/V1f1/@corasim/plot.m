@@ -10,7 +10,8 @@ function oo = plot(o,varargin)         % CORASIM Plot Method
 %     
 %        See also: CORASIM, SHELL
 %
-   [gamma,oo] = manage(o,varargin,@Plot,@Basket,@Menu,@Callback,@Step);
+   [gamma,oo] = manage(o,varargin,@Plot,@Basket,@Menu,@Callback,...
+                       @Overview,@Step,@Motion);
    oo = gamma(oo);
 end
 
@@ -20,9 +21,22 @@ end
 
 function oo = Menu(o)                  % Setup Plot Menu   
    oo = mitem(o,'About',{@plot,'About'});
+   oo = mitem(o,'Overview',{@WithCuo,'Overview'});
    oo = mitem(o,'-');
-   oo = mitem(o,'Step Response',{@WithBsk,'Step'});
-%  oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
+   
+   
+      % dynamic systems
+      
+   if type(o,{'css','dss','strf','ztrf'})
+      oo = mitem(o,'Step Response',{@WithCuo,'Step'});
+%     oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
+   end
+
+      % motion objects
+      
+   if type(o,{'motion'})
+      oo = mitem(o,'Motion Profile',{@WithCuo,'Motion'});
+   end
 end
 
 %==========================================================================
@@ -92,20 +106,36 @@ end
 %==========================================================================
 
 function o = Plot(o)                   % Plot Object                   
+   oo = plot(corazon,o);               % if arg list is for corazon/plot
+   if ~isempty(oo)                     % is oo an array of graph handles?
+      oo = []; return                  % in such case we are done - bye!
+   end
+   
    switch type(o)
       case 'css'                       % continuous state space system
          PlotCss(o);
       case 'dss'                       % discrete state space system
          PlotDss(o);
-     case 'strf'                       % continuous transfer function
+      case 'strf'                      % continuous transfer function
          o = system(o);                % cast strf into css
          PlotCss(o);
-     case 'ztrf'                       % discrete transfer function
+      case 'ztrf'                      % discrete transfer function
          o = system(o);                % cast ztrf into dsss
          PlotDss(o);
+      case 'motion'                    % motion object
+         Motion(o);
       otherwise
          error('no idea how to plot this type  of object!');
    end
+end
+function o = Overview(o)               % Plot Overview                 
+   switch o.type
+      case 'motion'
+         motion(o,'Overview');
+      otherwise
+         Plot(o);
+   end
+   heading(o);
 end
 function o = PlotCss(o)                % Plot Contin.  State Space Sys 
    [n,ni,no] = size(cast(o,'corasim'));
@@ -214,7 +244,7 @@ end
 % Step Plot Functions
 %==========================================================================
 
-function o = Step(o)                   % Step Plot                     
+function o = Step(o)                   % Plot Step Response            
    o = with(o,'simu');                 % unpack simulation options
    
    switch type(o)
@@ -258,6 +288,22 @@ function o = Step(o)                   % Step Plot
       oo = sim(o,u);
       plot(oo);
    end
+end
+
+%==========================================================================
+% Motion Profile
+%==========================================================================
+
+function o = Motion(o)                 % Plot Motion Profile           
+   if ~type(o,{'motion'})
+      plot(o,'About');
+      return
+   end
+ 
+   [smax,vmax,amax,tj] = data(o,'smax,vmax,amax,tj');
+   motion(o,smax*1000,1000*vmax,amax*1000,tj); 
+   
+   heading(o);
 end
 
 %==========================================================================
