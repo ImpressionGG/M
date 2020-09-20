@@ -436,6 +436,7 @@ function VersionV1F
 % - bug fix: set tmax max(tmax,10*Ts) for discrete time step response
 % - corasim: reworked data representation
 % - bug fix: corazon shell - dynamic Select menu
+% - pimp corasim: stepo response plots, max time rounding, menus
 %
 %
 % Known Bugs / Wishlist

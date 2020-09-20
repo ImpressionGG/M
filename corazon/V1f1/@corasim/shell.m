@@ -105,30 +105,10 @@ end
 function oo = View(o)                  % View Menu                     
    oo = mhead(o,'View');               % add roll down header item
    dynamic(oo);                        % make this a dynamic menu
+   
    oo = menu(o,'View');
-   ooo =  Filter(oo);
-end
-function oo = Filter(o)                % Add Filter Menu Items         
-   setting(o,{'filter.mode'},'raw');   % filter mode off
-   setting(o,{'filter.type'},'LowPass2');
-   setting(o,{'filter.bandwidth'},5);
-   setting(o,{'filter.zeta'},0.6);
-   setting(o,{'filter.method'},1);
-
-   oo = mitem(o,'Filter');
-   ooo = mitem(oo,'Mode','','filter.mode');
-   choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Type',{},'filter.type');
-   choice(ooo,{{'Order 2 Low Pass','LowPass2'},{'Order 2 High Pass','HighPass2'},...
-               {'Order 4 Low Pass','LowPass4'},{'Order 4 High Pass','HighPass4'}},{});
-   ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
-   charm(ooo,{});
-   ooo = mitem(oo,'Zeta',{},'filter.zeta');
-   charm(ooo,{});
-   ooo = mitem(oo,'Method',{},'filter.method');
-   choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
+   ooo = menu(oo,'Filter');            % add Filter menu items
+   ooo = menu(oo,'Scale');             % add Scale menu items
 end
 
 %==========================================================================
@@ -140,7 +120,7 @@ function oo = Select(o)                % Select Menu
    dynamic(oo);                        % make this a dynamic menu
    
    oo = menu(o,'Select');
-   ooo = sim(oo,'Menu');               % add simulation parameter menu
+   ooo = menu(oo,'Simu');              % add simulation parameter menu
 end
 
 %==========================================================================

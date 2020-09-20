@@ -151,8 +151,10 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
    end
 end
 function o = PlotDss(o)                % Plot Discrete State Space Sys 
+   o = with(o,'view');                 % unwrap view options
+   
    [n,ni,no] = size(cast(o,'corasim'));
-   T = get(o,{'system.T',1});
+   [~,~,~,~,T] = system(o);
    
    [x,y] = var(o,'x,y');
    if (isempty(x))
@@ -179,33 +181,32 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
    
    function Plot311(o)                 % Subplot Output                
       subplot(311);
-      hdl = plot(o,t,u,'~');
+      hdl = plot(o,t,u,'bc');
       set(hdl,'LineWidth',1);
       title(sprintf('Input (%d)',ni));
-      xlabel('t');  ylabel('u');
-      set(gca,'xlim',[min(t),max(t)]);
+      xlabel(['t  [',opt(o,{'xunit','1'}),']']);
+      ylabel('input u');
       subplot(o);                      % subplot complete
    end
    function Plot312(o)                 % Subplot State                 
       subplot(312);
-      hdl = plot(o,t,x,'~');
+      hdl = plot(o,t,x,'r');
       set(hdl,'LineWidth',1);
       title(sprintf('State (%d)',n));
-      xlabel('t');  ylabel('x');
-      set(gca,'xlim',[min(t),max(t)]);
+      xlabel(['t  [',opt(o,{'xunit','1'}),']']);
+      ylabel('state x');
       subplot(o);                      % subplot complete
    end
    function Plot313(o)                 % Subplot Output                
       subplot(313);
-      hdl = plot(o,t,y,'~');
+      hdl = plot(o,t,y,'g');
       set(hdl,'LineWidth',1);
       title(sprintf('Output (%d)',no));
-      xlabel('t');  ylabel('y');
-      set(gca,'xlim',[min(t),max(t)]);
+      xlabel(['t  [',opt(o,{'xunit','1'}),']']);
+      ylabel('output y');
       subplot(o);                      % subplot complete
    end
 end
-
 
 %==========================================================================
 % Step Plot Functions
@@ -231,10 +232,11 @@ function o = Step(o)                   % Step Plot
    return
    
    function o = StepCss(o)             % Step Plot for Continuous SS   
-      tmax = opt(o,{'tmax',5});
+      tmax = MaxTime(o);               % find best max time
+      tmax = opt(o,{'tmax',tmax});
       dt = opt(o,{'dt',tmax/100});
       
-      [~,m] = size(o);                    % number of inputs
+      [~,m] = size(o);                 % number of inputs
       I = eye(m);
       t = 0:dt:tmax;
       u = I(:,m)*ones(size(t));
@@ -243,17 +245,64 @@ function o = Step(o)                   % Step Plot
       plot(oo);
    end
    function o = StepDss(o)             % Step Plot for Discrete SS     
-      tmax = opt(o,{'tmax',5});
-      Ts = get(o,'system.T');
-      tmax = max(tmax,10*Ts);
-      
-      N = floor(tmax/Ts);
+      tmax = MaxTime(o);               % find best max time      
+      [~,~,~,~,T] = system(o);
+      N = floor(tmax/T);
       
       [~,m] = size(o);                 % number of inputs
       I = eye(m);
-      u = I(:,m)*ones(1,N);
+      u = I(:,m)*ones(1,N+1);
 
       oo = sim(o,u);
       plot(oo);
    end
 end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function tmax = MaxTime(o)             % Find Best Maximum Time        
+   if ~type(o,{'css','dss'})
+      o = system(o);                   % cast to state space system
+   end
+   
+   
+   if type(o,{'dss'})
+      [~,~,~,~,Ts] = system(o);
+      Tmax = 100*Ts;
+   else
+
+      [A,~,~,~,T] = system(o);
+      s = eig(A);
+      smax = max(abs(s));
+
+      if (smax == 0)
+         Tmax = 10;
+      else
+         Tmax = 10/smax;                  % initial guess for tmax
+      end
+   end
+   
+      % we need to find a rounded value for tmax ...
+      
+   base = 10^floor(log10(Tmax));
+   tmax = 10*base;                     % in case we are not successful
+
+      % now find proper interval 
+
+   if (Tmax/base < 1.25)
+      tmax = 1*base;
+   elseif (Tmax/base < 1.75)
+      tmax = 1.5*base;
+   else
+      for (i=2:9)
+         if (Tmax/base < i+0.5)
+            tmax = i*base;
+            break;
+         end
+      end
+   end
+end
+
+ 

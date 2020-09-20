@@ -1,4 +1,4 @@
-function oo = new(o,varargin)          % JUNK7 New Method
+function oo = new(o,varargin)          % CORASIM New Method            
 %
 % NEW   New CORASIM object
 %
@@ -21,13 +21,13 @@ end
 % Menu Setup
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Menu
+function oo = Menu(o)                  % Setup Menu                    
    oo = mitem(o,'Continuous State Space (css)',{@Callback,'Css'},[]);
    oo = mitem(o,'Discrete State Space (dss)',{@Callback,'Dss'},[]);
    oo = mitem(o,'-');
    oo = mitem(o,'Continuous Order 2 Filter',{@Callback,'Filter2'},[]);
 end
-function oo = Callback(o)
+function oo = Callback(o)              % Launch Callback               
    mode = arg(o,1);
    oo = new(o,mode);
    oo = launch(oo,launch(o));          % inherit launch function
@@ -53,9 +53,9 @@ end
 function oo = Filter2(o)               % New continuous order 2 filter 
    f = 10/2/pi;                        % band width 1.6 Hz
    om = 2*pi*f;                        % cut-off circular frequency
-   zeta = 0.7;                         % damping   
+   zeta = 0.4;                         % damping   
    
-   oo = system(corasim,{1,[1 2*zeta*om om^2]});     % continuous trf
+   oo = system(corasim,{1,[om^2 2*zeta*om 1]});     % continuous trf
    oo.par.title = sprintf('Continuous Order 2 Filter (%s)',datestr(now));
    oo.par.comment = {sprintf('Bandwidth: f = %g Hz',o.rd(f,1)),...
                      sprintf('Damping: zetea = %g',zeta)};

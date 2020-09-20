@@ -12,6 +12,12 @@ function oo = menu(o,varargin)         % Corazon Menu Building Blocks
 %        Edit Menu
 %           oo = menu(o,'Edit')        % add Edit menu
 %
+%        View Menu
+%           oo = menu(o,'Grid')
+%           oo = menu(o,'Dark')
+%           oo = menu(o,'Style')
+%           oo = menu(o,'Scale')
+%
 %        Select Menu
 %           oo = menu(o,'Select')      % add Select menu
 %           oo = menu(o,'Objects')     % add Objects menu
@@ -52,7 +58,7 @@ function oo = menu(o,varargin)         % Corazon Menu Building Blocks
 %
    [gamma,o] = manage(o,varargin,@Begin,@End,@Dynamic,@Bar,@File,@Open,...
                      @New,@Save,@Edit,@LaunchCb,@CopyCb,@CutCb,@ClearCb,...
-                     @PasteCb,@View,@Grid,@Dark,@Style,...
+                     @PasteCb,@View,@Grid,@Dark,@Style,@Scale,...
                      @Select,@Objects,@Organize,@Basket,@Class,@Type,...
                      @Plot,@Title,@Home,@About,@What,@Page,@Gallery,...
                      @Info,@Parameter,@Dialog,@Property,@Profiler,...
@@ -345,6 +351,41 @@ function oo = Style(o)                 % Add Style Menu Items
    choice(ooo,[1:3],{});
    ooo = mitem(oo,'Scatter Color','','style.scatter');
    charm(ooo,{});
+end
+function oo = Scale(o)                 % Add Scale Menu Items          
+   setting(o,{'view.xunit'},'ms');     % time scaling unit
+   setting(o,{'view.xscale'},1e3);     % time scaling factor
+   setting(o,{'view.yunit'},'um');     % elongation scaling unit
+   setting(o,{'view.yscale'},1e6);     % elongation scaling factor
+
+   oo = mitem(o,'Scale');
+   ooo = mitem(oo,'Time Scale',{},'view.xunit');
+   choice(ooo,{{'s','s'},{'ms','ms'}},{@XscaleCb});
+   ooo = mitem(oo,'Elongation Scale',{},'view.yunit');
+   choice(ooo,{{'m','m'},{'mm','mm'},{'um','um'}},{@YscaleCb});
+   
+   function o = XscaleCb(o)
+      unit = setting(o,'view.xunit');
+      switch unit
+         case 's'
+            setting(o,'view.xscale',1);
+         case 'ms'
+            setting(o,'view.xscale',1e3);
+      end
+      refresh(o);
+   end
+   function o = YscaleCb(o)
+      unit = setting(o,'view.yunit');
+      switch unit
+         case 'm'
+            setting(o,'view.yscale',1);
+         case 'mm'
+            setting(o,'view.yscale',1e3);
+         case 'um'
+            setting(o,'view.yscale',1e6);
+      end
+      refresh(o);
+   end
 end
 
 %==========================================================================
