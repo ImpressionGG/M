@@ -439,6 +439,7 @@ function VersionV1F
 % - pimp corasim: stepo response plots, max time rounding, menus
 % - corazon plot/Menu: plot/About added, also in corasim plot/Menu
 % - plot overview for corasim/motion objects
+% - bug fix: labeling in motion/Overview
 %
 %
 % Known Bugs / Wishlist

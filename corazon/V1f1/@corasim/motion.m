@@ -232,7 +232,7 @@ function oo = Overview(o)              % Plot Overview
       plot(o,t,v,'bc');
       title('Velocity');
       xlabel(['time [',o.either(tunit,'1'),']']);
-      ylabel(['s [',o.either(sunit,'1'),'/s]']);
+      ylabel(['v [',o.either(sunit,'1'),'/s]']);
       set(gca,'Xlim',[min(t),max(t)]);
       subplot(o);                      % subplot done
    end
@@ -241,7 +241,7 @@ function oo = Overview(o)              % Plot Overview
       plot(o,t,a,'r');
       title('Acceleration');
       xlabel(['time [',o.either(tunit,'1'),']']);
-      ylabel(['s [',o.either(sunit,'1'),'/s2]']);
+      ylabel(['a [',o.either(sunit,'1'),'/s2]']);
       set(gca,'Xlim',[min(t),max(t)]);
       subplot(o);                      % subplot done
    end
