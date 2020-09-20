@@ -21,9 +21,10 @@ function oo = shell(o,varargin)        % Tiny Shell for CORAZON Class
 %
 %        See also: CORAZON, MENU, SHO, CUO
 %
-   [gamma,oo] = manage(o,varargin,@Shell,@Dynamic,@New,@Stuff,@Edit,...
-                       @View,@Plot,@Show,@Animate,@Animation,@Analyse,...
-                       @Study,@Play,@Tutorial,@Plugin,@Gallery,@Figure);
+   [gamma,oo] = manage(o,varargin,@Shell,@Dynamic,@New,@Stuff,...
+                       @Edit,@Select,@View,@Plot,@Analyse,@Study,...
+                       @Show,@Animate,@Animation,...
+                       @Play,@Tutorial,@Plugin,@Gallery,@Figure);
    oo = gamma(oo);
 end
 
@@ -61,7 +62,7 @@ function o = Init(o)                   % Init Object
    o = launch(o,mfilename);            % use this mfile as launch function
 end
 function list = Dynamic(o)             % Get Dynamic Menu List         
-   list = {'View','Plot','Analyse','Study','Play','Tutorial','Plugin'};
+   list = {'View','Select','Plot','Analyse','Study','Play','Tutorial','Plugin'};
 end
 
 %==========================================================================

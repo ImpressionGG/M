@@ -7,11 +7,13 @@ function oo = new(o,varargin)          % JUNK7 New Method
 %           o = new(corasim,'Css')     % continuous state space
 %           o = new(corasim,'Dss')     % discrete state space
 %
+%           o = new(corasim,'Filter1') % order 2 filter
+%
 %           o = new(corasim,'Modal')   % modal form (continuous)
 %
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Modal,@Menu);
+   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Filter2,@Modal,@Menu);
    oo = gamma(oo);
 end
 
@@ -22,6 +24,8 @@ end
 function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'Continuous State Space (css)',{@Callback,'Css'},[]);
    oo = mitem(o,'Discrete State Space (dss)',{@Callback,'Dss'},[]);
+   oo = mitem(o,'-');
+   oo = mitem(o,'Continuous Order 2 Filter',{@Callback,'Filter2'},[]);
 end
 function oo = Callback(o)
    mode = arg(o,1);
@@ -34,19 +38,29 @@ end
 % New Object
 %==========================================================================
 
-function oo = Css(o)                   % New css object
+function oo = Css(o)                   % New css object                
    oo = corasim('css');                % continuous state space
    oo.par.title = sprintf('Continuous State Space System (%s)',datestr(now));
    oo = system(oo,[0 1;0 0],[0;1],[1 0],0);
 end
-function oo = Dss(o)                   % New dss object
+function oo = Dss(o)                   % New dss object                
    oo = corasim('dss');                % discrete state space
    oo.par.title = sprintf('Discrete State Space System (%s)',datestr(now));
    lambda = [-1 -2] + randn(1,2);
    oo = system(oo,diag(lambda),[1;1],[1 -2],0);
    oo = c2d(oo,0.1);
 end
-function oo = Modal(o)                 % New css Object in Modal Form
+function oo = Filter2(o)               % New continuous order 2 filter 
+   f = 10/2/pi;                        % band width 1.6 Hz
+   om = 2*pi*f;                        % cut-off circular frequency
+   zeta = 0.7;                         % damping   
+   
+   oo = system(corasim,{1,[1 2*zeta*om om^2]});     % continuous trf
+   oo.par.title = sprintf('Continuous Order 2 Filter (%s)',datestr(now));
+   oo.par.comment = {sprintf('Bandwidth: f = %g Hz',o.rd(f,1)),...
+                     sprintf('Damping: zetea = %g',zeta)};
+end
+function oo = Modal(o)                 % New css Object in Modal Form  
    omega = [1 2 3]';
    zeta  = [0.1 0.1 0.1]';
    M = [1 -1 1]';

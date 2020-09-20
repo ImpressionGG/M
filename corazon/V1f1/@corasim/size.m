@@ -14,7 +14,7 @@ function [n,ni,no] = size(o)
 %
    switch type(o)
       case {'css','dss'}
-         [A,B,C] = get(o,'system','A,B,C');
+         [A,B,C] = data(o, 'A,B,C');
          n = length(A);
          ni = size(B,2);
          no = size(C,1);

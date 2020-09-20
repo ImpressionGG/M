@@ -1,4 +1,4 @@
-function o = system(o,A,B,C,D,T)       % Create or Cast to a System    
+function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
 %
 % SYSTEM   Setup a system for simulation
 %
@@ -10,6 +10,16 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
 %             oo = system(o,{num,den})      % s-transfer function
 %             oo = system(o,{num,den},T)    % z-transfer function
 %            
+%          Retrieve system matrices
+%
+%             [A,B] = system(o);            % get dynamic & input matrix
+%             [A,B,C,D] = system(o);        % get system matrices
+%             [A,B,C,D,T] = system(o);      % system matrices & sample time
+%
+%          Retrieve numerator/denominator
+%
+%             [num,den] = peek(o);          % get numerator/denominator
+%
 %          Remark:
 %             
 %             Discrete state space systems will be marked with type 'dss'
@@ -17,6 +27,7 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
 %             'css'
 %
 %          Options
+%
 %             sskind         defines the kind of state space representation
 %                            during casting (e.g. oo = system(o) call).
 %                            valus are: 'standard1', 'standard2' & 'modal'.
@@ -24,8 +35,11 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
 %
 %          See also: CORASIM
 %
-   if (nargin == 1)
+   if (nargin == 1) && (nargout == 1)
       o = Cast(o);
+      return
+   elseif (nargout > 1)
+      [o,B,C,D,T] = data(o,'A,B,C,D,T');
       return
    end
    
@@ -51,7 +65,7 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
          end
          o = type(o,'ztrf');           % z-transfer-function
       end
-      o = set(o,'system','num,den,T',num,den,T);
+      o = data(o,'num,den,T',num,den,T);
       return
    end
    
@@ -65,18 +79,18 @@ function o = system(o,A,B,C,D,T)       % Create or Cast to a System
    
    abcdcheck(o,A,B,C,D);
    
+   o.data = [];
    if (nargin == 6)
       o = type(o,'dss');
-      o = set(o,'system','A,B,C,D,T', A,B,C,D,T);
-      o.data = [];
+      o = data(o, 'A,B,C,D,T', A,B,C,D,T);
    else
       T = 0;
       o = type(o,'css');
-      o = set(o,'system', 'A,B,C,D', A,B,C,D);
       o.data = [];
+      o = data(o, 'A,B,C,D', A,B,C,D);
    end
    
-   o = var(o,'A,B,C,D,T',A,B,C,D,T);
+   o = var(o, 'A,B,C,D,T', A,B,C,D,T);
 end
 
 %==========================================================================
@@ -164,14 +178,14 @@ function oo = Standard1(o)             % Brew 1st Standard Form
       % store back to object
       
    oo = type(o,typ);                   % set output type ('css' or 'dss')
-   oo.par.system = [];
-   oo = set(oo,'system','A,B,C,D,T',A,B,C,D,T);
+   oo.data = [];
+   oo = data(oo, 'A,B,C,D,T', A,B,C,D,T);
 end
 function oo = Standard2(o)             % Brew 2nd Standard Form        
    oo = Standard1(o);
-   [AT,CT,BT] = get(oo,'system','A,B,C');
+   [AT,CT,BT] = data(oo, 'A,B,C');
    A = AT';  B = BT';  C = CT';        % transpose all matrices
-   oo = set(oo,'A,B,C',A,B,C);
+   oo = data(oo, 'A,B,C', A,B,C);
 end
 function oo = Modal(o)                 % Brew Modal Form               
    [num,den] = peek(o);
@@ -183,7 +197,7 @@ function oo = Tf2ss(o)
 %
 %           o = system(corasim,{num,den})
 %           oo = Tf2ss(o) 
-%           [A,B,C,D] = get(oo,'system','A,B,C,D');
+%           [A,B,C,D] = data(oo, 'A,B,C,D');
 %
 %        calculates the state-space representation:
 %           .
@@ -217,7 +231,7 @@ function oo = Tf2ss(o)
        b = [];
        c = zeros(0,'like',num) + zeros(0,'like',den);
        d = zeros(0,'like',num) + zeros(0,'like',den);
-       oo = set(oo,'system','A,B,C,D',a,b,c,d);
+       oo = data(oo, 'A,B,C,D', a,b,c,d);
        return
    end
    
@@ -284,7 +298,7 @@ function oo = Tf2ss(o)
    
       % set output args and converted type
       
-   oo = set(o,'system','A,B,C,D',a,b,c,d);
+   oo = data(o, 'A,B,C,D', a,b,c,d);
    switch oo.type
       case {'strf','css'}              % continuous system
          oo.type = 'css';              % output type: continuous SS

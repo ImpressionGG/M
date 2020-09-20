@@ -12,15 +12,15 @@ function display(o)
          fprintf('continuous state space system:\n');
          System(o);
       case 'dss'
-         T = get(o,'system.T');
+         [~,~,~,~,T] = system(o);
          fprintf('discrete state space system (T = %g):\n',T);
          System(o);
       case 'strf'
          fprintf('s-type transfer function:\n');
-         [num,den] = get(o,'system','num,den');
+         [num,den] = peek(o);
          Display(o,num,den);
       case 'ztrf'
-         [num,den,T] = get(o,'system','num,den,T');
+         [num,den,T] = peek(o);
          fprintf('z-type transfer function (T = %g):\n',T);
          Display(o,num,den,T);
       otherwise
@@ -33,7 +33,7 @@ end
 %==========================================================================
 
 function oo = System(o)                % Display System                
-   [A,B,C,D,T] = get(o,'system','A,B,C,D,T');
+   [A,B,C,D,T] = system(o,'A,B,C,D,T');
    fprintf('   [ A | B ]\n');
    fprintf('   [---+---] =\n');
    fprintf('   [ C | D ]\n\n');

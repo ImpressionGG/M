@@ -95,6 +95,12 @@ function o = Plot(o)                   % Plot Object
          PlotCss(o);
       case 'dss'                       % discrete state space system
          PlotDss(o);
+     case 'strf'                       % continuous transfer function
+         o = system(o);                % cast strf into css
+         PlotCss(o);
+     case 'ztrf'                       % discrete transfer function
+         o = system(o);                % cast ztrf into dsss
+         PlotDss(o);
       otherwise
          error('no idea how to plot this type  of object!');
    end
@@ -200,6 +206,7 @@ function o = PlotDss(o)                % Plot Discrete State Space Sys
    end
 end
 
+
 %==========================================================================
 % Step Plot Functions
 %==========================================================================
@@ -211,6 +218,12 @@ function o = Step(o)                   % Step Plot
       case 'css'                       % continuous state space system
          StepCss(o);
       case 'dss'                       % discrete state space system
+         StepDss(o);
+      case 'strf'                      % s-transfer function
+         o = system(o);                % cast strf to css
+         StepCss(o);
+      case 'ztrf'                      % z-transfer function
+         o = system(o);                % cast ztrf into dss
          StepDss(o);
       otherwise
          o = [];  return

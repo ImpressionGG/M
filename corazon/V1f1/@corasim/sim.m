@@ -1,4 +1,4 @@
-function o = sim(o,u,x0,t)
+function o = sim(o,u,x0,t)             % System Simulation             
 %
 % SIM      Simulate response of a SIMU object to a given input function
 %          and store x,y in data part.
@@ -6,6 +6,10 @@ function o = sim(o,u,x0,t)
 %             o = sim(o,u,x0,t)            % store x,y as data 
 %             o = sim(o,u,x0)              % store x,y,t as data 
 %             o = sim(o,u)                 % x0: zero state 
+%
+%          Provide simulation settings menu
+%
+%             oo = sim(o,'Menu');
 %
 %          Example 1: discrete system response
 %
@@ -20,8 +24,20 @@ function o = sim(o,u,x0,t)
 %
 %          See also: SIMU
 %
+   if (nargin == 2 && ischar(u))
+      switch u                         % u has the role of a mode arg
+         case 'Menu'
+            o = Menu(o);               % setup simulation parameter menu
+         otherwise
+            error('sim: bad mode (arg2)')
+      end
+      return
+   end
+   
+      % otherwise simulate ...
+      
    o.argcheck(2,4,nargin);
-   [A,B,C,D] = get(o,'system','A,B,C,D');
+   [A,B,C,D] = system(o);
 
    if (nargin < 3)
       x0 = [];
@@ -37,11 +53,11 @@ function o = sim(o,u,x0,t)
       if (nargin < 4)
          error('no time vector (arg 4) provided!');
       end
-      dt = min(diff(t));
-      t = t(1):dt:t(end);
+      dt = min(diff(t));               % get minimum dt
+      t = t(1):dt:t(end);              % setup t-vector with minimum dt
       
       o = c2d(o,dt);
-      [A,B,C,D] = get(o,'system','A,B,C,D');
+      [A,B,C,D] = system(o);
    end
    
       % actual simulation and response calculation
@@ -56,10 +72,34 @@ function o = sim(o,u,x0,t)
 end
 
 %==========================================================================
+% Simu Menu
+%==========================================================================
+
+function oo = Menu(o)                  % Simulation Parameter Menu     
+%
+% SIMU   Add simulation parameter menu items
+%
+   setting(o,{'simu.tmax'},0.01);
+   setting(o,{'simu.dt'},5e-6);
+   setting(o,{'simu.plot'},100);       % number of points to plot
+
+   oo = mitem(o,'Simulation');
+   ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
+          choice(ooo,[1000,2000,5000, 100,200,500,10,20,50, 1,2,5,...
+                      0.1,0.2,0.5, 0.01,0.02,0.05, 0.001,0.002,0.005],{});
+   ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
+          choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4,...
+                      1e-3,2e-3,5e-3, 1e-2,2e-2,5e-2, 1e-2,2e-2,5e-2],{});
+   ooo = mitem(oo,'Number of Plot Intervals',{},'simu.plot');
+          choice(ooo,{{'50',50},{'100',100},{'200',200},{'500',500},...
+                      {'1000',1000},{},{'Maximum',inf}},{});
+end
+
+%==========================================================================
 % Helper Functions
 %==========================================================================
 
-function  [y,x] = Dlsim(o,A,B,C,D,u,x0)
+function  [y,x] = Dlsim(o,A,B,C,D,u,x0)% Simu Discret Time Lin. System 
 %
 % DLSIM	Simulation of discrete-time linear systems.
 %      	Y = DLSIM(o,A,B,C,D,u)  calculates the time response of the system:

@@ -21,7 +21,7 @@ function [Phi,H] = c2d(o,A,B,T)        % Convert Continuous to Discrete
 %         
 %       Example 2:
 %          o = system(o,[0 1;0 0],[0;1],[1 0],0);
-%          [A,B] = get(o,'system','A,B');
+%          [A,B] = system(o);
 %          [Phi,H] = c2d(o,A,B,Ts);
 %          
 %       See also: CORASIM
@@ -37,11 +37,11 @@ function [Phi,H] = c2d(o,A,B,T)        % Convert Continuous to Discrete
       end
       
       T = A;                           % T is arg2 for this syntax
-      [A,B,C,D] = get(o,'system','A,B,C,D');     
+      [A,B,C,D] = system(o);     
       abcdcheck(o,A,B,C,D);
       
       [Phi,H] = C2D(o,A,B,T);
-      o = set(o,'system','A,B,T',Phi,H,T);
+      o = data(o,'A,B,T',Phi,H,T);
       
       Phi = type(o,'dss');             % set type and assign to out arg
    elseif (nargin == 4)

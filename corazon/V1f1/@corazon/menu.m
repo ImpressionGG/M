@@ -356,6 +356,7 @@ function oo = Select(o)                % Select Menu
 
    oo = [];                            % empty by default
 %  if container(o)                     % only in case of container object
+o = pull(o);                           % make sure we have shell object
       oo = mhead(o,'Select');          % add roll down header menu item
       ooo = menu(oo,'Objects');        % add Open menu item
       ooo = menu(oo,'Basket');         % add Basket menu
