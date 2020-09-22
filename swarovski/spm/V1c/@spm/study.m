@@ -12,7 +12,7 @@ function oo = study(o,varargin)        % Do Some Studies
                        @Step,@Ramp,...
                        @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational,...
                        @Quick,@Modal1,@Modal2,@Modal3,...
-                       @MotionOverview,@MotionProfile);
+                       @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -56,6 +56,8 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'Motion');
    ooo = mitem(oo,'Motion Overview',{@WithCuo,'MotionOverview'});
    ooo = mitem(oo,'Motion Profile',{@WithCuo,'MotionProfile'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Paste Motion Object',{@WithCuo,'MotionPaste'});
 end
 
 %==========================================================================
@@ -567,6 +569,13 @@ function o = MotionProfile(o)          % Plot Motion Profile
    oo = inherit(type(corasim,'motion'),o);
    oo = data(oo,opt(o,'motion'));
    plot(oo);
+end
+function o = MotionPaste(o)            % Paste Motion Object           
+   refresh(o,{@plot,'About'});         % prevent infinite recursion
+   oo = inherit(type(corasim,'motion'),o);
+   oo = data(oo,opt(o,'motion'));
+   oo.par.title = sprintf('Motion Object (%s)',datestr(now));
+   paste(o,{oo});
 end
 
 %==========================================================================

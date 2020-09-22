@@ -15,7 +15,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
                    @Trfd,@Trfr,@Consd,@Consr,...
-                   @Step,@Ramp,@ForceRamp,@ForceStep,...
+                   @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -44,6 +44,7 @@ function oo = Menu(o)                  % Setup Plot Menu
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
    oo = RampResponse(o);               % ramp response sub-menu
+   oo = MotionResponse(o);             % motion response sub menu
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -141,6 +142,13 @@ function oo = RampResponse(o)          % Ramp Response Menu
    ooo = mitem(oo,'F-Ramp Orbit @ F1',{@WithCuo,'ForceRamp'},10);
    ooo = mitem(oo,'F-Ramp Orbit @ F2',{@WithCuo,'ForceRamp'},20);
    ooo = mitem(oo,'F-Ramp Orbit @ F3',{@WithCuo,'ForceRamp'},30);    
+end
+function oo = MotionResponse(o)        % Motion Response Menu          
+   oo = mitem(o,'Motion Response');
+   ooo = mitem(oo,'y3 -> y1',{@WithCuo,'MotionRsp',31});
+   ooo = mitem(oo,'y3 -> y2',{@WithCuo,'MotionRsp',32});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'y3 -> F3',{@WithCuo,'MotionRsp',33});
 end
 
 %==========================================================================
@@ -726,6 +734,49 @@ function o = ForceRampOrbit(o,index)   % Force Ramp Orbit
    diagram(o,'Orbit','y2(y1)',y(1,:),y(2,:),[2 3 6]);
    
    heading(o,sprintf('Ramp Response/Orbit: F%g->y - %s',index,Title(o)));
+end
+
+function o = MotionRsp(o)              % Motion Response               
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   index = arg(o,1);                   % get force component index
+   switch index
+      case 31
+      case 32
+      case 33
+         Hij = cache(o,'consd.H33');
+   end
+   
+   [num,den] = peek(Hij);
+   den = [den 0 0];
+   Hij = poke(Hij,NaN,num,den);
+   
+   Hij = can(touch(Hij));
+   display(Hij);
+   
+      % get motion as input signal
+      
+   [t,u] = MotionInput(o);
+   
+   oo = sim(o,u,[],t);
+   [t,u,y,x] = var(oo,'t,u,y,x');
+   
+end
+function [t,u] = MotionInput(o)
+   [smax,vmax,amax,tj] = opt(with(o,'motion'),'smax,vmax,amax,tj');
+   oo = inherit(corasim,o);
+   
+   oo = data(oo,'smax,vmax,amax,tj',smax,vmax,amax,tj);
+   oo = data(oo,'tunit,sunit','s','mm');
+   oo.par.title = 'Motion Input';
+   
+   oo = with(oo,'simu');
+   oo = motion(oo,'Brew');
+   
+   [t,u] = var(oo,'t,a');
 end
 
 %==========================================================================

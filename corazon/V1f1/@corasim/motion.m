@@ -380,9 +380,14 @@ function oo = Brew(o)                  % Brew Variables
    [tmax,tsvajd,tref,~,o] = motion(o,smax,vmax,amax,tj,unit);   
    
    tmax = opt(o,{'tmax',tmax});
-   dt = opt(o,{'dt',tmax/1000});
    
-   t = 0:dt:tmax;
+   if (length(tmax) > 1)
+      t = tmax(:)';
+   else
+      dt = opt(o,{'dt',tmax/1000});
+      t = 0:dt:tmax;
+   end
+   
    o = Simu(o,t);
    oo = o;
 end

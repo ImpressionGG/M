@@ -440,6 +440,7 @@ function VersionV1F
 % - corazon plot/Menu: plot/About added, also in corasim plot/Menu
 % - plot overview for corasim/motion objects
 % - bug fix: labeling in motion/Overview
+% - corasim/profile implemented
 %
 %
 % Known Bugs / Wishlist

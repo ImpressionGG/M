@@ -1,6 +1,6 @@
 function oo = shell(o,varargin)        % CORASIM shell                 
    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
-                                 @Plot,@PlotCb,@Analysis,@Study);
+                      @Plot,@PlotCb,@Analysis,@Study,@Simu,@Brew);
    oo = gamma(o);                      % invoke local function
 end
 

@@ -285,7 +285,7 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       
    G33 = cache(oo,'trfd.G33');
    Gnn = G33;                          % the same
-   Hnn = inv(Gnn);
+   Hnn = inv(Gnn) * trf(Gnn,[1],[1 0 0]);
    H33 = Hnn;
 
       % calculate Hnd(s) = [H31(s) H32(s)]

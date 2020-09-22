@@ -13,7 +13,7 @@ function o = Shell(o)                  % Shell Setup
 
    o = menu(o,'Begin');                % begin menu setup
    oo = File(o);                       % add File menu
-   oo = menu(o,'Edit');                % add Edit menu
+   oo = Edit(o);                       % add Edit menu
    oo = View(o);                       % add View menu
    oo = Select(o);                     % add Select menu
    oo = Plot(o);                       % add Plot menu
@@ -120,6 +120,16 @@ function oo = Extras(o)                % Extras Menu Items
 end
 
 %==========================================================================
+% Edit Menu
+%==========================================================================
+
+function oo = Edit(o)                  % Edit Menu                     
+   oo = menu(o,'Edit');                % add Edit menu items
+
+   plugin(o,'spm/shell/Edit');         % plug point
+end
+
+%==========================================================================
 % View Menu
 %==========================================================================
 
@@ -176,6 +186,9 @@ end
 %==========================================================================
 
 function oo = Select(o)                % Select Menu                   
+   oo = mhead(o,'Select');             % add roll down header item
+   dynamic(oo);                        % make this a dynamic menu
+
    oo = menu(o,'Select');              % add Select menu
    
       % Select event registration must be after above menu(o,'Select')
@@ -241,7 +254,8 @@ function oo = Motion(o)                % Add Motion Menu Items
    setting(o,{'motion.vmax'},0.15e-3); % 0.15mm/s max velocity
    setting(o,{'motion.amax'},1e-3);    % 1mm/s2 max acceleration
    setting(o,{'motion.tj'},0.02);      % 20 ms jerk time
-   setting(o,{'motion.unit'},'mm');    % stroke unit = mm
+   setting(o,{'motion.sunit'},'mm');   % stroke unit: mm
+   setting(o,{'motion.tunit'},'ms');   % time unit: ms
 
    oo = mitem(o,'Motion');
    ooo = mitem(oo,'Stroke (smax)',{},'motion.smax');
