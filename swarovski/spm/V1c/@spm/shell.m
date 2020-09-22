@@ -188,15 +188,11 @@ end
 function oo = Select(o)                % Select Menu                   
    oo = mhead(o,'Select');             % add roll down header item
    dynamic(oo);                        % make this a dynamic menu
+   event(o,'Select',o);                % rebuild menu on 'Select' event
 
-   oo = menu(o,'Select');              % add Select menu
+   ooo = menu(oo,'Objects');           % add Objects menu
+   ooo = menu(oo,'Basket');            % add Basket menu
    
-      % Select event registration must be after above menu(o,'Select')
-      % statement, since menu(o,'Select') also registers event, and we
-      % must keep the order !!!
-      
-   event(o,'Select',o);                % call Objects on 'Select' event
-
    ooo = mitem(oo,'-');
    ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu

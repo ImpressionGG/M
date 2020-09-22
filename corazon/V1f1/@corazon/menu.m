@@ -423,14 +423,14 @@ function oo = Objects(o)               % Objects Menu
 
    n = data(o,inf);                    % number of objects
    control(o,{'current'},iif(n,1,0));  % provide a default value
-%
-% Locate Traces header and get the number of children. If not found
-% we create the Traces menu header   
-%
+
+      % Locate Traces header and get the number of children. If not found
+      % we create the Traces menu header   
+
    oo = mhead(o,'Objects','','Objects');
-%
-% add object entries to the Objects menu
-%
+
+      % add object entries to the Objects menu
+
    [~,cidx] = current(o);
 
       % start with container selection menu item
@@ -438,7 +438,10 @@ function oo = Objects(o)               % Objects Menu
    label = either(get(oo,'title'),'Package');
    chk = iif(cidx==0,'on','off');
    ooo = mitem(oo,label,{@Activate,0},0,'check',chk);
-   ooo = mitem(oo,'-');
+   
+   if (n > 0)
+      ooo = mitem(oo,'-');
+   end
    
       % continue with child objects. It is important that MITEM
       % is called with the child object, since the object class

@@ -4,14 +4,19 @@ function oo = new(o,varargin)          % SPM New Method
 %
 %           oo = new(o,'Menu')         % menu setup
 %
-%           o = new(spm,'Simple')     % some simple data
-%           o = new(spm,'Wave')       % some wave data
-%           o = new(spm,'Beat')       % some beat data
+%           o = new(spm,'Mode3A')      % 3-mode sample, version A
+%           o = new(spm,'Mode3B')      % 3-mode sample, version B
+%           o = new(spm,'Mode3C')      % 3-mode sample, version C
+%
+%           o = new(spm,'Academic1')   % academic sample 1
+%           o = new(spm,'Academic2')   % academic sample 2
+%
+%           o = new(sho,'Motion')      % motion object
 %
 %       See also: SPM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Mode3A,@Mode3B,@Mode3C,...
-                       @Academic1,@Academic2,@Menu);
+                       @Academic1,@Academic2,@Motion,@Menu);
    oo = gamma(oo);
 end
 
@@ -46,38 +51,9 @@ function oo = Menu(o)                  % New Menu
 end
 
 %==========================================================================
-% Menu Setup
+% SPM Objects
 %==========================================================================
 
-function oo = OldAcademicSample(o)     % Academic Sample               
-   omega = [1 2 3]';                   % circular eigen frequencies
-   zeta = [0.1 0.15 0.2]';             % damping coefficients
-   
-   M = [0 -0.0072 -2.3e-11; 0.0071 0 1.8e-11; 4.2e-11 -7e-11 0];
-   
-      % calculate system matrices
-      
-   a0 = omega.*omega;                  % a0 = [1 4 9]
-   a1 = 2*zeta.*omega;                 % a1 = [0.2 0.6 1.2]
-   
-   n = length(a0);
-   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
-   B = [0*M; M];
-   C = [M' 0*M];
-   D = 0*M;
-
-   oo = spm('spm');                    % new spm typed object
-   oo.par.title = 'Academic Sample';
-   oo.par.comment = {'A: 6x6, B: 6x3, C: 3x6, D:3x3',...
-                     'omega = [1 2 3]'', zeta =[0.1 0.15 0.2]'''};
-   
-   oo = set(oo,'system','A,B,C,D',A,B,C,D);
-
-   oo.data = [];                       % make a non-container object
-   oo = brew(oo,'Data');               % brew up object data
-   
-   paste(o,oo);
-end
 function oo = Mode3A(o)                % 3-Mode Sample, Version A      
 %
 % MODE3SAMPLEA setup an 3-mode system according to the simulated sample
@@ -167,6 +143,10 @@ function oo = Mode3C(o)                % 3-Mode Sample, Version C
    oo = data(oo,'A,B,C,D',A,B,C,D);   
 end
 
+%==========================================================================
+% Academic Object Samples
+%==========================================================================
+
 function oo = Academic1(o)             % Academic Sample #1            
 %
 % ACADEMIC setup an 3-mode system according to the simulated sample
@@ -247,4 +227,17 @@ function oo = Academic2(o)             % Academic Sample #2
       % finally set data
       
    oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+
+%==========================================================================
+% Motion Objects
+%==========================================================================
+
+function oo = Motion(o)                % Motion Object                 
+   oo = inherit(type(corasim,'motion'),o);
+   
+      % copy data from motion options
+      
+   oo = data(oo,opt(o,'motion'));
+   oo.par.title = sprintf('Motion Object (%s)',datestr(now));
 end

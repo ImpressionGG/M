@@ -441,6 +441,7 @@ function VersionV1F
 % - plot overview for corasim/motion objects
 % - bug fix: labeling in motion/Overview
 % - corasim/profile implemented
+% - bug fix: corasim/menu/Objects separator conditionally if children
 %
 %
 % Known Bugs / Wishlist
