@@ -442,6 +442,7 @@ function VersionV1F
 % - bug fix: labeling in motion/Overview
 % - corasim/profile implemented
 % - bug fix: corasim/menu/Objects separator conditionally if children
+% - critical bug fix: dynamic/ShowMenus - shell object instead of data obj
 %
 %
 % Known Bugs / Wishlist

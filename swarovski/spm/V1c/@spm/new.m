@@ -42,6 +42,8 @@ function oo = Menu(o)                  % New Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Academic Sample #1',{@Create 'Academic1'});
    ooo = mitem(oo,'Academic Sample #2',{@Create 'Academic2'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
 
    function o = Create(o)
       gamma = eval(['@',arg(o,1)]);

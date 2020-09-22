@@ -27,14 +27,14 @@ function oo = Menu(o)                  % Setup Plot Menu
    
       % dynamic systems
       
-   if type(o,{'css','dss','strf','ztrf'})
+   if type(current(o),{'css','dss','strf','ztrf'})
       oo = mitem(o,'Step Response',{@WithCuo,'Step'});
 %     oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
    end
 
       % motion objects
       
-   if type(o,{'motion'})
+   if type(current(o),{'motion'})
       oo = mitem(o,'Motion Profile',{@WithCuo,'Motion'});
    end
 end

@@ -158,6 +158,17 @@ function ShowMenus(o,oo);              % Dynamic Menu Show
       if isscalar(hdl)                 % menu item found?
          if is(label,olist)
             parent = get(hdl,'parent');
+            
+               % oo is telling us the class of dynamic menu rebuild
+               % to make it work we have to convert the shell object o
+               % to an oo class object
+               
+            tag = oo.tag;
+            oo = cast(o,oo.tag);
+            oo.tag = tag;
+            
+               % set menu parent and invoke the menu buildup function
+               
             oo = work(oo,'mitem',parent);
             gamma(oo,label);           % build-up dynamic menu
          else
