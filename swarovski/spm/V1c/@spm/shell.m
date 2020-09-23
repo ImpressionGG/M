@@ -41,7 +41,7 @@ function o = Init(o)                   % Init Object
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus         
-   list = {'View','Plot','Analyse','Study'};
+   list = {'View','Select','Plot','Analyse','Study'};
 end
 
 %==========================================================================
@@ -307,7 +307,7 @@ end
 function oo = Info(o)                  % Info Menu                     
    oo = menu(o,'Info');                % add Info menu
    ooo = mseek(oo,{'Version'});
-   oooo = mitem(ooo,['Spmx Class: Version ',version(spm)]);
+   oooo = mitem(ooo,['Spm Class: Version ',version(spm)]);
    ooooo = mitem(oooo,'Edit Release Notes','edit spm/version');
 
    plugin(o,'spm/shell/Info');         % plug point
