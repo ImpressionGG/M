@@ -406,7 +406,7 @@ function Display(o,num,den)            % Display Rational Function
       Trfct(o,G);
    end
 end
-function out = Trfct(o,G,name)           % Display Transfer Funcion      
+function out = Trfct(o,G,name)         % Display Transfer Funcion      
 %
 % TRFDISP Display transfer function. 
 %
@@ -512,7 +512,7 @@ function out = Trfct(o,G,name)           % Display Transfer Funcion
    
    if (nargout == 0)
       fprintf(['\n                                                   ',...
-               'Omegas     Zetas\n']);
+               '            Omegas   Zetas\n']);
    end
 %
 % calculate the field size

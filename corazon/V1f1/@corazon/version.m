@@ -443,6 +443,7 @@ function VersionV1F
 % - corasim/profile implemented
 % - bug fix: corasim/menu/Objects separator conditionally if children
 % - critical bug fix: dynamic/ShowMenus - shell object instead of data obj
+% - minor bug fix: corinth/display - formatting
 %
 %
 % Known Bugs / Wishlist
