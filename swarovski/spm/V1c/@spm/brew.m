@@ -26,8 +26,10 @@ end
 function oo = Brew(o)                  % Brew All                      
    oo = o;
    oo = Normalize(oo);                 % first normalize the system
+   oo = Eigen(oo);                     % brew eigenvalues
+   oo = Trfd(oo);
+   oo = Consd(oo);
 end
-
 function oo = Eigen(o)                 % Brew Eigenvalues              
    oo = o;                             % copy to out arg
    A = data(oo,'A');
@@ -161,9 +163,14 @@ function oo = TrfDouble(o)             % Double Transition Matrix
             % calculate Gij
             
          mi = M(:,i)';  mj = M(:,j);
+         wij = (mi(:).*mj(:))';        % weight vector
+         tag = sprintf('trfd.w%g%g',i,j);
+         oo = cache(oo,tag,wij);       % store weight vector in cache
+         
          Gij = trf(O,0);               % init Gij
          for (k=1:n)
-            Gk = trf(O,mi(k)*mj(k),psi(k,:));
+%           Gk = trf(O,mi(k)*mj(k),psi(k,:));
+            Gk = trf(O,wij(k),psi(k,:));
             Gij = Gij + Gk;
          end
          
@@ -368,10 +375,15 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       
    oo = cache(oo,'consd.H',H);
 end
-function oo = LinearSubsys(o)          % Linear Sub-System                
+function oo = LinearSubsys(o)          % Linear Sub-System             
    [oo,bag,rfr] = cache(o,o,'consd');
    
-   [H11,H12,H21,H22,H31,H32] = var(oo,'H11,H12,H21,H22,H31,H32');
+   H11 = cache(oo,'consd.H11');
+   H12 = cache(oo,'consd.H12');
+   H21 = cache(oo,'consd.H21');
+   H22 = cache(oo,'consd.H22');
+   H31 = cache(oo,'consd.H31');
+   H32 = cache(oo,'consd.H32');
    
    s = trf(H11,[1 0],[1]);
    

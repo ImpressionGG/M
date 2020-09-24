@@ -129,7 +129,10 @@ function oo = LinearSystem(o)          % Linear System Menu
    
    L = cache(oo,'consd.L');
    [m,n] = size(L);
-   
+
+      % add mhead again !!!
+      
+   oo = mhead(o,'Linear System');
    ooo = mitem(oo,sprintf('L(s)'),{@WithCuo,'Ls',0,0});
    ooo = mitem(oo,'-');
    for (i=1:m)
@@ -382,12 +385,14 @@ function o = Trfd(o)                   % Double Transfer Function
       Gij = opt(Gij,'maxlen',200);
       str = display(Gij);
       sym = sprintf('G%g%g(s)',i,j);
+      Gij = set(Gij,'name',sym);
+      disp(Gij);
       
-      [num,den] = peek(Gi,j)
-      
-      diagram(o,'Trf',sym,Gij,2111);
-      diagram(o,'Step',sym,Gij,2221);
-      diagram(o,'Rloc',sym,Gij,2222);
+      diagram(o,'Trf',sym,Gij,3111);      
+      diagram(o,'Rloc',sym,Gij,3222);
+
+      o = opt(o,'color','g');
+      diagram(o,'Step',sym,Gij,3221);
    end
    heading(o);
 end
@@ -445,12 +450,12 @@ function o = Consd(o)                  % Double Constrained Trf Fct
       Hsym = sprintf('H%g%g(s)',i,j);
       Gsym = sprintf('G%g%g(s)',i,j);
 
-      diagram(o,'Trf', Hsym,Hij,2111);
-      diagram(o,'Step',Gsym,Gij,2221);
+      diagram(o,'Trf', Hsym,Hij,3111);
+      diagram(o,'Step',Gsym,Gij,3221);
       if length(num) <= length(den)    % proper Hij(s) ?
-         diagram(o,'Step',Hsym,Hij,2221); 
+         diagram(o,'Step',Hsym,Hij,3221); 
       end
-      diagram(o,'Rloc',Hsym,Hij,2222);
+      diagram(o,'Rloc',Hsym,Hij,3222);
    end
    heading(o);
 end
@@ -621,7 +626,7 @@ function o = ForceStepOverview(o)      % Force Step Response Overview
       l = size(y,1);
       for (i=1:l)
          sym = sprintf('y%g',i);
-         diagram(o,'Elongation',sym,t,y(i,:),[l m (i-1)*m+index]);
+         diagram(o,'Elongation',sym,t,y(i,:),[l m i index]);
          title(sprintf('Elongation y%g (F%g)',i,index));
       end   
    end
@@ -837,7 +842,7 @@ function o = MotionRsp(o)              % Motion Response
    [t,u,y,x] = var(oo,'t,u,y,x');
    
 end
-function [t,u] = MotionInput(o)
+function [t,u] = MotionInput(o)        % Motion Input                  
    [smax,vmax,amax,tj] = opt(with(o,'motion'),'smax,vmax,amax,tj');
    oo = inherit(corasim,o);
    

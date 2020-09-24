@@ -54,6 +54,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix: motion Overview reacting on tmax setting
 % - add Study/Motion/Profile menu item
 % - bug fix: spm/shell - Select was not a dynamic menu
+% - L(s) transfer matrix implemented
 %
 %
 % Known bugs & wishlist

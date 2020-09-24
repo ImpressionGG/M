@@ -141,12 +141,14 @@ function o = Step(o)                   % Transfer Function Diagram
    G = set(G,'name',sym); 
    G = inherit(G,o);
    
-   if isequal(sym(1),'H')
-      G = opt(G,'color','m');
-   elseif isequal(sym(1),'L')
-      G = opt(G,'color','yyr');
-   else
-      G = opt(G,'color','g.');
+   if isempty(opt(G,'color'))
+      if isequal(sym(1),'H')
+         G = opt(G,'color','m');
+      elseif isequal(sym(1),'L')
+         G = opt(G,'color','yyr');
+      else
+         G = opt(G,'color','g.');
+      end
    end
    step(G,sub);
 end
