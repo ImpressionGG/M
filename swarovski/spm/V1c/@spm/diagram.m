@@ -143,6 +143,8 @@ function o = Step(o)                   % Transfer Function Diagram
    
    if isequal(sym(1),'H')
       G = opt(G,'color','m');
+   elseif isequal(sym(1),'L')
+      G = opt(G,'color','yyr');
    else
       G = opt(G,'color','g.');
    end

@@ -294,7 +294,8 @@ function oo = ClearCb(o)               % Clear All Objects
          setting(o,'basket.type','*'); % all types selected by default
 
          current(o,0);                 % update current selection
-         refresh(oo);                  % and refresh screen
+         %refresh(oo);                 % and refresh screen
+         menu(o,'About');
       end
    end
 end

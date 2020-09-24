@@ -197,6 +197,7 @@ function oo = Select(o)                % Select Menu
    ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu
    ooo = Motion(oo);                   % add Motion sub menu
+   ooo = Cancel(oo);                   % add Cancel sub menu
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %
@@ -262,6 +263,13 @@ function oo = Motion(o)                % Add Motion Menu Items
         choice(ooo,[1e-3],{});
    ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
         choice(ooo,[0.02],{});
+end
+function oo = Cancel(o)                % Add Cancel Menu Items         
+   setting(o,{'cancel.L.eps'},1e-5);
+   
+   oo = mitem(o,'Cancel');
+   ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]);
 end
 
 %==========================================================================

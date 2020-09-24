@@ -512,7 +512,7 @@ function out = Trfct(o,G,name)         % Display Transfer Funcion
    
    if (nargout == 0)
       fprintf(['\n                                                   ',...
-               '            Omegas   Zetas\n']);
+               '           Omegas   Zetas\n']);
    end
 %
 % calculate the field size

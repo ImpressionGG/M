@@ -444,6 +444,7 @@ function VersionV1F
 % - bug fix: corasim/menu/Objects separator conditionally if children
 % - critical bug fix: dynamic/ShowMenus - shell object instead of data obj
 % - minor bug fix: corinth/display - formatting
+% - corazon/menu/ClearCb: => show About instead of refresh
 %
 %
 % Known Bugs / Wishlist

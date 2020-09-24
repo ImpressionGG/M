@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Trfd,@Trfr,@Consd,@Consr,...
+                   @Trfd,@Trfr,@Consd,@Consr,@Ls,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -39,7 +39,8 @@ function oo = Menu(o)                  % Setup Plot Menu
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
    
    oo = TransferMatrix(o);
-   oo = ConstrainMatrix(o);
+   oo = ConstrainMatrix(o);            % H(s)
+   oo = LinearSystem(o);               % L(s)
 
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
@@ -68,6 +69,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    
    function oo = Double(o)             % Double Sub Menu               
       oo = mitem(o,'Rational');
+      enable(oo,false);
       ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
       ooo = mitem(oo,'-');
       for (i=1:l)
@@ -102,6 +104,7 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    
    function oo = Rational(o)           % Rational Submenu              
       oo = mitem(o,'Rational');
+      enable(oo,false);
       ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Consr',0,0});
       ooo = mitem(oo,'-');
       for (i=1:l)
@@ -111,6 +114,30 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
          if (i < l)
             ooo = mitem(oo,'-');
          end
+      end
+   end
+ end
+function oo = LinearSystem(o)          % Linear System Menu            
+   oo = mhead(o,'Linear System');
+
+   oo = current(o);
+   if container(oo)
+      return                           % done for container objects
+   end
+   
+   [oo,bag,rfr] = cache(oo,oo,'consd');
+   
+   L = cache(oo,'consd.L');
+   [m,n] = size(L);
+   
+   ooo = mitem(oo,sprintf('L(s)'),{@WithCuo,'Ls',0,0});
+   ooo = mitem(oo,'-');
+   for (i=1:m)
+      for (j=1:n)
+         ooo = mitem(oo,sprintf('L%g%g(s)',i,j),{@WithCuo,'Ls',i,j});
+      end
+      if (i < m)
+         ooo = mitem(oo,'-');
       end
    end
  end
@@ -356,6 +383,8 @@ function o = Trfd(o)                   % Double Transfer Function
       str = display(Gij);
       sym = sprintf('G%g%g(s)',i,j);
       
+      [num,den] = peek(Gi,j)
+      
       diagram(o,'Trf',sym,Gij,2111);
       diagram(o,'Step',sym,Gij,2221);
       diagram(o,'Rloc',sym,Gij,2222);
@@ -411,13 +440,16 @@ function o = Consd(o)                  % Double Constrained Trf Fct
 
       Hij = opt(Hij,'maxlen',200);
       str = display(Hij);
+      [num,den] = peek(Hij);
       
       Hsym = sprintf('H%g%g(s)',i,j);
       Gsym = sprintf('G%g%g(s)',i,j);
 
       diagram(o,'Trf', Hsym,Hij,2111);
       diagram(o,'Step',Gsym,Gij,2221);
-      diagram(o,'Step',Hsym,Hij,2221);   
+      if length(num) <= length(den)    % proper Hij(s) ?
+         diagram(o,'Step',Hsym,Hij,2221); 
+      end
       diagram(o,'Rloc',Hsym,Hij,2222);
    end
    heading(o);
@@ -447,6 +479,46 @@ function o = Consr(o)                  % Rational Constrained Trf Funct
    end
    message(o,sprintf('Constrained Transfer Function %s (Rational)',sym),...
                      comment);
+end
+
+function o = Ls(o)                     % Linear System Trf Matrix      
+   o = with(o,'view');                 % unwrap view options 
+   i = arg(o,1);
+   j = arg(o,2);
+
+   L = cache(o,'consd.L');
+   
+   if (i == 0 || j == 0)
+      L = opt(L,'maxlen',200);
+      str = display(L);
+      sym = 'L(s)';
+      
+      [m,n] = size(L);
+      for (i=1:m)
+         for (j=1:n)
+            Lij = peek(L,i,j);
+            Lij = set(Lij,'name',sprintf('L%g%g(s)',i,j));
+            disp(Lij);
+            fprintf('\n');
+         end
+      end
+      diagram(o,'Trf',sym,L,111);
+   else
+      Lij = peek(L,i,j);
+      
+      Lij = set(Lij,'name',sprintf('L%g%g(s)',i,j));
+      display(Lij);
+
+      Lij = opt(Lij,'maxlen',200);
+      str = display(Lij);
+      
+      Lsym = sprintf('L%g%g(s)',i,j);
+
+      diagram(o,'Trf', Lsym,Lij,2111);
+      diagram(o,'Step',Lsym,Lij,2221);   
+      diagram(o,'Rloc',Lsym,Lij,2222);
+   end
+   heading(o);
 end
 
 %==========================================================================

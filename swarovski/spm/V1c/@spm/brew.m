@@ -121,6 +121,7 @@ function oo = Trfd(o)                  % Double Transfer Matrix
       % unconditional hard refresh of cache
       
    cache(oo,oo);                       % hard refresh cache
+   cls(o);
 end
 function oo = TrfDouble(o)             % Double Transition Matrix      
    refresh(o,{@plot,'About'});         % don't come back here!!!
@@ -256,13 +257,14 @@ function oo = TrfRational(o)           % Rational Transition Matrix
 end
 
 %==========================================================================
-% Constrained Transfer Matrix
+% Constrained Transfer Matrix and Linear Subsystem
 %==========================================================================
 
 function oo = Consd(o)                 % Double Costrained Trf. Matrix 
    message(o,'Brewing Double Constrained Transfer Matrix ...');
-   oo = ConstrainedDouble(o);
-
+   oo = ConstrainedDouble(o);          % brew H(s) matrix
+   oo = LinearSubsys(oo);              % brew L(s) matrix
+   
      % make cache segment as variables available
      
    [oo,bag,rfr] = cache(oo,'consd');   % get bag of cached variables
@@ -275,6 +277,7 @@ function oo = Consd(o)                 % Double Costrained Trf. Matrix
       % unconditional hard refresh of cache
    
    cache(oo,oo);                       % hard refresh cache
+   cls(o);
 end
 function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix 
    refresh(o,{@plot,'About'});         % don't come back here!!!
@@ -285,7 +288,8 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       
    G33 = cache(oo,'trfd.G33');
    Gnn = G33;                          % the same
-   Hnn = inv(Gnn) * trf(Gnn,[1],[1 0 0]);
+%  Hnn = inv(Gnn) * trf(Gnn,[1],[1 0 0]);
+   Hnn = inv(Gnn);
    H33 = Hnn;
 
       % calculate Hnd(s) = [H31(s) H32(s)]
@@ -364,4 +368,50 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       
    oo = cache(oo,'consd.H',H);
 end
+function oo = LinearSubsys(o)          % Linear Sub-System                
+   [oo,bag,rfr] = cache(o,o,'consd');
+   
+   [H11,H12,H21,H22,H31,H32] = var(oo,'H11,H12,H21,H22,H31,H32');
+   
+   s = trf(H11,[1 0],[1]);
+   
+   L11 = Cancel(o,s*H11);
+   L12 = Cancel(o,s*H12);
+   L21 = Cancel(o,s*H21);
+   L22 = Cancel(o,s*H22);
 
+   L31 = Cancel(o,H31);
+   L32 = Cancel(o,H32);
+   
+      % store all partial constraine transfer functions in cache
+      
+   oo = cache(oo,'consd.L11',L11);
+   oo = cache(oo,'consd.L12',L12);
+
+   oo = cache(oo,'consd.L21',L21);
+   oo = cache(oo,'consd.L22',L22);
+
+   oo = cache(oo,'consd.L31',L31);
+   oo = cache(oo,'consd.L32',L32);
+
+      % assemble L(s) matrix
+      
+   L = matrix(corinth);
+   L = poke(L,L11,1,1);
+   L = poke(L,L12,1,2);
+   L = poke(L,L21,2,1);
+   L = poke(L,L22,2,2);
+   L = poke(L,L31,3,1);
+   L = poke(L,L32,3,2);
+
+      % store L in cache
+      
+   oo = cache(oo,'consd.L',L);
+   
+   function Ls = Cancel(o,Ls)
+      eps = opt(o,'cancel.L.eps');
+      if ~isempty(eps)
+         Ls = opt(Ls,'eps',eps);
+      end
+   end
+end
