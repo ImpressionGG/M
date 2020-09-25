@@ -12,13 +12,14 @@ function o = diagram(o,varargin)
 %              diagram(o,'Step','G11',G11,sub)        % elon. step response
 %              diagram(o,'Vstep','L11',L11,sub)       % velocity step rsp.
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
+%              diagram(o,'Bode','G11',G11,sub)        % bode diagram
 %
 %           Copyright(c): Bluenetics 2020
 %
 %           See also: SPM, PLOT
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit,...
-                       @Trf,@Weight,@Step,@Vstep,@Rloc);
+                       @Trf,@Weight,@Step,@Vstep,@Bode,@Rloc);
    oo = gamma(oo);
 end
 
@@ -213,6 +214,31 @@ function o = Vstep(o)                  % Velocity Step Response
    end
    step(G,sub);
    ylabel(['dy/dt [',opt(o,{'yunit','1'}),']']);
+end
+
+%==========================================================================
+% Bode Diagram
+%==========================================================================
+
+function o = Bode(o)                   % Bode Diagram                  
+   o = with(o,'scale');
+   
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+
+   [num,den] = peek(G);
+   oo = system(inherit(corasim,o),{num,den});   
+   oo = set(oo,'name',sym); 
+   
+   if isempty(opt(oo,'color'))
+      oo = opt(oo,'color','r');
+   end
+   
+   subplot(o,sub);
+   
+   bode(oo);
+   title([sym,': Bode Diagram']);
 end
 
 %==========================================================================

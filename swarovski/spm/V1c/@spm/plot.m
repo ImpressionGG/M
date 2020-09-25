@@ -404,6 +404,7 @@ function o = Trfd(o)                   % Double Transfer Function
 
       o = opt(o,'color','g');
       diagram(o,'Step',sym,Gij,3221);
+      diagram(o,'Bode',sym,Gij,3232);
    end
    heading(o);
 end

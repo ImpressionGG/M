@@ -165,6 +165,8 @@ function oo = Scale(o)                 % Scale Sub-Menu
    ooo = mitem(oo,'Velocity Scale',{},'scale.vunit');
    choice(ooo,{{'m/s','m/s'},{'mm/s','mm/s'},{'um/s','um/s'}},{@VscaleCb});
    
+   ooo = BodeScale(oo);
+   
    function o = XscaleCb(o)            % Time Scale Callback           
       unit = setting(o,'scale.xunit');
       switch unit
@@ -199,6 +201,37 @@ function oo = Scale(o)                 % Scale Sub-Menu
       end
       refresh(o);
    end
+end
+function oo = BodeScale(o)             % Bode Scale Menu               
+   setting(o,{'scale.omega.low'},1e2);
+   setting(o,{'scale.omega.high'},1e7);
+   setting(o,{'scale.magnitude.low'},-200);
+   setting(o,{'scale.magnitude.high'},-40);
+   setting(o,{'scale.phase.low'},-270);
+   setting(o,{'scale.phase.high'},90);
+   setting(o,{'scale.omega.points'},1000);
+   
+   oo = mitem(o,'Bode Scale');
+   ooo = mitem(oo,'Lower Frequency',{},'scale.omega.low');
+         choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+   ooo = mitem(oo,'Upper Frequency',{},'scale.omega.high');
+         choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Magnitude',{},'scale.magnitude.low');
+         choice(ooo,[-20:-10:-200],{});
+   ooo = mitem(oo,'Upper Magnitude',{},'scale.magnitude.high');
+         choice(ooo,[100:-20:-100],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Phase',{},'scale.phase.low');
+         choice(ooo,[-270:45:-90],{});
+   ooo = mitem(oo,'Upper Phase',{},'scale.phase.high');
+         choice(ooo,[-90:45:135],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'scale.omega.points');
+   choice(ooo,[100,500,1000,5000,10000],{});
 end
 
 %==========================================================================

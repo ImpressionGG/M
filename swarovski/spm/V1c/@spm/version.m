@@ -57,6 +57,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - L(s) transfer matrix implemented
 % - weight diagram added
 % - step response overview for L(s) added
+% - bode plot implemented
 %
 %
 % Known bugs & wishlist

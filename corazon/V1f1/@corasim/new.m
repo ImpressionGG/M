@@ -9,8 +9,7 @@ function oo = new(o,varargin)          % CORASIM New Method
 %
 %           o = new(corasim,'PT1')     % PT1 system
 %           o = new(corasim,'Filter2') % order 2 filter
-%
-%           o = new(corasim,'Modal')   % modal form (continuous)
+%           o = new(corasim,'Modal3')  % modal form (continuous, order 3)
 %
 %           o = new(corasim,'Motion100mm')
 %           o = new(corasim,'Motion200mm')
@@ -18,7 +17,7 @@ function oo = new(o,varargin)          % CORASIM New Method
 %
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Css,@Dss,@PT1,@Filter2,...
+   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Modal3,@PT1,@Filter2,...
                        @Motion100mm,@Motion200mm,@Motion100um,...
                        @Modal,@Menu);
    oo = gamma(oo);
@@ -34,6 +33,7 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'-');
    oo = mitem(o,'Continuous PT1 System',{@Callback,'PT1'},[]);
    oo = mitem(o,'Continuous Order 2 Filter',{@Callback,'Filter2'},[]);
+   oo = mitem(o,'Order 3 Modal Form',{@Callback,'Modal3'},[]);
    oo = mitem(o,'-');
    oo = mitem(o,'100 mm Motion',{@Callback,'Motion100mm'},[]);
    oo = mitem(o,'200 mm Motion',{@Callback,'Motion200mm'},[]);
@@ -62,7 +62,7 @@ function oo = Dss(o)                   % New dss object
    oo = system(oo,diag(lambda),[1;1],[1 -2],0);
    oo = c2d(oo,0.1);
 end
-function oo = PT1(o)                   % New PT1 System                   
+function oo = PT1(o)                   % New PT1 System                
    oo = system(corasim,{1,[1 1]});     % continuous PT1 system
    oo.par.title = sprintf('Continuous PT1 System (%s)',datestr(now));
    oo.par.comment = {'G(s) = 1/(s+1)'};
@@ -77,7 +77,7 @@ function oo = Filter2(o)               % New continuous order 2 filter
    oo.par.comment = {sprintf('Bandwidth: f = %g Hz',o.rd(f,1)),...
                      sprintf('Damping: zetea = %g',zeta)};
 end
-function oo = Modal(o)                 % New css Object in Modal Form  
+function oo = Modal3(o)                % New css Object in Modal Form  
    omega = [1 2 3]';
    zeta  = [0.1 0.1 0.1]';
    M = [1 -1 1]';

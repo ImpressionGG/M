@@ -90,8 +90,9 @@ function o = Phase(o)                  % Plot Phase
       % plot phase
       
    hdl = semilogx(om,p,'r--');
-   col = opt(o,{'color','r1--'});
+   col = opt(o,{'color','r--'});
    [col,lw,typ] = o.color(col);
+   lw = [];
    
    set(hdl,'Color',col);
    if o.is(lw)
@@ -118,8 +119,8 @@ function [omega,magni,phase] = Lim(o)  % Get Limits
    magni = shelf(o,gca,'magnitude');
    magni = o.either(magni,[-80,80]);
 
-   magni(1) = opt(o,{'omega.low',magni(1)});
-   magni(2) = opt(o,{'omega.high',magni(2)});
+   magni(1) = opt(o,{'magnitude.low',magni(1)});
+   magni(2) = opt(o,{'magnitude.high',magni(2)});
 
       % phase limits
       
@@ -129,7 +130,7 @@ function [omega,magni,phase] = Lim(o)  % Get Limits
    phase(1) = opt(o,{'phase.low',phase(1)});
    phase(2) = opt(o,{'phase.high',phase(2)});
 end
-function o = Axes(o)
+function o = Axes(o)                   % Plot Bode Axes                
    kind = shelf(o,gca,'owner');
    if ~isequal(kind,'bode')
       InitAxes(o);
