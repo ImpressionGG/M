@@ -55,6 +55,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add Study/Motion/Profile menu item
 % - bug fix: spm/shell - Select was not a dynamic menu
 % - L(s) transfer matrix implemented
+% - weight diagram added
 %
 %
 % Known bugs & wishlist
