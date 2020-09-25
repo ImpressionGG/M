@@ -56,6 +56,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix: spm/shell - Select was not a dynamic menu
 % - L(s) transfer matrix implemented
 % - weight diagram added
+% - step response overview for L(s) added
 %
 %
 % Known bugs & wishlist

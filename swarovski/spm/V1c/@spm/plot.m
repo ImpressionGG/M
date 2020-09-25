@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Trfd,@Trfr,@Consd,@Consr,@Ls,...
+                   @Trfd,@Trfr,@Consd,@Consr,@Ls,@LsStepOverview,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -134,6 +134,8 @@ function oo = LinearSystem(o)          % Linear System Menu
       
    oo = mhead(o,'Linear System');
    ooo = mitem(oo,sprintf('L(s)'),{@WithCuo,'Ls',0,0});
+   ooo = mitem(oo,'Step Response Overview',{@WithCuo,'LsStepOverview'});
+   
    ooo = mitem(oo,'-');
    for (i=1:m)
       for (j=1:n)
@@ -506,7 +508,6 @@ end
 %==========================================================================
 
 function o = Ls(o)                     % Linear System Trf Matrix      
-%  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
@@ -537,10 +538,25 @@ function o = Ls(o)                     % Linear System Trf Matrix
       str = display(Lij);
       
       Lsym = sprintf('L%g%g(s)',i,j);
+      mode = o.iif(i<=2,'Vstep','Step');
 
       diagram(o,'Trf', Lsym,Lij,3111);
-      diagram(o,'Step',Lsym,Lij,3221);   
       diagram(o,'Rloc',Lsym,Lij,3222);
+      diagram(o,mode,Lsym,Lij,3221);  
+   end
+   heading(o);
+end
+function o = LsStepOverview(o)         % L(s) Step Response Overview   
+   L = cache(o,'consd.L');             % L(s)
+   [m,n] = size(L);
+   
+   for (i=1:m)
+      for (j=1:n)
+         mode = o.iif(i<=2,'Vstep','Step');
+         sym = sprintf('L%g%g(s)',i,j);
+         Lij = peek(L,i,j);
+         diagram(o,mode,sym,Lij,[3,2,i,j]);
+      end
    end
    heading(o);
 end

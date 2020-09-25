@@ -9,7 +9,8 @@ function o = diagram(o,varargin)
 %
 %              diagram(o,'Trf','G11',G11,sub)         % transfer function
 %              diagram(o,'Weight','G12',w12,sub)      % weight vector
-%              diagram(o,'Step','G11',G11,sub)        % step response
+%              diagram(o,'Step','G11',G11,sub)        % elon. step response
+%              diagram(o,'Vstep','L11',L11,sub)       % velocity step rsp.
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %
 %           Copyright(c): Bluenetics 2020
@@ -17,7 +18,7 @@ function o = diagram(o,varargin)
 %           See also: SPM, PLOT
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit,...
-                       @Trf,@Weight,@Step,@Rloc);
+                       @Trf,@Weight,@Step,@Vstep,@Rloc);
    oo = gamma(oo);
 end
 
@@ -134,7 +135,7 @@ function o = Trf(o)                    % Transfer Function Diagram
    message(o,[sym,': Transfer Function'],comment);
    axis off;
 end
-function o = Weight(o)                 % Weight Function Diagram     
+function o = Weight(o)                 % Weight Function Diagram       
    sym = arg(o,1);
    w = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
@@ -166,10 +167,10 @@ function o = Weight(o)                 % Weight Function Diagram
 end
 
 %==========================================================================
-% Step Response Diagram
+% Elongation/Velocity Step Response Diagram
 %==========================================================================
 
-function o = Step(o)                   % Transfer Function Diagram     
+function o = Step(o)                   % Elongation Step Response      
    o = with(o,'view');                 % unwrap view options
    sym = arg(o,1);
    G = arg(o,2);
@@ -188,6 +189,30 @@ function o = Step(o)                   % Transfer Function Diagram
       end
    end
    step(G,sub);
+end
+function o = Vstep(o)                  % Velocity Step Response        
+   o = with(o,'view');                 % unwrap view options
+   o = opt(o,'yscale',opt(o,'vscale'));
+   o = opt(o,'yunit',opt(o,'vunit'));
+   
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+   
+   G = set(G,'name',sym); 
+   G = inherit(G,o);
+   
+   if isempty(opt(G,'color'))
+      if o.is(sym(2:3),{'11','12','21','22'})
+         G = opt(G,'color','bc');
+      elseif isequal(sym(1),'L')
+         G = opt(G,'color','yyr');
+      else
+         G = opt(G,'color','g.');
+      end
+   end
+   step(G,sub);
+   ylabel(['dy/dt [',opt(o,{'yunit','1'}),']']);
 end
 
 %==========================================================================
