@@ -14,7 +14,8 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Trfd,@Trfr,@Consd,@Consr,@Ls,@LsStepOverview,...
+                   @Trfd,@Trfr,@Consd,@Consr,...
+                   @Ls,@LsStepOverview,@LsBodeOverview,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -133,8 +134,11 @@ function oo = LinearSystem(o)          % Linear System Menu
       % add mhead again !!!
       
    oo = mhead(o,'Linear System');
-   ooo = mitem(oo,sprintf('L(s)'),{@WithCuo,'Ls',0,0});
    ooo = mitem(oo,'Step Response Overview',{@WithCuo,'LsStepOverview'});
+   ooo = mitem(oo,'Bode Plot Overview',{@WithCuo,'LsBodeOverview'});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('L(s)'),{@WithCuo,'Ls',0,0});
    
    ooo = mitem(oo,'-');
    for (i=1:m)
@@ -566,6 +570,20 @@ function o = LsStepOverview(o)         % L(s) Step Response Overview
          sym = sprintf('L%g%g(s)',i,j);
          Lij = peek(L,i,j);
          diagram(o,mode,sym,Lij,[3,2,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = LsBodeOverview(o)         % L(s) Bode Plot Overview       
+   L = cache(o,'consd.L');             % L(s)
+   [m,n] = size(L);
+   
+   for (i=1:m)
+      for (j=1:n)
+         sym = sprintf('L%g%g(s)',i,j);
+         Lij = peek(L,i,j);
+         o = opt(o,'color',o.iif(i<=2,'bc','yyr'));
+         diagram(o,'Bode',sym,Lij,[3,2,i,j]);
       end
    end
    heading(o);

@@ -59,6 +59,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - step response overview for L(s) added
 % - bode plot implemented for G(s)
 % - bode plot implemented for H(s) and L(s)
+% - bode overview for L(s)
 %
 %
 % Known bugs & wishlist
