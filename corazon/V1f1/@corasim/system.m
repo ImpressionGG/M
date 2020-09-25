@@ -9,6 +9,7 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
 %
 %             oo = system(o,{num,den})      % s-transfer function
 %             oo = system(o,{num,den},T)    % z-transfer function
+%             oo = system(o,{num,den},-T)   % q-transfer function
 %            
 %          Retrieve system matrices
 %
@@ -39,7 +40,9 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
       o = Cast(o);
       return
    elseif (nargout > 1)
-      [o,B,C,D,T] = data(o,'A,B,C,D,T');
+      [A,B,C,D,T] = data(o,'A,B,C,D,T');
+      T = o.either(T,0);
+      o = A;                           % output arg
       return
    end
    

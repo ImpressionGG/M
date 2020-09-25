@@ -108,7 +108,10 @@ function oo = View(o)                  % View Menu
    
    oo = menu(o,'View');
    ooo = menu(oo,'Filter');            % add Filter menu items
-   ooo = menu(oo,'Scale');             % add Scale menu items
+   
+   ooo = mitem(oo,'-');
+   ooo = menu(oo,'TimeScale');         % add Time Scale menu items
+   ooo = menu(oo,'BodeScale');         % add Bode Scale menu items
 end
 
 %==========================================================================
@@ -123,30 +126,7 @@ function oo = Select(o)                % Select Menu
    ooo = menu(oo,'Objects');           % add Open menu item
    ooo = menu(oo,'Basket');            % add Basket menu
    ooo = mitem(oo,'-');
-   ooo = Simu(oo);                     % add simulation parameter menu
-end
-function oo = Simu(o)                  % Simulation Parameter Menu     
-%
-% SIMU   Add simulation parameter menu items
-%
-   setting(o,{'simu.tmax'},0.01);
-   setting(o,{'simu.Fmax'},100);
-   setting(o,{'simu.dt'},5e-6);
-   setting(o,{'simu.plot'},500);       % number of points to plot
-
-   oo = mitem(o,'Simulation');
-   ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
-          choice(ooo,[1000,2000,5000, 100,200,500,10,20,50, 1,2,5,...
-                      0.1,0.2,0.5, 0.01,0.02,0.05, 0.001,0.002,0.005],{});
-   ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
-          choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4,...
-                      1e-3,2e-3,5e-3, 1e-2,2e-2,5e-2, 1e-2,2e-2,5e-2],{});
-   ooo = mitem(oo,'Number of Points to Plot',{},'simu.plot');
-          choice(ooo,[50 100 200 500 1000 inf],{});
-          
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
-          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
+   ooo = menu(oo,'Simu');              % add simulation parameter menu
 end
 
 %==========================================================================

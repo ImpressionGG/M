@@ -146,56 +146,56 @@ function oo = View(o)                  % View Menu
    plugin(o,'spm/shell/View');         % plug point
 end
 function oo = Scale(o)                 % Scale Sub-Menu                
-   setting(o,{'view.xunit'},'ms');     % time scaling unit
-   setting(o,{'view.xscale'},1e3);     % time scaling factor
+   setting(o,{'scale.xunit'},'ms');     % time scaling unit
+   setting(o,{'scale.xscale'},1e3);     % time scaling factor
    
-   setting(o,{'view.yunit'},'um');     % elongation scaling unit
-   setting(o,{'view.yscale'},1e6);     % elongation scaling factor
+   setting(o,{'scale.yunit'},'um');     % elongation scaling unit
+   setting(o,{'scale.yscale'},1e6);     % elongation scaling factor
    
-   setting(o,{'view.vunit'},'mm/s');   % velocity scaling unit
-   setting(o,{'view.vscale'},1e3);     % velocity scaling factor
+   setting(o,{'scale.vunit'},'mm/s');   % velocity scaling unit
+   setting(o,{'scale.vscale'},1e3);     % velocity scaling factor
 
    oo = mitem(o,'Scale');
-   ooo = mitem(oo,'Time Scale',{},'view.xunit');
+   ooo = mitem(oo,'Time Scale',{},'scale.xunit');
    choice(ooo,{{'s','s'},{'ms','ms'}},{@XscaleCb});
    
-   ooo = mitem(oo,'Elongation Scale',{},'view.yunit');
+   ooo = mitem(oo,'Elongation Scale',{},'scale.yunit');
    choice(ooo,{{'m','m'},{'mm','mm'},{'um','um'}},{@YscaleCb});
 
-   ooo = mitem(oo,'Velocity Scale',{},'view.vunit');
+   ooo = mitem(oo,'Velocity Scale',{},'scale.vunit');
    choice(ooo,{{'m/s','m/s'},{'mm/s','mm/s'},{'um/s','um/s'}},{@VscaleCb});
    
    function o = XscaleCb(o)            % Time Scale Callback           
-      unit = setting(o,'view.xunit');
+      unit = setting(o,'scale.xunit');
       switch unit
          case 's'
-            setting(o,'view.xscale',1);
+            setting(o,'scale.xscale',1);
          case 'ms'
-            setting(o,'view.xscale',1e3);
+            setting(o,'scale.xscale',1e3);
       end
       refresh(o);
    end
    function o = YscaleCb(o)            % Elongation Scale Callback     
-      unit = setting(o,'view.yunit');
+      unit = setting(o,'scale.yunit');
       switch unit
          case 'm'
-            setting(o,'view.yscale',1);
+            setting(o,'scale.yscale',1);
          case 'mm'
-            setting(o,'view.yscale',1e3);
+            setting(o,'scale.yscale',1e3);
          case 'um'
-            setting(o,'view.yscale',1e6);
+            setting(o,'scale.yscale',1e6);
       end
       refresh(o);
    end
    function o = VscaleCb(o)            % Velocity Scale Callback       
-      unit = setting(o,'view.vunit');
+      unit = setting(o,'scale.vunit');
       switch unit
          case 'm/s'
-            setting(o,'view.vscale',1);
+            setting(o,'scale.vscale',1);
          case 'mm/s'
-            setting(o,'view.vscale',1e3);
+            setting(o,'scale.vscale',1e3);
          case 'um/s'
-            setting(o,'view.vscale',1e6);
+            setting(o,'scale.vscale',1e6);
       end
       refresh(o);
    end

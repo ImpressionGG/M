@@ -1,9 +1,11 @@
-function [num,den,T] = peek(o)         % Peek Numerator/Denominator    
+function [num,den,T] = peek(o,i,j)     % Peek Numerator/Denominator    
 %
 % PEEK   Peek numerator and denominator from a corasim system
 %
 %           oo = system(corasim,A,B,C,D);
-%           [num,den,T] = peek(oo)     % peek numerator & denominator
+%           [num,den,T] = peek(oo,i,j) % peek numerator & denominator
+%           [num,den,T] = peek(oo)     % i = 1, j = 1
+%           
 %
 %        Copyright(c): Bluenetics 2020
 %
@@ -12,7 +14,21 @@ function [num,den,T] = peek(o)         % Peek Numerator/Denominator
    switch o.type
       case {'css','dss'}
          [A,B,C,D,T] = system(o);
-         [num,den] = Ss2tf(o,A,B,C,D);
+         if (nargin < 2)
+            i = 1;
+         end
+         if (nargin < 3)
+            j = 1;
+         end
+         
+         if (i < 0 || i > size(C,1))
+            error('i (arg2) exceeds number of outputs');
+         end
+         if (j < 0 || j > size(B,2))
+            error('j (arg3) exceeds number of inputs');
+         end
+         
+         [num,den] = Ss2tf(o,A,B(:,j),C(i,:),D(i,j));
       case {'strf','ztrf'}
          [num,den] = data(o,'num,den');
    end

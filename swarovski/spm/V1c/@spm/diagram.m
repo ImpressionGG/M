@@ -171,7 +171,7 @@ end
 %==========================================================================
 
 function o = Step(o)                   % Elongation Step Response      
-   o = with(o,'view');                 % unwrap view options
+   o = with(o,'scale');                % unwrap scale options
    sym = arg(o,1);
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
@@ -191,7 +191,7 @@ function o = Step(o)                   % Elongation Step Response
    step(G,sub);
 end
 function o = Vstep(o)                  % Velocity Step Response        
-   o = with(o,'view');                 % unwrap view options
+   o = with(o,'scale');                % unwrap scale options
    o = opt(o,'yscale',opt(o,'vscale'));
    o = opt(o,'yunit',opt(o,'vunit'));
    

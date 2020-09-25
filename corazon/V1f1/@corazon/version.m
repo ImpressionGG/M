@@ -446,6 +446,7 @@ function VersionV1F
 % - critical bug fix: dynamic/ShowMenus - shell object instead of data obj
 % - minor bug fix: corinth/display - formatting
 % - corazon/menu/ClearCb: => show About instead of refresh
+% - corasim/bode implemented
 %
 %
 % Known Bugs / Wishlist

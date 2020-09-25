@@ -7,7 +7,8 @@ function oo = new(o,varargin)          % CORASIM New Method
 %           o = new(corasim,'Css')     % continuous state space
 %           o = new(corasim,'Dss')     % discrete state space
 %
-%           o = new(corasim,'Filter1') % order 2 filter
+%           o = new(corasim,'PT1')     % PT1 system
+%           o = new(corasim,'Filter2') % order 2 filter
 %
 %           o = new(corasim,'Modal')   % modal form (continuous)
 %
@@ -17,7 +18,7 @@ function oo = new(o,varargin)          % CORASIM New Method
 %
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Filter2,...
+   [gamma,oo] = manage(o,varargin,@Css,@Dss,@PT1,@Filter2,...
                        @Motion100mm,@Motion200mm,@Motion100um,...
                        @Modal,@Menu);
    oo = gamma(oo);
@@ -31,6 +32,7 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'Continuous State Space (css)',{@Callback,'Css'},[]);
    oo = mitem(o,'Discrete State Space (dss)',{@Callback,'Dss'},[]);
    oo = mitem(o,'-');
+   oo = mitem(o,'Continuous PT1 System',{@Callback,'PT1'},[]);
    oo = mitem(o,'Continuous Order 2 Filter',{@Callback,'Filter2'},[]);
    oo = mitem(o,'-');
    oo = mitem(o,'100 mm Motion',{@Callback,'Motion100mm'},[]);
@@ -59,6 +61,11 @@ function oo = Dss(o)                   % New dss object
    lambda = [-1 -2] + randn(1,2);
    oo = system(oo,diag(lambda),[1;1],[1 -2],0);
    oo = c2d(oo,0.1);
+end
+function oo = PT1(o)                   % New PT1 System                   
+   oo = system(corasim,{1,[1 1]});     % continuous PT1 system
+   oo.par.title = sprintf('Continuous PT1 System (%s)',datestr(now));
+   oo.par.comment = {'G(s) = 1/(s+1)'};
 end
 function oo = Filter2(o)               % New continuous order 2 filter 
    f = 10/2/pi;                        % band width 1.6 Hz

@@ -82,13 +82,13 @@ function Display(o,num,den,Ts)         % Display Rational Function
 end
 function out = Trf(G,name)             % Display Transfer Funcion      
 %
-% TRFDISP Display transfer function. 
+% TRF     Display transfer function. 
 %
 %            tffdisp(G)           % print on console
 %            list = tffdisp(G)    % return list, no print!
 %
 %         displays the type of transfer function G, coefficients, roots
-%	  omegas and zetas. tffdisp(G,'G(s)') displays string 'G(s)'
+%	       omegas and zetas. tffdisp(G,'G(s)') displays string 'G(s)'
 %         in the head line. See tffnew, tffcmp.
 %
 %
@@ -101,11 +101,6 @@ function out = Trf(G,name)             % Display Transfer Funcion
 %
 % roots, degrees
 %
-   %[class,kind,sign] = ddmagic(G);
-  
-   %if ( class ~= tffclass )
-   %   error('No tffclass object');
-   %end
    kind = G(1);  sign = 1;
 
    m = length(G);
@@ -276,7 +271,7 @@ function out = Trf(G,name)             % Display Transfer Funcion
       bar = bar(1:cur_len+2*off);	l = round((maxlen - length(bar))/2);
       bar = [spc(1:l+off),bar];
       disp(n_str);  disp(bar);  disp(d_str);
-      fprintf('\n                                                   Omegas     Zetas\n');
+      fprintf('\n                                                Omegas   Zetas\n');
    else
       bar = [bar;bar];
       bar = bar(1:cur_len+6*off);	l = round((maxlen - length(bar))/2);
@@ -349,7 +344,7 @@ function out = Trf(G,name)             % Display Transfer Funcion
          end
 
          if (nargout == 0)
-	         fprintf(['  %s #%g: ',re_str,im_str],kind,i);
+	         fprintf(['      %s #%g: ',re_str,im_str],kind,i);
          else
 	         list{end+1} = sprintf(['%s #%g: ',re_str,im_str],kind,i);
          end
@@ -358,7 +353,7 @@ function out = Trf(G,name)             % Display Transfer Funcion
 
 	      if ( pair ~= 0)
             if (nargout > 0)
-               list{end} = [list{end},'                  '];
+               list{end} = [list{end},'             '];  
             end
          else
 	         if ( abs(imag(ri)) > 100*eps )
@@ -378,7 +373,8 @@ function out = Trf(G,name)             % Display Transfer Funcion
                
                if (nargout == 0)
    	            str = sprintf('%g',omega);
-                  str = [spc(1:20-length(str)), str];
+%                 str = [spc(1:20-length(str)), str];  % spacer
+                  str = [spc(1:5-length(str)), str];  % spacer
    	            fprintf([str,'   %g'],zeta);
                else
    	            str = sprintf('%g',omega);

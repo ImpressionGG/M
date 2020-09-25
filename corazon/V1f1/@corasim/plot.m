@@ -11,7 +11,7 @@ function oo = plot(o,varargin)         % CORASIM Plot Method
 %        See also: CORASIM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Basket,@Menu,@Callback,...
-                       @Overview,@Step,@Motion);
+                       @Overview,@Step,@Bode,@Motion);
    oo = gamma(oo);
 end
 
@@ -29,6 +29,7 @@ function oo = Menu(o)                  % Setup Plot Menu
       
    if type(current(o),{'css','dss','strf','ztrf'})
       oo = mitem(o,'Step Response',{@WithCuo,'Step'});
+      oo = mitem(o,'Bode Plot',{@WithCuo,'Bode'});
 %     oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
    end
 
@@ -145,6 +146,11 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
    u = var(o,{'u',zeros(ni,length(t))});
    [t,x,y,u] = reduce(o,t,x,y,u);      % reduce number of data points
    
+   if isempty(t)
+      plot(o,'About');
+      return
+   end
+   
       % cast object to prepare for corazon/plot calls
 
    o = with(corazon(o),'style');       % cast object and unpack style opts
@@ -156,8 +162,8 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
    heading(o);
    
    function Plot311(o)                 % Subplot Input                
-      subplot(311);
-      hdl = plot(t,u, t,u,'k.');
+      subplot(o,311);
+      hdl = plot(o,t,u, t,u,'K.');
       set(hdl,'LineWidth',1);
       title(sprintf('Input (%d)',ni));
       xlabel('t');  ylabel('u');
@@ -165,8 +171,8 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
       subplot(o);                      % subplot complete
    end
    function Plot312(o)                 % Subplot State                 
-      subplot(312);
-      hdl = plot(t,x, t,x,'k.');
+      subplot(o,312);
+      hdl = plot(o,t,x, t,x,'K.');
       set(hdl,'LineWidth',1);
       title(sprintf('State (%d)',n));
       xlabel('t');  ylabel('x');
@@ -174,8 +180,8 @@ function o = PlotCss(o)                % Plot Contin.  State Space Sys
       subplot(o);                      % subplot complete
    end
    function Plot313(o)                 % Subplot Output                
-      subplot(313);
-      hdl = plot(t,y, t,y,'k.');
+      subplot(o,313);
+      hdl = plot(o,t,y, t,y,'K.');
       set(hdl,'LineWidth',1);
       title(sprintf('Output (%d)',no));
       xlabel('t');  ylabel('y');
@@ -289,6 +295,14 @@ function o = Step(o)                   % Plot Step Response
       oo = sim(o,u);
       plot(oo);
    end
+end
+
+%==========================================================================
+% Bode Plot
+%==========================================================================
+
+function o = Bode(o)                   % Bode Plot                     
+   bode(o);                            % plot bode diagram   
 end
 
 %==========================================================================

@@ -1,5 +1,6 @@
 function oo = menu(o,varargin)         % CORASIM Menu Building Blocks  
-   [gamma,o] = manage(o,varargin,@Error,@Filter,@Scale,@Simu);
+   [gamma,o] = manage(o,varargin,@Error,@Filter,@TimeScale,@BodeScale,...
+                      @Simu);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -37,48 +38,66 @@ function oo = Filter(o)                % Add Filter Menu Items
    ooo = mitem(oo,'Method',{},'filter.method');
    choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
-function oo = Scale(o)                 % Add Scale Menu Items          
-   setting(o,{'view.xunit'},[]);       % time scaling unit
-   setting(o,{'view.xscale'},[]);      % time scaling factor
+function oo = TimeScale(o)             % Add Time Scale Menu Items     
+   setting(o,{'scale.xunit'},[]);      % time scaling unit
+   setting(o,{'scale.xscale'},[]);     % time scaling factor
 
-   oo = mitem(o,'Scale');
-   ooo = mitem(oo,'Time Scale',{},'view.xunit');
-   choice(ooo,{{'Auto',[]},{},{'h','h'},{'min','min'},{'s','s'},...
+   oo = mitem(o,'Time Scale',{},'scale.xunit');
+   choice(oo,{{'Auto',[]},{},{'h','h'},{'min','min'},{'s','s'},...
                {'ms','ms'},{'us','us'}},{@XscaleCb});
    
    function o = XscaleCb(o)
-      unit = setting(o,'view.xunit');
+      unit = setting(o,'scale.xunit');
       if isempty(unit)
-         setting(o,'view.xscale',[]);
+         setting(o,'scale.xscale',[]);
          return
       end
          
       switch unit
          case 'h'
-            setting(o,'view.xscale',1/3600);
+            setting(o,'scale.xscale',1/3600);
          case 'min'
-            setting(o,'view.xscale',1/60);
+            setting(o,'scale.xscale',1/60);
          case 's'
-            setting(o,'view.xscale',1);
+            setting(o,'scale.xscale',1);
          case 'ms'
-            setting(o,'view.xscale',1e3);
+            setting(o,'scale.xscale',1e3);
          case 'us'
-            setting(o,'view.xscale',1e6);
+            setting(o,'scale.xscale',1e6);
       end
       refresh(o);
    end
-   function o = YscaleCb(o)
-      unit = setting(o,'view.yunit');
-      switch unit
-         case 'm'
-            setting(o,'view.yscale',1);
-         case 'mm'
-            setting(o,'view.yscale',1e3);
-         case 'um'
-            setting(o,'view.yscale',1e6);
-      end
-      refresh(o);
-   end
+end
+function oo = BodeScale(o)             % Bode Scale Menu               
+   setting(o,{'scale.omega.low'},1e-1);
+   setting(o,{'scale.omega.high'},1e5);
+   setting(o,{'scale.magnitude.low'},-80);
+   setting(o,{'scale.magnitude.high'},80);
+   setting(o,{'scale.phase.low'},-270);
+   setting(o,{'scale.phase.high'},90);
+   setting(o,{'scale.omega.points'},1000);
+   
+   oo = mitem(o,'Bode Scale');
+   ooo = mitem(oo,'Lower Frequency',{},'scale.omega.low');
+         choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+   ooo = mitem(oo,'Upper Frequency',{},'scale.omega.high');
+         choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Magnitude',{},'scale.magnitude.low');
+         choice(ooo,[-100:10:-20],{});
+   ooo = mitem(oo,'Upper Magnitude',{},'scale.magnitude.high');
+         choice(ooo,[20:10:100],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Phase',{},'scale.phase.low');
+         choice(ooo,[-270:45:-90],{});
+   ooo = mitem(oo,'Upper Phase',{},'scale.phase.high');
+         choice(ooo,[-90:45:135],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'scale.omega.points');
+   choice(ooo,[100,500,1000,5000,10000],{});
 end
 
 %==========================================================================
