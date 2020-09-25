@@ -160,24 +160,14 @@ function o = Axes(o)                   % Plot Bode Axes
 
       shelf(o,gca,'kind','owner');     % set axis ownership
    
+      dy = o.iif(diff(magni)<=200,20,40);
+      
       hax = gca;
       set(hax,'xlim',omega);
       set(hax,'ylim',magni);
       set(hax,'zlim',phase);
-      set(hax,'ytick',magni(1):20:magni(2)); 
+      set(hax,'ytick',magni(1):dy:magni(2)); 
       set(hax,'Xscale','log');
-      
-      %set(hax,'Color',[0.3 0.3 0]);
-      %set(hax,'userdata','Bode Axes');
-      %set(hax,'ButtonDownFcn','timeaxcb(1)');
-      %set(hax,'nextplot','replace');
-%hold on
-%      grid on;
-%     set(gca,'GridColor','w');
-%     set(gca,'GridAlpha',0.3);
-%     set(gca,'MinorGridColor','w');
-%     set(gca,'MinorGridAlpha',0.3);
-      %tffmencb(0);   % setup menu
    end
    function PhaseTicks(o)              % Refresh Phase Ticks           
       hax = gca;

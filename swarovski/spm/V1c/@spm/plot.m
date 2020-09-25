@@ -468,11 +468,17 @@ function o = Consd(o)                  % Double Constrained Trf Fct
       Gsym = sprintf('G%g%g(s)',i,j);
 
       diagram(o,'Trf', Hsym,Hij,3111);
-      diagram(o,'Step',Gsym,Gij,3221);
+      diagram(o,'Step',Gsym,Gij,3221);      
       if length(num) <= length(den)    % proper Hij(s) ?
          diagram(o,'Step',Hsym,Hij,3221); 
       end
       diagram(o,'Rloc',Hsym,Hij,3222);
+      
+      o = opt(o,'color','g1');
+      diagram(o,'Bode',Gsym,Gij,3232);
+      hold on
+      o = opt(o,'color','yyyr');
+      diagram(o,'Bode',Hsym,Hij,3232);
    end
    heading(o);
 end
@@ -544,6 +550,9 @@ function o = Ls(o)                     % Linear System Trf Matrix
       diagram(o,'Trf', Lsym,Lij,3111);
       diagram(o,'Rloc',Lsym,Lij,3222);
       diagram(o,mode,Lsym,Lij,3221);  
+
+      o = opt(o,'color','bc');
+      diagram(o,'Bode',Lsym,Lij,3232);
    end
    heading(o);
 end

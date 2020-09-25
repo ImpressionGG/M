@@ -205,7 +205,7 @@ end
 function oo = BodeScale(o)             % Bode Scale Menu               
    setting(o,{'scale.omega.low'},1e2);
    setting(o,{'scale.omega.high'},1e7);
-   setting(o,{'scale.magnitude.low'},-200);
+   setting(o,{'scale.magnitude.low'},-400);
    setting(o,{'scale.magnitude.high'},-40);
    setting(o,{'scale.phase.low'},-270);
    setting(o,{'scale.phase.high'},90);
@@ -219,7 +219,7 @@ function oo = BodeScale(o)             % Bode Scale Menu
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Magnitude',{},'scale.magnitude.low');
-         choice(ooo,[-20:-10:-200],{});
+         choice(ooo,[-20:-10:-200, -240:-40:-400],{});
    ooo = mitem(oo,'Upper Magnitude',{},'scale.magnitude.high');
          choice(ooo,[100:-20:-100],{});
          
