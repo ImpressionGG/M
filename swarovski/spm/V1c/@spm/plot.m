@@ -284,8 +284,8 @@ function o = Overview(o)               % Plot Overview
 
    heading(o);
 end
-function oo = About(o)                 % About Object                  
-   oo = menu(o,'About');               % keep it simple
+function o = About(o)                  % About Object                  
+   o = menu(o,'About');                % keep it simple
 end
 
 %==========================================================================
@@ -359,12 +359,17 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
    heading(o);
 end
 
+%==========================================================================
+% Plot Transfer Matrix G(s)
+%==========================================================================
+
 function o = Trfd(o)                   % Double Transfer Function      
-   o = with(o,'view');                 % unwrap view options 
+%  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
    G = cache(o,'trfd.G');
+   W = cache(o,'trfd.W');
    if (i == 0 || j == 0)
       G = opt(G,'maxlen',200);
       str = display(G);
@@ -382,14 +387,18 @@ function o = Trfd(o)                   % Double Transfer Function
       diagram(o,'Trf',sym,G,111);
    else
       Gij = peek(G,i,j);
+      wij = W{i,j};
       Gij = opt(Gij,'maxlen',200);
       str = display(Gij);
+      
       sym = sprintf('G%g%g(s)',i,j);
-      Gij = set(Gij,'name',sym);
+      symw = sprintf('w%g%g',i,j);
+      Gij = set(Gij,'name',sym);    
       disp(Gij);
       
       diagram(o,'Trf',sym,Gij,3111);      
       diagram(o,'Rloc',sym,Gij,3222);
+      diagram(o,'Weight',symw,wij,3231);
 
       o = opt(o,'color','g');
       diagram(o,'Step',sym,Gij,3221);
@@ -397,6 +406,7 @@ function o = Trfd(o)                   % Double Transfer Function
    heading(o);
 end
 function o = Trfr(o)                   % Rational Transfer Function    
+   assert(0);
    i = arg(o,1);
    j = arg(o,2);
 
@@ -413,8 +423,12 @@ function o = Trfr(o)                   % Rational Transfer Function
    message(o,sprintf('rational Transfer Function G(%g,%g)',i,j),comment);
 end
 
+%==========================================================================
+% Plot Constraint Transfer Matrix H(s)
+%==========================================================================
+
 function o = Consd(o)                  % Double Constrained Trf Fct    
-   o = with(o,'view');                 % unwrap view options 
+%  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
@@ -460,6 +474,7 @@ function o = Consd(o)                  % Double Constrained Trf Fct
    heading(o);
 end
 function o = Consr(o)                  % Rational Constrained Trf Funct
+   assert(0);
    message(o,'Rational Constrained Transfer Matrix Not Yet Implemented!');
    return
    
@@ -486,8 +501,12 @@ function o = Consr(o)                  % Rational Constrained Trf Funct
                      comment);
 end
 
+%==========================================================================
+% Plot Linear Part Transfer Matrix L(s)
+%==========================================================================
+
 function o = Ls(o)                     % Linear System Trf Matrix      
-   o = with(o,'view');                 % unwrap view options 
+%  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
@@ -519,9 +538,9 @@ function o = Ls(o)                     % Linear System Trf Matrix
       
       Lsym = sprintf('L%g%g(s)',i,j);
 
-      diagram(o,'Trf', Lsym,Lij,2111);
-      diagram(o,'Step',Lsym,Lij,2221);   
-      diagram(o,'Rloc',Lsym,Lij,2222);
+      diagram(o,'Trf', Lsym,Lij,3111);
+      diagram(o,'Step',Lsym,Lij,3221);   
+      diagram(o,'Rloc',Lsym,Lij,3222);
    end
    heading(o);
 end

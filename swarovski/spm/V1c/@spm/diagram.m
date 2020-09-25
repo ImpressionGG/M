@@ -8,6 +8,7 @@ function o = diagram(o,varargin)
 %              diagram(o,'Orbit','y2(y1)',y1,y2,sub)  % orbit plot
 %
 %              diagram(o,'Trf','G11',G11,sub)         % transfer function
+%              diagram(o,'Weight','G12',w12,sub)      % weight vector
 %              diagram(o,'Step','G11',G11,sub)        % step response
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %
@@ -16,7 +17,7 @@ function o = diagram(o,varargin)
 %           See also: SPM, PLOT
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit,...
-                       @Trf,@Step,@Rloc);
+                       @Trf,@Weight,@Step,@Rloc);
    oo = gamma(oo);
 end
 
@@ -115,7 +116,7 @@ function o = Orbit(o)                  % Orbit Diagram
 end
 
 %==========================================================================
-% Transfer Function Diagram
+% Transfer & Weight Function Diagram
 %==========================================================================
 
 function o = Trf(o)                    % Transfer Function Diagram     
@@ -123,10 +124,45 @@ function o = Trf(o)                    % Transfer Function Diagram
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
    
-   o = opt(o,'subplot',sub);
-   comment = display(G);
+   if isequal(sub,111)
+      o = opt(o,'subplot',sub,'pitch',0.4);
+   else
+      o = opt(o,'subplot',sub,'pitch',2);
+   end
+   
+   comment = [{' '},display(G)];
    message(o,[sym,': Transfer Function'],comment);
    axis off;
+end
+function o = Weight(o)                 % Weight Function Diagram     
+   sym = arg(o,1);
+   w = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+   
+   o = opt(o,'subplot',sub);
+   
+   small = 1e-3*max(abs(w));
+   idx = find(abs(w)<small);
+   
+   n = 1:length(w);
+   if ~isempty(idx)
+      ww = w(idx);  nn = n(idx);
+      plot(o,nn,ww,'|K', nn,ww,'Ko');
+      hold on;
+   end
+   
+   idx = find(abs(w)>=small);
+   if ~isempty(idx)
+      ww = w(idx);  nn = n(idx);
+      plot(o,nn,ww,'|K', nn,ww,'ro');
+      hold on;
+   end
+   
+   set(gca,'Xtick',1:length(w));
+  
+   title('Modal Weights');
+   xlabel('Mode Number');
+   ylabel(sym);
 end
 
 %==========================================================================
@@ -134,6 +170,7 @@ end
 %==========================================================================
 
 function o = Step(o)                   % Transfer Function Diagram     
+   o = with(o,'view');                 % unwrap view options
    sym = arg(o,1);
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);

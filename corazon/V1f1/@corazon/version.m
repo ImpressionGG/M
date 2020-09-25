@@ -357,7 +357,8 @@ function VersionV1E
 % - corazonv1e3 beta
 % - bug fixed in corazon/read/Sort: not all non-assigned packages added
 % - rewrite corazon/add to use sorting of object IDs if provided
-% - change corazon/import: no more Duplicate option in dialog 
+% - change corazon/import: no more Duplicate option in dialog
+% - corazon/message: add pitch option
 %
 % Known Bugs / Wishlist
 % - corazon/shell and corazon/rapid generated shells do not refresh

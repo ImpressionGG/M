@@ -164,9 +164,9 @@ function oo = TrfDouble(o)             % Double Transition Matrix
             
          mi = M(:,i)';  mj = M(:,j);
          wij = (mi(:).*mj(:))';        % weight vector
-         tag = sprintf('trfd.w%g%g',i,j);
-         oo = cache(oo,tag,wij);       % store weight vector in cache
-         
+         W{i,j} = wij;                 % store as matrix element
+         W{j,i} = wij;                 % symmetric matrix
+                  
          Gij = trf(O,0);               % init Gij
          for (k=1:n)
 %           Gk = trf(O,mi(k)*mj(k),psi(k,:));
@@ -186,6 +186,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
          
    progress(o);                        % complete!
    oo = cache(oo,'trfd.G',G);          % store in cache
+   oo = cache(oo,'trfd.W',W);          % store in cache
    
       % store all transfer matrix elements into cache
       

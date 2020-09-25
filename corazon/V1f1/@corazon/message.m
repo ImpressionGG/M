@@ -30,6 +30,7 @@ function o = message(o,title,varargin)
 %              fontsize.title        font size of title (default: 14)
 %              fontsize.comment      font size of comment (default:  8)
 %              subplot               subplot identifier (default [1 1 1])
+%              pitch                 vertical pitch width (default: 1)
 %
 %           Copyright(c): Bluenetics 2020 
 %
@@ -136,17 +137,18 @@ function Message(o)                    % Display Screen Message
       comment = {comment};
    end
    
+   pitch = opt(o,{'pitch',1}) * 0.05;
    row = 1;
    for (i=1:length(comment))
       txt = either(comment{i},'');
       for (j=1:size(txt,1))
          txtj = txt(j,:);
          if (length(txtj) >= 2) && strcmp(txtj(1:2),'\r')
-            htxt = text(0,0.85-row*0.05,uscore(txtj(3:end)));
+            htxt = text(0,0.85-row*pitch,uscore(txtj(3:end)));
             set(htxt,'fontsize',fontsize.comment,'horizontalalignment',...
                      'left','verticalalignment',valign)
          else
-            htxt = text(x,0.85-row*0.05,uscore(txtj));
+            htxt = text(x,0.85-row*pitch,uscore(txtj));
             set(htxt,'fontsize',fontsize.comment,'horizontalalignment',...
                      halign,'verticalalignment',valign)
          end

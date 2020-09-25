@@ -9,7 +9,7 @@ function [a0,a1,M,N,omega,zeta] = modal(o,num,den)
 %         Alternatively a corasim state space system can be generated
 %
 %            oo = modal(o,num,den)
-%            [A,B,C,D] = 
+%            [A,B,C,D] = data(oo,'A,B,C,D')
 %
 %         Find modal representation of a rational function
 %
@@ -136,7 +136,7 @@ function oo = Modal(o,num,den)         % Modal Representation
    M = sqrt(-2*real(cs));
    N = 2*real(c)./M;
    
-      % reconstruct q(s)
+      % reconstruct p(s) and q(s)
       
    p = 0;  q = 1;
    for (i=1:length(c))
