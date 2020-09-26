@@ -109,14 +109,6 @@ end
 
 function oo = Trfd(o)                  % Double Transfer Matrix        
    message(o,'Brewing Double Transfer Matrix ...');
-   
-   [A,B,C,D] = data(o,'A,B,C,D');
-   oo = system(corasim,A,B,C,D);
-   
-   if ~ismodal(oo)
-      error('system not in modal form');
-   end
-   
    oo = TrfDouble(o);
    
      % make cache segment as variables available
@@ -141,9 +133,10 @@ function oo = TrfDouble(o)             % Double Transition Matrix
    
       % get a1,a0 and M
       
-   [A21,A22,B2,C1,D] = var(oo,'A21,A22,B2,C1,D');
+   [A11,A12,A21,A22,B2,C1,D] = var(oo,'A11,A12,A21,A22,B2,C1,D');
    a0 = -diag(A21);
    a1 = -diag(A22);
+   I = eye(length(a0));  Z = zeros(length(a0));
    
    if ~isequal(B2,C1')
       error('B2 does not match C1');
@@ -157,39 +150,22 @@ function oo = TrfDouble(o)             % Double Transition Matrix
    m = size(M,2);
    O = base(inherit(corinth,o));       % need to access CORINTH methods
    G = corinth(O,'matrix');
-
-      % calculate psi(i) polynomials
-      
-   psi = [ones(n,1) a1(:) a0(:)];
+   W = [];
    
-   for (i=1:m)
-      for (j=1:i)
-         run = (j-1)*n+i; m = n*(n+1)/2;
-         msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
-         progress(o,msg,(run-1)/m*100);
- 
-            % calculate Gij
-            
-         mi = M(:,i)';  mj = M(:,j);
-         wij = (mi(:).*mj(:))';        % weight vector
-         W{i,j} = wij;                 % store as matrix element
-         W{j,i} = wij;                 % symmetric matrix
-                  
-         Gij = trf(O,0);               % init Gij
-         for (k=1:n)
-%           Gk = trf(O,mi(k)*mj(k),psi(k,:));
-            Gk = trf(O,wij(k),psi(k,:));
-            Gij = Gij + Gk;
-         end
-         
-         fprintf('G%g%g(s):\n',i,j)
-         display(Gij);
-         
-         G = poke(G,Gij,i,j);          % lower half diagonal element
-         if (i ~= j)
-            G = poke(G,Gij,j,i);       % upper half diagonal element
-         end
+      % depending on modal form ...
+     
+   if isequal(A11,Z) && isequal(A12,I) && ...
+              isequal(A21,-diag(a0)) && isequal(A22,-diag(a1))
+      psi = [ones(n,1) a1(:) a0(:)];
+      Modal(o);
+      
+      for (k=1:length(psi))
+         Gk = trf(G,1,psi(k,:));
+         sym = sprintf('G_%g',k);
+         oo = cache(oo,['trfd.',sym],Gk);
       end
+   else
+      Normal(o);
    end
          
    progress(o);                        % complete!
@@ -206,15 +182,66 @@ function oo = TrfDouble(o)             % Double Transition Matrix
          oo = cache(oo,['trfd.',sym],Gij);
       end
    end
- 
-   for (k=1:length(psi))
-      Gk = trf(G,1,psi(k,:));
-      sym = sprintf('G_%g',k);
-      oo = cache(oo,['trfd.',sym],Gk);
-   end
-    
+     
    fprintf('Double Transfer Matrix\n');
    display(G);
+   
+   function Modal(o)    
+      for (i=1:m)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            mi = M(:,i)';  mj = M(:,j);
+            wij = (mi(:).*mj(:))';        % weight vector
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+
+            Gij = trf(O,0);               % init Gij
+            for (k=1:n)
+   %           Gk = trf(O,mi(k)*mj(k),psi(k,:));
+               Gk = trf(O,wij(k),psi(k,:));
+               Gij = Gij + Gk;
+            end
+
+            fprintf('G%g%g(s):\n',i,j)
+            display(Gij);
+
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+   end
+   function Normal(o)
+      [AA,BB,CC,DD] = data(oo,'A,B,C,D');
+      sys = system(corasim,AA,BB,CC,DD);
+      
+      for (i=1:n)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            [num,den] = peek(sys,i,j);
+            Gij = trf(O,num,den);         % Gij(s)
+
+            fprintf('G%g%g(s):\n',i,j)
+            display(Gij);
+
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+   end
 end
 
 function oo = Trfr(o)                  % Rational Transfer Matrix      

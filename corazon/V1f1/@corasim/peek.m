@@ -58,7 +58,8 @@ function [num, den] = Ss2tf(o,varargin) % State Space to Transfer Fct.
 %        outputs y.
 %
    try                                 % compute poles and zeros
-      [z,p,k] = Ss2zp(o,varargin{:});
+%     [z,p,k] = Ss2zp(o,varargin{:});
+      [z,p,k] = NewSs2zp(o,varargin{:});
    catch me
       throw(me)
    end
@@ -143,7 +144,8 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu) % State Space to Zero/Pole
          % now put NS valid zeros into Z. There will always be at least one
          % NaN or infinity
          
-      zv = zv((zv ~= nan)&(zv ~= inf));
+%     zv = zv((zv ~= nan)&(zv ~= inf));
+      zv = zv((~isnan(zv)) & (~isinf(zv)));
       if length(zv) ~= 0
          z(1:length(zv),i) = zv;
       end
@@ -157,6 +159,75 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu) % State Space to Zero/Pole
       i = find(k==0);
       k(i) = markov(i);
       CAn = CAn*a;
+   end
+end
+
+function [z,p,k] = NewSs2zp(o,a,b,c,d,iu)
+%SS2ZP  State-space to zero-pole conversion.
+%   [Z,P,K] = SS2ZP(A,B,C,D,IU)  calculates the transfer function in
+%   factored form:
+%
+%                     -1          (s-z1)(s-z2)...(s-zn)
+%       H(s) = C(sI-A) B + D =  k ---------------------
+%                                 (s-p1)(s-p2)...(s-pn)
+%   of the system:
+%       .
+%       x = Ax + Bu
+%       y = Cx + Du
+%
+%   from the single input IU.  The vector P contains the pole 
+%   locations of the denominator of the transfer function.  The 
+%   numerator zeros are returned in the columns of matrix Z with as 
+%   many columns as there are outputs y.  The gains for each numerator
+%   transfer function are returned in column vector K.
+%
+%   See also ZP2SS,PZMAP,TZERO, EIG.
+
+%   Copyright 1984-2014 The MathWorks, Inc.
+%
+   narginchk(5,6)
+   [msg,a,b,c,d]=abcdchk(a,b,c,d); error(msg);
+   [nx,~] = size(a);
+
+   if nargin<6
+      if nx>0,
+         [~,nu] = size(b);
+      else
+         [~,nu] = size(d);
+      end
+      if (nu<=1),
+         iu = 1;
+      else
+         error(message('Controllib:general:NeedIU'))
+      end
+   end
+
+   % Remove relevant input:
+   if ~isempty(b), b = b(:,iu); end
+   if ~isempty(d), d = d(:,iu); end
+
+   % Do poles first
+   p = eig(a);
+
+   % Compute zeros and gains
+   [ny,nu] = size(d);
+   z = zeros(0,ny);
+   k = zeros(ny,nu);
+   zinf = ltipack.getTolerance('infzero',true);
+   if nu==1
+      for i=1:ny
+         [zi,gi] = ltipack.sszero(a,b,c(i,:),d(i,:),[],zinf);
+         [mz,nz] = size(z);
+         nzi = length(zi);
+         if i==1,
+            z = zi;
+         else
+            linf = inf;
+            z = [[z; linf(ones(max(0,nzi-mz),1),ones(max(nz,1),1))], ...
+               [zi;linf(ones(max(0,mz-nzi),1),1)]];
+         end
+         k(i) = gi;
+      end
    end
 end
 
