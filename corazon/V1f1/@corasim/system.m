@@ -41,6 +41,10 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
       return
    elseif (nargout > 1)
       [A,B,C,D,T] = data(o,'A,B,C,D,T');
+      if isempty(A)
+         o = Cast(o);                  % auto casting
+         [A,B,C,D,T] = data(o,'A,B,C,D,T');
+      end
       T = o.either(T,0);
       o = A;                           % output arg
       return

@@ -28,7 +28,7 @@ end
 %==========================================================================
 
 function o = Force(o)                  % Force Diagram                 
-   o = with(o,'view');                 % unwrap view options
+   o = with(o,'scale');                % unwrap scale options
    o = opt(o,'yscale',1,'yunit','N');
  
    sym = arg(o,1);
@@ -47,7 +47,7 @@ end
 %==========================================================================
 
 function o = Elongation(o)             % Elongation Diagram            
-   o = with(o,'view');                 % unwrap view options
+   o = with(o,'scale');                % unwrap scale options
    
    sym = arg(o,1);
    t = arg(o,2);
@@ -65,7 +65,7 @@ end
 %==========================================================================
 
 function o = Mode(o)                   % Mode Diagram                  
-   o = with(o,'view');                 % unwrap view options
+   o = with(o,'scale');                % unwrap scale options
  
    colors = {'r','y','bc','m','gc','rw','yw','bcw','mw','gcw',...
              'rk','yk','bck','mk','gck'};
@@ -95,7 +95,7 @@ end
 %==========================================================================
 
 function o = Orbit(o)                  % Orbit Diagram                 
-   o = with(o,'view');                 % unwrap view options
+   o = with(o,'scale');                % unwrap scale options
    o = opt(o,'xscale',opt(o,'yscale'));% copy y-scaling factor
    o = opt(o,'xunit',opt(o,'yunit'));  % copy y-unit
    

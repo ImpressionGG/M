@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Gs,@Trfr,...
+                   @Gs,@Trfr,@GsStep,@GsBode,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
@@ -55,7 +55,11 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [~,m] = size(B);
    [l,~] = size(C);
    
-   oo = mhead(o,'Transfer Matrix');
+   oo = mhead(o,'G(s): Transfer Matrix');
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
+
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
    ooo = Double(oo);                   % Double submenu
    
@@ -90,9 +94,8 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    [~,m] = size(B);
    [l,~] = size(C);
    
-   oo = mhead(o,'Constrained Matrix');
+   oo = mhead(o,'H(s): Constrained Matrix');
    ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
-   enable(ooo,false);
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'HsBode'});
 
    ooo = mitem(oo,'-');
@@ -126,7 +129,7 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    end
  end
 function oo = LinearSystem(o)          % Linear System Menu            
-   oo = mhead(o,'Linear System');
+   oo = mhead(o,'L(s): Linear System');
 
    oo = current(o);
    if container(oo)
@@ -376,7 +379,7 @@ end
 % Plot Transfer Matrix G(s)
 %==========================================================================
 
-function o = Gs(o)                   % Double Transfer Function      
+function o = Gs(o)                     % Double Transfer Function      
 %  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
@@ -416,6 +419,34 @@ function o = Gs(o)                   % Double Transfer Function
       o = opt(o,'color','g');
       diagram(o,'Step',sym,Gij,3221);
       diagram(o,'Bode',sym,Gij,3232);
+   end
+   heading(o);
+end
+function o = GsStep(o)                 % G(s) Step Response Overview   
+   G = cache(o,'trfd.G');              % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         sym = sprintf('G%g%g(s)',i,j);
+         Gij = peek(G,i,j);
+         o = opt(o,'color','g');
+         diagram(o,'Step',sym,Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = GsBode(o)                 % G(s) Bode Plot Overview       
+   G = cache(o,'trfd.G');              % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         sym = sprintf('G%g%g(s)',i,j);
+         Gij = peek(G,i,j);
+         o = opt(o,'color','g');
+         diagram(o,'Bode',sym,Gij,[m,n,i,j]);
+      end
    end
    heading(o);
 end
@@ -492,6 +523,44 @@ function o = Hs(o)                     % Double Constrained Trf Fct
    end
    heading(o);
 end
+function o = HsStep(o)                 % H(s) Step Response Overview   
+   H = cache(o,'consd.H');             % H(s)
+   [m,n] = size(H);
+   
+   for (i=1:m)
+      for (j=1:n)
+         sym = sprintf('H%g%g(s)',i,j);
+         Hij = peek(H,i,j);
+         o = opt(o,'color','yyyr');
+         if (i == 3 && j == 3)
+            Hij = trf(Hij,0,1);        % some dummy
+         end
+         diagram(o,'Step',sym,Hij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = HsBode(o)                 % L(s) Bode Plot Overview       
+   G = cache(o,'trfd.G');              % G(s)
+   H = cache(o,'consd.H');             % H(s)
+   [m,n] = size(H);
+   
+   for (i=1:m)
+      for (j=1:n)
+         Gsym = sprintf('G%g%g(s)',i,j);
+         Hsym = sprintf('H%g%g(s)',i,j);
+         Gij = peek(G,i,j);
+         Hij = peek(H,i,j);
+         
+         o = opt(o,'color','g3');
+         diagram(o,'Bode',Gsym,Gij,[m,n,i,j]);
+         hold on
+         o = opt(o,'color','m');
+         diagram(o,'Bode',Hsym,Hij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
 function o = Consr(o)                  % Rational Constrained Trf Funct
    assert(0);
    message(o,'Rational Constrained Transfer Matrix Not Yet Implemented!');
@@ -518,27 +587,6 @@ function o = Consr(o)                  % Rational Constrained Trf Funct
    end
    message(o,sprintf('Constrained Transfer Function %s (Rational)',sym),...
                      comment);
-end
-function o = HsBode(o)                 % L(s) Bode Plot Overview       
-   G = cache(o,'trfd.G');              % G(s)
-   H = cache(o,'consd.H');             % H(s)
-   [m,n] = size(H);
-   
-   for (i=1:m)
-      for (j=1:n)
-         Gsym = sprintf('G%g%g(s)',i,j);
-         Hsym = sprintf('H%g%g(s)',i,j);
-         Gij = peek(G,i,j);
-         Hij = peek(H,i,j);
-         
-         o = opt(o,'color','g3');
-         diagram(o,'Bode',Gsym,Gij,[m,n,i,j]);
-         hold on
-         o = opt(o,'color','m');
-         diagram(o,'Bode',Hsym,Hij,[m,n,i,j]);
-      end
-   end
-   heading(o);
 end
 
 %==========================================================================
@@ -919,18 +967,21 @@ function o = MotionRsp(o)              % Motion Response
    
    [num,den] = peek(Hij);
    den = [den 0 0];
-   Hij = poke(Hij,NaN,num,den);
    
-   Hij = can(touch(Hij));
-   display(Hij);
+   oo = system(inherit(corasim,o),{num,den});
+   display(oo);
    
       % get motion as input signal
       
    [t,u] = MotionInput(o);
    
-   oo = sim(o,u,[],t);
+   oo = sim(oo,u,[],t);
    [t,u,y,x] = var(oo,'t,u,y,x');
    
+      % plot results
+      
+   diagram(o,'Elongation','a3',t,u,2211);
+   diagram(o,'Force','F3',t,y,2212);
 end
 function [t,u] = MotionInput(o)        % Motion Input                  
    [smax,vmax,amax,tj] = opt(with(o,'motion'),'smax,vmax,amax,tj');

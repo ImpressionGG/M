@@ -30,7 +30,11 @@ function out = step(o)
    t = Time(oo);
    u = StepInput(oo,t,in);
 
-   oo = sim(oo,u,[],t);
+   if (isempty(u))
+      oo = var(oo,'u,x,y,t',[],[],[],[]);
+   else
+      oo = sim(oo,u,[],t);
+   end
    
    if (nargout == 0)
       plot(oo);
@@ -72,6 +76,10 @@ function u = StepInput(o,t,index)      % Get Step Input Vector
 %                u = StepInput(o,t,index)
 %
    [~,m] = size(o);                   % number of inputs
+   if (m == 0)
+      u = [];
+      return
+   end
    
    if (index > m)
       title = sprintf('Output #%g not supported!',index);

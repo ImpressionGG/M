@@ -61,6 +61,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bode plot implemented for H(s) and L(s)
 % - bode overview for L(s)
 % - adapt bode plots
+% - motion response (enough for today)
 %
 %
 % Known bugs & wishlist

@@ -252,9 +252,12 @@ end
 function oo = Schleif(o)               % Schleifsaal Hypothese         
    theta = arg(o,1);                   % Lagewinkel
    
-   ka = 5e8;                           %  500 N/um (axial stiffness)
-   kt = 1.5e7;                         %   15 N/um (tangential stiffness)
-   ki = 5e9;                           % 5000 N/um (crystal stiffness)  
+%  ka = 5e8;                           %  500 N/um (axial stiffness)
+%  kt = 1.5e7;                         %   15 N/um (tangential stiffness)
+   ka = 5e7;                           %   20 N/um (axial stiffness)
+   kt = 2e7;                           %    2 N/um (tangential stiffness)
+
+   ki = 5e6;                           %    5 N/um (crystal stiffness)  
    ci = 50;  ca = ci;  ct = ci;        %   50 Ns/m (viscous damping)
    m = 0.5;                            %  0.5 kg   (mass)
    
