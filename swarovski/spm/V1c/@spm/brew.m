@@ -6,7 +6,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %           oo = brew(o,'Eigen')       % brew eigen values
 %           oo = brew(o,'Normalize')   % brew time scaled system
-%           oo = brew(o,'Partial')     % brew partial matrices
+%           oo = brew(o,'Partition')     % brew partial matrices
 %
 %           oo = brew(p,'Trfd')        % brew double transfer matrix
 %           oo = brew(p,'Trfr')        % brew rational transfer matrix
@@ -14,7 +14,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(p,'Consr')       % brew rational constrained trf mat.
 %
 %        
-   [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partial,...
+   [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partition,...
                                   @Trfd,@Trfr,@Consd,@Consr);
    oo = gamma(oo);
 end              
@@ -48,10 +48,10 @@ function oo = Eigen(o)                 % Brew Eigenvalues
 end
 
 %==========================================================================
-% Partial and Normalizing
+% Partition and Normalizing
 %==========================================================================
 
-function oo = Partial(o)               % Normalize System              
+function oo = Partition(o)             % Partition System              
    [A,B,C] = data(o,'A,B,C');
 
    n = floor(length(A)/2);
@@ -109,6 +109,14 @@ end
 
 function oo = Trfd(o)                  % Double Transfer Matrix        
    message(o,'Brewing Double Transfer Matrix ...');
+   
+   [A,B,C,D] = data(o,'A,B,C,D');
+   oo = system(corasim,A,B,C,D);
+   
+   if ~ismodal(oo)
+      error('system not in modal form');
+   end
+   
    oo = TrfDouble(o);
    
      % make cache segment as variables available
@@ -129,7 +137,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
    refresh(o,{@plot,'About'});         % don't come back here!!!
    
    oo = current(o);
-   oo = brew(oo,'Partial');            % brew partial matrices
+   oo = brew(oo,'Partition');            % brew partial matrices
    
       % get a1,a0 and M
       
@@ -218,7 +226,7 @@ function oo = TrfRational(o)           % Rational Transition Matrix
    refresh(o,{@plot,'About'});         % don't come back here!!!
    
    oo = current(o);
-   oo = brew(oo,'Partial');            % brew partial matrices
+   oo = brew(oo,'Partition');            % brew partial matrices
    
    %[A21,A22,B2,C1,D] = var(oo,'A21,A22,B2,C1,D');
    

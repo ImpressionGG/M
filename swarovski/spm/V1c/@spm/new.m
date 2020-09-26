@@ -11,12 +11,14 @@ function oo = new(o,varargin)          % SPM New Method
 %           o = new(spm,'Academic1')   % academic sample 1
 %           o = new(spm,'Academic2')   % academic sample 2
 %
+%           o = new(spm,'Schleif75')   % Schleifsaal Hypothese 75°
+%
 %           o = new(sho,'Motion')      % motion object
 %
 %       See also: SPM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Mode3A,@Mode3B,@Mode3C,...
-                       @Academic1,@Academic2,@Motion,@Menu);
+                       @Academic1,@Academic2,@Schleif,@Motion,@Menu);
    oo = gamma(oo);
 end
 
@@ -43,10 +45,22 @@ function oo = Menu(o)                  % New Menu
    ooo = mitem(oo,'Academic Sample #1',{@Create 'Academic1'});
    ooo = mitem(oo,'Academic Sample #2',{@Create 'Academic2'});
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Schleifsaal Hypothese 0°', {@Create 'Schleif' 0});
+   ooo = mitem(oo,'Schleifsaal Hypothese 45°',{@Create 'Schleif' 45});
+   ooo = mitem(oo,'Schleifsaal Hypothese 75°',{@Create 'Schleif' 75});
+   ooo = mitem(oo,'Schleifsaal Hypothese 90°',{@Create 'Schleif' 90});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
 
    function o = Create(o)
       gamma = eval(['@',arg(o,1)]);
+      
+         % remove first arg
+         
+      args = arg(o);
+      args(1) = [];
+      o = arg(o,args);
+      
       oo = gamma(o);                   % create specific object
       paste(oo);                       % paste into shell
    end
@@ -226,6 +240,44 @@ function oo = Academic2(o)             % Academic Sample #2
    oo.par.zeta = zeta;
    oo.par.M = M;
     
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+
+%==========================================================================
+% Academic Object Samples
+%==========================================================================
+
+function oo = Schleif(o)               % Schleifsaal Hypothese         
+   theta = arg(o,1);                   % Lagewinkel
+   
+   ka = 5e8;                           %  500 N/um (axial stiffness)
+   kt = 1.5e7;                         %   15 N/um (tangential stiffness)
+   ki = 5e9;                           % 5000 N/um (crystal stiffness)  
+   ci = 50;  ca = ci;  ct = ci;        %   50 Ns/m (viscous damping)
+   m = 0.5;                            %  0.5 kg   (mass)
+   
+   Sin = sin(theta*pi/180);
+   Cos = cos(theta*pi/180);
+   
+      % transformation matrix
+      
+   T = [Cos 0 -Sin; 0 1 0; Sin 0 Cos];
+   Cd = T*diag([ca ct ct])*T' + diag([ci ci ci]);
+   Kd = T*diag([ka kt kt])*T' + diag([ki ki ki]);
+   cf = [0 0 ci]';  kf = [0 0 ki]'; 
+  
+   n = length(T);  Z = zeros(n);  I = eye(n);
+   
+   A = [Z I; -Kd/m, -Cd/m];
+   B = [Z; I/sqrt(m)];
+   C = [I/sqrt(m) Z];
+   D = Z;
+   
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = sprintf('Schleifsaal Hypothese %g°',theta);
+   
       % finally set data
       
    oo = data(oo,'A,B,C,D',A,B,C,D);   

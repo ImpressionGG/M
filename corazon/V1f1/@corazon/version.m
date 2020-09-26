@@ -448,6 +448,7 @@ function VersionV1F
 % - corazon/menu/ClearCb: => show About instead of refresh
 % - corasim/bode implemented
 % - bode options adopted
+% - method corasim/ismodal added
 %
 %
 % Known Bugs / Wishlist

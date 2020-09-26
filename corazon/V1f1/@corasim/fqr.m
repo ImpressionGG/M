@@ -43,7 +43,7 @@ function Gjw = fqr(o,om,i,j)
          end
          
          oo = Partition(o);
-         if IsModal(oo)
+         if ismodal(oo)
             Gjw = Modal(o,om,i,j);
          else
             [num,den] = peek(o,i,j);
@@ -66,7 +66,7 @@ function Gjw = Modal(oo,om,i,j)         % Frequency Rsp. of a Modal Form
 %        function Gij(s) (i-th output, j-th input)
 %
    oo = Partition(o);
-   if isempty(oo) || ~IsModal(oo)
+   if isempty(oo) || ~ismodal(oo)
       error('modal form expected');
    end
    
@@ -130,23 +130,5 @@ function oo = Partition(o)             % Partition System Matrices
    oo = var(o,'A11,A12,A21,A22',A11,A12,A21,A22);
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
    oo = var(oo,'M,a0,a1,omega,zeta',M,a0,a1,omega,zeta);
-end
-function ok = IsModal(o)               % Is it a Modal Form?           
-   ok = false;                         % false by default
-   if isempty(o)
-      return
-   end
-   
-   assert(type(o,{'css','dss'}));
-   
-   [A11,A12,A21,A22] = var(o,'a11,A12,A21,A22');
-   I = eye(size(A11));
-   
-   modal = isequal(A11,0*I) && isequal(A12,I) && ...
-           isequal(A21,diag(diag(A21))) && isequal(A22,diag(diag(A22)));
-        
-   if (modal)
-      ok = true;
-   end
 end
 
