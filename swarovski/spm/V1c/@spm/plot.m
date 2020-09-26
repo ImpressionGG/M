@@ -442,7 +442,6 @@ end
 %==========================================================================
 
 function o = Hs(o)                     % Double Constrained Trf Fct    
-%  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
 
