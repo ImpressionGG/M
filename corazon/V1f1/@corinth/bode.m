@@ -1,6 +1,6 @@
-function oo = bode(o,col)
+function oo = bode(o)
 %
-% BODE   Bode plot of a CORASIM object
+% BODE   Bode plot of a CORINTH object
 %
 %           bode(o)                    % plot bode diagram
 %

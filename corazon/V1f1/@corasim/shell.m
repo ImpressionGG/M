@@ -110,8 +110,8 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Filter');            % add Filter menu items
    
    ooo = mitem(oo,'-');
-   ooo = menu(oo,'TimeScale');         % add Time Scale menu items
-   ooo = menu(oo,'BodeScale');         % add Bode Scale menu items
+   ooo = menu(oo,'Scale');             % add Scale menu items
+   ooo = menu(oo,'Bode');              % add Bode setting menu items
 end
 
 %==========================================================================

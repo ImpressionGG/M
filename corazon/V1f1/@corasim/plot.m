@@ -302,6 +302,7 @@ end
 %==========================================================================
 
 function o = Bode(o)                   % Bode Plot                     
+   o = with(o,'bode');                 % unwrap bode options
    bode(o);                            % plot bode diagram   
 end
 

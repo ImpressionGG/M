@@ -447,6 +447,7 @@ function VersionV1F
 % - minor bug fix: corinth/display - formatting
 % - corazon/menu/ClearCb: => show About instead of refresh
 % - corasim/bode implemented
+% - bode options adopted
 %
 %
 % Known Bugs / Wishlist

@@ -14,8 +14,9 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Trfd,@Trfr,@Consd,@Consr,...
-                   @Ls,@LsStepOverview,@LsBodeOverview,...
+                   @Gs,@Trfr,...
+                   @Hs,@Consr,@HsStep,@HsBode,...
+                   @Ls,@LsStep,@LsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -55,13 +56,13 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'Transfer Matrix');
-   ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfd',0,0});
+   ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
    ooo = Double(oo);                   % Double submenu
    
    ooo = mitem(oo,'-');
    for (i=1:l)
       for (j=1:m)
-         ooo = mitem(oo,sprintf('G%g%g(s)',i,j),{@WithCuo,'Trfd',i,j});
+         ooo = mitem(oo,sprintf('G%g%g(s)',i,j),{@WithCuo,'Gs',i,j});
       end
       if (i < l)
          ooo = mitem(oo,'-');
@@ -90,12 +91,18 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'Constrained Matrix');
-   ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Consd',0,0});
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
+   enable(ooo,false);
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'HsBode'});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Hs',0,0});
    ooo = Rational(oo);
+   
    ooo = mitem(oo,'-');
    for (i=1:l)
       for (j=1:m)
-         ooo = mitem(oo,sprintf('H%g%g(s)',i,j),{@WithCuo,'Consd',i,j});
+         ooo = mitem(oo,sprintf('H%g%g(s)',i,j),{@WithCuo,'Hs',i,j});
       end
       if (i < l)
          ooo = mitem(oo,'-');
@@ -134,8 +141,8 @@ function oo = LinearSystem(o)          % Linear System Menu
       % add mhead again !!!
       
    oo = mhead(o,'Linear System');
-   ooo = mitem(oo,'Step Response Overview',{@WithCuo,'LsStepOverview'});
-   ooo = mitem(oo,'Bode Plot Overview',{@WithCuo,'LsBodeOverview'});
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'LsStep'});
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'LsBode'});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('L(s)'),{@WithCuo,'Ls',0,0});
@@ -369,7 +376,7 @@ end
 % Plot Transfer Matrix G(s)
 %==========================================================================
 
-function o = Trfd(o)                   % Double Transfer Function      
+function o = Gs(o)                   % Double Transfer Function      
 %  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
@@ -434,7 +441,7 @@ end
 % Plot Constraint Transfer Matrix H(s)
 %==========================================================================
 
-function o = Consd(o)                  % Double Constrained Trf Fct    
+function o = Hs(o)                     % Double Constrained Trf Fct    
 %  o = with(o,'view');                 % unwrap view options 
    i = arg(o,1);
    j = arg(o,2);
@@ -513,6 +520,27 @@ function o = Consr(o)                  % Rational Constrained Trf Funct
    message(o,sprintf('Constrained Transfer Function %s (Rational)',sym),...
                      comment);
 end
+function o = HsBode(o)                 % L(s) Bode Plot Overview       
+   G = cache(o,'trfd.G');              % G(s)
+   H = cache(o,'consd.H');             % H(s)
+   [m,n] = size(H);
+   
+   for (i=1:m)
+      for (j=1:n)
+         Gsym = sprintf('G%g%g(s)',i,j);
+         Hsym = sprintf('H%g%g(s)',i,j);
+         Gij = peek(G,i,j);
+         Hij = peek(H,i,j);
+         
+         o = opt(o,'color','g3');
+         diagram(o,'Bode',Gsym,Gij,[m,n,i,j]);
+         hold on
+         o = opt(o,'color','m');
+         diagram(o,'Bode',Hsym,Hij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
 
 %==========================================================================
 % Plot Linear Part Transfer Matrix L(s)
@@ -560,7 +588,7 @@ function o = Ls(o)                     % Linear System Trf Matrix
    end
    heading(o);
 end
-function o = LsStepOverview(o)         % L(s) Step Response Overview   
+function o = LsStep(o)                 % L(s) Step Response Overview   
    L = cache(o,'consd.L');             % L(s)
    [m,n] = size(L);
    
@@ -574,7 +602,7 @@ function o = LsStepOverview(o)         % L(s) Step Response Overview
    end
    heading(o);
 end
-function o = LsBodeOverview(o)         % L(s) Bode Plot Overview       
+function o = LsBode(o)                 % L(s) Bode Plot Overview       
    L = cache(o,'consd.L');             % L(s)
    [m,n] = size(L);
    
@@ -583,7 +611,7 @@ function o = LsBodeOverview(o)         % L(s) Bode Plot Overview
          sym = sprintf('L%g%g(s)',i,j);
          Lij = peek(L,i,j);
          o = opt(o,'color',o.iif(i<=2,'bc','yyr'));
-         diagram(o,'Bode',sym,Lij,[3,2,i,j]);
+         diagram(o,'Bode',sym,Lij,[m,n,i,j]);
       end
    end
    heading(o);

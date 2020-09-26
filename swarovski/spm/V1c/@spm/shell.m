@@ -142,7 +142,8 @@ function oo = View(o)                  % View Menu
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
    ooo = Scale(oo);                    % add Scale sub-menu
-
+   ooo = Bode(oo);                     % add Bode settings menu
+   
    plugin(o,'spm/shell/View');         % plug point
 end
 function oo = Scale(o)                 % Scale Sub-Menu                
@@ -164,8 +165,6 @@ function oo = Scale(o)                 % Scale Sub-Menu
 
    ooo = mitem(oo,'Velocity Scale',{},'scale.vunit');
    choice(ooo,{{'m/s','m/s'},{'mm/s','mm/s'},{'um/s','um/s'}},{@VscaleCb});
-   
-   ooo = BodeScale(oo);
    
    function o = XscaleCb(o)            % Time Scale Callback           
       unit = setting(o,'scale.xunit');
@@ -202,35 +201,45 @@ function oo = Scale(o)                 % Scale Sub-Menu
       refresh(o);
    end
 end
-function oo = BodeScale(o)             % Bode Scale Menu               
-   setting(o,{'scale.omega.low'},1e2);
-   setting(o,{'scale.omega.high'},1e7);
-   setting(o,{'scale.magnitude.low'},-400);
-   setting(o,{'scale.magnitude.high'},-40);
-   setting(o,{'scale.phase.low'},-270);
-   setting(o,{'scale.phase.high'},90);
-   setting(o,{'scale.omega.points'},1000);
+function oo = Bode(o)                  % Bode Settings Menu            
+   setting(o,{'bode.omega.low'},1e2);
+   setting(o,{'bode.omega.high'},1e7);
+   setting(o,{'bode.magnitude.low'},-360);
+   setting(o,{'bode.magnitude.high'},0);
+   setting(o,{'bode.phase.low'},-270);
+   setting(o,{'bode.phase.high'},90);
    
-   oo = mitem(o,'Bode Scale');
-   ooo = mitem(oo,'Lower Frequency',{},'scale.omega.low');
+   setting(o,{'bode.magnitude.enable'},true);
+   setting(o,{'bode.phase.enable'},true);
+   setting(o,{'bode.omega.points'},1000);
+   
+   
+   oo = mitem(o,'Bode');
+   ooo = mitem(oo,'Lower Frequency',{},'bode.omega.low');
          choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
-   ooo = mitem(oo,'Upper Frequency',{},'scale.omega.high');
+   ooo = mitem(oo,'Upper Frequency',{},'bode.omega.high');
          choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
          
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Lower Magnitude',{},'scale.magnitude.low');
-         choice(ooo,[-20:-10:-200, -240:-40:-400],{});
-   ooo = mitem(oo,'Upper Magnitude',{},'scale.magnitude.high');
-         choice(ooo,[100:-20:-100],{});
+   ooo = mitem(oo,'Lower Magnitude',{},'bode.magnitude.low');
+         choice(ooo,[-100:10:-20],{});
+   ooo = mitem(oo,'Upper Magnitude',{},'bode.magnitude.high');
+         choice(ooo,[20:10:100],{});
          
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Lower Phase',{},'scale.phase.low');
+   ooo = mitem(oo,'Lower Phase',{},'bode.phase.low');
          choice(ooo,[-270:45:-90],{});
-   ooo = mitem(oo,'Upper Phase',{},'scale.phase.high');
+   ooo = mitem(oo,'Upper Phase',{},'bode.phase.high');
          choice(ooo,[-90:45:135],{});
          
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Points',{},'scale.omega.points');
+   ooo = mitem(oo,'Magnitude Plot',{},'bode.magnitude.enable');
+   choice(ooo,{{'Off',0},{'On',1}},{});
+   ooo = mitem(oo,'Phase Plot',{},'bode.phase.enable');
+   choice(ooo,{{'Off',0},{'On',1}},{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'bode.omega.points');
    choice(ooo,[100,500,1000,5000,10000],{});
 end
 

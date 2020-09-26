@@ -13,7 +13,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@AnalyseRamp,@NormRamp);
+                                 @WithBsk,@AnalyseRamp,@NormRamp,...
+                                 @Ts);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -21,7 +22,11 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)
+function oo = Menu(o)                  % Setup Analyse Menu            
+   oo = mitem(o,'Closed Loop');
+   ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
+   
+   oo = mitem(o,'-');
    oo = mitem(o,'Normalized System');
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
@@ -90,9 +95,42 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 end
 
 %==========================================================================
-% Analyse Menu Plugins
+% Closed Loop
 %==========================================================================
 
+function o = Ts(o)
+%
+% TS   Closed Loop
+%
+%      Open loop:
+%
+%         Fd(s) = -mu*R*Fn(s)
+%         Fn(s) = Ln(s)*Fd(s) + F0(s)  with Ln(s) = [L31(s) L32(s)]
+%
+%         F1(s) = -mu*r1*F3(s)    (r1 = 1)
+%         F2(s) = -mu*r2*F3(s)    (r2 = 0)
+%
+%         F3(s) = L31(s)*F1(s) + L32(s)*F2(s) + F0(s)
+%
+%      Note: F2(s) = 0 since r2 = 0
+%
+%         F3(s) = F0(s) + L31(s)*F1(s) =
+%               = F0(s) - mu*L31(s)*F3(s)
+%
+%         (1 + mu*L31(s))*F3(s) = F0(s)
+%         F3(s)/F0(s) = 1 / (1+mu*L31(s)) =: T(s)
+%
+%                        1
+%         T(s) := -----------------
+%                   1 + mu*L31(s)
+%
+   L = cache(o,'consd.L');
+   L31 = peek(L,3,1);
+end
+
+%==========================================================================
+% Analyse Menu Plugins
+%==========================================================================
 
 function o = NormRamp(o)               % Normalized System's Force Ramp
    if ~type(o,{'spm'})

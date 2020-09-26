@@ -1,5 +1,5 @@
 function oo = menu(o,varargin)         % CORASIM Menu Building Blocks  
-   [gamma,o] = manage(o,varargin,@Error,@Filter,@TimeScale,@BodeScale,...
+   [gamma,o] = manage(o,varargin,@Error,@Filter,@Scale,@Bode,...
                       @Simu);
    oo = gamma(o);                      % invoke local function
 end
@@ -38,11 +38,11 @@ function oo = Filter(o)                % Add Filter Menu Items
    ooo = mitem(oo,'Method',{},'filter.method');
    choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
-function oo = TimeScale(o)             % Add Time Scale Menu Items     
+function oo = Scale(o)                 % Add Time Scale Menu Items     
    setting(o,{'scale.xunit'},[]);      % time scaling unit
    setting(o,{'scale.xscale'},[]);     % time scaling factor
 
-   oo = mitem(o,'Time Scale',{},'scale.xunit');
+   oo = mitem(o,'Scale',{},'scale.xunit');
    choice(oo,{{'Auto',[]},{},{'h','h'},{'min','min'},{'s','s'},...
                {'ms','ms'},{'us','us'}},{@XscaleCb});
    
@@ -68,35 +68,45 @@ function oo = TimeScale(o)             % Add Time Scale Menu Items
       refresh(o);
    end
 end
-function oo = BodeScale(o)             % Bode Scale Menu               
-   setting(o,{'scale.omega.low'},1e-1);
-   setting(o,{'scale.omega.high'},1e5);
-   setting(o,{'scale.magnitude.low'},-80);
-   setting(o,{'scale.magnitude.high'},80);
-   setting(o,{'scale.phase.low'},-270);
-   setting(o,{'scale.phase.high'},90);
-   setting(o,{'scale.omega.points'},1000);
+function oo = Bode(o)                  % Bode Settings Menu            
+   setting(o,{'bode.omega.low'},1e-1);
+   setting(o,{'bode.omega.high'},1e5);
+   setting(o,{'bode.magnitude.low'},-80);
+   setting(o,{'bode.magnitude.high'},80);
+   setting(o,{'bode.phase.low'},-270);
+   setting(o,{'bode.phase.high'},90);
    
-   oo = mitem(o,'Bode Scale');
-   ooo = mitem(oo,'Lower Frequency',{},'scale.omega.low');
+   setting(o,{'bode.magnitude.enable'},true);
+   setting(o,{'bode.phase.enable'},true);
+   setting(o,{'bode.omega.points'},1000);
+   
+   
+   oo = mitem(o,'Bode');
+   ooo = mitem(oo,'Lower Frequency',{},'bode.omega.low');
          choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
-   ooo = mitem(oo,'Upper Frequency',{},'scale.omega.high');
+   ooo = mitem(oo,'Upper Frequency',{},'bode.omega.high');
          choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
          
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Lower Magnitude',{},'scale.magnitude.low');
+   ooo = mitem(oo,'Lower Magnitude',{},'bode.magnitude.low');
          choice(ooo,[-100:10:-20],{});
-   ooo = mitem(oo,'Upper Magnitude',{},'scale.magnitude.high');
+   ooo = mitem(oo,'Upper Magnitude',{},'bode.magnitude.high');
          choice(ooo,[20:10:100],{});
          
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Lower Phase',{},'scale.phase.low');
+   ooo = mitem(oo,'Lower Phase',{},'bode.phase.low');
          choice(ooo,[-270:45:-90],{});
-   ooo = mitem(oo,'Upper Phase',{},'scale.phase.high');
+   ooo = mitem(oo,'Upper Phase',{},'bode.phase.high');
          choice(ooo,[-90:45:135],{});
          
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Points',{},'scale.omega.points');
+   ooo = mitem(oo,'Magnitude Plot',{},'bode.magnitude.enable');
+   choice(ooo,{{'Off',0},{'On',1}},{});
+   ooo = mitem(oo,'Phase Plot',{},'bode.phase.enable');
+   choice(ooo,{{'Off',0},{'On',1}},{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'bode.omega.points');
    choice(ooo,[100,500,1000,5000,10000],{});
 end
 

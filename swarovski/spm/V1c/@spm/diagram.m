@@ -221,7 +221,7 @@ end
 %==========================================================================
 
 function o = Bode(o)                   % Bode Diagram                  
-   o = with(o,'scale');
+   o = with(o,'bode');
    
    sym = arg(o,1);
    G = arg(o,2);

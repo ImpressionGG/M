@@ -80,7 +80,7 @@ function txt = Trf(o)                  % Display Transfer Function
          
    if isequal(den,1)
       txt = PolyString(o,num,'s');
-      col = 0*txt(:,1:2);
+      col = zeros(size(txt,1),2);
       if isequal(o.type,'trf')
          txt = [setstr('['+col),txt,setstr(']'+col)];
       else
