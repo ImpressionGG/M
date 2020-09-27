@@ -186,7 +186,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
    fprintf('Double Transfer Matrix\n');
    display(G);
    
-   function Modal(o)    
+   function Modal(o)                   % Gij(s) For Modal Forms        
       for (i=1:m)
          for (j=1:i)
             run = (j-1)*n+i; m = n*(n+1)/2;
@@ -217,7 +217,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
          end
       end
    end
-   function Normal(o)
+   function Normal(o)                  % Normal Gij(s) Calculation     
       [AA,BB,CC,DD] = data(oo,'A,B,C,D');
       sys = system(corasim,AA,BB,CC,DD);
       
@@ -231,7 +231,8 @@ function oo = TrfDouble(o)             % Double Transition Matrix
 
             [num,den] = peek(sys,i,j);
             Gij = trf(O,num,den);         % Gij(s)
-
+            Gij = can(CancelG(o,Gij));
+            
             fprintf('G%g%g(s):\n',i,j)
             display(Gij);
 
@@ -240,6 +241,15 @@ function oo = TrfDouble(o)             % Double Transition Matrix
                G = poke(G,Gij,j,i);       % upper half diagonal element
             end
          end
+      end
+   end
+   function Gs = CancelG(o,Gs)         % Set Cacel Epsilon             
+      eps = opt(o,'cancel.G.eps');
+      if ~isempty(eps)
+         if isa(Gs,'corinth')
+            Gs = touch(Gs);
+         end
+         Gs = opt(Gs,'eps',eps);
       end
    end
 end
@@ -332,15 +342,15 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
    G33 = cache(oo,'trfd.G33');
    Gnn = G33;                          % the same
 %  Hnn = inv(Gnn) * trf(Gnn,[1],[1 0 0]);
-   Hnn = inv(Gnn);
+   Hnn = CancelH(o,inv(Gnn));
    H33 = Hnn;
 
       % calculate Hnd(s) = [H31(s) H32(s)]
       
    G31 = cache(oo,'trfd.G31');
    G32 = cache(oo,'trfd.G32');
-   H31 = (-1)*Hnn*G31;
-   H32 = (-1)*Hnn*G32;
+   H31 = CancelH(o,(-1)*Hnn*G31);
+   H32 = CancelH(o,(-1)*Hnn*G32);
    
       % build Hnd(s) = [H31(s) H32(s)]
       
@@ -352,8 +362,8 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
 
    G13 = cache(oo,'trfd.G13');
    G23 = cache(oo,'trfd.G23');
-   H13 = G13*Hnn;
-   H23 = G23*Hnn;
+   H13 = CancelH(o,G13*Hnn);
+   H23 = CancelH(o,G23*Hnn);
       
    Hdn = matrix(corinth,[0;0]);
    Hdn = poke(Hdn,H13,1,1);
@@ -366,10 +376,10 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
    G21 = cache(oo,'trfd.G21');
    G22 = cache(oo,'trfd.G22');
 
-   H11 = G11 - G13*G31*H33;
-   H12 = G12 - G13*G32*H33;
-   H21 = G21 - G23*G31*H33;
-   H22 = G22 - G23*G32*H33;
+   H11 = CancelH(o,G11 - G13*G31*H33);
+   H12 = CancelH(o,G12 - G13*G32*H33);
+   H21 = CancelH(o,G21 - G23*G31*H33);
+   H22 = CancelH(o,G22 - G23*G32*H33);
       
    Hdd = matrix(corinth,[0 0;0 0]);
    Hdd = poke(Hdd,H11,1,1);
@@ -410,6 +420,13 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       % store H in cache
       
    oo = cache(oo,'consd.H',H);
+
+   function Hs = CancelH(o,Hs)
+      eps = opt(o,'cancel.H.eps');
+      if ~isempty(eps)
+         Hs = opt(Hs,'eps',eps);
+      end
+   end
 end
 function oo = LinearSubsys(o)          % Linear Sub-System             
    [oo,bag,rfr] = cache(o,o,'consd');
@@ -423,13 +440,13 @@ function oo = LinearSubsys(o)          % Linear Sub-System
    
    s = trf(H11,[1 0],[1]);
    
-   L11 = Cancel(o,s*H11);
-   L12 = Cancel(o,s*H12);
-   L21 = Cancel(o,s*H21);
-   L22 = Cancel(o,s*H22);
+   L11 = CancelL(o,s*H11);
+   L12 = CancelL(o,s*H12);
+   L21 = CancelL(o,s*H21);
+   L22 = CancelL(o,s*H22);
 
-   L31 = Cancel(o,H31);
-   L32 = Cancel(o,H32);
+   L31 = CancelL(o,H31);
+   L32 = CancelL(o,H32);
    
       % store all partial constraine transfer functions in cache
       
@@ -456,7 +473,7 @@ function oo = LinearSubsys(o)          % Linear Sub-System
       
    oo = cache(oo,'consd.L',L);
    
-   function Ls = Cancel(o,Ls)
+   function Ls = CancelL(o,Ls)
       eps = opt(o,'cancel.L.eps');
       if ~isempty(eps)
          Ls = opt(Ls,'eps',eps);

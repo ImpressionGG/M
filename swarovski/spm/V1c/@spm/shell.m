@@ -104,15 +104,14 @@ end
 function oo = Tools(o)                 % Tools Menu Items              
    oo = mseek(o,{'Tools'});
    ooo = mitem(oo,'Cache Reset',{@CacheReset});
-   
-   function o = CacheReset(o)
-      o = pull(o);
-      for (i=1:length(o.data))
-         oo = o.data{i};
-         cache(oo,oo,[]);              % cache hard reset
-      end
-      message(o,'All Caches Cleared!');
+end
+function o = CacheReset(o)             % Clear All Caches              
+   o = pull(o);
+   for (i=1:length(o.data))
+      oo = o.data{i};
+      cache(oo,oo,[]);              % cache hard reset
    end
+   message(o,'Caches of all objects have been cleared!');
 end
 function oo = Extras(o)                % Extras Menu Items             
    oo = mseek(o,{'Extras'});
@@ -205,32 +204,32 @@ function oo = Bode(o)                  % Bode Settings Menu
    setting(o,{'bode.omega.low'},1e2);
    setting(o,{'bode.omega.high'},1e7);
    setting(o,{'bode.magnitude.low'},-360);
-   setting(o,{'bode.magnitude.high'},0);
+   setting(o,{'bode.magnitude.high'},360);
    setting(o,{'bode.phase.low'},-270);
    setting(o,{'bode.phase.high'},90);
    
    setting(o,{'bode.magnitude.enable'},true);
-   setting(o,{'bode.phase.enable'},true);
+   setting(o,{'bode.phase.enable'},false);
    setting(o,{'bode.omega.points'},1000);
    
    
    oo = mitem(o,'Bode');
    ooo = mitem(oo,'Lower Frequency',{},'bode.omega.low');
-         choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
    ooo = mitem(oo,'Upper Frequency',{},'bode.omega.high');
-         choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Magnitude',{},'bode.magnitude.low');
-         choice(ooo,[-100:10:-20],{});
+         Choice(ooo,[-400,-360,-300,-200,-100:10:-20],{});
    ooo = mitem(oo,'Upper Magnitude',{},'bode.magnitude.high');
-         choice(ooo,[20:10:100],{});
+         Choice(ooo,[20:10:100, 200,300,360,400],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Phase',{},'bode.phase.low');
-         choice(ooo,[-270:45:-90],{});
+         Choice(ooo,[-270:45:-90],{});
    ooo = mitem(oo,'Upper Phase',{},'bode.phase.high');
-         choice(ooo,[-90:45:135],{});
+         Choice(ooo,[-90:45:135],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Magnitude Plot',{},'bode.magnitude.enable');
@@ -241,6 +240,25 @@ function oo = Bode(o)                  % Bode Settings Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'bode.omega.points');
    choice(ooo,[100,500,1000,5000,10000],{});
+   
+   function Choice(o,values,cblist)    % Choice Menu List With Auto    
+      list = {{'Auto',[]},{}};         % list head
+      
+         % sort values in reverse order
+         
+      values = sort(values);
+      values = values(length(values):-1:1);
+      
+         % add values to choice items
+         
+      for (i=1:length(values))
+         list{end+1} = {sprintf('%g',values(i)),values(i)};
+      end
+      
+         % add choice menu items
+         
+      choice(o,list,cblist);
+   end
 end
 
 %==========================================================================
@@ -327,11 +345,17 @@ function oo = Motion(o)                % Add Motion Menu Items
         choice(ooo,[0.02 0.01 0.005],{});
 end
 function oo = Cancel(o)                % Add Cancel Menu Items         
+   setting(o,{'cancel.G.eps'},1e-5);
+   setting(o,{'cancel.H.eps'},1e-5);
    setting(o,{'cancel.L.eps'},1e-5);
    
    oo = mitem(o,'Cancel');
+   ooo = mitem(oo,'G(s)',{},'cancel.G.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7]);
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end
 
 %==========================================================================

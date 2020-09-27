@@ -83,21 +83,21 @@ function oo = Bode(o)                  % Bode Settings Menu
    
    oo = mitem(o,'Bode');
    ooo = mitem(oo,'Lower Frequency',{},'bode.omega.low');
-         choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
    ooo = mitem(oo,'Upper Frequency',{},'bode.omega.high');
-         choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Magnitude',{},'bode.magnitude.low');
-         choice(ooo,[-100:10:-20],{});
+         Choice(ooo,[-100:10:-20],{});
    ooo = mitem(oo,'Upper Magnitude',{},'bode.magnitude.high');
-         choice(ooo,[20:10:100],{});
+         Choice(ooo,[20:10:100],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Phase',{},'bode.phase.low');
-         choice(ooo,[-270:45:-90],{});
+         Choice(ooo,[-270:45:-90],{});
    ooo = mitem(oo,'Upper Phase',{},'bode.phase.high');
-         choice(ooo,[-90:45:135],{});
+         Choice(ooo,[-90:45:135],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Magnitude Plot',{},'bode.magnitude.enable');
@@ -108,6 +108,25 @@ function oo = Bode(o)                  % Bode Settings Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'bode.omega.points');
    choice(ooo,[100,500,1000,5000,10000],{});
+
+   function Choice(o,values,cblist)    % Choice Menu List With Auto    
+      list = {{'Auto',[]},{}};         % list head
+      
+         % sort values in reverse order
+         
+      values = sort(values);
+      values = values(length(values):-1:1);
+      
+         % add values to choice items
+         
+      for (i=1:length(values))
+         list{end+1} = {sprintf('%g',values(i)),values(i)};
+      end
+      
+         % add choice menu items
+         
+      choice(o,list,cblist);
+   end
 end
 
 %==========================================================================

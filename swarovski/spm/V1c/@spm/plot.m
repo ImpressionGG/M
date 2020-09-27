@@ -143,7 +143,7 @@ function oo = LinearSystem(o)          % Linear System Menu
 
       % add mhead again !!!
       
-   oo = mhead(o,'Linear System');
+   oo = mhead(o,'L(s): Linear System');
    ooo = mitem(oo,'Step Responses',{@WithCuo,'LsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'LsBode'});
 
@@ -499,7 +499,7 @@ function o = Hs(o)                     % Double Constrained Trf Fct
       Hij = peek(H,i,j);
       
       Hij = set(Hij,'name',sprintf('H%g%g(s)',i,j));
-      display(Hij);
+      disp(Hij);
 
       Hij = opt(Hij,'maxlen',200);
       str = display(Hij);
@@ -509,15 +509,15 @@ function o = Hs(o)                     % Double Constrained Trf Fct
       Gsym = sprintf('G%g%g(s)',i,j);
 
       diagram(o,'Trf', Hsym,Hij,3111);
-      diagram(o,'Step',Gsym,Gij,3221);      
+      %diagram(o,'Step',Gsym,Gij,3221);      
       if length(num) <= length(den)    % proper Hij(s) ?
          diagram(o,'Step',Hsym,Hij,3221); 
       end
       diagram(o,'Rloc',Hsym,Hij,3222);
       
-      o = opt(o,'color','g1');
-      diagram(o,'Bode',Gsym,Gij,3232);
-      hold on
+      %o = opt(o,'color','g1');
+      %diagram(o,'Bode',Gsym,Gij,3232);
+      %hold on
       o = opt(o,'color','yyyr');
       diagram(o,'Bode',Hsym,Hij,3232);
    end
@@ -618,7 +618,7 @@ function o = Ls(o)                     % Linear System Trf Matrix
       Lij = peek(L,i,j);
       
       Lij = set(Lij,'name',sprintf('L%g%g(s)',i,j));
-      display(Lij);
+      disp(Lij);
 
       Lij = opt(Lij,'maxlen',200);
       str = display(Lij);

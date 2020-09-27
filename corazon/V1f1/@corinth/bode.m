@@ -1,4 +1,4 @@
-function oo = bode(o)
+function oo = bode(o)                  % Bode Plot                     
 %
 % BODE   Bode plot of a CORINTH object
 %
@@ -30,12 +30,15 @@ end
 %==========================================================================
 
 function o = Bode(o)                   % Bode Plot                     
-   %o = with(o,'bode');                 % unwrap Bode options
    held = ishold;
 
    Axes(o);                            % plot axes
    if opt(o,{'magnitude.enable',true})
       Magnitude(o);
+
+      if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high'))
+         set(gca,'Ylim',[-inf,inf]);
+      end
    end
    if opt(o,{'phase.enable',true})
       Phase(o);
@@ -161,7 +164,10 @@ function o = Axes(o)                   % Plot Bode Axes
       set(hax,'zlim',zlim);
    end
 
-   PhaseTicks(o);
+   if opt(o,{'phase.enable',true})
+      PhaseTicks(o);
+   end
+   
    subplot(o);                         % init axes done
    
    function InitAxes(o)                % Init Axes                     
@@ -214,7 +220,7 @@ function o = Axes(o)                   % Plot Bode Axes
       for (i=1:length(ytick))
          y = ytick(i);
          z = z0 + (y-y0) * dz/dy;
-         label = sprintf('   %g',z);
+         label = sprintf('   %g',o.rd(z,1));
          hdl = text(xlim(2),y,label);
          
          o.color(hdl,o.iif(dark(o),'w','k'));
