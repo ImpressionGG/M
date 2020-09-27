@@ -1,5 +1,5 @@
 function oo = menu(o,varargin)         % CORASIM Menu Building Blocks  
-   [gamma,o] = manage(o,varargin,@Error,@Filter,@Scale,@Bode,...
+   [gamma,o] = manage(o,varargin,@Error,@Filter,@Scale,@Bode,@Rloc,...
                       @Simu);
    oo = gamma(o);                      % invoke local function
 end
@@ -127,6 +127,33 @@ function oo = Bode(o)                  % Bode Settings Menu
          
       choice(o,list,cblist);
    end
+end
+function oo = Rloc(o)                  % Root Locus Settings Menu      
+   setting(o,{'rloc.xlim'},[]);
+   setting(o,{'rloc.ylim'},[]);
+   setting(o,{'rloc.zoom'},2);
+   setting(o,{'rloc.delta'},0.01);
+   
+   
+   oo = mitem(o,'Root Locus');
+   ooo = mitem(oo,'Real Part',{},'rloc.xlim');
+   choice(ooo,{{'Auto',[]},{},{'[-1 0.5]',[-1 0.5]},...
+               {'[-2 1]',[-2 1]},{'[-5 2]',[-5 2]},...
+               {'[-10 2]',[-10 2]},{'[-100 20]',[-100 20]},...
+               {'[-10e2 2e2]',[-10e2 2e2]},{'[-10e3 2e3]',[-10e3 2e3]},...
+               {'[-10e4 2e4]',[-10e4 2e4]},{'[-10e5 2e5]',[-10e5 2e5]}});
+   ooo = mitem(oo,'Imaginary Part',{},'rloc.ylim');
+   choice(ooo,{{'Auto',[]},{},{'[-1 +1]',[-1 1]},...
+               {'[-2 +2]',[-2 +2]},{'[-5 +5]',[-5 5]},...
+               {'[-10 +10]',[-10 10]},{'[-100 +100]',[-100 100]},...
+               {'[-10e2 +10e2]',[-10e2 10e2]},{'[-10e3 +10e3]',[-10e3 10e3]},...
+               {'[-10e4 +10e4]',[-10e4 10e4]},{'[-10e5 +10e5]',[-10e5 10e5]}});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Zoom',{},'rloc.zoom');
+   choice(ooo,[0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 10 20 50 100],{});
+   ooo = mitem(oo,'Delta',{},'rloc.delta');
+   choice(ooo,[0.05 0.02 0.01 0.005 0.002 0.001],{});
 end
 
 %==========================================================================

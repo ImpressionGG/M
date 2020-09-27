@@ -317,6 +317,7 @@ end
 
 function o = Rloc(o)                   % Plot Root Locus               
    o = with(o,'rloc');                 % unwrap rloc options
+   o = with(o,'style');                % unwrap style options
    rloc(o);                            % plot root locus diagram   
 end
 

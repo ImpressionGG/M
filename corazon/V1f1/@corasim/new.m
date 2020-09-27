@@ -17,7 +17,8 @@ function oo = new(o,varargin)          % CORASIM New Method
 %
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Modal3,@PT1,@Filter2,...
+   [gamma,oo] = manage(o,varargin,@Css,@Dss,@Modal3,@PT1,@Filter2,@PT3,...
+                       @Trf23,...
                        @Motion100mm,@Motion200mm,@Motion100um,...
                        @Modal,@Menu);
    oo = gamma(oo);
@@ -32,7 +33,10 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'Discrete State Space (dss)',{@Callback,'Dss'},[]);
    oo = mitem(o,'-');
    oo = mitem(o,'Continuous PT1 System',{@Callback,'PT1'},[]);
-   oo = mitem(o,'Continuous Order 2 Filter',{@Callback,'Filter2'},[]);
+   oo = mitem(o,'Continuous PT2 System,',{@Callback,'Filter2'},[]);
+   oo = mitem(o,'Continuous PT3 System,',{@Callback,'PT3'},[]);
+   oo = mitem(o,'Transfer Function 2/3,',{@Callback,'Trf23'},[]);
+   oo = mitem(o,'-');
    oo = mitem(o,'Order 3 Modal Form',{@Callback,'Modal3'},[]);
    oo = mitem(o,'-');
    oo = mitem(o,'100 mm Motion',{@Callback,'Motion100mm'},[]);
@@ -76,6 +80,17 @@ function oo = Filter2(o)               % New continuous order 2 filter
    oo.par.title = sprintf('Continuous Order 2 Filter (%s)',datestr(now));
    oo.par.comment = {sprintf('Bandwidth: f = %g Hz',o.rd(f,1)),...
                      sprintf('Damping: zetea = %g',zeta)};
+end
+function oo = PT3(o)                   % New PT3 System                
+   oo = system(corasim,{1,[1 3 3 1]}); % continuous PT3 system
+   oo.par.title = sprintf('Continuous PT3 System (%s)',datestr(now));
+   oo.par.comment = {'G(s) = 1/(s+1)^3'};
+end
+function oo = Trf23(o)                 % New Transfer Function 2/3     
+   den = mul(o,[1 1],[1 0.5 1]);
+   oo = system(corasim,{[1 5 6],den}); % transfer function 2/3
+   oo.par.title = sprintf('Transfer Function 2/3 (%s)',datestr(now));
+   oo.par.comment = {'G(s) = 1/(s+1)^3'};
 end
 function oo = Modal3(o)                % New css Object in Modal Form  
    omega = [1 2 3]';

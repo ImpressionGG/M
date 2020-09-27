@@ -13,8 +13,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@AnalyseRamp,@NormRamp,...
-                                 @Ts);
+                      @WithBsk,...
+                      @Rloc,@AnalyseRamp,@NormRamp,@Ts);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -23,6 +23,9 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Analyse Menu            
+   oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
+   
+   oo = mitem(o,'-');
    oo = mitem(o,'Closed Loop');
    ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
    
@@ -92,6 +95,30 @@ function oo = WithBsk(o)               % 'With Basket' Callback
       message(oo);                     % report irregular
    end
    dark(o);                            % do dark mode actions
+end
+
+%==========================================================================
+% Root Locus
+%==========================================================================
+
+function o = Rloc(o)                   % Root Locus                    
+   o = with(o,'rloc');
+   o = with(o,'style');
+   
+   L = cache(o,'consd.L');
+   
+   L51 = peek(L,5,1);
+   [num,den] = peek(L51);
+   
+   mu = opt(o,{'process.mu',0.1});
+   
+   oo = system(inherit(corasim,o),{-mu*num,den});
+   
+   subplot(o,111);
+   rloc(oo);
+   title(sprintf('Root Locus - mu = %g',mu));
+   
+   heading(o);
 end
 
 %==========================================================================

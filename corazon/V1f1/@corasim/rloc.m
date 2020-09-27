@@ -19,45 +19,68 @@ function o = rloc(o,num,den)           % Plot Root Locus
    end
    
    o = Auto(o,num,den);                % auto setting of plot range
-   o = Rloc(o,num,den);
+   o = Rloc(o,num,den);                % plot root locus
+   
+   ylim = get(gca,'Ylim');
+   plot(o,[0 0],ylim,'K2-.');
 end
 
 %==========================================================================
 % Root Locus
 %==========================================================================
 
-function o = Rloc(o,num,den)
+function o = Rloc(o,num,den)           % Plot Root Locus               
    [z,p,k] = zpk(o,num,den);
    
    nz = length(z);                     % number of zeros
    np = length(p);                     % number of poles
    
    if (nz > 0)
-      plot(o,real(z),imag(z),'Ko');
+      plot(o,real(z),imag(z),'Ko2');
       hold on;
    end
    if (np > 0)
       plot(o,real(p),imag(p),'Kx');
       hold on;
    end
-   
       % determine delta, which is the minimum progress which should
       % be achieved during each itewration
       
    [xlim,ylim] = opt(o,'xlim,ylim');
    assert(o.is(xlim) && o.is(ylim));
    set(gca,'Xlim',xlim,'Ylim',ylim);
+   subplot(o);
    
-   delta = [diff(xlim),diff(ylim)] / 100;
+   delta = opt(o,{'delta',0.01});
+   delta = [diff(xlim),diff(ylim)] * delta;
 
-   Branch(o,+eps,'r');                 % calc & plot positive branch
+   K1 = 1;
+   Branch(o,[+eps,K1],'g');            % calc & plot positive branch
+   Branch(o,K1,'r');                   % calc & plot positive branch
    Branch(o,-eps,'bc');                % calc & plot negative branch
    
-   function Branch(o,K,col)
-      r = p(:);                           % initial root location (for K=0)                           
+   subplot(o);
+   
+   function Branch(o,K,col)            % Calculate And Plot Branch    
+   %
+   % BRANCH   Calc and plot branch
+   %
+   %             Branch(o,eps,'r')
+   %             Branch(o,-eps,'b')
+   %             Branch(p,[eps,0.1],'rrw')
+   %         
+      Kmax = inf;
+      if (length(K) >= 2)
+         Kmax = K(2);
+         K = K(1);
+      end
+      
+      poly = add(o,K*num,den);
+      r = roots(poly);                 % initial roots location
       x = real(r);  y = imag(r);
-      while (1)
-         [r,K] = Roots(o,num,den,z,p,r,K,delta);
+      
+      for (k=1:5000)
+         [r,K] = Roots(o,num,den,z,p,r,K,Kmax,delta);
          x(:,end+1) = real(r);
          y(:,end+1) = imag(r);
 
@@ -65,11 +88,21 @@ function o = Rloc(o,num,den)
          if (N == 0)
             break;
          end
+         
+         if isequal(K,Kmax)
+            break;
+         end
+         
+         %plot(o,x,y,[col,'5']);
+         %hold on
       end
 
       for (i=1:size(x,1))
-         %plot(o,x,y,col, x,y,[col,'.']);
-         plot(o,x,y,col);
+         if opt(o,{'bullets',1})
+            plot(o,x(i,:),y(i,:),col, x(i,:),y(i,:),[col,'K.']);
+         else
+            plot(o,x(i,:),y(i,:),col);
+         end
          hold on
       end
    end
@@ -79,20 +112,95 @@ end
 % Helper
 %==========================================================================
 
-function o = Auto(o,num,den)           % Auto Setting of Plot Range
-   o = opt(o,'xlim',[-10,10]);
-   o = opt(o,'ylim',[-10,10]);
-end
-function [r,K] = Roots(o,num,den,z,p,r,K,delta)                        
-   delta = ones(length(r),1)*delta;
-   r0 = r;  K0 = K;
+function o = Auto(o,num,den)           % Auto Setting of Plot Range    
+   z = roots(num);
+   p = roots(den);
+   zp = [z(:)' p(:)'];
+      
+   zoom = opt(o,{'zoom',2});           % zoom factor
    
-   K = K + sign(K)*10.^[-10:0.1:10];
+      % make pretty
+      
+   xlim = [min(real(zp)), max(real(zp))];
+   ylim = [min(imag(zp)), max(imag(zp))];
+
+   assert(xlim(1) <= xlim(2));
+   assert(ylim(1) <= ylim(2));
+        
+   if isempty(opt(o,'xlim'))
+      if (xlim(2) < 0)
+         xlim(2) = -xlim(1)/5;
+      elseif (xlim(1) > 0)
+         xlim(1) = -xlim(2)/5;
+      end
+      
+      xlim = xlim*zoom;
+            
+      xlim(1) = Pretty(xlim(1));
+      xlim(2) = Pretty(xlim(2));
+      o = opt(o,'xlim',xlim);
+   end
+   
+   if isempty(opt(o,'ylim'))      
+      if (ylim(2) < 0)
+         ylim(2) = -ylim(1)/5;
+      elseif (ylim(1) > 0)
+         ylim(1) = -ylim(2)/5;
+      end
+      
+      ylim = ylim*zoom;
+      
+      if (abs(ylim(1)) < abs(xlim(1)) || abs(ylim(2)) < abs(xlim(1)))
+         ylim(1) = -abs(xlim(1));
+         ylim(2) = +abs(xlim(1));
+      end
+      
+      ylim(1) = Pretty(ylim(1));
+      ylim(2) = Pretty(ylim(2));
+      o = opt(o,'ylim',ylim);
+   end
+      
+   function y = Pretty(x)
+      if (x==0)
+         y = x;
+         return
+      end
+      sgn = sign(x);
+      x = abs(x);
+      
+      base = 10^floor(log10(x));
+      x = o.rd(x/base,1);
+      
+      if (x == 1)
+         y = 1*sgn*base;
+      elseif (x <= 2)
+         y = 2*sgn*base;
+      elseif (x <= 5)
+         y = 5*sgn*base;
+      else
+         y = 10*sgn*base;
+      end
+   end
+end
+function [r,K] = Roots(o,num,den,z,p,r,K,Kmax,delta)                        
+   delta = ones(length(r),1)*delta;
+   
+   r0 = r;
+   Kmax = abs(Kmax);
+   K0 = K;
+   
+   K = K + sign(K)*10.^[-10:0.1:10, 10:10:100, 101:300];
 
    i1 = 1;  i2 = length(K);
    while (1)
       i = floor((i1+i2)/2);
+      
       poly = add(o,K(i)*num,den);
+      if any(isinf(poly))
+         i2 = max(i-1,1);
+         continue
+      end
+      
       r = roots(poly);
 
          % sort according to lowest distance
@@ -105,7 +213,7 @@ function [r,K] = Roots(o,num,den,z,p,r,K,delta)
          % increase K ...
 
       if any(any(d > delta))        % reduce K
-         i = i-1; i2 = i;           % decrement upper bound
+         i = max(i-1,1); i2 = i;           % decrement upper bound
       else
          i = i+1;  i1 = i;          % increment lower bound
       end
@@ -113,6 +221,7 @@ function [r,K] = Roots(o,num,den,z,p,r,K,delta)
          % if i1 == i2 we found the optimum value
 
       if (i1 >= i2)
+         i = max(i-1,1);            % one step back to avoid inf in poly
          break;                     % done loop
       end
    end
@@ -120,6 +229,12 @@ function [r,K] = Roots(o,num,den,z,p,r,K,delta)
       % calc roots and sort with optimal K ...
 
    K = K(i);
+   if (sign(K0) > 0) && (K > Kmax)
+      K = Kmax;
+   elseif (sign(K0) < 0) && (K < -Kmax)
+      K = -Kmax;
+   end
+   
    poly = add(o,K*num,den);
    r = roots(poly);
    r = Sort(r,r0);
@@ -147,16 +262,16 @@ function N = Interesting(o,r,z,delta,xlim,ylim)  % Interesting Roots
    end
    
    N = length(r) - length(z);
-   if (N > 0 || length(r) == 0)
+   if (N ~= 0 || length(r) == 0)
       return
    end
    
       % r contains same number of roots as zeros in z
       
    r = Sort(r,z);
-   dr = r-r0;
+   dr = r - z;
    d = [abs(real(dr)), abs(imag(dr))];
          
-   somewhere = any(d > delta);            
-   N = sum(somewhere);      
+   idx = find(d(:,1)>=delta(1) | d(:,2)>=delta(2));            
+   N = length(idx);      
 end

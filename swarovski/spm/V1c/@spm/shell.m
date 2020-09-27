@@ -142,6 +142,7 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Style');             % add plot style sub menu
    ooo = Scale(oo);                    % add Scale sub-menu
    ooo = Bode(oo);                     % add Bode settings menu
+   ooo = Rloc(oo);                     % add Root Locus menu
    
    plugin(o,'spm/shell/View');         % plug point
 end
@@ -276,6 +277,36 @@ function oo = Bode(o)                  % Bode Settings Menu
       choice(o,list,cblist);
    end
 end
+function oo = Rloc(o)                  % Root Locus Settings Menu      
+   setting(o,{'rloc.xlim'},[]);
+   setting(o,{'rloc.ylim'},[]);
+   setting(o,{'rloc.zoom'},2);
+   setting(o,{'rloc.delta'},0.01);
+   
+   
+   oo = mitem(o,'Root Locus');
+   ooo = mitem(oo,'Real Part',{},'rloc.xlim');
+   choice(ooo,{{'Auto',[]},{},{'[-1 0.5]',[-1 0.5]},...
+               {'[-2 1]',[-2 1]},{'[-5 2]',[-5 2]},...
+               {'[-10 2]',[-10 2]},{'[-100 20]',[-100 20]},...
+               {'[-10e2 2e2]',[-10e2 2e2]},{'[-10e3 2e3]',[-10e3 2e3]},...
+               {'[-10e4 2e4]',[-10e4 2e4]},...
+               {'[-10e5 2e5]',[-10e5 2e5]}},{});
+   ooo = mitem(oo,'Imaginary Part',{},'rloc.ylim');
+   choice(ooo,{{'Auto',[]},{},{'[-1 +1]',[-1 1]},...
+               {'[-2 +2]',[-2 +2]},{'[-5 +5]',[-5 5]},...
+               {'[-10 +10]',[-10 10]},{'[-100 +100]',[-100 100]},...
+               {'[-10e2 +10e2]',[-10e2 10e2]},{'[-10e3 +10e3]',[-10e3 10e3]},...
+               {'[-10e4 +10e4]',[-10e4 10e4]},...
+               {'[-10e5 +10e5]',[-10e5 10e5]}},{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Zoom',{},'rloc.zoom');
+   choice(ooo,[0.01 0.02 0.05 0.1 0.2 0.5 0.6 0.7 0.8 0.9 1 ...
+               1.2 1.5 2 5 10 20 50 100],{});
+   ooo = mitem(oo,'Delta',{},'rloc.delta');
+   choice(ooo,[0.05 0.02 0.01 0.005 0.002 0.001],{});
+end
 
 %==========================================================================
 % Select Menu
@@ -288,12 +319,22 @@ function oo = Select(o)                % Select Menu
 
    ooo = menu(oo,'Objects');           % add Objects menu
    ooo = menu(oo,'Basket');            % add Basket menu
+
+   ooo = mitem(oo,'-');
+   ooo = Friction(oo);                 % Friction menu
    
    ooo = mitem(oo,'-');
    ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu
    ooo = Motion(oo);                   % add Motion sub menu
    ooo = Cancel(oo);                   % add Cancel sub menu
+end
+function oo = Friction(o)              % Friction Menu                 
+   setting(o,{'process.mu'},0.1);      % Coulomb friction parameter
+   
+   oo = mitem(o,'Friction');
+   ooo = mitem(oo,'Mu (Coulomb Friction Parameter)',{},'process.mu');
+   charm(ooo,{});
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %

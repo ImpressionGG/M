@@ -112,6 +112,7 @@ function oo = View(o)                  % View Menu
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Scale');             % add Scale menu items
    ooo = menu(oo,'Bode');              % add Bode setting menu items
+   ooo = menu(oo,'Rloc');              % add Root Locus menu items
 end
 
 %==========================================================================
