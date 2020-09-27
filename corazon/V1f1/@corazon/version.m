@@ -451,6 +451,7 @@ function VersionV1F
 % - method corasim/ismodal added
 % - work around for corasim/peek/Ss2zp
 % - bug fix: corasim/bode/Auto - deal with zero trf
+% - corasim/rloc and corinth/rloc implemented
 %
 %
 % Known Bugs / Wishlist

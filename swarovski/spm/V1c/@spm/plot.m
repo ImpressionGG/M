@@ -403,7 +403,6 @@ function o = Gs(o)                     % Double Transfer Function
       diagram(o,'Trf',sym,G,111);
    else
       Gij = peek(G,i,j);
-      wij = W{i,j};
       Gij = opt(Gij,'maxlen',200);
       str = display(Gij);
       
@@ -414,7 +413,11 @@ function o = Gs(o)                     % Double Transfer Function
       
       diagram(o,'Trf',sym,Gij,3111);      
       diagram(o,'Rloc',sym,Gij,3222);
-      diagram(o,'Weight',symw,wij,3231);
+
+      if ~isempty(W)
+         wij = W{i,j};
+         diagram(o,'Weight',symw,wij,3231);
+      end
 
       o = opt(o,'color','g');
       diagram(o,'Step',sym,Gij,3221);

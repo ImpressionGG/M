@@ -4,6 +4,10 @@ function oo = plot(o,varargin)         % CORASIM Plot Method
 %
 %           plot(o)                    % plot step response (default)
 %
+%           plot(o,'Step');            % plot step response
+%           plot(o,'Bode');            % plot bode diagram
+%           plot(o,'Rloc');            % plot root locus diagram
+%
 %        Options:
 %           - simu.tmax                % max simulation time
 %           - simu.dt                  % simulation increment
@@ -11,7 +15,7 @@ function oo = plot(o,varargin)         % CORASIM Plot Method
 %        See also: CORASIM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Basket,@Menu,@Callback,...
-                       @Overview,@Step,@Bode,@Motion);
+                       @Overview,@Step,@Bode,@Rloc,@Motion);
    oo = gamma(oo);
 end
 
@@ -30,6 +34,7 @@ function oo = Menu(o)                  % Setup Plot Menu
    if type(current(o),{'css','dss','strf','ztrf'})
       oo = mitem(o,'Step Response',{@WithCuo,'Step'});
       oo = mitem(o,'Bode Plot',{@WithCuo,'Bode'});
+      oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
 %     oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
    end
 
@@ -304,6 +309,15 @@ end
 function o = Bode(o)                   % Bode Plot                     
    o = with(o,'bode');                 % unwrap bode options
    bode(o);                            % plot bode diagram   
+end
+
+%==========================================================================
+% Root Locus Plot
+%==========================================================================
+
+function o = Rloc(o)                   % Plot Root Locus               
+   o = with(o,'rloc');                 % unwrap rloc options
+   rloc(o);                            % plot root locus diagram   
 end
 
 %==========================================================================
