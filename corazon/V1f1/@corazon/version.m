@@ -450,6 +450,7 @@ function VersionV1F
 % - bode options adopted
 % - method corasim/ismodal added
 % - work around for corasim/peek/Ss2zp
+% - bug fix: corasim/bode/Auto - deal with zero trf
 %
 %
 % Known Bugs / Wishlist

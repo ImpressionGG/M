@@ -104,14 +104,14 @@ function oo = Normalize(o)             % Normalize System
 end
 
 %==========================================================================
-% Transfer Matrix
+% Transfer Matrix G(s)
 %==========================================================================
 
 function oo = Trfd(o)                  % Double Transfer Matrix        
    message(o,'Brewing Double Transfer Matrix ...');
    oo = TrfDouble(o);
    
-     % make cache segment as variables available
+     % make cache segment variables available
      
    [oo,bag,rfr] = cache(oo,'trfd');    % get bag of cached variables
    tags = fields(bag);
@@ -310,7 +310,7 @@ function oo = TrfRational(o)           % Rational Transition Matrix
 end
 
 %==========================================================================
-% Constrained Transfer Matrix and Linear Subsystem
+% Constrained Transfer Matrix H(s)
 %==========================================================================
 
 function oo = Consd(o)                 % Double Costrained Trf. Matrix 
@@ -428,7 +428,12 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       end
    end
 end
-function oo = LinearSubsys(o)          % Linear Sub-System             
+
+%==========================================================================
+% Linear Subsystem L(s)
+%==========================================================================
+
+function oo = LinearSubsys(o)          % Linear Sub-System
    [oo,bag,rfr] = cache(o,o,'consd');
    
    H11 = cache(oo,'consd.H11');

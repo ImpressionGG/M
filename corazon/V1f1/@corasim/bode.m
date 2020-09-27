@@ -134,6 +134,10 @@ function o = Auto(o)                   % Automatic Axes Limits
       high = Ceil(20*log10(max(abs(Gjw))));
       low = Floor(20*log10(min(abs(Gjw))));
       
+      if isinf(low) || isinf(high)
+         low = -80;  high = 80;
+      end
+      
       o = opt(o,'magnitude.low',low);
       o = opt(o,'magnitude.high',high);
    end
