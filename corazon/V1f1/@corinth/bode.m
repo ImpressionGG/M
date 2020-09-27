@@ -32,6 +32,7 @@ end
 function o = Bode(o)                   % Bode Plot                     
    held = ishold;
 
+   o = Auto(o);                        % auto axis limits
    Axes(o);                            % plot axes
    if opt(o,{'magnitude.enable',true})
       Magnitude(o);
@@ -125,6 +126,26 @@ end
 % Helper
 %==========================================================================
 
+function o = Auto(o)                   % Automatic Axes Limits         
+   if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
+      Gjw = fqr(o);
+      
+      high = Ceil(20*log10(max(abs(Gjw))));
+      low = Floor(20*log10(min(abs(Gjw))));
+      
+      o = opt(o,'magnitude.low',low);
+      o = opt(o,'magnitude.high',high);
+   end
+   
+   function y = Ceil(x)
+      offset = 10000;               % a big number
+      y = ceil((x+offset)/20)*20 - offset;
+   end
+   function y = Floor(x)
+      offset = 10000;               % a big number
+      y = floor((x+offset)/20)*20 - offset;
+   end
+end
 function [omega,magni,phase] = Lim(o)  % Get Limits                    
 
       % omega limits
@@ -184,7 +205,15 @@ function o = Axes(o)                   % Plot Bode Axes
 
       shelf(o,gca,'kind','owner');     % set axis ownership
    
-      dy = o.iif(diff(magni)<=200,20,40);
+      if diff(magni) < 150
+         dy = 20;
+      elseif diff(magni) <= 320
+         dy = 40;
+      elseif diff(magni) <= 400
+         dy = 60;
+      else
+         dy = 100;
+      end
       
       hax = gca;
       set(hax,'xlim',omega);

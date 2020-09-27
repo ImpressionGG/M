@@ -63,6 +63,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - adapt bode plots
 % - motion response (enough for today)
 % - change bode default settings
+% - bode auto scaling
 %
 %
 % Known bugs & wishlist

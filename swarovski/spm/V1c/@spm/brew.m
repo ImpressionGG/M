@@ -440,13 +440,18 @@ function oo = LinearSubsys(o)          % Linear Sub-System
    
    s = trf(H11,[1 0],[1]);
    
-   L11 = CancelL(o,s*H11);
-   L12 = CancelL(o,s*H12);
-   L21 = CancelL(o,s*H21);
-   L22 = CancelL(o,s*H22);
+   L11 = CancelL(o,H11);
+   L12 = CancelL(o,H12);
+   L21 = CancelL(o,H21);
+   L22 = CancelL(o,H22);
 
-   L31 = CancelL(o,H31);
-   L32 = CancelL(o,H32);
+   L31 = CancelL(o,s*H11);
+   L32 = CancelL(o,s*H12);
+   L41 = CancelL(o,s*H21);
+   L42 = CancelL(o,s*H22);
+
+   L51 = CancelL(o,H31);
+   L52 = CancelL(o,H32);
    
       % store all partial constraine transfer functions in cache
       
@@ -459,15 +464,30 @@ function oo = LinearSubsys(o)          % Linear Sub-System
    oo = cache(oo,'consd.L31',L31);
    oo = cache(oo,'consd.L32',L32);
 
+   oo = cache(oo,'consd.L41',L41);
+   oo = cache(oo,'consd.L42',L42);
+
+   oo = cache(oo,'consd.L51',L51);
+   oo = cache(oo,'consd.L52',L52);
+
       % assemble L(s) matrix
       
    L = matrix(corinth);
+   
    L = poke(L,L11,1,1);
    L = poke(L,L12,1,2);
+
    L = poke(L,L21,2,1);
    L = poke(L,L22,2,2);
+   
    L = poke(L,L31,3,1);
    L = poke(L,L32,3,2);
+   
+   L = poke(L,L41,4,1);
+   L = poke(L,L42,4,2);
+   
+   L = poke(L,L51,5,1);
+   L = poke(L,L52,5,2);
 
       % store L in cache
       

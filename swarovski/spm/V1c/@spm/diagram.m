@@ -11,6 +11,7 @@ function o = diagram(o,varargin)
 %              diagram(o,'Weight','G12',w12,sub)      % weight vector
 %              diagram(o,'Step','G11',G11,sub)        % elon. step response
 %              diagram(o,'Vstep','L11',L11,sub)       % velocity step rsp.
+%              diagram(o,'FStep','L51',L51,sub)       % force step response
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %              diagram(o,'Bode','G11',G11,sub)        % bode diagram
 %
@@ -19,7 +20,7 @@ function o = diagram(o,varargin)
 %           See also: SPM, PLOT
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit,...
-                       @Trf,@Weight,@Step,@Vstep,@Bode,@Rloc);
+                       @Trf,@Weight,@Step,@Vstep,@Fstep,@Bode,@Rloc);
    oo = gamma(oo);
 end
 
@@ -214,6 +215,30 @@ function o = Vstep(o)                  % Velocity Step Response
    end
    step(G,sub);
    ylabel(['dy/dt [',opt(o,{'yunit','1'}),']']);
+end
+function o = Fstep(o)                  % Force Step Response           
+   o = with(o,'scale');                % unwrap scale options
+   o = opt(o,'yscale',opt(o,'fscale'));
+   o = opt(o,'yunit',opt(o,'funit'));
+   
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+   
+   G = set(G,'name',sym); 
+   G = inherit(G,o);
+   
+   if isempty(opt(G,'color'))
+      if o.is(sym(2:3),{'11','12','21','22'})
+         G = opt(G,'color','bc');
+      elseif isequal(sym(1),'L')
+         G = opt(G,'color','yyr');
+      else
+         G = opt(G,'color','g.');
+      end
+   end
+   step(G,sub);
+   ylabel(['F [',opt(o,{'yunit','1'}),']']);
 end
 
 %==========================================================================

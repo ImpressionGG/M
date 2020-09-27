@@ -155,6 +155,9 @@ function oo = Scale(o)                 % Scale Sub-Menu
    setting(o,{'scale.vunit'},'mm/s');   % velocity scaling unit
    setting(o,{'scale.vscale'},1e3);     % velocity scaling factor
 
+   setting(o,{'scale.funit'},'N');      % force scaling unit
+   setting(o,{'scale.fscale'},1);       % force scaling factor
+   
    oo = mitem(o,'Scale');
    ooo = mitem(oo,'Time Scale',{},'scale.xunit');
    choice(ooo,{{'s','s'},{'ms','ms'}},{@XscaleCb});
@@ -164,6 +167,9 @@ function oo = Scale(o)                 % Scale Sub-Menu
 
    ooo = mitem(oo,'Velocity Scale',{},'scale.vunit');
    choice(ooo,{{'m/s','m/s'},{'mm/s','mm/s'},{'um/s','um/s'}},{@VscaleCb});
+   
+   ooo = mitem(oo,'Force Scale',{},'scale.funit');
+   choice(ooo,{{'N','N'},{'kN','kN'}},{@FscaleCb});
    
    function o = XscaleCb(o)            % Time Scale Callback           
       unit = setting(o,'scale.xunit');
@@ -199,12 +205,22 @@ function oo = Scale(o)                 % Scale Sub-Menu
       end
       refresh(o);
    end
+   function o = FscaleCb(o)            % Force Scale Callback          
+      unit = setting(o,'scale.funit');
+      switch unit
+         case 'N'
+            setting(o,'scale.fscale',1);
+         case 'kN'
+            setting(o,'scale.fscale',1e-3);
+      end
+      refresh(o);
+   end
 end
 function oo = Bode(o)                  % Bode Settings Menu            
    setting(o,{'bode.omega.low'},1e2);
    setting(o,{'bode.omega.high'},1e7);
-   setting(o,{'bode.magnitude.low'},-360);
-   setting(o,{'bode.magnitude.high'},360);
+   setting(o,{'bode.magnitude.low'},[]);
+   setting(o,{'bode.magnitude.high'},[]);
    setting(o,{'bode.phase.low'},-270);
    setting(o,{'bode.phase.high'},90);
    

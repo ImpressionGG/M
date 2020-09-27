@@ -555,7 +555,7 @@ function o = HsBode(o)                 % L(s) Bode Plot Overview
          o = opt(o,'color','g3');
          diagram(o,'Bode',Gsym,Gij,[m,n,i,j]);
          hold on
-         o = opt(o,'color','m');
+         o = opt(o,'color',o.iif(i==3&&j==3,'r','m'));
          diagram(o,'Bode',Hsym,Hij,[m,n,i,j]);
       end
    end
@@ -639,28 +639,71 @@ function o = LsStep(o)                 % L(s) Step Response Overview
    L = cache(o,'consd.L');             % L(s)
    [m,n] = size(L);
    
-   for (i=1:m)
+   for (i=1:2)
       for (j=1:n)
-         mode = o.iif(i<=2,'Vstep','Step');
          sym = sprintf('L%g%g(s)',i,j);
          Lij = peek(L,i,j);
-         diagram(o,mode,sym,Lij,[3,2,i,j]);
+         diagram(o,'Step',sym,Lij,[4,3,i,j]);
+         ylabel(sprintf('F%g -> y%g [%s]',j,i,opt(o,{'scale.yunit',''})))
       end
    end
+   
+   for (i=3:4)
+      for (j=1:n)
+         sym = sprintf('L%g%g(s)',i,j);
+         Lij = peek(L,i,j);
+         o = opt(o,'color','bc');
+         diagram(o,'Vstep',sym,Lij,[4,3,i,j]);
+         ylabel(sprintf('F%g -> dy%g/dt [%s]',j,i-2,opt(o,{'scale.vunit',''})))
+      end
+   end
+
+   for (i=5:5)
+      for (j=1:n)
+         sym = sprintf('L%g%g(s)',i,j);
+         Lij = peek(L,i,j);
+         o = opt(o,'color','r');
+         diagram(o,'Fstep',sym,Lij,[2,3,j,3]);
+         ylabel(sprintf('F%g -> F3 [%s]',j,opt(o,{'scale.funit',''})))
+      end
+   end
+   
    heading(o);
 end
 function o = LsBode(o)                 % L(s) Bode Plot Overview       
    L = cache(o,'consd.L');             % L(s)
    [m,n] = size(L);
    
-   for (i=1:m)
+   for (i=1:2)
       for (j=1:n)
          sym = sprintf('L%g%g(s)',i,j);
          Lij = peek(L,i,j);
-         o = opt(o,'color',o.iif(i<=2,'bc','yyr'));
-         diagram(o,'Bode',sym,Lij,[m,n,i,j]);
+         o = opt(o,'color','yyyr');
+         diagram(o,'Bode',sym,Lij,[4,3,i,j]);
+         ylabel(sprintf('F%g -> y%g',j,i))
       end
    end
+   
+   for (i=3:4)
+      for (j=1:n)
+         sym = sprintf('L%g%g(s)',i,j);
+         Lij = peek(L,i,j);
+         o = opt(o,'color','bc');
+         diagram(o,'Bode',sym,Lij,[4,3,i,j]);
+         ylabel(sprintf('F%g -> dy%g/dt',j,i-2))
+      end
+   end
+
+   for (i=5:5)
+      for (j=1:n)
+         sym = sprintf('L%g%g(s)',i,j);
+         Lij = peek(L,i,j);
+         o = opt(o,'color','r');
+         diagram(o,'Bode',sym,Lij,[2,3,j,3]);
+         ylabel(sprintf('F%g -> F3',j))
+      end
+   end
+   
    heading(o);
 end
 

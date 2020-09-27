@@ -2,7 +2,13 @@ function Gjw = fqr(o,om,i,j)
 %
 % FQR  Frequency response of transfer function.
 %
-%		          Gjw = Fqr(G,omega)
+%		    Gjw = Fqr(G,omega)
+%		    Gjw = Fqr(G,omega,i,j)
+%
+%      Auto omega:
+%
+%		    [Gjw,omega] = Fqr(G)
+%		    [Gjw,omega] = Fqr(G,[],i,j)
 %
 %	    Calculation of complex frequency response of a transfer function 
 %      G(s) = num(s(/den(s) (omega may be a vector argument).
@@ -22,6 +28,13 @@ function Gjw = fqr(o,om,i,j)
 %
 %      See also: CORASIM, SYSTEM, PEEK, TRIM, BODE
 %
+   if (nargin <= 1) || isempty(om)
+      oml = opt(o,{'omega.low',1e-5});
+      omh = opt(o,{'omega.high',1e5});
+      points = opt(o,{'omega.points',1000});
+      om = logspace(log10(oml),log10(omh),points);
+   end
+
    switch o.type
       case {'strf','qtrf'}
          [num,den] = peek(o);
