@@ -452,6 +452,7 @@ function VersionV1F
 % - work around for corasim/peek/Ss2zp
 % - bug fix: corasim/bode/Auto - deal with zero trf
 % - corasim/rloc and corinth/rloc implemented
+% - bug fixed: corasim/sim - discretize also for strf type
 %
 %
 % Known Bugs / Wishlist

@@ -33,7 +33,7 @@ function o = sim(o,u,x0,t)             % System Simulation
    
       % continuous systems have to be converted to discrete systems
    
-   if isequal(o.type,'css')
+   if type(o,{'css','strf'}) 
       if (nargin < 4)
          error('no time vector (arg 4) provided!');
       end

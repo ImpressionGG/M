@@ -4,6 +4,7 @@ function o = diagram(o,varargin)
 %
 %              diagram(o,'Force','F1',t,F1,sub)       % force 1
 %              diagram(o,'Elongation','x2',t,x2,sub)  % elongation 2
+%              diagram(o,'Acceleration','a1',t,a1,sub)% acceleration 1
 %              diagram(o,'Mode','x4',t,x4,sub)        % mode plot (mode 4)
 %              diagram(o,'Orbit','y2(y1)',y1,y2,sub)  % orbit plot
 %
@@ -19,7 +20,8 @@ function o = diagram(o,varargin)
 %
 %           See also: SPM, PLOT
 %
-   [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Mode,@Orbit,...
+   [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
+                       @Mode,@Orbit,...
                        @Trf,@Weight,@Step,@Vstep,@Fstep,@Bode,@Rloc);
    oo = gamma(oo);
 end
@@ -44,7 +46,7 @@ function o = Force(o)                  % Force Diagram
 end
 
 %==========================================================================
-% Elongation
+% Elongation, Velocity, Acceleration
 %==========================================================================
 
 function o = Elongation(o)             % Elongation Diagram            
@@ -59,6 +61,21 @@ function o = Elongation(o)             % Elongation Diagram
    plot(o,t,y,'g');
    
    Epilog(o,['Elongation ',sym],sym);
+end
+function o = Acceleration(o)           % Acceleration Diagram            
+   o = with(o,'scale');                % unwrap scale options
+   o = opt(o,'yscale',opt(o,'ascale'));
+   o = opt(o,'yunit',opt(o,'aunit'));
+   
+   sym = arg(o,1);
+   t = arg(o,2);
+   y = arg(o,3);
+   sub = o.either(arg(o,4),[1 1 1]);
+   
+   subplot(o,sub);
+   plot(o,t,y,'g');
+   
+   Epilog(o,['Acceleration ',sym],sym);
 end
 
 %==========================================================================

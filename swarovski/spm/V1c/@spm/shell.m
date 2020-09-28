@@ -157,6 +157,9 @@ function oo = Scale(o)                 % Scale Sub-Menu
    setting(o,{'scale.vunit'},'mm/s');   % velocity scaling unit
    setting(o,{'scale.vscale'},1e3);     % velocity scaling factor
 
+   setting(o,{'scale.aunit'},'g');      % acceleration scaling unit
+   setting(o,{'scale.ascale'},1/9.81);  % acceleration scaling factor
+
    setting(o,{'scale.funit'},'N');      % force scaling unit
    setting(o,{'scale.fscale'},1);       % force scaling factor
    
@@ -170,6 +173,9 @@ function oo = Scale(o)                 % Scale Sub-Menu
    ooo = mitem(oo,'Velocity Scale',{},'scale.vunit');
    choice(ooo,{{'m/s','m/s'},{'mm/s','mm/s'},{'um/s','um/s'}},{@VscaleCb});
    
+   ooo = mitem(oo,'Acceleration Scale',{},'scale.aunit');
+   choice(ooo,{{'m/s2','m/s2'},{'mm/s2','mm/s2'},{'g','g'}},{@AscaleCb});
+
    ooo = mitem(oo,'Force Scale',{},'scale.funit');
    choice(ooo,{{'N','N'},{'kN','kN'}},{@FscaleCb});
    
@@ -204,6 +210,18 @@ function oo = Scale(o)                 % Scale Sub-Menu
             setting(o,'scale.vscale',1e3);
          case 'um/s'
             setting(o,'scale.vscale',1e6);
+      end
+      refresh(o);
+   end
+   function o = AscaleCb(o)            % Acceleration Scale Callback   
+      unit = setting(o,'scale.aunit');
+      switch unit
+         case 'm/s2'
+            setting(o,'scale.ascale',1);
+         case 'mm/s2'
+            setting(o,'scale.ascale',1e3);
+         case 'g'
+            setting(o,'scale.ascale',1/9.81);
       end
       refresh(o);
    end
@@ -343,6 +361,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
 %
    setting(o,{'simu.tmax'},0.01);
    setting(o,{'simu.Fmax'},100);
+   setting(o,{'simu.Nmax'},10);        % noise magnitude
    setting(o,{'simu.dt'},5e-6);
    setting(o,{'simu.plot'},500);       % number of points to plot
 
@@ -358,6 +377,8 @@ function oo = Simu(o)                  % Simulation Parameter Menu
           
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
+          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
+   ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
 function oo = Filter(o)                % Add Filter Menu Items         

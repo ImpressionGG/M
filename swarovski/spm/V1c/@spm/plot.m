@@ -17,7 +17,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Gs,@Trfr,@GsStep,@GsBode,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
-                   @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
+                   @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -51,6 +51,7 @@ function oo = Menu(o)                  % Setup Plot Menu
    oo = StepResponse(o);               % step response sub-menu
    oo = RampResponse(o);               % ramp response sub-menu
    oo = MotionResponse(o);             % motion response sub menu
+   oo = NoiseResponse(o);              % noise response sub menu
 end
 
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
@@ -235,10 +236,15 @@ function oo = RampResponse(o)          % Ramp Response Menu
 end
 function oo = MotionResponse(o)        % Motion Response Menu          
    oo = mitem(o,'Motion Response');
+   enable(oo,false);
    ooo = mitem(oo,'y3 -> y1',{@WithCuo,'MotionRsp',31});
    ooo = mitem(oo,'y3 -> y2',{@WithCuo,'MotionRsp',32});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'y3 -> F3',{@WithCuo,'MotionRsp',33});
+end
+function oo = NoiseResponse(o)         % Noise Response Menu          
+   oo = mitem(o,'Noise Response');
+   ooo = mitem(oo,'Acceleration',{@WithCuo,'NoiseRsp'});
 end
 
 %==========================================================================
@@ -885,7 +891,6 @@ function o = TsBode(o)                 % T(s) Bode Plot Overview
    heading(o);
 end
 
-
 %==========================================================================
 % Plot Menu Plugins
 %==========================================================================
@@ -1217,6 +1222,36 @@ function [t,u] = MotionInput(o)        % Motion Input
    oo = motion(oo,'Brew');
    
    [t,u] = var(oo,'t,a');
+end
+
+function o = NoiseRsp(o)               % Noise Response                
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   Ta1 = cook(o,'Ta1');
+   display(Ta1);
+   
+   [num,den] = peek(Ta1);
+   oo = system(inherit(corasim,o),{num,den});
+   
+      % get noise as input signal
+      
+   [t,u] = NoiseInput(oo);
+   
+   oo = sim(oo,u,[],t);
+   [t,u,y,x] = var(oo,'t,u,y,x');
+   
+      % plot results
+      
+   diagram(o,'Force','Fc',t,u,2211);
+   diagram(o,'Acceleration','a1',t,y,2221);
+end
+function [t,u] = NoiseInput(o)         % Noise Input                   
+   Nmax = opt(o,{'simu.Nmax',1});
+   t = Time(o);
+   u = Nmax*randn(size(t));
 end
 
 %==========================================================================
