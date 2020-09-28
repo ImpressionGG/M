@@ -67,7 +67,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - rloc plot added
 % - open loop Bode plots implemented
 % - bug fix: calculation of Tf1(s) in spm/brew
-%
+% - add spm/plot/NoiseRsp 
 %
 % Known bugs & wishlist
 % =========================
