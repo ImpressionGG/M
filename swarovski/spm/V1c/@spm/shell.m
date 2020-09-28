@@ -35,6 +35,7 @@ function o = Init(o)                   % Init Object
    o = dynamic(o,true);                % setup as a dynamic shell
    o = launch(o,mfilename);            % setup launch function
    o = control(o,{'dark'},1);          % run in dark mode
+   o = opt(o,{'view.grid'},1);         % grid on by default
 
    o = provide(o,'par.title','SPM Toolbox');
    o = provide(o,'par.comment',{'Playing around with SPM objects'});
@@ -405,6 +406,7 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    setting(o,{'cancel.G.eps'},1e-5);
    setting(o,{'cancel.H.eps'},1e-5);
    setting(o,{'cancel.L.eps'},1e-5);
+   setting(o,{'cancel.T.eps'},1e-5);
    
    oo = mitem(o,'Cancel');
    ooo = mitem(oo,'G(s)',{},'cancel.G.eps');
@@ -412,6 +414,8 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end
 

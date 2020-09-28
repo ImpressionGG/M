@@ -8,14 +8,31 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Normalize')   % brew time scaled system
 %           oo = brew(o,'Partition')     % brew partial matrices
 %
-%           oo = brew(p,'Trfd')        % brew double transfer matrix
-%           oo = brew(p,'Trfr')        % brew rational transfer matrix
-%           oo = brew(p,'Consd')       % brew double constrained trf matrix
-%           oo = brew(p,'Consr')       % brew rational constrained trf mat.
+%           oo = brew(o,'Trfd')        % brew double transfer matrix
+%           oo = brew(o,'Trfr')        % brew rational transfer matrix
+%           oo = brew(o,'Consd')       % brew double constrained trf matrix
+%           oo = brew(o,'Consr')       % brew rational constrained trf mat.
 %
+%           oo = brew(o,'Process')     % brew closed loop transfer fct
+%
+%        Examples
+%
+%           oo = brew(o,o,'trfd')
+%           G = cache(oo,'trfd.G');    % get G(s)
+%
+%           oo = brew(o,o,'consd')
+%           H = cache(oo,'consd.H');   % get H(s)
+%           L = cache(oo,'consd.L');   % get L(s)
+%
+%           oo = brew(o,o,'process')
+%           T = cache(oo,'process.T'); % get T(s)
+%
+%        Copyright(c): Bluenetics 2020
+%
+%        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partition,...
-                                  @Trfd,@Trfr,@Consd,@Consr);
+                                  @Trfd,@Trfr,@Consd,@Consr,@Process);
    oo = gamma(oo);
 end              
 
@@ -316,7 +333,7 @@ end
 function oo = Consd(o)                 % Double Costrained Trf. Matrix 
    message(o,'Brewing Double Constrained Transfer Matrix ...');
    oo = ConstrainedDouble(o);          % brew H(s) matrix
-   oo = LinearSubsys(oo);              % brew L(s) matrix
+   oo = OpenLoop(oo);                  % brew L(s) matrix
    
      % make cache segment as variables available
      
@@ -430,10 +447,10 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
 end
 
 %==========================================================================
-% Linear Subsystem L(s)
+% Open Loop L(s)
 %==========================================================================
 
-function oo = LinearSubsys(o)          % Linear Sub-System
+function oo = OpenLoop(o)              % Open Loop Linear System       
    [oo,bag,rfr] = cache(o,o,'consd');
    
    H11 = cache(oo,'consd.H11');
@@ -502,6 +519,180 @@ function oo = LinearSubsys(o)          % Linear Sub-System
       eps = opt(o,'cancel.L.eps');
       if ~isempty(eps)
          Ls = opt(Ls,'eps',eps);
+      end
+   end
+end
+
+%==========================================================================
+% Closed Loop T(s)
+%==========================================================================
+
+function oo = Process(o)               % Brew Process Segment          
+   message(o,'Brewing Closed Loop Transfer Function ...');
+   oo = ClosedLoop(o);
+   
+     % make cache segment variables available
+     
+   [oo,bag,rfr] = cache(oo,'process'); % get bag of cached variables
+   tags = fields(bag);
+   for (i=1:length(tags))
+      tag = tags{i};
+      oo = var(oo,tag,bag.(tag));      % copy cached variable to variables
+   end
+   
+      % unconditional hard refresh of cache
+      
+   cache(oo,oo);                       % hard refresh cache
+   cls(o);
+end
+function oo = ClosedLoop(o)            % Closed Loop Linear System     
+%
+%          F       Fn         +----+     F1               +-----+  y1_1
+%        ----->o------------->| mu |---------*-----*----->| L11 |------>
+%              ^ +            +----+         |     |      +-----+
+%              |                             |     |
+%              |            +--------+   F1  |     |      +-----+  y2_1
+%              |     +------| L51(s) |<------+     *----->| L21 |------>
+%              |     |      +--------+             |      +-----+
+%              | dFn v                             |
+%              +-----o                             |      +-----+ dy1/dt_1    
+%                    ^                             *----->| L31 |------>
+%                    |      +--------+  F2=0       |      +-----+
+%                    +------| L52(s) |<--------    |
+%                           +--------+             |      +-----+ dy2/dt_1 
+%                                                  *----->| L41 |------>
+%                                                         +-----+
+%
+   [oo,bag,rfr] = cache(o,o,'consd');
+   
+   L11 = cache(oo,'consd.L11');
+   L21 = cache(oo,'consd.L21');
+   L31 = cache(oo,'consd.L31');
+   L41 = cache(oo,'consd.L41');
+   L51 = cache(oo,'consd.L51');
+
+   L12 = cache(oo,'consd.L12');
+   L22 = cache(oo,'consd.L22');
+   L32 = cache(oo,'consd.L32');
+   L42 = cache(oo,'consd.L42');
+   L52 = cache(oo,'consd.L52');
+   
+   mu = opt(o,{'process.mu',0.1});     % friction coefficient
+   
+      % calculate S1(s) = mu / (1 - mu*L51(s))
+
+   L51 = CanEpsT(o,L51);               % set cancel epsilon
+   S1 = mu / (1 - mu*L51);             % closed loop sensitivity
+   S2 = 0*S1;
+   
+   S = matrix(corinth);
+   S = poke(S,S1,1,1);
+   S = poke(S,S2,2,1);
+   
+      % differentiator transfer function
+      
+   s = trf(S,[1 0],[1]);
+
+   T11 = S1 * L11;
+   T21 = S1 * L21;
+   T31 = S1 * L31;
+   T41 = S1 * L41;
+   T51 = T31 * s;
+   T61 = T41 * s;
+   T71 = S1 * L51;
+   
+   T12 = S2 * L12;
+   T22 = S2 * L22;
+   T32 = S2 * L32;
+   T42 = S2 * L42;
+   T52 = T32 * s;
+   T62 = T42 * s;
+   T72 = S2 * L52;
+   
+   T = matrix(corinth);
+   
+   T = poke(T,T11,1,1);
+   T = poke(T,T21,2,1);
+   T = poke(T,T31,3,1);
+   T = poke(T,T41,4,1);
+   T = poke(T,T51,5,1);
+   T = poke(T,T61,6,1);
+   T = poke(T,T71,7,1);
+
+   T = poke(T,T12,1,2);
+   T = poke(T,T22,2,2);
+   T = poke(T,T32,3,2);
+   T = poke(T,T42,4,2);
+   T = poke(T,T52,5,2);
+   T = poke(T,T62,6,2);
+   T = poke(T,T72,7,2);
+   
+      % store S and T in cache 
+      
+   oo = cache(oo,'process.S',S);
+   oo = cache(oo,'process.T',T);
+   
+   oo = Force(oo);                     % calc force trf
+   oo = Elongation(oo);                % calc elongation trf
+   oo = Velocity(oo);                  % calc velocity trf
+   oo = Acceleration(oo);              % calc acceleration trf
+   
+   function oo = Force(o)              % Calc Force Transfer Function  
+      G31 = cache(o,'trfd.G31');
+      G32 = cache(o,'trfd.G32');
+      G33 = cache(o,'trfd.G33');
+
+      Tf1 = mu*G33 / (1 + mu*G33*G31);
+      Tf2 = 0*Tf1;
+
+      Tf = matrix(corinth);
+      Tf = poke(Tf,Tf1,1,1);
+      Tf = poke(Tf,Tf2,2,1);
+
+      oo = cache(o,'process.Tf',Tf);
+   end
+   function oo = Elongation(o)         % Calc Elongation Transfer Fct. 
+      [Tf1,Tf2] = cook(o,'Tf1,Tf2');
+      [H11,H12,H21,H22] = cook(o,'H11,H12,H21,H22');
+
+      Ts1 = H11*Tf1 + H12*Tf2;
+      Ts2 = H21*Tf1 + H22*Tf2
+
+      Ts = matrix(corinth);
+      Ts = poke(Ts,Ts1,1,1);
+      Ts = poke(Ts,Ts2,2,1);
+
+      oo = cache(o,'process.Ts',Ts);
+   end
+   function oo = Velocity(o)           % Calc Velocity Transfer Fct.   
+      [Ts1,Ts2] = cook(o,'Ts1,Ts2');
+
+      Tv1 = Ts1 * s;
+      Tv2 = Ts2 * s;
+
+      Tv = matrix(corinth);
+      Tv = poke(Tv,Tv1,1,1);
+      Tv = poke(Tv,Tv2,2,1);
+
+      oo = cache(o,'process.Tv',Tv);
+   end
+   function oo = Acceleration(o)       % Calc Acceleration Trf         
+      [Tv1,Tv2] = cook(o,'Tv1,Tv2');
+
+      Ta1 = Tv1 * s;
+      Ta2 = Tv2 * s;
+
+      Ta = matrix(corinth);
+      Ta = poke(Ta,Ta1,1,1);
+      Ta = poke(Ta,Ta2,2,1);
+
+      oo = cache(o,'process.Ta',Ta);
+   end
+
+   function Gs = CanEpsT(o,Gs)         % Set Cancel Epsilon            
+      eps = opt(o,'cancel.T.eps');
+      if ~isempty(eps)
+         Gs = opt(Gs,'eps',eps);
       end
    end
 end

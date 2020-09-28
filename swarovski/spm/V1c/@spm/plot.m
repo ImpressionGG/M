@@ -16,7 +16,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Overview,@About,@Real,@Imag,@Complex,...
                    @Gs,@Trfr,@GsStep,@GsBode,...
                    @Hs,@Consr,@HsStep,@HsBode,...
-                   @Ls,@LsStep,@LsBode,...
+                   @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -40,15 +40,19 @@ function oo = Menu(o)                  % Setup Plot Menu
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
    
-   oo = TransferMatrix(o);
+   oo = TransferMatrix(o);             % G(s)
    oo = ConstrainMatrix(o);            % H(s)
-   oo = LinearSystem(o);               % L(s)
+   
+   oo = mitem(o,'-');
+   oo = OpenLoopSystem(o);             % L(s)
+   oo = ClosedLoopSystem(o);           % T(s)
 
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
    oo = RampResponse(o);               % ramp response sub-menu
    oo = MotionResponse(o);             % motion response sub menu
 end
+
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
    [B,C] = data(oo,'B,C');
@@ -127,9 +131,10 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
          end
       end
    end
- end
-function oo = LinearSystem(o)          % Linear System Menu            
-   oo = mhead(o,'L(s): Linear System');
+end
+
+function oo = OpenLoopSystem(o)        % Open Loop System Menu         
+   oo = mhead(o,'L(s): Open Loop');
 
    oo = current(o);
    if container(oo)
@@ -143,7 +148,7 @@ function oo = LinearSystem(o)          % Linear System Menu
 
       % add mhead again !!!
       
-   oo = mhead(o,'L(s): Linear System');
+   oo = mhead(o,'L(s): Open Loop');
    ooo = mitem(oo,'Step Responses',{@WithCuo,'LsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'LsBode'});
 
@@ -154,6 +159,45 @@ function oo = LinearSystem(o)          % Linear System Menu
    for (i=1:m)
       for (j=1:n)
          ooo = mitem(oo,sprintf('L%g%g(s)',i,j),{@WithCuo,'Ls',i,j});
+      end
+      if (i < m)
+         ooo = mitem(oo,'-');
+      end
+   end
+ end
+function oo = OldClosedLoopSystem(o)   % Closed Loop System Menu       
+   oo = mhead(o,'T(s): Closed Loop');
+   ooo = mitem(oo,'Step Response',{@WithCuo,'TsStep'});
+   ooo = mitem(oo,'Bode Plot',{@WithCuo,'TsBode'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
+ end
+function oo = ClosedLoopSystem(o)      % Closed Loop System Menu       
+   oo = mhead(o,'T(s): Closed Loop');
+
+   oo = current(o);
+   if container(oo)
+      return                           % done for container objects
+   end
+   
+   [oo,bag,rfr] = cache(oo,oo,'process');
+   
+   T = cache(oo,'process.T');
+   [m,n] = size(T);
+
+      % add mhead again !!!
+      
+   oo = mhead(o,'T(s): Closed Loop');
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'TsStep'});
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'TsBode'});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('T(s)'),{@WithCuo,'Ts',0,0});
+   
+   ooo = mitem(oo,'-');
+   for (i=1:m)
+      for (j=1:n)
+         ooo = mitem(oo,sprintf('T%g%g(s)',i,j),{@WithCuo,'Ts',i,j});
       end
       if (i < m)
          ooo = mitem(oo,'-');
@@ -593,7 +637,7 @@ function o = Consr(o)                  % Rational Constrained Trf Funct
 end
 
 %==========================================================================
-% Plot Linear Part Transfer Matrix L(s)
+% Plot Open Loop Transfer Matrix L(s)
 %==========================================================================
 
 function o = Ls(o)                     % Linear System Trf Matrix      
@@ -709,6 +753,138 @@ function o = LsBode(o)                 % L(s) Bode Plot Overview
    
    heading(o);
 end
+
+%==========================================================================
+% Plot Closed Loop Transfer Matrix T(s)
+%==========================================================================
+
+function o = Ts(o)                     % T(s): Closed Loop Trf Matrix  
+   i = arg(o,1);
+   j = arg(o,2);
+
+   T = cache(o,'process.T');
+   
+   if (i == 0 || j == 0)
+      T = opt(T,'maxlen',200);
+      str = display(T);
+      sym = 'T(s)';
+      
+      [m,n] = size(T);
+      for (i=1:m)
+         for (j=1:n)
+            Tij = peek(T,i,j);
+            Tij = set(Tij,'name',sprintf('T%g%g(s)',i,j));
+            disp(Tij);
+            fprintf('\n');
+         end
+      end
+      diagram(o,'Trf',sym,T,111);
+   else
+      Tij = peek(T,i,j);
+      
+      Tij = set(Tij,'name',sprintf('T%g%g(s)',i,j));
+      disp(Tij);
+
+      Tij = opt(Tij,'maxlen',200);
+      str = display(Tij);
+      
+      Tsym = sprintf('T%g%g(s)',i,j);
+      mode = o.iif(i<=2,'Vstep','Step');
+
+      diagram(o,'Trf', Tsym,Tij,3111);
+      diagram(o,'Rloc',Tsym,Tij,3222);
+      
+      o = opt(o,'color',o.iif(i<=2,'r','bc'));
+      diagram(o,mode,Tsym,Tij,3221);  
+
+      o = opt(o,'color','r');
+      diagram(o,'Bode',Tsym,Tij,3232);
+   end
+   heading(o);
+end
+function o = TsStep(o)                 % T(s) Step Response Overview   
+   T = cache(o,'process.T');           % T(s)
+   [m,n] = size(T);
+   
+   for (i=1:2)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','rk');
+         diagram(o,'Step',sym,Tij,[4,3,i,j]);
+         ylabel(sprintf('F%g -> y%g [%s]',j,i,opt(o,{'scale.yunit',''})))
+      end
+   end
+   
+   for (i=3:4)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','bc');
+         diagram(o,'Vstep',sym,Tij,[4,3,i,j]);
+         ylabel(sprintf('F%g -> dy%g/dt [%s]',j,i-2,opt(o,{'scale.vunit',''})))
+      end
+   end
+
+   for (i=5:5)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','r');
+         diagram(o,'Fstep',sym,Tij,[2,3,j,3]);
+         ylabel(sprintf('F%g -> F3 [%s]',j,opt(o,{'scale.funit',''})))
+      end
+   end
+   
+   heading(o);
+end
+function o = TsBode(o)                 % T(s) Bode Plot Overview       
+   T = cache(o,'process.T');           % T(s)
+   [m,n] = size(T);
+   
+   for (i=1:2)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','g');
+         diagram(o,'Bode',sym,Tij,[4,2,1,j]);
+         ylabel(sprintf('F%g -> y%g',j,i))
+      end
+   end
+   
+   for (i=3:4)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','bc');
+         diagram(o,'Bode',sym,Tij,[4,2,2,j]);
+         ylabel(sprintf('F%g -> dy%g/dt',j,i-2))
+      end
+   end
+
+   for (i=5:6)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','r');
+         diagram(o,'Bode',sym,Tij,[4,2,3,j]);
+         ylabel(sprintf('F%g -> d2y%g/dt2',j,i-4))
+      end
+   end
+   
+   for (i=7:7)
+      for (j=1:n)
+         sym = sprintf('T%g%g(s)',i,j);
+         Tij = peek(T,i,j);
+         o = opt(o,'color','yyyr');
+         diagram(o,'Bode',sym,Tij,[4,2,4,j]);
+         ylabel(sprintf('F%g -> F3',j))
+      end
+   end
+   
+   heading(o);
+end
+
 
 %==========================================================================
 % Plot Menu Plugins

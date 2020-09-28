@@ -12,9 +12,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %
 %    See also: SPM, PLOT, STUDY
 %
-   [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                      @WithBsk,...
-                      @Rloc,@AnalyseRamp,@NormRamp,@Ts);
+   [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
+                      @Overview,@Rloc,@AnalyseRamp,@NormRamp,@TsBode,@Ts);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -23,16 +22,36 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Analyse Menu            
+   oo = CriticalMenu(o)
    oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
    
    oo = mitem(o,'-');
    oo = mitem(o,'Closed Loop');
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'TsBode'});
    ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
    
    oo = mitem(o,'-');
    oo = mitem(o,'Normalized System');
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
+end
+function o = Err(o)                    % Error Handler                 
+   error('bad mode');
+end
+function o = CriticalMenu(o)           % Critical Path Menu            
+   oo = mitem(o,'Critical Path');
+   ooo = mitem(oo,'Overview',{@Overview});
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F3 -> y3:  G33(s)',{@plot,'WithCuo','Gs',3,3});
+   ooo = mitem(oo,'y3 -> F3:  H33(s)',{@plot,'WithCuo','Hs',3,3});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F1 -> y3:  G31(s)',{@plot,'WithCuo','Gs',3,1});
+   ooo = mitem(oo,'F1 -> y3:  H31(s) = -G31(s)*H33(s)',...
+                                      {@plot,'WithCuo','Hs',3,1});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F1 -> y3:  L51(s) = H31(s)',{@plot,'WithCuo','Ls',5,1});
+   ooo = mitem(oo,'-');
 end
 
 %==========================================================================
@@ -125,6 +144,33 @@ end
 % Closed Loop
 %==========================================================================
 
+function o = TsBode(o)                 % Closed Loop Bode Plots             
+   [Tf1,Tf2] = cook(o,'Tf1,Tf2');
+   
+   o = opt(o,'color','yyr');
+   diagram(o,'Bode','Tf1(s)',Tf1,[4 2 1 1]);
+   diagram(o,'Bode','Tf2(s)',Tf2,[4 2 1 2]);
+
+   [Ts1,Ts2] = cook(o,'Ts1,Ts2');
+   
+   o = opt(o,'color','g');
+   diagram(o,'Bode','Ts1(s)',Ts1,[4 2 2 1]);
+   diagram(o,'Bode','Ts2(s)',Ts2,[4 2 2 2]);
+   
+   [Tv1,Tv2] = cook(o,'Tv1,Tv2');
+   
+   o = opt(o,'color','bc');
+   diagram(o,'Bode','Tv1(s)',Tv1,[4 2 3 1]);
+   diagram(o,'Bode','Tv2(s)',Tv2,[4 2 3 2]);
+
+   [Ta1,Ta2] = cook(o,'Ta1,Ta2');
+   
+   o = opt(o,'color','r');
+   diagram(o,'Bode','Ta1(s)',Ta1,[4 2 4 1]);
+   diagram(o,'Bode','Ta2(s)',Ta2,[4 2 4 2]);
+   
+   heading(o);
+end
 function o = Ts(o)
 %
 % TS   Closed Loop

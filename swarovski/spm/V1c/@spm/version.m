@@ -65,6 +65,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - change bode default settings
 % - bode auto scaling
 % - rloc plot added
+% - open loop Bode plots implemented
 %
 %
 % Known bugs & wishlist
