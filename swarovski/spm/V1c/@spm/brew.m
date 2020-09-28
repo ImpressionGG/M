@@ -642,7 +642,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       G32 = cache(o,'trfd.G32');
       G33 = cache(o,'trfd.G33');
 
-      Tf1 = mu*G33 / (1 + mu*G33*G31);
+      Tf1 = mu*G33 / (G33 + mu*G31);
       Tf2 = 0*Tf1;
 
       Tf = matrix(corinth);

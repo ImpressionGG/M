@@ -13,7 +13,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                      @Overview,@Rloc,@AnalyseRamp,@NormRamp,@TsBode,@Ts);
+                      @Overview,@Rloc,@AnalyseRamp,@NormRamp,...
+                      @TsBode,@TsStep,@Ts);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -28,7 +29,8 @@ function oo = Menu(o)                  % Setup Analyse Menu
    oo = mitem(o,'-');
    oo = mitem(o,'Closed Loop');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'TsBode'});
-   ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
+   ooo = mitem(oo,'Step Plot',{@WithCuo,'TsStep'});
+%   ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
    
    oo = mitem(o,'-');
    oo = mitem(o,'Normalized System');
@@ -144,7 +146,7 @@ end
 % Closed Loop
 %==========================================================================
 
-function o = TsBode(o)                 % Closed Loop Bode Plots             
+function o = TsBode(o)                 % Closed Loop Bode Plots        
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
    
    o = opt(o,'color','yyr');
@@ -171,7 +173,18 @@ function o = TsBode(o)                 % Closed Loop Bode Plots
    
    heading(o);
 end
-function o = Ts(o)
+function o = TsStep(o)                 % Closed Loop Step Plots        
+   [Tf1,Ta1] = cook(o,'Tf1,Ta1');
+   
+   o = opt(o,'color','yyr');
+   diagram(o,'Fstep','Tf1(s)',Tf1,2111);
+
+   o = opt(o,'color','r');
+   diagram(o,'Step','Ta1(s)',Ta1,2112);
+   
+   heading(o);
+end
+function o = Ts(o)                                                     
 %
 % TS   Closed Loop
 %
