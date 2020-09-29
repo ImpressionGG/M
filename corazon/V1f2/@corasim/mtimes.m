@@ -2,12 +2,14 @@ function oo = mtimes(o1,o2)
 %
 % MTIMES   Overloaded operator * for CORASIM objects
 %
-%             o1 = corinth(1,6);       % ratio 1/6
-%             o2 = corinth(2,6);       % ratio 2/6
+%             o1 = system(o,{[1],[2 3]});
+%             o2 = system(o,{[1 4],[2 3 5]});
 %
-%             oo = o1 * o2;            % multiply two ratios
-%             oo = o1 * 7;             % multiply real number to ratio
-%             oo = 5 * o2;             % multiply ratio to real number
+%             oo = o1 * o2;            % multiply two trfs
+%             oo = o1 * 7;             % multiply real number with trf
+%             oo = 5 * o2;             % multiply trf with real number
+%
+%          Copyright(c): Bluenetics 2020
 %
 %          See also: CORASIM, PLUS, MINUS, MTIMES, MRDIVIDE
 %
@@ -17,10 +19,10 @@ function oo = mtimes(o1,o2)
 
    if (type(o1,{'matrix'}) && ~type(o2,{'matrix'}))
       error('implementation');
-      oo = Multiply(o1,o2);            % matrix x scalar
+      oo = Multiply(o1,o2);            % matrix * scalar
    elseif (~type(o1,{'matrix'}) && type(o2,{'matrix'}))
       error('implementation');
-      oo = Multiply(o2,o1);            % matrix x scalar
+      oo = Multiply(o2,o1);            % scalar * matrix
    else
       oo = Mul(o1,o2);
    end
@@ -69,7 +71,7 @@ function o = Multiply(o,s)             % Multiply Matrix by Scalar
 end
 
 %==========================================================================
-% Make Args Compiant To Each Other
+% Make Args Compliant To Each Other
 %==========================================================================
 
 function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other  

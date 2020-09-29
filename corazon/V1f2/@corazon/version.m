@@ -454,7 +454,9 @@ function VersionV1F
 % - corasim/rloc and corinth/rloc implemented
 % - bug fixed: corasim/sim - discretize also for strf type
 % - corazon beta V1f1
-% - add corasim/can, corasim/poke, corasim/matrix, corasim/times
+% - add corasim/can, corasim/poke, corasim/matrix, corasim/inv, 
+%   corasim/times
+% - add corasim/plus, corasim/minus, corasim/mrdivide
 %
 %
 % Known Bugs / Wishlist
