@@ -288,21 +288,6 @@ end
 % Display Matrix
 %==========================================================================
 
-function OldMatrix(o)                  % Display Matrix                
-   assert(isequal(o.type,'matrix'));
-   
-   M = o.data.matrix;
-   [m,n] = size(M);
-   for (i=1:m)
-      for (j=1:n)         
-         if (m*n > 1)
-            fprintf('rational function (%g,%g):\n',i,j);
-         end
-         
-         Ratio(M{i,j});                % display rational function
-      end
-   end
-end
 function txt = Matrix(o)               % Display Matrix                
    assert(isequal(o.type,'matrix'));
    

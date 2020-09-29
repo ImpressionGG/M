@@ -70,6 +70,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add spm/plot/NoiseRsp
 % - SPM beta V1f1 @ corazon beta V1c1
 % - starting SPM beta V1f2 @ corazon beta V1c2
+% - make changes to use new corasim functionality
 %
 %
 % Known bugs & wishlist

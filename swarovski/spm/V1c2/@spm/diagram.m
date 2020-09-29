@@ -199,6 +199,7 @@ function o = Step(o)                   % Elongation Step Response
    
    G = set(G,'name',sym); 
    G = inherit(G,o);
+   G = arg(G,{});                      % clear args
    
    if isempty(opt(G,'color'))
       if isequal(sym(1),'H')
@@ -209,7 +210,12 @@ function o = Step(o)                   % Elongation Step Response
          G = opt(G,'color','g.');
       end
    end
-   step(G,sub);
+   
+   subplot(o,sub);
+   step(G);
+   
+   title(sprintf('%s - Step Response',sym));
+   ylabel(['y  [',opt(o,{'yunit','1'}),']']);
 end
 function o = Vstep(o)                  % Velocity Step Response        
    o = with(o,'scale');                % unwrap scale options
@@ -232,7 +238,8 @@ function o = Vstep(o)                  % Velocity Step Response
          G = opt(G,'color','g.');
       end
    end
-   step(G,sub);
+   subplot(o,sub);
+   step(G);
    ylabel(['dy/dt [',opt(o,{'yunit','1'}),']']);
 end
 function o = Astep(o)                  % Acceleration Step Response    
@@ -250,7 +257,8 @@ function o = Astep(o)                  % Acceleration Step Response
    if isempty(opt(G,'color'))
       G = opt(G,'color','r');
    end
-   step(G,sub);
+   subplot(o,sub);
+   step(G);
    ylabel(['dy2/dt2 [',opt(o,{'yunit','1'}),']']);
 end
 function o = Fstep(o)                  % Force Step Response           
@@ -274,7 +282,8 @@ function o = Fstep(o)                  % Force Step Response
          G = opt(G,'color','g.');
       end
    end
-   step(G,sub);
+   subplot(o,sub);
+   step(G);
    ylabel(['F [',opt(o,{'yunit','1'}),']']);
 end
 

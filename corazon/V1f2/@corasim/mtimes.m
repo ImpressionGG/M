@@ -47,7 +47,7 @@ function oo = Mul(o1,o2)               % Multiply Two Objects
    
    [num1,den1] = peek(o1);
    [num2,den2] = peek(o2);
-   
+
    num = mul(o1,num1,num2);
    den = mul(o1,den1,den2);
    

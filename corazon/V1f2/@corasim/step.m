@@ -37,7 +37,12 @@ function out = step(o)
    end
    
    if (nargout == 0)
-      plot(oo);
+      %plot(oo);
+      [t,y] = var(oo,'t,y');
+      if ~isempty(t)
+         col = opt(o,{'color','r'});
+         plot(oo,t,y,col);
+      end
       dark(o);
    else
       out = oo;

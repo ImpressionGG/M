@@ -586,7 +586,7 @@ function o = HsStep(o)                 % H(s) Step Response Overview
          Hij = peek(H,i,j);
          o = opt(o,'color','yyyr');
          if (i == 3 && j == 3)
-            Hij = trf(Hij,0,1);        % some dummy
+            Hij = system(Hij,{0,1});   % some dummy
          end
          diagram(o,'Step',sym,Hij,[m,n,i,j]);
       end

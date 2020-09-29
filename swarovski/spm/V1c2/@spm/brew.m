@@ -218,10 +218,10 @@ function oo = TrfDouble(o)             % Double Transition Matrix
             W{i,j} = wij;                 % store as matrix element
             W{j,i} = wij;                 % symmetric matrix
 
-            Gij = trf(O,0);               % init Gij
+            Gij = system(G,{[0],[1]});    % init Gij
             for (k=1:n)
    %           Gk = trf(O,mi(k)*mj(k),psi(k,:));
-               Gk = trf(O,wij(k),psi(k,:));
+               Gk = system(G,{wij(k),psi(k,:)});
                Gij = Gij + Gk;
             end
 
@@ -501,7 +501,7 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
    
       % build Hnd(s) = [H31(s) H32(s)]
       
-   Hnd = matrix(corinth,[0 0]);
+   Hnd = matrix(corasim);
    Hnd = poke(Hnd,H31,1,1);
    Hnd = poke(Hnd,H32,1,2);  
 
@@ -512,7 +512,7 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
    H13 = CancelH(o,G13*Hnn);
    H23 = CancelH(o,G23*Hnn);
       
-   Hdn = matrix(corinth,[0;0]);
+   Hdn = matrix(corasim);
    Hdn = poke(Hdn,H13,1,1);
    Hdn = poke(Hdn,H23,2,1);  
 
@@ -528,7 +528,7 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
    H21 = CancelH(o,G21 - G23*G31*H33);
    H22 = CancelH(o,G22 - G23*G32*H33);
       
-   Hdd = matrix(corinth,[0 0;0 0]);
+   Hdd = matrix(corasim);
    Hdd = poke(Hdd,H11,1,1);
    Hdd = poke(Hdd,H12,1,2);  
    Hdd = poke(Hdd,H21,2,1);
@@ -550,7 +550,7 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
  
       % build H(s) = [Hdd(s) Hdn(s); Hnd(s) Hnn(s)]
       
-   H = matrix(corinth,zeros(3));
+   H = matrix(corasim);
 
    H = poke(H,H11,1,1);
    H = poke(H,H12,1,2);
@@ -624,7 +624,7 @@ function oo = OpenLoop(o)              % Open Loop Linear System
 
       % assemble L(s) matrix
       
-   L = matrix(corinth);
+   L = matrix(corasim);
    
    L = poke(L,L11,1,1);
    L = poke(L,L12,1,2);
@@ -715,13 +715,13 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    S1 = mu / (1 - mu*L51);             % closed loop sensitivity
    S2 = 0*S1;
    
-   S = matrix(corinth);
+   S = matrix(corasim);
    S = poke(S,S1,1,1);
    S = poke(S,S2,2,1);
    
       % differentiator transfer function
       
-   s = trf(S,[1 0],[1]);
+   s = system(S,{[1 0],[1]});
 
    T11 = S1 * L11;
    T21 = S1 * L21;
@@ -739,7 +739,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    T62 = T42 * s;
    T72 = S2 * L52;
    
-   T = matrix(corinth);
+   T = matrix(corasim);
    
    T = poke(T,T11,1,1);
    T = poke(T,T21,2,1);
@@ -775,7 +775,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Tf1 = mu*G33 / (G33 + mu*G31);
       Tf2 = 0*Tf1;
 
-      Tf = matrix(corinth);
+      Tf = matrix(corasim);
       Tf = poke(Tf,Tf1,1,1);
       Tf = poke(Tf,Tf2,2,1);
 
@@ -788,7 +788,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Ts1 = H11*Tf1 + H12*Tf2;
       Ts2 = H21*Tf1 + H22*Tf2
 
-      Ts = matrix(corinth);
+      Ts = matrix(corasim);
       Ts = poke(Ts,Ts1,1,1);
       Ts = poke(Ts,Ts2,2,1);
 
@@ -800,7 +800,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Tv1 = Ts1 * s;
       Tv2 = Ts2 * s;
 
-      Tv = matrix(corinth);
+      Tv = matrix(corasim);
       Tv = poke(Tv,Tv1,1,1);
       Tv = poke(Tv,Tv2,2,1);
 
@@ -812,7 +812,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Ta1 = Tv1 * s;
       Ta2 = Tv2 * s;
 
-      Ta = matrix(corinth);
+      Ta = matrix(corasim);
       Ta = poke(Ta,Ta1,1,1);
       Ta = poke(Ta,Ta2,2,1);
 

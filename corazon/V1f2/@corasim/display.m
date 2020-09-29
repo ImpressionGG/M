@@ -1,4 +1,4 @@
-function display(o)
+function txt = display(o)
 %
 % DISPLAY   Display a CORINTH object (rational object)
 %
@@ -11,18 +11,49 @@ function display(o)
       case 'css'
          fprintf('continuous state space system:\n');
          System(o);
+      
       case 'dss'
          [~,~,~,~,T] = system(o);
          fprintf('discrete state space system (T = %g):\n',T);
          System(o);
+      
       case 'strf'
          fprintf('s-type transfer function:\n');
          [num,den] = peek(o);
-         Display(o,num,den);
+         if (nargout > 0)
+%           txt = Display(o,num,den);
+            txt = Ratio(o);
+         else
+            Display(o,num,den);
+         end
+      
       case 'ztrf'
          [num,den,T] = peek(o);
          fprintf('z-type transfer function (T = %g):\n',T);
-         Display(o,num,den,T);
+         if (nargout > 0)
+            txt = Display(o,num,den,T);
+         else
+            Display(o,num,den,T);
+         end
+
+      case 'qtrf'
+         fprintf('q-type transfer function:\n');
+         [num,den,T] = peek(o);
+         if (nargout > 0)
+            txt = Display(o,num,den,T);
+         else
+            Display(o,num,den,T);
+         end
+      
+      case 'matrix'  
+         if (nargout == 0)
+            [m,n] = size(o.data.matrix);
+            fprintf('   rational matrix %gx%g:\n',m,n);
+            Matrix(o);
+         else
+            [m,n] = size(o);
+            txt = Matrix(o);
+         end
       otherwise
          display(corazon,o);           % display in corazon style
    end
@@ -48,7 +79,7 @@ end
 % Display Polynomial
 %==========================================================================
 
-function Display(o,num,den,Ts)         % Display Rational Function     
+function txt = Display(o,num,den,Ts)   % Display Rational Function     
    nn = length(num);
    nd = length(den);
    n = max(nn,nd);
@@ -75,9 +106,17 @@ function Display(o,num,den,Ts)         % Display Rational Function
      
    name = get(o,'name');
    if ~isempty(name)                   % name provided
-      Trf(G,name);
+      if (nargout > 0)
+         txt = Trf(G,name);
+      else
+         Trf(G,name);
+      end
    else
-      Trf(G);
+      if (nargout > 0)
+         txt = Trf(G);
+      else
+         Trf(G);
+      end
    end
 end
 function out = Trf(G,name)             % Display Transfer Funcion      
@@ -203,11 +242,12 @@ function out = Trf(G,name)             % Display Transfer Funcion
       str = [spc(1:l+off), str, spc];
       n_str =  [n_str; str(1:maxlen)];
    elseif (size(n_str,1) == 1)
-      n_str = [n_str,trf.trim(str)];
+      n_str = [n_str,corazito.trim(str)];
    else
       space = '                                              ';
       space = [space,space,space];
-      str = trf.trim(str);
+      %str = trf.trim(str);
+      str = corazito.trim(str);
       str = [space(1:floor((maxlen-length(str))/2)),str,space];
       n_str = [n_str;str(1:maxlen)];
    end
@@ -253,12 +293,13 @@ function out = Trf(G,name)             % Display Transfer Funcion
    l = round((maxlen - l)/2);  str = [spc(1:l+off), str, spc];
    if (nargout == 0)
       d_str =  [d_str; str(1:maxlen)];
-   elseif (size(n_str,1) == 1)
-      d_str = [d_str,trf.trim(str)];
+   elseif (size(d_str,1) == 1)
+      %d_str = [d_str,trf.trim(str)];
+      d_str = [d_str,corazito.trim(str)];
    else
       space = '                                              ';
       space = [space,space,space];
-      str = trf.trim(str);
+      str = corazito.trim(str);
       str = [space(1:floor((maxlen-length(str))/2)),str,space];
       d_str = [d_str;str(1:maxlen)];
    end
@@ -417,6 +458,328 @@ function out = Trf(G,name)             % Display Transfer Funcion
 end
 
 %==========================================================================
+% Display Rational Function
+%==========================================================================
+
+function txt = Ratio(o)                % Display Rational Function          
+   switch o.type
+      case 'strf'
+         sym = 's';
+      case 'ztrf'
+         sym = 'z';
+      case 'qtrf'
+         sym = 'q'
+      otherwise
+         error('bad type');
+   end
+   
+   [on,od] = peek(o);
+   
+      % fetch numerator ans denominator objects
+      
+   num = real(on);
+   den = real(od);
+   
+      % compile readable text string; distinguish if denominator equals
+      % one or else      
+         
+   if isequal(od,1)
+      txt = PolyString(o,num,sym);
+      txt = ['((',txt,'))'];
+   else
+      txt = RatioString(o,num,den,sym);
+      txt = Trim(o,txt);
+   end
+   
+      % depending on calling syntax return readable text string or
+      % print to console
+      
+   if (nargout > 0)
+      return
+   elseif ~opt(o,{'detail',0})
+      fprintf('rational function (%g/%g#%g)\n\n',...
+              order(on),order(od),digits(o));
+      disp([setstr(' '+zeros(size(txt,1),3)),txt]);
+      fprintf('\n');
+   else
+      Display(o,num,den);
+   end
+end
+
+%==========================================================================
+% Display Matrix
+%==========================================================================
+
+function txt = Matrix(o)               % Display Matrix                
+   assert(isequal(o.type,'matrix'));
+   
+   M = o.data.matrix;
+   [m,n] = size(M);
+
+   if (nargout == 0)
+      fprintf('\n');
+   end
+   
+   width = 0;
+   for (i=1:m)
+      paragraph = [];
+      txt = {};  rows = 0;
+      for (j=1:n)
+         if isempty(M{i,j})
+            txt{j} = '[]';
+         else
+%           txt{j} = display(M{i,j});  % display rational function
+            txt{j} = Ratio(M{i,j});    % display rational function
+         end
+         r = size(txt{j},1);
+         rows = max(rows,r);           % estimate max rows
+      end
+
+         % add n (horizontal) blocks to paragraph      
+
+      for (j=1:n)
+         [mj,nj] = size(txt{j});
+
+         index = sprintf('[%g,%g]:  ',i,j);
+         index = '';
+         spacer = setstr(' '+zeros(mj,3));
+
+         txtj = [spacer,index,txt{j}];
+         [mj,nj] = size(txtj);
+
+         block = setstr(' '+zeros(rows,nj));
+         idx = ceil((rows-mj)/2);
+         block(idx+1:idx+mj,:) = txtj;
+        
+         paragraph = [paragraph, block(1:rows,:)];
+      end
+
+         % print paragraph
+
+      if (nargout > 0)
+         paragraphs{i} = paragraph;
+         width = max(width,size(paragraph,2));
+      else
+         for (i=1:size(paragraph,1))
+            fprintf('   %s\n',paragraph(i,:));
+         end
+         fprintf('\n');
+      end
+   end
+   
+         % compile full text array if outarg provided
+         
+   if (nargout >= 1)
+      txt = [];
+      for (i=1:length(paragraphs))
+         paragraph = paragraphs{i};
+         [m,n] = size(paragraph);
+         tab = floor((width-n)/2);
+         space = setstr(' '+zeros(m,width));
+         if (i > 1)
+            txt = [txt;space(1,:)];
+         end
+         txt = [txt; [space(:,1:tab),paragraph,space(:,1:width-n-tab)]];
+      end
+   end
+end
+
+%==========================================================================
+% Construct Polynomial String and Rational String
+%==========================================================================
+
+function str = PolyString(o,poly,sym)       % Readable String for Poly 
+%
+% POLYSTRING  Construct readable string for polynomial
+%
+%                stxt = PolyString(o,[1 2 3],'s')
+%                ztxt = PolyString(o,[2 3 4],'z')
+%                qtxt = PolyString(o,[2 0 5]poly,'q')
+%
+%             Results:
+%
+%                stxt = 's^2 + 2s +3'
+%                ztxt = '2z^2 + 3z +4'
+%                qtxt = '2q^2 + 5'
+%
+%             Options:
+%
+%                minlen:      minimum length of string (default 10)
+%                maxlen:      maximum length of string (default 70)
+%
+   trim = @corazito.trim;              % short hand
+   
+      % if polynomial is 0 or 1 we have already a quick answer
+      % since 0 and 1 as the highest order coefficient is treated 
+      % as a special we cannot run through the general procedure
+      
+   while (length(poly) > 1 && poly(1) == 0)
+      poly(1) = [];                    % delete trailing zeros
+   end
+   
+   if isequal(poly,0)                  % special: 0
+      str = '0';
+      return                           % we can handle quickly: bye!
+   elseif isequal(poly,1)              % special: 1
+      str = '1';
+      return                           % we can handle quickly: bye!
+   elseif isequal(poly,-1)             % special: -1
+      str = '-1';
+      return                           % we can handle quickly: bye!
+   end
+   
+      % since it was neither 0 nor 1 we have to work over the general case
+   
+   maxlen = opt(o,{'maxlen',70});
+   curlen = opt(o,{'minlen',10});
+
+   degree = length(poly) - 1;
+   m = degree+1;                       % auxillary quantity
+
+      % need some working stuff (like spaces)
+      
+   spc = setstr(' '+zeros(1,2*maxlen));  % long enough
+   
+      % in the following loop through all coefficients we will build up two
+      % variables: str is a matrix of lines which will hold the resulting
+      % (eventually multi line string), and 'line' which will be the actual
+      % line as part of 'str'
+      
+   str = '';  line = '';  begin = true;
+   for (i = degree:-1:0 )
+
+         % compose power of s: ... ' s^3', ' s^2', ' s', ''  
+         
+      if ( i == 0 )
+         pow = '';
+      elseif (i == 1)
+         pow = [' ',sym];
+      else
+         pow = [' ',sym,'^',sprintf('%g',i)];
+      end
+
+         % fetch i-th polynomial coefficient (c); if zero then skip
+         % to next coefficient with index i-1
+         
+      c = poly(m-i);
+      if (begin && c == 0)
+         continue
+      end
+      
+         % next we compose string for sign; note that in the very beginning
+         % (empty str)
+         
+      if ( c >= 0 )
+         op = o.iif(begin,'',' + ');
+      else
+         op = o.iif(begin,'-',' - ');
+      end
+
+         % compose string for polynomial term consisting of coefficient
+         % plus power string
+         
+      term = [sprintf('%1g',abs(c)), pow];
+      if (begin && c == 1)
+         term = pow;                         % drop coefficient if = 1
+      elseif (begin && c == -1)
+         term = pow(2:end);                  % drop coefficient if = 1
+      end
+      begin = false;                         % begin is over!
+
+         % handle line overflow: if new line length exceeds maximum length
+         % plus some margin then we store line in str and start a new line
+         
+      if ( length(line) + length(term) > maxlen - 3 )
+         line = trim([line, op]);
+         l = length(line);
+         curlen = max(l,curlen);  
+         l = floor((maxlen - l)/2);
+         
+            % add leading and trailing spaces to line, then add
+            % line to str as a new row
+            
+         line = [spc(1:l), line, spc];
+         str =  [str; line(1:maxlen)];
+         
+            % now we can start a new line
+            
+         line = '';
+      end;
+
+         % finally add term to line
+         
+      line = [line,op,term];
+   end
+
+      % the last line is not added to str what needs to be done now
+
+   line = trim(line);
+   l = length(line);
+   curlen = max(l,curlen);  
+   l = floor((maxlen - l)/2);
+
+      % add leading and trailing spaces to line, then add
+      % line to str as a new row
+
+   line = [spc(1:l), line, spc];
+   str =  [str; line(1:maxlen)];
+
+      % finally trim str (note that str might be an mxn matrix of chars)
+      
+   while (1)
+      if ~isempty(str) && all(str(:,1)==' ')
+         str(:,1) = [];
+      elseif ~isempty(str) && all(str(:,end)==' ')
+         str(:,end) = [];
+      else
+         break                         % str is trimmed - break loop
+      end
+   end
+end
+function str = RatioString(o,num,den,sym)   % Readable String for Poly 
+%
+% RATIOSTRING Construct readable string for rational functions
+%
+%                stxt = RatioString(o,[1 2 3],[4 5 6],'s')
+%                ztxt = PolyString(o,[2 3 4],[4 5 6],'z')
+%                qtxt = PolyString(o,[2 0 5],[4 5 6],'q')
+%
+%             Options:
+%
+%                minlen:      minimum length of string (default 10)
+%                maxlen:      maximum length of string (default 70)
+%
+   maxlen = opt(o,{'maxlen',70});
+   curlen = opt(o,{'minlen',10});
+
+   numstr = PolyString(o,num,sym);
+   denstr = PolyString(o,den,sym);
+   
+      % calculate total width
+      
+   [m1,n1] = size(numstr);
+   [m2,n2] = size(denstr);
+   n0 = max(n1,n2) + 4;                % plus 4 is for fraction bar
+   
+      % compose resulting string
+      
+   n = max(maxlen,n0);
+   spc = setstr(' '+zeros(n1+n2+1,2*n));     % big enough
+   
+   l1 = floor((n-n1)/2);               % length of leading space num
+   l2 = floor((n-n2)/2);               % length of leading space den
+   l0 = floor((n-n0)/2);               % length of leading space bar
+   
+   numstr = [spc(1:m1,1:l1),numstr,spc(1:m1,:)];
+   bar = [spc(1,1:l0),setstr('-'+zeros(1,n0)),spc(1,:)];
+   denstr = [spc(1:m2,1:l2),denstr,spc(1:m2,:)];
+
+      % assemble the multi line string for the rational function
+      
+   str = [numstr(:,1:n); bar(1:n); denstr(:,1:n)];
+end
+
+%==========================================================================
 % Helper
 %==========================================================================
    
@@ -454,5 +817,13 @@ function list = Header(list,G,name,deg_num,deg_den,gain)
    end
    if ( kind == 2 | kind == 3 )
       list{end} = [list{end},sprintf(', sampling period = %g',G(2))];
+   end
+end
+function txt = Trim(o,txt)             % Trim Text                     
+   while (size(txt,2) > 0 && all(txt(:,1)==' '))
+      txt(:,1) = [];
+   end
+   while (size(txt,2) > 0 && all(txt(:,end)==' '))
+      txt(:,end) = [];
    end
 end
