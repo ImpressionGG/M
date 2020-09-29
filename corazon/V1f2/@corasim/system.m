@@ -70,7 +70,11 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
          if (length(T) ~= 1)
             error('scalar expected for samplig time (arg3)');
          end
-         o = type(o,'ztrf');           % z-transfer-function
+         if (T < 0)
+            o = type(o,'qtrf');        % q-transfer-function
+         else
+            o = type(o,'ztrf');        % z-transfer-function
+         end
       end
       o = data(o,'num,den,T',num,den,T);
       return

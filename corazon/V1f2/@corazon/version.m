@@ -457,6 +457,7 @@ function VersionV1F
 % - add corasim/can, corasim/poke, corasim/matrix, corasim/inv, 
 %   corasim/times
 % - add corasim/plus, corasim/minus, corasim/mrdivide
+% - add clear screen to corasim/menu/View
 %
 %
 % Known Bugs / Wishlist

@@ -315,9 +315,15 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Grid');              % add Grid menu item
    ooo = menu(oo,'Dark');              % add Dark mode menu item
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Clear Screen',{@Cls});
+   ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
 
    plugin(o,'corazon/shell/View');     % plug point
+   
+   function o = Cls(o)
+      cls(o);
+   end
 end
 function oo = Grid(o)                  % Grid Menu                     
 %

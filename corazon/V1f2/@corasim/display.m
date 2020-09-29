@@ -88,7 +88,8 @@ function txt = Display(o,num,den,Ts)   % Display Rational Function
       kind = 1;                        % s-transfer function kind
       Ts = 0;                          % samplig time
    elseif (nargin == 4)
-      kind = 2;                        % z-transfer function kind
+      kind = o.iif(Ts>0,2,3);          % z/q-transfer function kind
+      Ts = abs(Ts);
    else
       error('bad args');
    end

@@ -34,7 +34,7 @@ function o = Bode(o)                   % Bode Plot
    held = ishold;
 
    o = Auto(o);                        % auto axis limits
-   Axes(o);                            % plot axes
+   o = Axes(o);                            % plot axes
    if opt(o,{'magnitude.enable',true})
       Magnitude(o);
       
@@ -180,7 +180,7 @@ end
 function o = Axes(o)                   % Plot Bode Axes                
    kind = shelf(o,gca,'owner');
    if ~isequal(kind,'bode')
-      InitAxes(o);
+      o = InitAxes(o);
    else
       hax = gca;
       
@@ -196,9 +196,12 @@ function o = Axes(o)                   % Plot Bode Axes
    
    subplot(o);                         % init axes done
    
-   function InitAxes(o)                % Init Axes                     
+   function o = InitAxes(o)            % Init Axes                     
       if isempty(figure(o))
-         o = inherit(o,sho);
+         so = pull(o);
+         if ~isempty(so)
+            o = inherit(o,so);
+         end
       end
       
       [omega,magni,phase] = Lim(o);

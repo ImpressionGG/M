@@ -34,8 +34,8 @@ function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator
          
          [num,den] = Ss2tf(o,A,B(:,j),C(i,:),D(i,j));
          
-      case {'strf','ztrf'}
-         [num,den] = data(o,'num,den');
+      case {'strf','ztrf','qtrf'}
+         [num,den,T] = data(o,'num,den,T');
          
       case 'matrix'
          num = o.data.matrix{i,j};
