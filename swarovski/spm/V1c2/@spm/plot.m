@@ -430,7 +430,7 @@ end
 %==========================================================================
 
 function o = Gs(o)                     % Double Transfer Function      
-%  o = with(o,'view');                 % unwrap view options 
+   o = with(o,'simu');
    i = arg(o,1);
    j = arg(o,2);
 
@@ -470,12 +470,13 @@ function o = Gs(o)                     % Double Transfer Function
       end
 
       o = opt(o,'color','g');
-      diagram(o,'Step',sym,Gij,3221);
-      diagram(o,'Bode',sym,Gij,3232);
+      diagram(o,'Step',sym,Gij,3131);
+      diagram(o,'Bode',sym,Gij,3221);
    end
    heading(o);
 end
 function o = GsStep(o)                 % G(s) Step Response Overview   
+   o = with(o,'simu');
    G = cache(o,'trfd.G');              % G(s)
    [m,n] = size(G);
    
@@ -526,6 +527,8 @@ end
 %==========================================================================
 
 function o = Hs(o)                     % Double Constrained Trf Fct    
+   o = with(o,'simu');
+
    i = arg(o,1);
    j = arg(o,2);
 
@@ -564,19 +567,22 @@ function o = Hs(o)                     % Double Constrained Trf Fct
       diagram(o,'Trf', Hsym,Hij,3111);
       %diagram(o,'Step',Gsym,Gij,3221);      
       if length(num) <= length(den)    % proper Hij(s) ?
-         diagram(o,'Step',Hsym,Hij,3221); 
+         diagram(o,'Step',Hsym,Hij,3131); 
       end
+      
       diagram(o,'Rloc',Hsym,Hij,3222);
       
       %o = opt(o,'color','g1');
       %diagram(o,'Bode',Gsym,Gij,3232);
       %hold on
       o = opt(o,'color','yyyr');
-      diagram(o,'Bode',Hsym,Hij,3232);
+      diagram(o,'Bode',Hsym,Hij,3221);
    end
    heading(o);
 end
 function o = HsStep(o)                 % H(s) Step Response Overview   
+   o = with(o,'simu');
+
    H = cache(o,'consd.H');             % H(s)
    [m,n] = size(H);
    
@@ -647,6 +653,8 @@ end
 %==========================================================================
 
 function o = Ls(o)                     % Linear System Trf Matrix      
+   o = with(o,'simu');
+
    i = arg(o,1);
    j = arg(o,2);
 
@@ -681,14 +689,16 @@ function o = Ls(o)                     % Linear System Trf Matrix
 
       diagram(o,'Trf', Lsym,Lij,3111);
       diagram(o,'Rloc',Lsym,Lij,3222);
-      diagram(o,mode,Lsym,Lij,3221);  
+      diagram(o,mode,Lsym,Lij,3131);  
 
       o = opt(o,'color','bc');
-      diagram(o,'Bode',Lsym,Lij,3232);
+      diagram(o,'Bode',Lsym,Lij,3221);
    end
    heading(o);
 end
 function o = LsStep(o)                 % L(s) Step Response Overview   
+   o = with(o,'simu');
+
    L = cache(o,'consd.L');             % L(s)
    [m,n] = size(L);
    
@@ -765,6 +775,8 @@ end
 %==========================================================================
 
 function o = Ts(o)                     % T(s): Closed Loop Trf Matrix  
+   o = with(o,'simu');
+
    i = arg(o,1);
    j = arg(o,2);
 
@@ -801,14 +813,16 @@ function o = Ts(o)                     % T(s): Closed Loop Trf Matrix
       diagram(o,'Rloc',Tsym,Tij,3222);
       
       o = opt(o,'color',o.iif(i<=2,'r','bc'));
-      diagram(o,mode,Tsym,Tij,3221);  
+      diagram(o,mode,Tsym,Tij,3131);  
 
       o = opt(o,'color','r');
-      diagram(o,'Bode',Tsym,Tij,3232);
+      diagram(o,'Bode',Tsym,Tij,3221);
    end
    heading(o);
 end
 function o = TsStep(o)                 % T(s) Step Response Overview   
+   o = with(o,'simu');
+
    T = cache(o,'process.T');           % T(s)
    [m,n] = size(T);
    
@@ -853,7 +867,7 @@ function o = TsBode(o)                 % T(s) Bode Plot Overview
          sym = sprintf('T%g%g(s)',i,j);
          Tij = peek(T,i,j);
          o = opt(o,'color','g');
-         diagram(o,'Bode',sym,Tij,[4,2,1,j]);
+         diagram(o,'Bode',sym,Tij,[4,2,i,j]);
          ylabel(sprintf('F%g -> y%g',j,i))
       end
    end
@@ -896,6 +910,8 @@ end
 %==========================================================================
 
 function o = Step(o)                   % Step Response                 
+   o = with(o,'simu');
+
    if ~type(o,{'spm'})
       plot(o,'About');
       return

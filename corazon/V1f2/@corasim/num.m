@@ -12,8 +12,24 @@ function oo = num(o)                   % Get CORASIM Numerator
    switch o.type
       case {'strf','ztrf','qtrf','css','dss'}
          [num,den] = peek(o);
-         oo = num;
+         oo = Trim(o,num);
       otherwise
          error('bad object type');
+   end
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function y = Trim(o,x)                 % Trim Mantissa                 
+%
+% TRIM    Trim mantissa: remove leading mantissa zeros
+%
+   idx = find(x~=0);
+   if isempty(idx)
+      y = 0;
+   else
+      y = x(idx(1):end);
    end
 end

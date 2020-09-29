@@ -363,7 +363,7 @@ function oo = Friction(o)              % Friction Menu
    ooo = mitem(oo,'Mu (Coulomb Friction Parameter)',{},'process.mu');
    charm(ooo,{});
 end
-function oo = Simu(o)                  % Simulation Parameter Menu     
+function oo = OldSimu(o)               % Simulation Parameter Menu     
 %
 % SIMU   Add simulation parameter menu items
 %
@@ -383,6 +383,40 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Number of Points to Plot',{},'simu.plot');
           choice(ooo,[50 100 200 500 1000 inf],{});
           
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
+          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
+   ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
+          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
+end
+function oo = Simu(o)                  % Simulation Parameter Menu     
+%
+% SIMU   Add simulation parameter menu items
+%
+   setting(o,{'simu.tmax'},[]);
+   setting(o,{'simu.dt'},[]);
+   setting(o,{'simu.plot'},200);       % number of points to plot
+ 
+   setting(o,{'simu.Fmax'},100);
+   setting(o,{'simu.Nmax'},10);        % noise magnitude
+ 
+   oo = mitem(o,'Simulation');
+   ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
+          choice(ooo,{{'Auto',[]},{},{'1 h',3600},{},...
+                      {'30 min',30*60},{'20 min',20*60},{'10 min',600},...
+                      {'5 min',5*60},{'2 min',2*60},{'1 min',1*60},{},...
+                      {'30 s',30},{'20 s',20},{'10 s',10},{'5 s',5},...
+                      {'2 s',2},{'1 s',1},{},{'500 ms',0.5},...
+                      {'200 ms',0.2},{'100 ms',0.1},{'50 ms',0.05},...
+                      {'20 ms',0.02},{'10 ms',0.01}},{});
+   ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
+          choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4,...
+                      1e-3,2e-3,5e-3, 1e-2,2e-2,5e-2, 1e-2,2e-2,5e-2,...
+                      2e-2,1e-2,5e-3,2e-3,1e-3],{});
+   ooo = mitem(oo,'Number of Plot Intervals',{},'simu.plot');
+          choice(ooo,{{'50',50},{'100',100},{'200',200},{'500',500},...
+                      {'1000',1000},{},{'Maximum',inf}},{});
+
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});

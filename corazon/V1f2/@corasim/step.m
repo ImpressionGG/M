@@ -8,6 +8,8 @@ function out = step(o)
 %        Options:
 %           in:     input index  (default 1)
 %           out:    output index (default 1)
+%           tmax:   maximum simulation time (default: [] - auto)
+%           dt:     simulation increment (default: [] - auto)
 %
 %        Copyright(c): Bluenetics 2020
 %
@@ -137,13 +139,21 @@ function oo = Timing(o)
 %             oo = Timing(o)
 %             [tmax,dt] = opt(o,'tmax,dt')
 %
-   poles = roots(den(o));
-   zeros = roots(num(o));
+   tmax = opt(o,'tmax');
+   dt = opt(o,'dt');
    
-   [mag,idx] = sort(abs(poles));
-   T = 1/min(mag);
-   tmax = 10*T;
-   dt = tmax / 1000;
+   if isempty(tmax) 
+      poles = roots(den(o));
+      zeros = roots(num(o));
+
+      [mag,idx] = sort(abs(poles));
+      T = 1/min(mag);
+      tmax = 10*T;
+      
+      if isempty(dt)
+         dt = tmax / 1000;
+      end
+   end
    
    oo = opt(o,{'tmax'},tmax);
    oo = opt(oo,{'dt'},dt);

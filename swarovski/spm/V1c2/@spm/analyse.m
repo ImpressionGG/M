@@ -175,13 +175,28 @@ function o = TsBode(o)                 % Closed Loop Bode Plots
    heading(o);
 end
 function o = TsStep(o)                 % Closed Loop Step Plots        
-   [Tf1,Ta1] = cook(o,'Tf1,Ta1');
+   o = with(o,'simu');
    
+   [Tf1,Tf2] = cook(o,'Tf1,Tf2');
    o = opt(o,'color','yyr');
-   diagram(o,'Fstep','Tf1(s)',Tf1,2111);
+   diagram(o,'Fstep','Tf1(s)',Tf1,4211);
+   diagram(o,'Fstep','Tf2(s)',Tf2,4212);
 
+   [Ts1,Ts2] = cook(o,'Ts1,Ts2');
+   o = opt(o,'color','g');
+   diagram(o,'Step','Ts1(s)',Ts1,4221);
+   diagram(o,'Step','Ts2(s)',Ts2,4222);
+   
+   [Tv1,Tv2] = cook(o,'Tv1,Tv2');
+   o = opt(o,'color','bc');
+   diagram(o,'Step','Tv1(s)',Tv1,4231);
+   diagram(o,'Step','Tv2(s)',Tv2,4232);
+   
+   
+   [Ta1,Ta2] = cook(o,'Ta1,Ta2');
    o = opt(o,'color','r');
-   diagram(o,'Step','Ta1(s)',Ta1,2112);
+   diagram(o,'Step','Ta1(s)',Ta1,4241);
+   diagram(o,'Step','Ta2(s)',Ta2,4242);
    
    heading(o);
 end

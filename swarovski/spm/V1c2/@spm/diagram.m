@@ -211,6 +211,10 @@ function o = Step(o)                   % Elongation Step Response
       end
    end
    
+   if length(num(G)) > length(den(G))
+      G = system(G,{0,1});
+   end
+   
    subplot(o,sub);
    step(G);
    

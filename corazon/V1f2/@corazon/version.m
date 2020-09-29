@@ -460,6 +460,7 @@ function VersionV1F
 % - add clear screen to corasim/menu/View
 % - pimp corasim/bode to inherit shell options
 % - pimp corasim/step to inherit shell options
+% - add trimming to corasim/num and corasim/den
 %
 %
 % Known Bugs / Wishlist
