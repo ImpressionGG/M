@@ -165,6 +165,136 @@ function oo = TrfDouble(o)             % Double Transition Matrix
    
    n = length(A21);
    m = size(M,2);
+   %O = base(inherit(corinth,o));       % need to access CORINTH methods
+   %G = corinth(O,'matrix');
+   G = matrix(corasim);
+   W = [];
+   
+      % depending on modal form ...
+     
+   if isequal(A11,Z) && isequal(A12,I) && ...
+              isequal(A21,-diag(a0)) && isequal(A22,-diag(a1))
+      psi = [ones(n,1) a1(:) a0(:)];
+      Modal(o);
+      
+      for (k=1:length(psi))
+         Gk = trf(G,1,psi(k,:));
+         sym = sprintf('G_%g',k);
+         oo = cache(oo,['trfd.',sym],Gk);
+      end
+   else
+      Normal(o);
+   end
+         
+   progress(o);                        % complete!
+   oo = cache(oo,'trfd.G',G);          % store in cache
+   oo = cache(oo,'trfd.W',W);          % store in cache
+   
+      % store all transfer matrix elements into cache
+      
+   [m,n] = size(G);
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         sym = sprintf('G%g%g',i,j);
+         oo = cache(oo,['trfd.',sym],Gij);
+      end
+   end
+     
+   fprintf('Double Transfer Matrix\n');
+   display(G);
+   
+   function Modal(o)                   % Gij(s) For Modal Forms        
+      for (i=1:m)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            mi = M(:,i)';  mj = M(:,j);
+            wij = (mi(:).*mj(:))';        % weight vector
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+
+            Gij = trf(O,0);               % init Gij
+            for (k=1:n)
+   %           Gk = trf(O,mi(k)*mj(k),psi(k,:));
+               Gk = trf(O,wij(k),psi(k,:));
+               Gij = Gij + Gk;
+            end
+
+            fprintf('G%g%g(s):\n',i,j)
+            display(Gij);
+
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+   end
+   function Normal(o)                  % Normal Gij(s) Calculation     
+      [AA,BB,CC,DD] = data(oo,'A,B,C,D');
+      sys = system(corasim,AA,BB,CC,DD);
+      
+      for (i=1:n)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            [num,den] = peek(sys,i,j);
+%           Gij = trf(O,num,den);         % Gij(s)
+            Gij = system(G,{num,den});    % Gij(s)
+            Gij = can(CancelG(o,Gij));
+            
+            fprintf('G%g%g(s):\n',i,j)
+            display(Gij);
+
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+   end
+   function Gs = CancelG(o,Gs)         % Set Cacel Epsilon             
+      eps = opt(o,'cancel.G.eps');
+      if ~isempty(eps)
+         if isa(Gs,'corinth')
+            Gs = touch(Gs);
+         end
+         Gs = opt(Gs,'eps',eps);
+      end
+   end
+end
+function oo = OldTrfDouble(o)          % Double Transition Matrix      
+   refresh(o,{@plot,'About'});         % don't come back here!!!
+   
+   oo = current(o);
+   oo = brew(oo,'Partition');            % brew partial matrices
+   
+      % get a1,a0 and M
+      
+   [A11,A12,A21,A22,B2,C1,D] = var(oo,'A11,A12,A21,A22,B2,C1,D');
+   a0 = -diag(A21);
+   a1 = -diag(A22);
+   I = eye(length(a0));  Z = zeros(length(a0));
+   
+   if ~isequal(B2,C1')
+      error('B2 does not match C1');
+   end
+   M = B2;
+   
+      % now since we have a1,a0 and M we can start calculating the transfer
+      % matrix
+   
+   n = length(A21);
+   m = size(M,2);
    O = base(inherit(corinth,o));       % need to access CORINTH methods
    G = corinth(O,'matrix');
    W = [];

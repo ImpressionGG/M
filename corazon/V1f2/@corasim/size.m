@@ -18,6 +18,13 @@ function [n,ni,no] = size(o)
          n = length(A);
          ni = size(B,2);
          no = size(C,1);
+         
+      case 'matrix'
+         if (nargout <= 2)
+            [n,ni] = size(o.data.matrix);
+         else
+            error('only 2 out args supported');
+         end
       otherwise
          error('type not supported!');
    end

@@ -1,11 +1,15 @@
-function [num,den,T] = peek(o,i,j)     % Peek Numerator/Denominator    
+function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator    
 %
-% PEEK   Peek numerator and denominator from a corasim system
+% PEEK   Peek numerator and denominator from a corasim system, or peek
+%        Matrix element
 %
 %           oo = system(corasim,A,B,C,D);
 %           [num,den,T] = peek(oo,i,j) % peek numerator & denominator
 %           [num,den,T] = peek(oo)     % i = 1, j = 1
 %           
+%        o = matrix(corasim);
+%        o = poke(o,system(corasim,A,B,C,D),i,j)
+%        oo = peek(o,i,j)
 %
 %        Copyright(c): Bluenetics 2020
 %
@@ -29,8 +33,12 @@ function [num,den,T] = peek(o,i,j)     % Peek Numerator/Denominator
          end
          
          [num,den] = Ss2tf(o,A,B(:,j),C(i,:),D(i,j));
+         
       case {'strf','ztrf'}
          [num,den] = data(o,'num,den');
+         
+      case 'matrix'
+         num = o.data.matrix{i,j};
    end
 end
 

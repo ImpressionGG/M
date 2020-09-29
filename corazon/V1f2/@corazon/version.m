@@ -453,6 +453,8 @@ function VersionV1F
 % - bug fix: corasim/bode/Auto - deal with zero trf
 % - corasim/rloc and corinth/rloc implemented
 % - bug fixed: corasim/sim - discretize also for strf type
+% - corazon beta V1f1
+% - add corasim/can, corasim/poke, corasim/matrix, corasim/times
 %
 %
 % Known Bugs / Wishlist
