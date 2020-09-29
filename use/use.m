@@ -5,6 +5,7 @@ function use(tag,version)
 %           use            % use default context
 %           use cut        % use CUT toolbox (Swarovski - schleifen)
 %           use corazon    % use CORAZON toolbox
+%           use corinth    % rational arithmetics
 %           use cordoba    % use CORDOBA extension for CORAZON
 %           use trf        % use TRF toolbox (transfer functions)
 %           use spm        % use (Andy's) SPM toolbox (ANSYS)
@@ -26,14 +27,15 @@ function use(tag,version)
 %
    if (nargin < 2)
       version.carabao = 'V1l';
-      version.corazon = 'V1f1';
+      version.corazon = 'V1f2';
+      version.corinth = 'V1f';
       version.cordoba = 'V1c';
       version.rat = 'V1a';
       version.cut = 'V1b';
       version.cute = 'V1b';
       version.trf = 'V2a';
       
-      version.spm = 'V1c1';
+      version.spm = 'V1c2';
       version.spmx = 'V1a';
       
       version.pll = 'V1a';
@@ -72,6 +74,11 @@ function use(tag,version)
       case 'corazon'
          addpath([mhome,'/corazon/',version.corazon]);
          fprintf(['   using CORAZON toolbox ',version.corazon,'\n']);   
+
+      case 'corinth'
+         use corazon
+         addpath([mhome,'/corinth/',version.corinth]);
+         fprintf(['   using CORINTH toolbox ',version.corinth,'\n']);   
 
       case 'cordoba'
          use corazon
