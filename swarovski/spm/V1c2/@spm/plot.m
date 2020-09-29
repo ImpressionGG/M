@@ -33,13 +33,15 @@ function oo = Menu(o)                  % Setup Plot Menu
 %
    oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'Overview',{@WithCuo,'Plot'});
+
    oo = mitem(o,'-');
-   oo = mitem(o,'Eigenvalues');
+   oo = mitem(o,'Eigenvalues');   
    ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
    
+   oo = mitem(o,'-');
    oo = TransferMatrix(o);             % G(s)
    oo = ConstrainMatrix(o);            % H(s)
    
@@ -466,11 +468,16 @@ function o = Gs(o)                     % Double Transfer Function
 
       if ~isempty(W)
          wij = W{i,j};
-         diagram(o,'Weight',symw,wij,3231);
+         diagram(o,'Weight',symw,wij,3232);
       end
 
       o = opt(o,'color','g');
-      diagram(o,'Step',sym,Gij,3131);
+      
+      if isempty(W)
+         diagram(o,'Step',sym,Gij,3131);
+      else
+         diagram(o,'Step',sym,Gij,3231);
+      end
       diagram(o,'Bode',sym,Gij,3221);
    end
    heading(o);
@@ -565,16 +572,12 @@ function o = Hs(o)                     % Double Constrained Trf Fct
       Gsym = sprintf('G%g%g(s)',i,j);
 
       diagram(o,'Trf', Hsym,Hij,3111);
-      %diagram(o,'Step',Gsym,Gij,3221);      
       if length(num) <= length(den)    % proper Hij(s) ?
          diagram(o,'Step',Hsym,Hij,3131); 
       end
       
       diagram(o,'Rloc',Hsym,Hij,3222);
       
-      %o = opt(o,'color','g1');
-      %diagram(o,'Bode',Gsym,Gij,3232);
-      %hold on
       o = opt(o,'color','yyyr');
       diagram(o,'Bode',Hsym,Hij,3221);
    end

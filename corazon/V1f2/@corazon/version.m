@@ -461,6 +461,7 @@ function VersionV1F
 % - pimp corasim/bode to inherit shell options
 % - pimp corasim/step to inherit shell options
 % - add trimming to corasim/num and corasim/den
+% - SPM toolbox pimped
 %
 %
 % Known Bugs / Wishlist

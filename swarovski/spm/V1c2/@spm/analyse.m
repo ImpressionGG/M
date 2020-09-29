@@ -189,14 +189,14 @@ function o = TsStep(o)                 % Closed Loop Step Plots
    
    [Tv1,Tv2] = cook(o,'Tv1,Tv2');
    o = opt(o,'color','bc');
-   diagram(o,'Step','Tv1(s)',Tv1,4231);
-   diagram(o,'Step','Tv2(s)',Tv2,4232);
+   diagram(o,'Vstep','Tv1(s)',Tv1,4231);
+   diagram(o,'Vstep','Tv2(s)',Tv2,4232);
    
    
    [Ta1,Ta2] = cook(o,'Ta1,Ta2');
    o = opt(o,'color','r');
-   diagram(o,'Step','Ta1(s)',Ta1,4241);
-   diagram(o,'Step','Ta2(s)',Ta2,4242);
+   diagram(o,'Astep','Ta1(s)',Ta1,4241);
+   diagram(o,'Astep','Ta2(s)',Ta2,4242);
    
    heading(o);
 end

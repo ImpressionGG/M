@@ -783,7 +783,12 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    end
    function oo = Elongation(o)         % Calc Elongation Transfer Fct. 
       [Tf1,Tf2] = cook(o,'Tf1,Tf2');
-      [H11,H12,H21,H22] = cook(o,'H11,H12,H21,H22');
+      
+      if (0)
+         [H11,H12,H21,H22] = cook(o,'H11,H12,H21,H22');
+      else
+         [H11,H12,H21,H22] = cook(o,'G11,G12,G21,G22');
+      end
 
       Ts1 = H11*Tf1 + H12*Tf2;
       Ts2 = H21*Tf1 + H22*Tf2

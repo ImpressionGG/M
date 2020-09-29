@@ -393,8 +393,8 @@ function oo = Simu(o)                  % Simulation Parameter Menu
 %
 % SIMU   Add simulation parameter menu items
 %
-   setting(o,{'simu.tmax'},[]);
-   setting(o,{'simu.dt'},[]);
+   setting(o,{'simu.tmax'},0.01);
+   setting(o,{'simu.dt'},1e-5);
    setting(o,{'simu.plot'},200);       % number of points to plot
  
    setting(o,{'simu.Fmax'},100);

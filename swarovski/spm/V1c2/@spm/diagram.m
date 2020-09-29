@@ -341,27 +341,11 @@ function o = Rloc(o)                   % Root Locus Diagram
    hold on;
    
    center = sum(real([p(:);z(:)]))/(length(p)+length(z));
-   title('Root Locus');
+   title('Poles/ Zeros');
    
    t = 0:1/10:100;
    K = 10.^t - 1;
-   
-   %[p,q] = peek(G);
-   %np = length(p);  nq = length(q);  n = max(np,nq);
-   %p = [zeros(1,n-np), p];
-   %q = [zeros(1,n-nq), q];
-   
-   %z = [0 z];  p = [0 p];
-   
-   %rmax = max(max(abs(p)),max(abs(z)));
-   %xmin = min(min(real(p)),min(real(z)));
-   %xmax = max(max(real(p)),max(real(z)));
-   %ymin = min(min(imag(p)),min(imag(z)));
-   %ymax = max(max(imag(p)),max(imag(z)));
-   
-   %set(gca,'Xlim',1.2*[xmin-1,xmax+1]);
-   %set(gca,'Ylim',1.2*[ymin-1,ymax+1]);
-   
+      
    for (i=1:length(p))
       plot(o,[center real(p(i))],[0 imag(p(i))],'r');
       hold on
@@ -371,33 +355,11 @@ function o = Rloc(o)                   % Root Locus Diagram
       hold on
    end
    
-   return;
+   xlim = get(gca,'Xlim');
+   xlim = [xlim(1) max(xlim(2),abs(xlim(1)))];
+   set(gca,'Xlim',xlim);
    
-   for (i=length(K):-1:1)
-      poly = K(i)*p + q;
-      r = roots(poly);
-
-      if (max(abs(r)) < rmax)
-         x = real(r);  y = imag(r);
-         plot(oo,x,y,'r.');
-      elseif (i > 10)
-         i = i - 10;
-      end
-
-      poly = -K(i)*p + q;
-      r = roots(poly);
-
-      if (max(abs(r)) < rmax)
-         x = real(r);  y = imag(r);
-         plot(oo,x,y,'bc.');
-      elseif (i > 10)
-         i = i - 10;
-      end
-      
-      if rem(i,50) == 0;
-         idle(o);
-      end
-   end  
+   plot(o,[0 0],get(gca,'Ylim'),'K1-.');
 end
 
 %==========================================================================

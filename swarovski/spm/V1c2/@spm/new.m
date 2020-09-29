@@ -56,6 +56,10 @@ function oo = Menu(o)                  % New Menu
    ooo = mitem(oo,'Schleifsaal Hypothese 90°',{@Create 'Schleif' 90});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
+   
+   ooo = mitem(oo,'-');
+   ooo = Parameter(oo);
+
 
    function o = Create(o)
       gamma = eval(['@',arg(o,1)]);
@@ -69,6 +73,13 @@ function oo = Menu(o)                  % New Menu
       oo = gamma(o);                   % create specific object
       paste(oo);                       % paste into shell
    end
+end
+function oo = Parameter(o)
+   setting(o,{'new.coupling'},0);
+   
+   oo = mitem(o,'Parameter');
+   ooo = mitem(oo,'Coupling',{},'new.coupling');
+   choice(ooo,[0 0.1 0.2 0.5 1 2 5 10]);
 end
 
 %==========================================================================
@@ -276,6 +287,15 @@ function oo = Schleif(o)               % Schleifsaal Hypothese
    Kd = T*diag([ka kt kt])*T' + diag([ki ki ki]);
    cf = [0 0 ci]';  kf = [0 0 ki]'; 
   
+      % coupling
+      
+   coupling = opt(o,{'new.coupling',0});
+   ck = coupling*ci;    kk = coupling*ki;
+   Cd(1,2) = ck;   Kd(1,2) = kk;
+   Cd(2,1) = ck;   Kd(2,1) = kk
+   Cd(2,3) = ck;   Kd(2,3) = kk
+   Cd(3,2) = ck;   Kd(3,2) = kk
+   
    n = length(T);  Z = zeros(n);  I = eye(n);
    
    A = [Z I; -Kd/m, -Cd/m];
@@ -285,6 +305,7 @@ function oo = Schleif(o)               % Schleifsaal Hypothese
    
    oo = spm('spm');                    % new spm typed object
    oo.par.title = sprintf('Schleifsaal Hypothese %g°',theta);
+   oo.par.comment = {sprintf('coupling: %g',coupling)}
    
       % finally set data
       
