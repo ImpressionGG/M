@@ -22,7 +22,8 @@ function oo = bode(o,col)
 %
 %        See also: CORINTH, FQR, STEP
 %
-   oo = Bode(o);
+   oo = Inherit(o);
+   oo = Bode(oo);
 end
 
 %==========================================================================
@@ -196,14 +197,7 @@ function o = Axes(o)                   % Plot Bode Axes
    
    subplot(o);                         % init axes done
    
-   function o = InitAxes(o)            % Init Axes                     
-      if isempty(figure(o))
-         so = pull(o);
-         if ~isempty(so)
-            o = inherit(o,so);
-         end
-      end
-      
+   function o = InitAxes(o)            % Init Axes                           
       [omega,magni,phase] = Lim(o);
       
       col = o.iif(dark(o),'k.','w.');
@@ -262,6 +256,15 @@ function o = Axes(o)                   % Plot Bode Axes
          
          o.color(hdl,o.iif(dark(o),'w','k'));
          shelf(o,hdl,'owner','bode');
+      end
+   end
+end
+function o = Inherit(o)                % inherit options from shell    
+   if isempty(figure(o))
+      so = pull(o);
+      if ~isempty(so)
+         o = inherit(o,so);
+         o = with(o,'bode');
       end
    end
 end

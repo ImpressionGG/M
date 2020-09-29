@@ -72,8 +72,10 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
          end
          if (T < 0)
             o = type(o,'qtrf');        % q-transfer-function
-         else
+         elseif (T > 0)
             o = type(o,'ztrf');        % z-transfer-function
+         else
+            o = type(o,'strf');        % s-transfer-function
          end
       end
       o = data(o,'num,den,T',num,den,T);

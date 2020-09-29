@@ -458,9 +458,10 @@ function VersionV1F
 %   corasim/times
 % - add corasim/plus, corasim/minus, corasim/mrdivide
 % - add clear screen to corasim/menu/View
+% - pimp corasim/bode to inherit shell options
+% - pimp corasim/step to inherit shell options
 %
 %
 % Known Bugs / Wishlist
-% - corazon/shell and corazon/rapid generated shells do not refresh
-%   correctly
+% - none so far
 end

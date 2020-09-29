@@ -142,12 +142,18 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Grid');              % add Grid menu item
    ooo = menu(oo,'Dark');              % add Dark mode menu item
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Clear Screen',{@Cls});
+   ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
    ooo = Scale(oo);                    % add Scale sub-menu
    ooo = Bode(oo);                     % add Bode settings menu
    ooo = Rloc(oo);                     % add Root Locus menu
    
    plugin(o,'spm/shell/View');         % plug point
+
+   function o = Cls(o)
+      cls(o);
+   end
 end
 function oo = Scale(o)                 % Scale Sub-Menu                
    setting(o,{'scale.xunit'},'ms');     % time scaling unit

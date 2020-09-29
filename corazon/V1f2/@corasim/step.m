@@ -13,6 +13,8 @@ function out = step(o)
 %
 %        See also: CORASIM
 %
+   o = Inherit(o);                     % inherit options from shell
+   
    switch o.type
       case {'css'}
          oo = o;
@@ -43,6 +45,22 @@ function out = step(o)
          col = opt(o,{'color','r'});
          plot(oo,t,y,col);
       end
+      
+      name = get(o,'name');
+      if ~isempty(name)
+         title([name,' - Step Response']);
+      else
+         title('Step Response');
+      end
+      
+      [xunit,yunit] = opt(o,'xunit,yunit');
+      if ~isempty(xunit)
+         xlabel(['[',xunit,']']);
+      end
+      if ~isempty(yunit)
+         ylabel(['[',yunit,']']);
+      end
+      
       dark(o);
    else
       out = oo;
@@ -64,7 +82,12 @@ function title = Title(o)              % Get Object Title
       title = [title,' - [',package,']'];
    end
 end
-function t = Time(o)                   % Get Time Vector               
+function t = Time(o)                   % Get Time Vector     
+   o = Timing(o);
+   [tmax,dt] = opt(o,'tmax,dt');
+   t = 0:dt:tmax;
+end
+function t = OldTime(o)                   % Get Time Vector               
    A = get(o,'system.A');   
    ev = eig(A);
    tmax = 5*max(1./abs(ev));
@@ -96,4 +119,32 @@ function u = StepInput(o,t,index)      % Get Step Input Vector
    
    I = eye(m);
    u = I(:,index)*ones(size(t));
+end
+function o = Inherit(o)                % inherit options from shell    
+   if isempty(figure(o))
+      so = pull(o);
+      if ~isempty(so)
+         o = inherit(o,so);
+         o = with(o,'simu');
+         o = with(o,'scale');
+      end
+   end
+end
+function oo = Timing(o)
+%
+% TIMING   Set timing options
+%
+%             oo = Timing(o)
+%             [tmax,dt] = opt(o,'tmax,dt')
+%
+   poles = roots(den(o));
+   zeros = roots(num(o));
+   
+   [mag,idx] = sort(abs(poles));
+   T = 1/min(mag);
+   tmax = 10*T;
+   dt = tmax / 1000;
+   
+   oo = opt(o,{'tmax'},tmax);
+   oo = opt(oo,{'dt'},dt);
 end
