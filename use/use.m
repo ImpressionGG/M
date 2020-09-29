@@ -33,7 +33,7 @@ function use(tag,version)
       version.cute = 'V1b';
       version.trf = 'V2a';
       
-      version.spm = 'V1c';
+      version.spm = 'V1c1';
       version.spmx = 'V1a';
       
       version.pll = 'V1a';
