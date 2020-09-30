@@ -144,10 +144,14 @@ end
 function o = Trf(o)                    % Transfer Function Diagram     
    sym = arg(o,1);
    G = arg(o,2);
-   sub = o.either(arg(o,3),[1 1 1]);
+   sub = o.either(arg(o,3),111);
    
    if isequal(sub,111)
       o = opt(o,'subplot',sub,'pitch',0.4);
+      G = opt(G,'maxlen',160);
+   elseif isequal(sub,311) || isequal(sub,3111) 
+      o = opt(o,'subplot',sub,'pitch',2);
+      G = opt(G,'maxlen',160);
    else
       o = opt(o,'subplot',sub,'pitch',2);
    end
@@ -220,6 +224,8 @@ function o = Step(o)                   % Elongation Step Response
    
    title(sprintf('%s - Step Response',sym));
    ylabel(['y  [',opt(o,{'yunit','1'}),']']);
+
+   subplot(o);                         % subplot done!
 end
 function o = Vstep(o)                  % Velocity Step Response        
    o = with(o,'scale');                % unwrap scale options
@@ -245,6 +251,8 @@ function o = Vstep(o)                  % Velocity Step Response
    subplot(o,sub);
    step(G);
    ylabel(['dy/dt [',opt(o,{'yunit','1'}),']']);
+
+   subplot(o);                         % subplot done!
 end
 function o = Astep(o)                  % Acceleration Step Response    
    o = with(o,'scale');                % unwrap scale options
@@ -264,6 +272,8 @@ function o = Astep(o)                  % Acceleration Step Response
    subplot(o,sub);
    step(G);
    ylabel(['dy2/dt2 [',opt(o,{'yunit','1'}),']']);
+
+   subplot(o);                         % subplot done!
 end
 function o = Fstep(o)                  % Force Step Response           
    o = with(o,'scale');                % unwrap scale options
@@ -289,6 +299,8 @@ function o = Fstep(o)                  % Force Step Response
    subplot(o,sub);
    step(G);
    ylabel(['F [',opt(o,{'yunit','1'}),']']);
+
+   subplot(o);                         % subplot done!
 end
 
 %==========================================================================
@@ -314,6 +326,8 @@ function o = Bode(o)                   % Bode Diagram
    
    bode(oo);
    title([sym,': Bode Diagram']);
+
+   subplot(o);                         % subplot done!
 end
 
 %==========================================================================
@@ -341,7 +355,7 @@ function o = Rloc(o)                   % Root Locus Diagram
    hold on;
    
    center = sum(real([p(:);z(:)]))/(length(p)+length(z));
-   title('Poles/ Zeros');
+   title([sym,': Poles/ Zeros']);
    
    t = 0:1/10:100;
    K = 10.^t - 1;
@@ -360,6 +374,7 @@ function o = Rloc(o)                   % Root Locus Diagram
    set(gca,'Xlim',xlim);
    
    plot(o,[0 0],get(gca,'Ylim'),'K1-.');
+   subplot(o);                         % subplot done!
 end
 
 %==========================================================================

@@ -45,9 +45,9 @@ function oo = Menu(o)                  % Setup Plot Menu
    oo = TransferMatrix(o);             % G(s)
    oo = ConstrainMatrix(o);            % H(s)
    
-   oo = mitem(o,'-');
-   oo = OpenLoopSystem(o);             % L(s)
-   oo = ClosedLoopSystem(o);           % T(s)
+   %oo = mitem(o,'-');
+   %oo = OpenLoopSystem(o);            % L(s)
+   %oo = ClosedLoopSystem(o);          % T(s)
 
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
@@ -68,7 +68,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
-   ooo = Double(oo);                   % Double submenu
+   %ooo = Rational(oo);                % Rational submenu
    
    ooo = mitem(oo,'-');
    for (i=1:l)
@@ -80,9 +80,8 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
       end
    end
    
-   function oo = Double(o)             % Double Sub Menu               
+   function oo = Rational(o)           % Rational Sub Menu               
       oo = mitem(o,'Rational');
-      enable(oo,false);
       ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
       ooo = mitem(oo,'-');
       for (i=1:l)
@@ -107,7 +106,7 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Hs',0,0});
-   ooo = Rational(oo);
+   %ooo = Rational(oo);
    
    ooo = mitem(oo,'-');
    for (i=1:l)

@@ -5,6 +5,13 @@ function txt = display(o)
 %             o = corinth(5,6);        % rational number 5/6
 %             display(o);              % display CORINTH object
 %
+%             Options:
+%
+%                minlen:      minimum length of string (default 10)
+%                maxlen:      maximum length of string (default 70)
+%
+%          Copyright(c): Bluenetics 2020
+%
 %          See also: CORASIM
 %
    switch o.type

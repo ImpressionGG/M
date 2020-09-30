@@ -100,7 +100,7 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
       T = 0;
       o = type(o,'css');
       o.data = [];
-      o = data(o, 'A,B,C,D', A,B,C,D);
+      o = data(o, 'A,B,C,D,T', A,B,C,D,T);
    end
    
    o = var(o, 'A,B,C,D,T', A,B,C,D,T);

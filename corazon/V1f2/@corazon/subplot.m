@@ -34,6 +34,7 @@ function hax = subplot(o,varargin)
    if (nargin == 1)
       dark(o,'Axes');                  % refresh dark mode of subplot
       grid(o);
+      idle(o);                         % time to refresh graphics
    elseif (nargin == 2 && length(sub) == 1)
       sub = sprintf('%g',sub);
       m = double(sub(1)-'0');

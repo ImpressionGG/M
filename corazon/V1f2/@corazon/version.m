@@ -370,10 +370,10 @@ function VersionV1F
 % Release Notes Corazon/V1F
 % =========================
 %
-% - Bug free functionality of corinth class including pretty display of
-%   polynomials, rational functions and corinthian matrices. comprehen-
-%   sive peek/poke functionality to access object parts. extensive test
-%   functionality and a corinth shell for analysing and testing
+% - Excessive extension of CORASIM class to support transfer function
+%   representation and arithmetics, conversions from state space to trans-
+%   fer function and vice versa, step response plot, bode diagrams and root
+%   locus plot
 %
 % - extension of corazon/display method with second argument to display
 %   other class objects (e.g used for corinth objects, which have usually
@@ -381,7 +381,7 @@ function VersionV1F
 %   corazon format
 %
 % - extension of corazon/mitem to support easy change of menu item attri-
-%   butes, e.g
+%   butes
 %
 % Change Log V1f:
 %
@@ -462,6 +462,7 @@ function VersionV1F
 % - pimp corasim/step to inherit shell options
 % - add trimming to corasim/num and corasim/den
 % - SPM toolbox pimped
+% - idle(o) at end of subplot(o) to let graphics refresh
 %
 %
 % Known Bugs / Wishlist

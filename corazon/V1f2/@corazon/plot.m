@@ -279,7 +279,7 @@ function oo = Plot(o)                  % Default Plot Function
       
    col = opt(o,'color');
    if ~isempty(col)
-      o.color(hdl,col);
+%     o.color(hdl,col);
    end
    
       % optional line width setting

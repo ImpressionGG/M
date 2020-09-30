@@ -13,8 +13,9 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
+                      @Trf,@TfOverview,...
                       @Overview,@Rloc,@AnalyseRamp,@NormRamp,...
-                      @TsBode,@TsStep,@Ts);
+                      @BodePlots,@StepPlots,@PolesZeros);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -23,24 +24,71 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Analyse Menu            
-   oo = CriticalMenu(o);
-   oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
-   
-   oo = mitem(o,'-');
    oo = mitem(o,'Closed Loop');
-   ooo = mitem(oo,'Bode Plots',{@WithCuo,'TsBode'});
-   ooo = mitem(oo,'Step Plot',{@WithCuo,'TsStep'});
-%   ooo = mitem(oo,'T(s)',{@WithCuo,'Ts'});
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
+   ooo = mitem(oo,'Step Plots',{@WithCuo,'StepPlots'});
+   ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
+
+   oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
+
+   ooo = mitem(oo,'-'); 
+   oo = Force(o);                      % add Force menu
+   oo = Acceleration(o);               % add Acceleration menu
+   oo = Velocity(o);                   % add Velocity menu
+   oo = Elongation(o);                 % add Elongation menu
    
    oo = mitem(o,'-');
+   oo = CriticalMenu(o);
    oo = mitem(o,'Normalized System');
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
 end
-function o = Err(o)                    % Error Handler                 
-   error('bad mode');
+function oo = Force(o)                 % Closed Loop Force Menu        
+   oo = mitem(o,'Force');
+   sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';  
+
+   ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Tf(s)',{@WithCuo,'Trf',sym,0,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Tf1(s)',{@WithCuo,'Trf',sym1,1,col});
+   ooo = mitem(oo,'Tf2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function o = CriticalMenu(o)           % Critical Path Menu            
+function oo = Acceleration(o)          % Closed Loop Acceleration Menu 
+   oo = mitem(o,'Acceleration');
+   sym = 'Ta';  sym1 = 'Ta1';  sym2 = 'Ta2';  col = 'r';
+
+   ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Ta(s)',{@WithCuo,'Trf',sym,0,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Ta1(s)',{@WithCuo,'Trf',sym1,1,col});
+   ooo = mitem(oo,'Ta2(s)',{@WithCuo,'Trf',sym2,2,col});
+end
+function oo = Velocity(o)              % Closed Loop Velocity Menu     
+   oo = mitem(o,'Velocity');
+   sym = 'Tv';  sym1 = 'Tv1';  sym2 = 'Tv2';  col = 'bc';  
+
+   ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Tv(s)',{@WithCuo,'Trf',sym,0,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Tv1(s)',{@WithCuo,'Trf',sym1,1,col});
+   ooo = mitem(oo,'Tv2(s)',{@WithCuo,'Trf',sym2,2,col});
+end
+function oo = Elongation(o)            % Closed Loop Elongation Menu   
+   oo = mitem(o,'Elongation');
+   sym = 'Ts';  sym1 = 'Ts1';  sym2 = 'Ts2';  col = 'g';  
+
+   ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Ts(s)',{@WithCuo,'Trf',sym,0,col});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Ts1(s)',{@WithCuo,'Trf',sym1,1,col});
+   ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
+end
+
+function oo = CriticalMenu(o)          % Critical Path Menu            
    oo = mitem(o,'Critical Path');
    ooo = mitem(oo,'Overview',{@Overview});
    
@@ -90,6 +138,11 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    cls(o);                             % clear screen
  
    oo = current(o);                    % get current object
+   if ~type(oo,{'spm'})
+      plot(oo,'About');
+      return
+   end
+   
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -116,6 +169,10 @@ function oo = WithBsk(o)               % 'With Basket' Callback
       message(oo);                     % report irregular
    end
    dark(o);                            % do dark mode actions
+end
+
+function o = Err(o)                    % Error Handler                 
+   error('bad mode');
 end
 
 %==========================================================================
@@ -147,7 +204,7 @@ end
 % Closed Loop
 %==========================================================================
 
-function o = TsBode(o)                 % Closed Loop Bode Plots        
+function o = BodePlots(o)              % Closed Loop Bode Plots        
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
    
    o = opt(o,'color','yyr');
@@ -174,7 +231,7 @@ function o = TsBode(o)                 % Closed Loop Bode Plots
    
    heading(o);
 end
-function o = TsStep(o)                 % Closed Loop Step Plots        
+function o = StepPlots(o)              % Closed Loop Step Plots        
    o = with(o,'simu');
    
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
@@ -200,34 +257,83 @@ function o = TsStep(o)                 % Closed Loop Step Plots
    
    heading(o);
 end
-function o = Ts(o)                                                     
-%
-% TS   Closed Loop
-%
-%      Open loop:
-%
-%         Fd(s) = -mu*R*Fn(s)
-%         Fn(s) = Ln(s)*Fd(s) + F0(s)  with Ln(s) = [L31(s) L32(s)]
-%
-%         F1(s) = -mu*r1*F3(s)    (r1 = 1)
-%         F2(s) = -mu*r2*F3(s)    (r2 = 0)
-%
-%         F3(s) = L31(s)*F1(s) + L32(s)*F2(s) + F0(s)
-%
-%      Note: F2(s) = 0 since r2 = 0
-%
-%         F3(s) = F0(s) + L31(s)*F1(s) =
-%               = F0(s) - mu*L31(s)*F3(s)
-%
-%         (1 + mu*L31(s))*F3(s) = F0(s)
-%         F3(s)/F0(s) = 1 / (1+mu*L31(s)) =: T(s)
-%
-%                        1
-%         T(s) := -----------------
-%                   1 + mu*L31(s)
-%
-   L = cache(o,'consd.L');
-   L31 = peek(L,3,1);
+function o = PolesZeros(o)             % Closed Loop Poles & Zeros     
+   o = with(o,'simu');
+   
+   [Tf1,Tf2] = cook(o,'Tf1,Tf2');
+   o = opt(o,'color','yyr');
+   diagram(o,'Rloc','Tf1(s)',Tf1,4211);
+   diagram(o,'Rloc','Tf2(s)',Tf2,4212);
+
+   [Ts1,Ts2] = cook(o,'Ts1,Ts2');
+   o = opt(o,'color','g');
+   diagram(o,'Rloc','Ts1(s)',Ts1,4221);
+   diagram(o,'Rloc','Ts2(s)',Ts2,4222);
+   
+   [Tv1,Tv2] = cook(o,'Tv1,Tv2');
+   o = opt(o,'color','bc');
+   diagram(o,'Rloc','Tv1(s)',Tv1,4231);
+   diagram(o,'Rloc','Tv2(s)',Tv2,4232);
+   
+   
+   [Ta1,Ta2] = cook(o,'Ta1,Ta2');
+   o = opt(o,'color','r');
+   diagram(o,'Rloc','Ta1(s)',Ta1,4241);
+   diagram(o,'Rloc','Ta2(s)',Ta2,4242);
+   
+   heading(o);
+end
+
+%==========================================================================
+% Closed Loop Force
+%==========================================================================
+
+function o = Overview(o)              % Closed Loop Overview           
+   o = with(o,'bode');
+   o = with(o,'simu');
+   o = with(o,'rloc');
+   
+   sym1 = arg(o,1)
+   sym2 = arg(o,2)
+   col = arg(o,3);
+
+   o = opt(o,'color',col);
+   o1 = cook(o,sym1);
+   o2 = cook(o,sym2);
+   
+   sym1 = [sym1,'(s)'];
+   sym2 = [sym2,'(s)'];
+   
+   diagram(o,'Bode',sym1,o1,3211);
+   diagram(o,'Bode',sym2,o2,3212);
+
+   diagram(o,'Fstep',sym1,o1,3221);
+   diagram(o,'Fstep',sym2,o2,3222);
+
+   diagram(o,'Rloc',sym1,o1,3231);
+   diagram(o,'Rloc',sym2,o2,3232);
+end
+function o = Trf(o)                   % Transfer Function              
+   o = with(o,'bode');
+   o = with(o,'simu');
+   o = with(o,'rloc');
+
+   sym = arg(o,1)
+   idx = arg(o,2);
+   col = arg(o,3);
+   
+   oo = cook(o,sym);
+   o = opt(o,'color',col);
+   sym = [sym,'(s)'];
+   
+   if (idx == 0)
+      diagram(o,'Trf',sym,oo,111);
+   else
+      diagram(o,'Trf', sym,oo,3111);
+      diagram(o,'Bode',sym,oo,3221);
+      diagram(o,'Rloc',sym,oo,3222);
+      diagram(o,'Step',sym,oo,3131);
+   end
 end
 
 %==========================================================================
