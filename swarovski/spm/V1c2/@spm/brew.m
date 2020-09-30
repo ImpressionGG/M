@@ -580,7 +580,7 @@ end
 % Open Loop L(s)
 %==========================================================================
 
-function oo = OpenLoop(o)              % Open Loop Linear System       
+function oo = OldOpenLoop(o)           % Old Open Loop Linear System   
    [oo,bag,rfr] = cache(o,o,'consd');
    
    H11 = cache(oo,'consd.H11');
@@ -652,6 +652,38 @@ function oo = OpenLoop(o)              % Open Loop Linear System
       end
    end
 end
+function oo = OpenLoop(o)              % Open Loop Linear System       
+   [oo,bag,rfr] = cache(o,o,'consd');
+   
+   H31 = cache(oo,'consd.H31');
+   H32 = cache(oo,'consd.H32');
+      
+   L1 = CancelL(o,H31);
+   L2 = CancelL(o,H32);
+   
+      % store all partial constraine transfer functions in cache
+      
+   oo = cache(oo,'consd.L1',L1);
+   oo = cache(oo,'consd.L2',L2);
+
+      % assemble L(s) matrix
+      
+   L = matrix(corasim);
+   
+   L = poke(L,L1,1,1);
+   L = poke(L,L2,1,2);
+
+      % store L in cache
+      
+   oo = cache(oo,'consd.L',L);
+   
+   function Ls = CancelL(o,Ls)         % Set cancel Epsilon            
+      eps = opt(o,'cancel.L.eps');
+      if ~isempty(eps)
+         Ls = opt(Ls,'eps',eps);
+      end
+   end
+end
 
 %==========================================================================
 % Closed Loop T(s)
@@ -675,7 +707,7 @@ function oo = Process(o)               % Brew Process Segment
    cache(oo,oo);                       % hard refresh cache
    cls(o);
 end
-function oo = ClosedLoop(o)            % Closed Loop Linear System     
+function oo = OldClosedLoop(o)         % Old Closed Loop Linear System 
 %
 %          F       Fn         +----+     F1               +-----+  y1_1
 %        ----->o------------->| mu |---------*-----*----->| L11 |------>
@@ -693,26 +725,17 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
 %                                                  *----->| L41 |------>
 %                                                         +-----+
 %
-   [oo,bag,rfr] = cache(o,o,'consd');
+   oo = o;
+   return
    
-   L11 = cache(oo,'consd.L11');
-   L21 = cache(oo,'consd.L21');
-   L31 = cache(oo,'consd.L31');
-   L41 = cache(oo,'consd.L41');
-   L51 = cache(oo,'consd.L51');
-
-   L12 = cache(oo,'consd.L12');
-   L22 = cache(oo,'consd.L22');
-   L32 = cache(oo,'consd.L32');
-   L42 = cache(oo,'consd.L42');
-   L52 = cache(oo,'consd.L52');
    
+   L1 = cook(oo,'L1');   
    mu = opt(o,{'process.mu',0.1});     % friction coefficient
    
-      % calculate S1(s) = mu / (1 - mu*L51(s))
+      % calculate S1(s) = mu / (1 - mu*L1(s))
 
-   L51 = CanEpsT(o,L51);               % set cancel epsilon
-   S1 = mu / (1 - mu*L51);             % closed loop sensitivity
+   L1 = CanEpsT(o,L1);                 % set cancel epsilon
+   S1 = mu / (1 - mu*L1);              % closed loop sensitivity
    S2 = 0*S1;
    
    S = matrix(corasim);
@@ -824,6 +847,79 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       oo = cache(o,'process.Ta',Ta);
    end
 
+   function Gs = CanEpsT(o,Gs)         % Set Cancel Epsilon            
+      eps = opt(o,'cancel.T.eps');
+      if ~isempty(eps)
+         Gs = opt(Gs,'eps',eps);
+      end
+   end
+end
+function oo = ClosedLoop(o)            % Closed Loop Linear System     
+   mu = opt(o,{'process.mu',0.1});     % friction coefficient
+   s = system(corasim,{[1 0],[1]});    % differentiation trf
+   s = CanEpsT(o,s);
+   
+   oo = Force(o);                      % calc force trf
+   oo = Elongation(oo);                % calc elongation trf
+   oo = Velocity(oo);                  % calc velocity trf
+   oo = Acceleration(oo);              % calc acceleration trf
+   
+   function oo = Force(o)              % Calc Force Transfer Function        
+      G31 = cache(o,'trfd.G31');
+      G32 = cache(o,'trfd.G32');
+      G33 = cache(o,'trfd.G33');
+
+      Tf1 = mu*G33 / (G33 + mu*G31);
+      Tf2 = 0*Tf1;
+
+      Tf = matrix(corasim);
+      Tf = poke(Tf,Tf1,1,1);
+      Tf = poke(Tf,Tf2,2,1);
+
+      oo = cache(o,'process.Tf',Tf);
+   end
+   function oo = Elongation(o)         % Calc Elongation Transfer Fct. 
+      [Tf1,Tf2] = cook(o,'Tf1,Tf2');
+      
+      if (0)
+         [H11,H12,H21,H22] = cook(o,'H11,H12,H21,H22');
+      else
+         [H11,H12,H21,H22] = cook(o,'G11,G12,G21,G22');
+      end
+
+      Ts1 = H11*Tf1 + H12*Tf2;
+      Ts2 = H21*Tf1 + H22*Tf2
+
+      Ts = matrix(corasim);
+      Ts = poke(Ts,Ts1,1,1);
+      Ts = poke(Ts,Ts2,2,1);
+
+      oo = cache(o,'process.Ts',Ts);
+   end
+   function oo = Velocity(o)           % Calc Velocity Transfer Fct.   
+      [Ts1,Ts2] = cook(o,'Ts1,Ts2');
+
+      Tv1 = Ts1 * s;
+      Tv2 = Ts2 * s;
+
+      Tv = matrix(corasim);
+      Tv = poke(Tv,Tv1,1,1);
+      Tv = poke(Tv,Tv2,2,1);
+
+      oo = cache(o,'process.Tv',Tv);
+   end
+   function oo = Acceleration(o)       % Calc Acceleration Trf         
+      [Tv1,Tv2] = cook(o,'Tv1,Tv2');
+
+      Ta1 = Tv1 * s;
+      Ta2 = Tv2 * s;
+
+      Ta = matrix(corasim);
+      Ta = poke(Ta,Ta1,1,1);
+      Ta = poke(Ta,Ta2,2,1);
+
+      oo = cache(o,'process.Ta',Ta);
+   end
    function Gs = CanEpsT(o,Gs)         % Set Cancel Epsilon            
       eps = opt(o,'cancel.T.eps');
       if ~isempty(eps)

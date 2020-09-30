@@ -14,7 +14,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @Trf,@TfOverview,...
-                      @Overview,@Rloc,@AnalyseRamp,@NormRamp,...
+                      @Overview,@Rloc,@OpenLoop,...
+                      @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros);
    oo = gamma(o);                 % invoke local function
 end
@@ -26,10 +27,10 @@ end
 function oo = Menu(o)                  % Setup Analyse Menu            
    oo = mitem(o,'Closed Loop');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
-   ooo = mitem(oo,'Step Plots',{@WithCuo,'StepPlots'});
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
 
-   oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
+   oo = Stability(o);                  % add stability menu
 
    ooo = mitem(oo,'-'); 
    oo = Force(o);                      % add Force menu
@@ -38,10 +39,16 @@ function oo = Menu(o)                  % Setup Analyse Menu
    oo = Elongation(o);                 % add Elongation menu
    
    oo = mitem(o,'-');
-   oo = CriticalMenu(o);
+   %oo = CriticalMenu(o);
    oo = mitem(o,'Normalized System');
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
+end
+function oo = Stability(o)             % Closed Loop Stability         
+   oo = mitem(o,'Small Signal Stability');
+   ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'L1(s): Open Loop',{@WithCuo,'OpenLoop','L1',1,'m'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
@@ -143,6 +150,12 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       return
    end
    
+      % refresh caches
+      
+   [oo,bag,rfr] = cache(oo,oo,'trfd'); % transfer function cache segment
+   [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
+   [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
+   
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -183,20 +196,44 @@ function o = Rloc(o)                   % Root Locus
    o = with(o,'rloc');
    o = with(o,'style');
    
-   L = cache(o,'consd.L');
-   
-   L51 = peek(L,5,1);
-   [num,den] = peek(L51);
+   sym = 'L1';
+   L1 = cook(o,sym);   
+   [num,den] = peek(L1);
    
    mu = opt(o,{'process.mu',0.1});
    
-%  oo = system(inherit(corasim,o),{-mu*num,den});
-   oo = system(inherit(corasim,o),{mu*num,den});
+   oo = system(inherit(corasim,o),{-mu*num,den});
    
    subplot(o,111);
    rloc(oo);
-   title(sprintf('Root Locus - mu = %g',mu));
+   title(sprintf('Root Locus %s(s) - mu = %g',sym,mu));
    
+   heading(o);
+end
+function o = OpenLoop(o)               % L(s) Open Loop                
+   o = with(o,'bode');
+   o = with(o,'simu');
+   o = with(o,'rloc');
+
+   sym = arg(o,1);
+   idx = arg(o,2);
+   col = arg(o,3);
+   
+   oo = cook(o,sym);
+   o = opt(o,'color',col);
+   sym = [sym,'(s)'];
+   
+   if (idx == 0)
+      diagram(o,'Trf',sym,oo,111);
+   else
+      title = [sym,'(s): Open Loop Transfer Function'];
+      diagram(o,'Trf', sym,oo,3111,title);
+      diagram(o,'Bode',sym,oo,3221);
+      diagram(o,'Rloc',sym,oo,3222);
+      diagram(o,'Step',sym,oo,3131);
+   end
+   
+   display(oo);
    heading(o);
 end
 
@@ -312,19 +349,22 @@ function o = Overview(o)              % Closed Loop Overview
 
    diagram(o,'Rloc',sym1,o1,3231);
    diagram(o,'Rloc',sym2,o2,3232);
+
+   heading(o);
 end
 function o = Trf(o)                   % Transfer Function              
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
 
-   sym = arg(o,1)
+   sym = arg(o,1);
    idx = arg(o,2);
    col = arg(o,3);
    
    oo = cook(o,sym);
    o = opt(o,'color',col);
    sym = [sym,'(s)'];
+   oo = set(oo,'name',sym);
    
    if (idx == 0)
       diagram(o,'Trf',sym,oo,111);
@@ -334,6 +374,9 @@ function o = Trf(o)                   % Transfer Function
       diagram(o,'Rloc',sym,oo,3222);
       diagram(o,'Step',sym,oo,3131);
    end
+   
+   display(oo);
+   heading(o);
 end
 
 %==========================================================================

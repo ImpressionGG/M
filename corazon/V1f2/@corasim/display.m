@@ -25,7 +25,7 @@ function txt = display(o)
          System(o);
       
       case 'strf'
-         fprintf('s-type transfer function:\n');
+         %fprintf('s-type transfer function:\n');
          [num,den] = peek(o);
          if (nargout > 0)
 %           txt = Display(o,num,den);
@@ -36,7 +36,7 @@ function txt = display(o)
       
       case 'ztrf'
          [num,den,T] = peek(o);
-         fprintf('z-type transfer function (T = %g):\n',T);
+         %fprintf('z-type transfer function (T = %g):\n',T);
          if (nargout > 0)
             txt = Display(o,num,den,T);
          else
@@ -44,7 +44,7 @@ function txt = display(o)
          end
 
       case 'qtrf'
-         fprintf('q-type transfer function:\n');
+         %fprintf('q-type transfer function:\n');
          [num,den,T] = peek(o);
          if (nargout > 0)
             txt = Display(o,num,den,T);
@@ -533,6 +533,10 @@ function txt = Matrix(o)               % Display Matrix
       paragraph = [];
       txt = {};  rows = 0;
       for (j=1:n)
+         if (n == 1)
+            M{i,j} = opt(M{i,j},'maxlen',opt(o,'maxlen'));
+         end
+         
          if isempty(M{i,j})
             txt{j} = '[]';
          else

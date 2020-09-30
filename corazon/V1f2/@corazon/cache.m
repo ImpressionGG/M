@@ -285,7 +285,9 @@ function varargout = SoftRefresh(o,seg,brewer)
       rfr = isempty(segment);          % refresh yes/no ?
 
       if (rfr)                         % in case of empty segment ...
+         args = arg(o);                % save args
          o = brew(o,brewer);           % ... brew actual data
+         o = arg(o,args);              % restore args
          segment  = Segment(o,seg);    % fetch cache segment again
       end
 

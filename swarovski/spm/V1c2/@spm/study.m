@@ -21,9 +21,10 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Study Menu              
-   %oo = mitem(o,'Transition Matrix');
-   %ooo = mitem(oo,'Double',{@WithCuo,'PhiDouble'});
-   %ooo = mitem(oo,'Rational',{@WithCuo,'PhiRational'});
+   if ~setting(o,{'study.menu',1})
+      visible(o,0);
+      oo = o; return
+   end
 
    oo = mitem(o,'Transfer Matrix');
    ooo = mitem(oo,'Double',{@WithCuo,'TrfmDouble'});

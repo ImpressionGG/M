@@ -55,8 +55,11 @@ function o = Rloc(o,num,den)           % Plot Root Locus
    delta = [diff(xlim),diff(ylim)] * delta;
 
    K1 = 1;
-   Branch(o,[+eps,K1],'g');            % calc & plot positive branch
-   Branch(o,K1,'r');                   % calc & plot positive branch
+   r = roots(add(o,K1*num,den));
+   plot(o,real(r),imag(r),'yyrp');
+   
+   Branch(o,[+eps,K1],'r');            % calc & plot positive branch
+   Branch(o,K1,'yyr');                 % calc & plot positive branch
    Branch(o,-eps,'bc');                % calc & plot negative branch
    
    subplot(o);

@@ -108,7 +108,7 @@ function oo = Tools(o)                 % Tools Menu Items
    oo = mseek(o,{'Tools'});
    ooo = mitem(oo,'Cache Reset',{@CacheReset});
 end
-function o = CacheReset(o)             % Clear All Caches              
+function oo = CacheReset(o)            % Clear All Caches              
    o = pull(o);
    for (i=1:length(o.data))
       oo = o.data{i};
@@ -116,9 +116,25 @@ function o = CacheReset(o)             % Clear All Caches
    end
    message(o,'Caches of all objects have been cleared!');
 end
-function oo = Extras(o)                % Extras Menu Items             
+function oo = OldExtras(o)             % Extras Menu Items             
    oo = mseek(o,{'Extras'});
    enable(oo,0);                       % disable Extras menu
+end
+function oo = Extras(o)                % Extras Menu Items             
+   setting(o,{'study.menu'},false);    % provide setting
+   
+   oo = mseek(o,{'Extras'});
+   ooo = mitem(oo,'Study Menu',{},'study.menu');
+         check(ooo,{@StudyMenu});
+   return
+   function o = StudyMenu(o)
+      menu = opt(o,'study.menu');
+      if (menu)
+         rebuild(o);
+      else
+         rebuild(o);
+      end
+   end
 end
 
 %==========================================================================
@@ -360,34 +376,8 @@ function oo = Friction(o)              % Friction Menu
    setting(o,{'process.mu'},0.1);      % Coulomb friction parameter
    
    oo = mitem(o,'Friction');
-   ooo = mitem(oo,'Mu (Coulomb Friction Parameter)',{},'process.mu');
+   ooo = mitem(oo,'Mu (Coefficient)',{},'process.mu');
    charm(ooo,{});
-end
-function oo = OldSimu(o)               % Simulation Parameter Menu     
-%
-% SIMU   Add simulation parameter menu items
-%
-   setting(o,{'simu.tmax'},0.01);
-   setting(o,{'simu.Fmax'},100);
-   setting(o,{'simu.Nmax'},10);        % noise magnitude
-   setting(o,{'simu.dt'},5e-6);
-   setting(o,{'simu.plot'},500);       % number of points to plot
-
-   oo = mitem(o,'Simulation');
-   ooo = mitem(oo,'Max Time (tmax)',{},'simu.tmax');
-          choice(ooo,[1000,2000,5000, 100,200,500,10,20,50, 1,2,5,...
-                      0.1,0.2,0.5, 0.01,0.02,0.05, 0.001,0.002,0.005],{});
-   ooo = mitem(oo,'Time Increment (dt)',{},'simu.dt');
-          choice(ooo,[1e-6,2e-6,5e-6, 1e-5,2e-5,5e-5, 1e-4,2e-4,5e-4,...
-                      1e-3,2e-3,5e-3, 1e-2,2e-2,5e-2, 1e-2,2e-2,5e-2],{});
-   ooo = mitem(oo,'Number of Points to Plot',{},'simu.plot');
-          choice(ooo,[50 100 200 500 1000 inf],{});
-          
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Max Force [N]',{},'simu.Fmax');
-          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
-   ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
-          choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %

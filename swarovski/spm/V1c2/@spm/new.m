@@ -45,22 +45,26 @@ function oo = Menu(o)                  % New Menu
    ooo = mitem(oo,'Academic Sample #1',{@Create 'Academic1'});
    ooo = mitem(oo,'Academic Sample #2',{@Create 'Academic2'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Schleifsaal Hypothese 0°', {@Create 'Schleif' 0});
-   ooo = mitem(oo,'Schleifsaal Hypothese 15°',{@Create 'Schleif' 15});
-   ooo = mitem(oo,'Schleifsaal Hypothese 30°',{@Create 'Schleif' 30});
-   ooo = mitem(oo,'Schleifsaal Hypothese 45°',{@Create 'Schleif' 45});
-   ooo = mitem(oo,'Schleifsaal Hypothese 60°',{@Create 'Schleif' 60});
-   ooo = mitem(oo,'Schleifsaal Hypothese 75°',{@Create 'Schleif' 75});
-   ooo = mitem(oo,'Schleifsaal Hypothese 80°',{@Create 'Schleif' 80});
-   ooo = mitem(oo,'Schleifsaal Hypothese 85°',{@Create 'Schleif' 85});
-   ooo = mitem(oo,'Schleifsaal Hypothese 90°',{@Create 'Schleif' 90});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
+   ooo = mitem(oo,'Schleifsaal Hypothese');
+   %oooo = mitem(ooo,'80° @ Coupling 0.5 ',{@Create 'Schleif', 80,0.5});
+   %oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'0°', {@Create 'Schleif', 0,[]});
+   oooo = mitem(ooo,'15°',{@Create 'Schleif', 15,[]});
+   oooo = mitem(ooo,'30°',{@Create 'Schleif', 30,[]});
+   oooo = mitem(ooo,'45°',{@Create 'Schleif', 45,[]});
+   oooo = mitem(ooo,'60°',{@Create 'Schleif', 60,[]});
+   oooo = mitem(ooo,'75°',{@Create 'Schleif', 75,[]});
+   oooo = mitem(ooo,'80°',{@Create 'Schleif', 80,[]});
+   oooo = mitem(ooo,'85°',{@Create 'Schleif', 85,[]});
+   oooo = mitem(ooo,'88°',{@Create 'Schleif', 88,[]});
+   oooo = mitem(ooo,'89°',{@Create 'Schleif', 89,[]});
+   oooo = mitem(ooo,'90°',{@Create 'Schleif', 90,[]});
+   oooo = mitem(ooo,'-');
+   oooo = Coupling(ooo);   
    
    ooo = mitem(oo,'-');
-   ooo = Parameter(oo);
-
-
+   ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
+ 
    function o = Create(o)
       gamma = eval(['@',arg(o,1)]);
       
@@ -74,12 +78,11 @@ function oo = Menu(o)                  % New Menu
       paste(oo);                       % paste into shell
    end
 end
-function oo = Parameter(o)
-   setting(o,{'new.coupling'},0);
+function oo = Coupling(o)              % Coupling Menu                 
+   setting(o,{'new.coupling'},0.5);
    
-   oo = mitem(o,'Parameter');
-   ooo = mitem(oo,'Coupling',{},'new.coupling');
-   choice(ooo,[0 0.1 0.2 0.5 1 2 5 10]);
+   oo = mitem(o,'Coupling',{},'new.coupling');
+   choice(oo,[0 0.1 0.2 0.3 0.4 0.5 1 2 5 10]);
 end
 
 %==========================================================================
@@ -267,15 +270,19 @@ end
 
 function oo = Schleif(o)               % Schleifsaal Hypothese         
    theta = arg(o,1);                   % Lagewinkel
+   coupling = arg(o,2);
+   coupling = o.either(coupling,opt(o,{'new.coupling',0}));
    
-%  ka = 5e8;                           %  500 N/um (axial stiffness)
-%  kt = 1.5e7;                         %   15 N/um (tangential stiffness)
-   ka = 5e7;                           %   20 N/um (axial stiffness)
-   kt = 2e7;                           %    2 N/um (tangential stiffness)
-
-   ki = 5e6;                           %    5 N/um (crystal stiffness)  
-   ci = 50;  ca = ci;  ct = ci;        %   50 Ns/m (viscous damping)
-   m = 0.5;                            %  0.5 kg   (mass)
+      % ka wa<s nominal ka = 5e8, but we take 10x the value
+      % to have an effective demonstration of the instability
+      
+   k0 = 40;
+   ka = 500e6*k0;                      % 500 N/um (nominal axial stiffness)
+   kt = 15e6;                          %  15 N/um (nominal tang. stiffness)
+ 
+   ki = 5e6;%*k0;                        %   5 N/um (crystal stiffness)  
+   ci = 50;  ca = ci;  ct = ci;        %  50 Ns/m (viscous damping)
+   m = 0.5;                            % 0.5 kg   (mass)
    
    Sin = sin(theta*pi/180);
    Cos = cos(theta*pi/180);
@@ -289,7 +296,6 @@ function oo = Schleif(o)               % Schleifsaal Hypothese
   
       % coupling
       
-   coupling = opt(o,{'new.coupling',0});
    ck = coupling*ci;    kk = coupling*ki;
    Cd(1,2) = ck;   Kd(1,2) = kk;
    Cd(2,1) = ck;   Kd(2,1) = kk
@@ -304,9 +310,9 @@ function oo = Schleif(o)               % Schleifsaal Hypothese
    D = Z;
    
    oo = spm('spm');                    % new spm typed object
-   oo.par.title = sprintf('Schleifsaal Hypothese %g°',theta);
-   oo.par.comment = {sprintf('coupling: %g',coupling)}
-   
+   oo.par.title = sprintf('Schleifsaal Hypothese Pivot %g° @ Coupling %g',...
+                          theta,coupling);
+
       % finally set data
       
    oo = data(oo,'A,B,C,D',A,B,C,D);   

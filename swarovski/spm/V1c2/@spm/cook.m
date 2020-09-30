@@ -4,6 +4,7 @@ function varargout = cook(o,sym)
 %
 %          G = cook(o,'G')                  % SPM transfer matrix G(s)
 %          H = cook(o,'H')                  % constrained trf matrix H(s)
+%          L = cook(o,'L')                  % open loop trf matrix L(s)
 %
 %          Tf = cook(o,'Tf')                % Force transfer matrix Tf(s)
 %          Ts = cook(o,'Ts')                % Elongation trf matrix Ts(s)
@@ -51,6 +52,8 @@ function oo = Cook(o,sym)
          G = cache(o,'trfd.G');
          oo = peek(G,i,j);
          
+         % constrained transfer matrix
+         
       case 'H'
          oo = cache(o,'consd.H');
          
@@ -58,7 +61,16 @@ function oo = Cook(o,sym)
          H = cache(o,'consd.H');
          oo = peek(H,i,j);
          
-         % Closed Loop Transfer Matrix
+         % open loop transfer matrix
+         
+      case 'L'
+         oo = cache(o,'consd.L');
+         
+      case {'L1','L2'}
+         L = cache(o,'consd.L');
+         oo = peek(L,1,i);
+
+         % closed loop transfer matrix
          
       case {'Tf','Ts','Tv','Ta'}
          oo = cache(o,['process.',sym]);

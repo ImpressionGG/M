@@ -143,21 +143,24 @@ end
 
 function o = Trf(o)                    % Transfer Function Diagram     
    sym = arg(o,1);
+   tit = [sym,': Transfer Function'];  % default title
    G = arg(o,2);
-   sub = o.either(arg(o,3),111);
+   sub = o.either(arg(o,3),111);       % subplot ID
+   tit = o.either(arg(o,4),tit);       % title
+   
    
    if isequal(sub,111)
       o = opt(o,'subplot',sub,'pitch',0.4);
-      G = opt(G,'maxlen',160);
+      G = opt(G,'maxlen',200);
    elseif isequal(sub,311) || isequal(sub,3111) 
       o = opt(o,'subplot',sub,'pitch',2);
-      G = opt(G,'maxlen',160);
+      G = opt(G,'maxlen',200);
    else
       o = opt(o,'subplot',sub,'pitch',2);
    end
    
    comment = [{' '},display(G)];
-   message(o,[sym,': Transfer Function'],comment);
+   message(o,tit,comment);
    axis off;
 end
 function o = Weight(o)                 % Weight Function Diagram       
@@ -355,7 +358,8 @@ function o = Rloc(o)                   % Root Locus Diagram
    hold on;
    
    center = sum(real([p(:);z(:)]))/(length(p)+length(z));
-   title([sym,': Poles/ Zeros']);
+   title(sprintf('%s: Poles/ Zeros - Re(z) <= %g,  Re(p) <= %g',...
+          sym,o.rd(max(real(z)),1), o.rd(max(real(p)),1)) );
    
    t = 0:1/10:100;
    K = 10.^t - 1;

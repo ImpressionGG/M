@@ -25,11 +25,17 @@ function [n,ni,no] = size(o)
          else
             error('only 2 out args supported');
          end
+         
+      case {'strf','ztrf','qtrf'}
+         n = length(den(o));
+         ni = 1; no = 1;
+         
       otherwise
          error('type not supported!');
    end
    
    if (nargout <= 1)
       sizes = [n,ni,no];
+      n = sizes;
    end
 end
