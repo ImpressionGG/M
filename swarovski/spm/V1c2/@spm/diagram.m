@@ -199,7 +199,8 @@ end
 %==========================================================================
 
 function o = Step(o)                   % Elongation Step Response      
-   o = with(o,'scale');                % unwrap scale options
+   o = Normalize(o);                   % manage time normalizing
+   
    sym = arg(o,1);
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
@@ -398,4 +399,22 @@ function o = Epilog(o,tit,sym1,sym2)   % Epilog Tasks for Diagrams
    
    grid(o);
    heading(o);
+end
+function o = Normalize(o)              % Manage Normalizing            
+   T0 = opt(o,{'brew.T0',1});
+   
+      % modify simu options
+      
+   o = with(o,'simu');
+   [tmax,dt] = opt(o,'tmax,dt');
+   tmax = tmax/T0;  dt = dt/T0;
+   o = opt(o,'tmax,dt',tmax,dt);
+   
+         % modify scale options
+      
+   o = with(o,'scale');
+   xscale = opt(o,'xscale');
+   xscale = xscale/T0;
+   o = opt(o,'xscale',xscale);
+ 
 end

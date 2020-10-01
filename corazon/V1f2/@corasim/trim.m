@@ -1,4 +1,4 @@
-function oo = trim(o)                  % Trim Transfer Function         
+function oo = trim(o,p)                % Trim Transfer Function         
 %
 % TRIM    Trim transfer function of a CORASIM object. If the system is of
 %         type 'strf' or 'ztrf' then leading zeros of numerator and deno-
@@ -9,30 +9,45 @@ function oo = trim(o)                  % Trim Transfer Function
 %         numerator/denominator representation.
 %
 %            oo = trim(o)              % trim transfer function
+%            p = trim(o,p)             % trim polynomial
 %
 %         Copyright(c): Bluenetics 2020
 %
 %         See also: CORASIM
 %
+   if (nargin == 1)
+      oo = TrimTrf(o);
+   elseif (nargin == 2)
+      oo = TrimPoly(o,p);
+   else
+      error('1 or 2 input args expected');
+   end
+end
+
+%==========================================================================
+% Trim Polynomial
+%==========================================================================
+
+function p = TrimPoly(o,p)
+   idx = find(p~=0);
+   if isempty(idx)
+      p = 0;
+   else
+      p = p(idx(1):end);
+   end
+end
+
+%==========================================================================
+% Trim Transfer Function
+%==========================================================================
+
+function oo = TrimTrf(o)
    [num,den] = peek(o);
    
-      % trim numerator
-      
-   idx = find(num~=0);
-   if isempty(idx)
-      num = 0;
-   else
-      num = num(idx(1):end);
-   end
-   
-      % trim denominator
-      
-   idx = find(den~=0);
-   if isempty(idx)
-      den = 0;
-   else
-      den = den(idx(1):end);
-   end
+      % trim numerator and denominator
+     
+   num = TrimPoly(o,num);
+   den = TrimPoly(o,den);
    
       % normalize numerator/denominator
       

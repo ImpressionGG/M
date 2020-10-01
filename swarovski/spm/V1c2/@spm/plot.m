@@ -447,7 +447,7 @@ function o = Gs(o)                     % Double Transfer Function
          for (j=1:m)
             Gij = peek(G,i,j);
             Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
-            disp(Gij);
+            display(Gij);
             fprintf('\n');
          end
       end
@@ -459,8 +459,10 @@ function o = Gs(o)                     % Double Transfer Function
       
       sym = sprintf('G%g%g(s)',i,j);
       symw = sprintf('w%g%g',i,j);
-      Gij = set(Gij,'name',sym);    
-      disp(Gij);
+      Gij = set(Gij,'name',sym);  
+      
+      Gij = opt(Gij,'detail',true);
+      display(Gij);
       
       diagram(o,'Trf',sym,Gij,3111);      
       diagram(o,'Rloc',sym,Gij,3222);

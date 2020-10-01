@@ -463,6 +463,7 @@ function VersionV1F
 % - add trimming to corasim/num and corasim/den
 % - SPM toolbox pimped
 % - idle(o) at end of subplot(o) to let graphics refresh
+% - bug fix: corasim/display - eliminate Display,Trf
 %
 %
 % Known Bugs / Wishlist

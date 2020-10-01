@@ -386,7 +386,9 @@ function oo = Normalize(o)             % Normalize Menu
    
    oo = mitem(o,'Normalize');
    ooo = mitem(oo,'T0',{},'brew.T0');
-   choice(ooo,{{'1s',1},{'1 ms',1e-3},{'100 us',100e-6},{'10 us',10e-6}});
+   choice(ooo,{{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
+               {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
+               {@CacheReset});
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %

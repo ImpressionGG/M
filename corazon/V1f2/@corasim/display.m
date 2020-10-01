@@ -28,10 +28,9 @@ function txt = display(o)
          %fprintf('s-type transfer function:\n');
          [num,den] = peek(o);
          if (nargout > 0)
-%           txt = Display(o,num,den);
             txt = Ratio(o);
          else
-            Display(o,num,den);
+            Ratio(o);
          end
       
       case 'ztrf'
@@ -83,10 +82,10 @@ function oo = System(o)                % Display System
 end
 
 %==========================================================================
-% Display Polynomial
+% Old Display Trf
 %==========================================================================
 
-function txt = Display(o,num,den,Ts)   % Display Rational Function     
+function txt = OldDisplay(o,num,den,Ts)   % Display Rational Function  
    nn = length(num);
    nd = length(den);
    n = max(nn,nd);
@@ -127,7 +126,7 @@ function txt = Display(o,num,den,Ts)   % Display Rational Function
       end
    end
 end
-function out = Trf(G,name)             % Display Transfer Funcion      
+function out = OldTrf(G,name)             % Display Transfer Funcion   
 %
 % TRF     Display transfer function. 
 %
@@ -327,8 +326,6 @@ function out = Trf(G,name)             % Display Transfer Funcion
       list{end+1} = n_str;
       list{end+1} = bar;
       list{end+1} = d_str;
-      % list{end+1} = '';
-      % list{end+1} = '                                                   Omegas     Zetas';
       list{end+1} = '';
       list{end+1} = header;
    end
@@ -466,10 +463,152 @@ function out = Trf(G,name)             % Display Transfer Funcion
 end
 
 %==========================================================================
+% Display Poles & Zeros
+%==========================================================================
+
+function PoleZero(o,num,den)           % Display Poles & Zeros         
+   [r_num,r_den,K] = zpk(o,num,den);
+   deg_num = length(r_num);
+   deg_den = length(r_den);
+   spc = setstr(' '+zeros(1,200));
+
+      % calculate the field size
+
+   re_field = 10;  im_field = 15;
+   for (j = 1:2)
+      if (j == 1)
+         r = r_num;  deg = deg_num;
+      else
+         r = r_den;  deg = deg_den; 
+      end
+
+      for (i = 1:deg)
+         str = sprintf('%g',real(r(i)));
+         re_field = max(re_field,length(str));
+         str = sprintf('%g',abs(imag(r(i))));
+         im_field = max(im_field,length(str));
+      end
+   end
+
+   re_field = re_field + 3;  im_field = im_field + 3;
+
+      % roots, omegas, zetas
+   
+   for (j = 1:2)
+      if (j == 1)
+         kind = 'Zero';
+	      r = r_num;  deg = deg_num;
+         if (deg > 0)
+            if (nargout == 0)
+               fprintf('   Zeros:\n');
+            else
+               %list{end+1} = sprintf('   Zeros:');
+            end
+         end
+      else
+         kind = 'Pole';
+   	   r = r_den;  deg = deg_den;
+	      if (deg > 0)
+            if (nargout == 0)
+               fprintf('   Poles:\n');
+            else
+               list{end+1} = '';     % sprintf('   Poles:');
+            end
+         end
+      end
+
+      pair = 0;
+      for (i = 1:deg)
+	      ri = r(i);
+	      str = sprintf('%g',real(ri));
+	      re_str = [spc(1:re_field-length(str)), str];
+
+	      if ( abs(imag(ri)) <= 100*eps )
+	         im_str = spc(1:im_field+2);
+         else
+	         str = sprintf('%g',abs(imag(ri)));
+	         if ( imag(ri) >= 0 ) op = ' + i '; else op = ' - i '; end
+	         im_str = [op,str,spc(1:im_field-length(str)-3)];
+         end
+
+         if (nargout == 0)
+	         fprintf(['      %s #%g: ',re_str,im_str],kind,i);
+         else
+	         list{end+1} = sprintf(['%s #%g: ',re_str,im_str],kind,i);
+         end
+         
+	         % display omegas zetas
+
+	      if ( pair ~= 0)
+            if (nargout > 0)
+               list{end} = [list{end},'             '];  
+            end
+         else
+	         if ( abs(imag(ri)) > 100*eps )
+	            q = abs(real(ri) / imag(ri));
+	            zeta = q / sqrt(1 + q*q);
+               if (zeta == 0)
+                  omega = abs(imag(ri));
+               else
+	               %omega = -real(ri) / zeta;
+	               omega = abs(real(ri) / zeta);
+               end
+	            %str = sprintf('(%g)',omega);
+	            %str = [spc(1:20-length(str)), str];
+               if (zeta < 100*eps)
+                  zeta = 0;
+               end
+               
+               if (nargout == 0)
+   	            str = sprintf('%g',omega);
+%                 str = [spc(1:20-length(str)), str];  % spacer
+                  str = [spc(1:5-length(str)), str];  % spacer
+   	            fprintf([str,'   %g'],zeta);
+               else
+   	            str = sprintf('%g',omega);
+                  list{end} = sprintf(['%s @  [',str,';%g]'],list{end},zeta);
+               end
+            else
+	            omega = -real(ri);
+
+	            str = sprintf('@  (%g)',omega);
+	            str = [spc(1:20-length(str)), str];
+               
+               if (nargout == 0)
+   	            fprintf(str);
+               else
+                  list{end} = [list{end},str];
+               end
+            end
+         end
+         
+         if (nargout == 0)
+            fprintf('\n');
+         else
+            %list{end+1} = '';
+         end
+
+	         % check if conjugate complex pair of roots
+
+	      pair = 0;
+	      if ( i < deg  &  abs(imag(ri)) > eps )
+	         diff_re = abs(real(ri) - real(r(i+1)));
+	         diff_im = abs(imag(ri) + imag(r(i+1)));
+	         pair = ( diff_re < eps  &  diff_im < eps );
+	      end
+      end
+   end
+
+   if (nargout > 0)
+      out = list;
+   end
+end
+
+%==========================================================================
 % Display Rational Function
 %==========================================================================
 
-function txt = Ratio(o)                % Display Rational Function          
+function txt = Ratio(o)                % Display Rational Function     
    switch o.type
       case 'strf'
          sym = 's';
@@ -505,12 +644,23 @@ function txt = Ratio(o)                % Display Rational Function
    if (nargout > 0)
       return
    elseif ~opt(o,{'detail',0})
-      fprintf('rational function (%g/%g#%g)\n\n',...
-              order(on),order(od),digits(o));
+      fprintf('rational function (%g/%g)\n\n',...
+              Order(on),Order(od));
       disp([setstr(' '+zeros(size(txt,1),3)),txt]);
       fprintf('\n');
    else
-      Display(o,num,den);
+      %Display(o,num,den);
+      fprintf('rational function (%g/%g)\n\n',...
+              Order(on),Order(od));
+      disp([setstr(' '+zeros(size(txt,1),3)),txt]);
+      fprintf('\n');
+      
+      PoleZero(o,num,den);
+   end
+   
+   function n = Order(p)
+      p = trim(o,p);
+      n = length(p) - 1;
    end
 end
 
