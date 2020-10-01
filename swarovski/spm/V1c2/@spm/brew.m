@@ -239,8 +239,9 @@ function oo = TrfDouble(o)             % Double Transition Matrix
       end
    end
    function Normal(o)                  % Normal Gij(s) Calculation     
-      [AA,BB,CC,DD] = data(oo,'A,B,C,D');
-      sys = system(corasim,AA,BB,CC,DD);
+      %[AA,BB,CC,DD] = data(oo,'A,B,C,D');
+      [AA,BB,CC,DD] = var(oo,'A,B,C,D');
+       sys = system(corasim,AA,BB,CC,DD);
       
       for (i=1:n)
          for (j=1:i)

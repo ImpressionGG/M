@@ -73,6 +73,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - make changes to use new corasim functionality
 % - comprehensive Analyse menu with instable Schleifsaal model 
 % - introduce trf/normalizing
+% - bug fix: spm/brew - have to use scaled matrices
 %
 %
 % Known bugs & wishlist
