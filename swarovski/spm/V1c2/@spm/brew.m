@@ -69,7 +69,9 @@ end
 %==========================================================================
 
 function oo = Partition(o)             % Partition System              
-   [A,B,C] = data(o,'A,B,C');
+   %[A,B,C] = data(o,'A,B,C');
+   oo = Normalize(o);
+   [A,B,C] = var(oo,'A,B,C');
 
    n = floor(length(A)/2);
    i1 = 1:n;  i2 = n+1:2*n;
@@ -87,16 +89,16 @@ function oo = Partition(o)             % Partition System
    M = B2;  a0 = -diag(A21);  a1 = -diag(A22);
    omega = sqrt(a0);  zeta = a1./omega/2;
    
-   oo = var(o,'A11,A12,A21,A22',A11,A12,A21,A22);
+   oo = var(oo,'A11,A12,A21,A22',A11,A12,A21,A22);
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
    oo = var(oo,'M,a0,a1,omega,zeta',M,a0,a1,omega,zeta);
 end
 function oo = Normalize(o)             % Normalize System              
-   T0 = opt(o,{'brew.T0',1e-3});       % normalization time constant
+   T0 = opt(o,{'brew.T0',1});          % normalization time constant
 
-      % normalize system
+      % normalize system (select T0 = 1e-3 for a good effect!)
       
-   [A,B,C] = get(o,'system','A,B,C');
+   [A,B,C,D] = data(o,'A,B,C,D');
 
    n = floor(length(A)/2);
    i1 = 1:n;  i2 = n+1:2*n;
@@ -108,16 +110,17 @@ function oo = Normalize(o)             % Normalize System
    
       % refresh system
       
-   oo = set(o,'system','A,B,C,T0',A,B,C,T0);
-      
+   %oo = data(o,'A,B,C,D',A,B,C,D);
+   oo = var(o,'A,B,C,D,T0',A,B,C,D,T0);
+     
       % update simulation parameters
       
-   oo = opt(oo,'simu.tmax',opt(o,'simu.tmax')/T0);
-   oo = opt(oo,'simu.dt',opt(o,'simu.dt')/T0);
+   %oo = opt(oo,'simu.tmax',opt(o,'simu.tmax')/T0);
+   %oo = opt(oo,'simu.dt',opt(o,'simu.dt')/T0);
    
       % set time scale correction for plot routines
       
-   oo = var(oo,'Kms',1/T0);
+   %oo = var(oo,'Kms',1/T0);
 end
 
 %==========================================================================

@@ -72,6 +72,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - starting SPM beta V1f2 @ corazon beta V1c2
 % - make changes to use new corasim functionality
 % - comprehensive Analyse menu with instable Schleifsaal model 
+% - introduce trf/normalizing
 %
 %
 % Known bugs & wishlist

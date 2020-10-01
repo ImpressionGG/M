@@ -6,7 +6,7 @@ function oo = read(o,varargin)         % Read SPM Object From File
 %
 %          See also: SPM, IMPORT
 %
-   [gamma,oo] = manage(o,varargin,@ReadLogLog,@ReadSpmSpm);
+   [gamma,oo] = manage(o,varargin,@ReadLogLog,@ReadSpm1Spm,@ReadSpm2Spm);
    oo = gamma(oo);
 end
 
@@ -39,7 +39,9 @@ end
 % Read Driver for Spm Data
 %==========================================================================
 
-function oo = ReadSpmSpm(o)            % Read Driver for .spm File     
+function oo = ReadSpm1Spm(o)            % Read Driver 1 for .spm File  
+   talk = (control(o,'verbose') >= 3);
+
    path = arg(o,1);                    % get path arg
    [dir,file,ext] = fileparts(path);
       
@@ -59,9 +61,14 @@ function oo = ReadSpmSpm(o)            % Read Driver for .spm File
    oo.par.title = oo.trim(line(8:end));
    
       % skip to 'INPUT LABELS'
-      
+   
+   lcnt = 0;
    while (true)
       line = fgetl(fid);
+      if (talk)
+         lcnt = lcnt + 1;
+         fprintf('%04d %s\n',lcnt,line');
+      end
       if isequal(line,' INPUT LABELS')
          break;
       end
@@ -72,6 +79,10 @@ function oo = ReadSpmSpm(o)            % Read Driver for .spm File
    in = {};
    while (true)
       line = fgetl(fid);
+      if (talk)
+         lcnt = lcnt + 1;
+         fprintf('%04d %s\n',lcnt,line');
+      end
       if isequal(line,' OUTPUT LABELS')
          break;
       else
@@ -152,6 +163,89 @@ function oo = ReadSpmSpm(o)            % Read Driver for .spm File
       for i=1:rows
          l = fgetl(fid);
          entries = sscanf(l,'%f');
+         mat = [mat;entries'];
+      end
+   end
+end
+function oo = ReadSpm2Spm(o)            % Read Driver 2 for .spm File  
+   talk = (control(o,'verbose') >= 3);
+
+   path = arg(o,1);                    % get path arg
+   [dir,file,ext] = fileparts(path);
+      
+   oo = construct(o,class(o));         % create class object of type 'SPM'
+   oo.type = 'spm';
+   
+      % read infos
+   
+   fid = fopen(path,'r');
+   line = fgetl(fid);
+   line = fgetl(fid);
+   oo.par.notes = oo.trim(line);
+   line = fgetl(fid);
+   oo.par.date = [line(4:5),'-',line(1:2),'-',line(7:10)];
+   oo.par.time = line(17:end);
+   line = fgetl(fid);
+   oo.par.title = oo.trim(line(8:end));
+   
+      % skip until line with string 'MatrixA'
+   
+   lcnt = 0;
+   while (true)
+      line = fgetl(fid);
+      if (talk)
+         lcnt = lcnt + 1;
+         fprintf('%04d %s\n',lcnt,line');
+      end
+      if ~isempty(strfind(line,'MatrixA'))
+         break;
+      end
+   end
+   
+   A = ReadMatrix(fid);
+   B = ReadMatrix(fid,'B');
+   C = ReadMatrix(fid,'C');
+   D = zeros(size(C,1),size(B,2));
+   
+   fclose(fid);
+   
+   oo.par.dir = dir;
+   oo.par.file = [file,ext];
+   
+   header = sprintf('System: A[%dx%d], B[%dx%d], C[%dx%d], D[%dx%d]',...
+                    size(A),size(B),size(C),size(D));
+
+   oo.par.title = file;
+   oo.par.comment = {header,['file: ',file,ext],['directory: ',dir]};
+                 
+   oo.data.A = A;
+   oo.data.B = B;
+   oo.data.C = C;
+   oo.data.D = D;
+   
+   ev = eig(A);       % eigenvalues
+   t = 1:length(ev);
+   x = real(ev);
+   y = imag(ev);
+   [~,idx] = sort(abs(imag(ev)));
+   
+   oo.data.t = t;
+   oo.data.x = x(idx)';
+   oo.data.y = y(idx)';
+   return
+   
+   function [mat] = ReadMatrix(fid,name)
+      % if 'name' is missing, start from current position
+      
+      mat = [];
+         
+      while (1)
+         line = fgetl(fid);
+         if ~isempty(strfind(line,'Matrix')) || ~isempty(strfind(line,')'))
+            break;
+         end
+
+         entries = sscanf(line,'%f');
          mat = [mat;entries'];
       end
    end

@@ -69,7 +69,8 @@ function oo = New(o)                   % New Menu
 end
 function oo = Import(o)                % Import Menu Items             
    oo = mhead(o,'Import');             % locate Import menu header
-   ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spm});
+   ooo = mitem(oo,'SPM 1 Data (.spm)',{@ImportCb,'ReadSpm1Spm','.spm',@spm});
+   ooo = mitem(oo,'SPM 2 Data (.spm)',{@ImportCb,'ReadSpm2Spm','.spm',@spm});
    return
 
    function o = ImportCb(o)            % Import Log Data Callback
@@ -367,6 +368,7 @@ function oo = Select(o)                % Select Menu
    ooo = Friction(oo);                 % Friction menu
    
    ooo = mitem(oo,'-');
+   ooo = Normalize(oo);                % add Normalize menu
    ooo = Simu(oo);                     % add Simu sub menu
    ooo = Filter(oo);                   % add Filter sub menu
    ooo = Motion(oo);                   % add Motion sub menu
@@ -378,6 +380,13 @@ function oo = Friction(o)              % Friction Menu
    oo = mitem(o,'Friction');
    ooo = mitem(oo,'Mu (Coefficient)',{},'process.mu');
    charm(ooo,{});
+end
+function oo = Normalize(o)             % Normalize Menu                
+   setting(o,{'brew.T0'},1);
+   
+   oo = mitem(o,'Normalize');
+   ooo = mitem(oo,'T0',{},'brew.T0');
+   choice(ooo,{{'1s',1},{'1 ms',1e-3},{'100 us',100e-6},{'10 us',10e-6}});
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %

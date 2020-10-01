@@ -1,73 +1,36 @@
 function oo = trf(o,num,den,T)
 %
-% TRF   Create a transfer function
+% TRF     Make transfer function
 %
-%           o = system(corasim,A,B,C,D)
-%           oo = trf(o)                % cast (e.g. from a system (A,B,C,D)
+%            oo = trf(corasim);                  G(s) = 1/1
+%            oo = trf(o,num)                     % deniminator = [1]
 %
-%       1) Continuous type (s-type) transfer function
+%            oo = trf(o,num,den)                 % s-transfer function
+%            oo = trf(o,num,den)                 % s-transfer function
+%            oo = trf(o,[2 3],[1 5 6])           % s-transfer function
 %
-%           oo = trf(o,num,den)        % create from numerator/denominator
-%           oo = trf(o,[2 1],[1 5 6])  % create from numerator/denominator
-%           oo = trf(corasim)          % same as trf(o,[1],[1])
+%            oo = trf(o,num,den,T)               % z-transfer function
+%            oo = trf(o,num,den,-T)              % q-transfer function
+%   
+%            oo = trf(o)                         % cast to transfer fct
 %
-%       2) Discrete type (z-type) transfer function
+%         Copyright(c): Bluenetics 2020
 %
-%           oo = trf(o,num,den,T)      % create from numerator/denominator
-%           oo = trf(o,[2 1],[1 5 6],T)% create from numerator/denominator
-%           oo = trf(corasim,1,1,T)
-%
-%        Example 1: Construct s-type transfer function
-%
-%                          5 s^2 + 14 s + 8                  
-%                  G(s) = -------------------
-%                           1 s^2 + 2 s + 1                  
-%
-%           oo = trf(o,[5 14 8],[1 2 1])
-%
-%        Example 2: Construct z-type transfer function
-%
-%                          3 z^2 + 7 z + 5                  
-%                  G(s) = ------------------- @ T = 0.1
-%                           7 z^2 + 2 z + 3                  
-%
-%           oo = trf(o,[3 7 5],[7 2 3],0.1)
-%
-%        Copyright(c): Bluenetics 2020
-%
-%        See also: CORASIM, SYSTEM
+%         See also: CORASIM, SYSTEM, PEEK
 %
    if (nargin == 1)
-      if (isequal(o.type,'css') || isequal(o.type,'dss'))
-         error('implementation');
+      if isequal(o.type,'shell')
+         oo = system(o,{1,1});
       else
-         oo = trf(o,1,1);
-         return
+         oo = trim(o);                          % cast to trf
       end
-      
    elseif (nargin == 2)
-      
-      den = 1;  T = 0; typ = 'strf';
-      
+      oo = system(o,{num,[1]});
    elseif (nargin == 3)
-      
-      T = 0; typ = 'strf';
-      
+      oo = system(o,{num,den});
    elseif (nargin == 4)
-      
-      typ = 'ztrf';
-      
+      oo = system(o,{num,den},T);
    else
-      error('1 to 4 args expected');
+      error('1 up to 4 args expected');
    end
-
-      % setup object
-      
-   oo = type(o,typ);
-   
-   system.den = den;
-   system.num = num;
-   system.T = T;
-   
-   oo.par.system = system;
-end      
+end

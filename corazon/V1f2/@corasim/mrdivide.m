@@ -17,7 +17,14 @@ function oo = mrdivide(o1,o2)
       if (size(o1,1) ~= 1)
          error('arg1 must be scalar or row vector');
       end
-      o1 = system(corasim,{o1,1});
+      o1 = trf(corasim,o1);
+   end
+   
+   if isa(o2,'double')
+      if (size(o2,1) ~= 1)
+         error('arg2 must be scalar or row vector');
+      end
+      o2 = trf(corasim,o2);
    end
    
    oo = o1 * inv(o2);
