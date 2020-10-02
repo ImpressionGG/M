@@ -133,7 +133,10 @@ end
 
 function o = Auto(o)                   % Automatic Axes Limits         
    if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
-      Gjw = fqr(o);
+      fscale = opt(o,{'fscale',1});
+      
+      [Gjw,om] = fqr(o);
+      Gjw = fqr(o,om*fscale);
       
       high = Ceil(20*log10(max(abs(Gjw))));
       low = Floor(20*log10(min(abs(Gjw))));

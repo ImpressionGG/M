@@ -467,6 +467,7 @@ function VersionV1F
 % - pimp corazon/display to display figure number
 % - bug fix: inherit figure handle to children in corazon/menu/begin
 % - pimp corasim/display to display Ratio details by default
+% - bug fix: corasim/fqr to retrn also omega as output arg2
 %
 %
 % Known Bugs / Wishlist

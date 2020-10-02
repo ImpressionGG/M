@@ -1,14 +1,14 @@
-function Gjw = fqr(o,om,i,j)
+function [Gjw,om] = fqr(o,om,i,j)
 %
 % FQR  Frequency response of transfer function.
 %
-%		    Gjw = Fqr(G,omega)
-%		    Gjw = Fqr(G,omega,i,j)
+%		    Gjw = fqr(G,omega)
+%		    Gjw = fqr(G,omega,i,j)
 %
 %      Auto omega:
 %
-%		    [Gjw,omega] = Fqr(G)
-%		    [Gjw,omega] = Fqr(G,[],i,j)
+%		    [Gjw,omega] = fqr(G)
+%		    [Gjw,omega] = fqr(G,[],i,j)
 %
 %	    Calculation of complex frequency response of a transfer function 
 %      G(s) = num(s(/den(s) (omega may be a vector argument).
