@@ -466,6 +466,7 @@ function VersionV1F
 % - bug fix: corasim/display - eliminate Display,Trf
 % - pimp corazon/display to display figure number
 % - bug fix: inherit figure handle to children in corazon/menu/begin
+% - pimp corasim/display to display Ratio details by default
 %
 %
 % Known Bugs / Wishlist

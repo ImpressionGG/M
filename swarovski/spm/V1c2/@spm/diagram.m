@@ -407,14 +407,14 @@ function o = Normalize(o)              % Manage Normalizing
       
    o = with(o,'simu');
    [tmax,dt] = opt(o,'tmax,dt');
-   tmax = tmax/T0;  dt = dt/T0;
+   tmax = tmax/T0;  dt = dt/T0;        % reduce simulation timing
    o = opt(o,'tmax,dt',tmax,dt);
    
          % modify scale options
       
    o = with(o,'scale');
    xscale = opt(o,'xscale');
-   xscale = xscale/T0;
+   xscale = xscale*T0;                 % blow-up displayed time
    o = opt(o,'xscale',xscale);
  
 end

@@ -9,6 +9,7 @@ function txt = display(o)
 %
 %                minlen:      minimum length of string (default 10)
 %                maxlen:      maximum length of string (default 70)
+%                detail:      display details (default: true)
 %
 %          Copyright(c): Bluenetics 2020
 %
@@ -24,33 +25,15 @@ function txt = display(o)
          fprintf('discrete state space system (T = %g):\n',T);
          System(o);
       
-      case 'strf'
-         %fprintf('s-type transfer function:\n');
+      case {'strf','ztrf','qtrf'}
          [num,den] = peek(o);
          if (nargout > 0)
             txt = Ratio(o);
          else
+            o = opt(o,{'detail'},true);
             Ratio(o);
          end
-      
-      case 'ztrf'
-         [num,den,T] = peek(o);
-         %fprintf('z-type transfer function (T = %g):\n',T);
-         if (nargout > 0)
-            txt = Display(o,num,den,T);
-         else
-            Display(o,num,den,T);
-         end
-
-      case 'qtrf'
-         %fprintf('q-type transfer function:\n');
-         [num,den,T] = peek(o);
-         if (nargout > 0)
-            txt = Display(o,num,den,T);
-         else
-            Display(o,num,den,T);
-         end
-      
+            
       case 'matrix'  
          if (nargout == 0)
             [m,n] = size(o.data.matrix);
