@@ -1,4 +1,4 @@
-function oo = bode(o,col)
+function oo = bode(o,col)              % Corasim Bode Plot             
 %
 % BODE   Bode plot of a CORASIM object
 %
@@ -6,6 +6,7 @@ function oo = bode(o,col)
 %
 %        Options:
 %
+%           fscale           frequency scaling factor => fqr(G,om*fscale)
 %           color            color propetty (default: 'r')
 %           omega.low        omega range, low limit (default: 0.1)
 %           omega.low        omega range, high limit (default: 100000)
@@ -59,7 +60,8 @@ end
 %==========================================================================
 
 function o = Magnitude(o)              % Plot Magnitude                
-   points = opt(o,{'omega.points',1000});
+   points = opt(o,{'omega.points',1000});   
+   fscale = opt(o,{'fscale',1});       % frequency scaling factor
    
    xlim = get(gca,'Xlim');
    ylim = get(gca,'Ylim');
@@ -68,7 +70,7 @@ function o = Magnitude(o)              % Plot Magnitude
    olim = log10(xlim);
    
    om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om);
+   Gjw = fqr(o,om*fscale);
    dB = 20*log10(abs(Gjw));
    
       % plot magnitude
@@ -84,6 +86,7 @@ function o = Magnitude(o)              % Plot Magnitude
 end
 function o = Phase(o)                  % Plot Phase                    
    points = opt(o,{'omega.points',1000});
+   fscale = opt(o,{'fscale',1});       % frequency scaling factor
    
    xlim = get(gca,'Xlim');
    ylim = get(gca,'Ylim');
@@ -92,7 +95,7 @@ function o = Phase(o)                  % Plot Phase
    olim = log10(xlim);
    
    om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om);
+   Gjw = fqr(o,om*fscale);
    phase = atan2(imag(Gjw),real(Gjw)) * 180/pi;
    
       % prepare phase

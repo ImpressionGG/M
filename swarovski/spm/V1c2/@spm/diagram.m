@@ -16,14 +16,15 @@ function o = diagram(o,varargin)
 %              diagram(o,'FStep','L51',L51,sub)       % force step response
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %              diagram(o,'Bode','G11',G11,sub)        % bode diagram
+%              diagram(o,'Calc','L1',L1,sub)          % calculation diagram
 %
 %           Copyright(c): Bluenetics 2020
 %
 %           See also: SPM, PLOT
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
-                       @Mode,@Orbit,...
-                       @Trf,@Weight,@Step,@Vstep,@Astep,@Fstep,@Bode,@Rloc);
+                       @Mode,@Orbit,@Trf,@Weight,...
+                       @Step,@Vstep,@Astep,@Fstep,@Bode,@Rloc,@Calc);
    oo = gamma(oo);
 end
 
@@ -199,7 +200,7 @@ end
 %==========================================================================
 
 function o = Step(o)                   % Elongation Step Response      
-   o = Normalize(o);                   % manage time normalizing
+   o = Scaling(o);                     % manage scaling factors
    
    sym = arg(o,1);
    G = arg(o,2);
@@ -232,7 +233,7 @@ function o = Step(o)                   % Elongation Step Response
    subplot(o);                         % subplot done!
 end
 function o = Vstep(o)                  % Velocity Step Response        
-   o = with(o,'scale');                % unwrap scale options
+   o = Scaling(o);                     % manage scaling factors
    o = opt(o,'yscale',opt(o,'vscale'));
    o = opt(o,'yunit',opt(o,'vunit'));
    
@@ -259,7 +260,7 @@ function o = Vstep(o)                  % Velocity Step Response
    subplot(o);                         % subplot done!
 end
 function o = Astep(o)                  % Acceleration Step Response    
-   o = with(o,'scale');                % unwrap scale options
+   o = Scaling(o);                     % manage scaling factors
    o = opt(o,'yscale',opt(o,'ascale'));
    o = opt(o,'yunit',opt(o,'aunit'));
    
@@ -280,7 +281,7 @@ function o = Astep(o)                  % Acceleration Step Response
    subplot(o);                         % subplot done!
 end
 function o = Fstep(o)                  % Force Step Response           
-   o = with(o,'scale');                % unwrap scale options
+   o = Scaling(o);                     % manage scaling factors
    o = opt(o,'yscale',opt(o,'fscale'));
    o = opt(o,'yunit',opt(o,'funit'));
    
@@ -312,7 +313,7 @@ end
 %==========================================================================
 
 function o = Bode(o)                   % Bode Diagram                  
-   o = with(o,'bode');
+   o = Scaling(o);                     % manage scaling factors
    
    sym = arg(o,1);
    G = arg(o,2);
@@ -383,6 +384,31 @@ function o = Rloc(o)                   % Root Locus Diagram
 end
 
 %==========================================================================
+% Calculation Diagram
+%==========================================================================
+
+function o = Calc(o)
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+
+   switch sym
+      case {'L(s)','L1(s)','L2(s)'}
+         comment = ...
+            {'L(s)  =  [ L1(s), L2(s) ]  =  HD(s)  =  [ H31(s), H32(s) ]',...
+             ' ','L1(s)  =  H31(s)  =  -G31(s) / G33(s)',...
+             'L2(s)  =  H32(s)  =  -G32(s) / G33(s)'};
+      otherwise
+         comment = {};
+   end
+   
+   message(opt(o,'subplot',sub,'fontsize.comment',12,'pitch',2),...
+       sprintf('Calculation of %s',sym),comment);
+    
+   axis off;
+end
+
+%==========================================================================
 % Helper
 %==========================================================================
 
@@ -400,7 +426,11 @@ function o = Epilog(o,tit,sym1,sym2)   % Epilog Tasks for Diagrams
    grid(o);
    heading(o);
 end
-function o = Normalize(o)              % Manage Normalizing            
+function o = Scaling(o)                % Manage Scaling Factors        
+%
+% SCALING  Manage scaling factors with respect to time normalizing. Also
+%          unwrap simu options, scale options and Bode options
+%
    T0 = opt(o,{'brew.T0',1});
    
       % modify simu options
@@ -413,8 +443,12 @@ function o = Normalize(o)              % Manage Normalizing
          % modify scale options
       
    o = with(o,'scale');
-   xscale = opt(o,'xscale');
+   xscale = opt(o,{'xscale',1});
    xscale = xscale*T0;                 % blow-up displayed time
    o = opt(o,'xscale',xscale);
  
+   o = with(o,'bode');
+   fscale = opt(o,{'fscale',1});
+   fscale = fscale*T0;
+   o = opt(o,'fscale',fscale);
 end

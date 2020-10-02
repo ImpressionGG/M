@@ -382,7 +382,7 @@ function oo = Friction(o)              % Friction Menu
    charm(ooo,{});
 end
 function oo = Normalize(o)             % Normalize Menu                
-   setting(o,{'brew.T0'},1);
+   setting(o,{'brew.T0'},1e-3);
    
    oo = mitem(o,'Normalize');
    ooo = mitem(oo,'T0',{},'brew.T0');

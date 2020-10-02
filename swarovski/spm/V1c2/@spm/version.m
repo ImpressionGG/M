@@ -74,7 +74,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - comprehensive Analyse menu with instable Schleifsaal model 
 % - introduce trf/normalizing
 % - bug fix: spm/brew - have to use scaled matrices
-%
+% - add Analyse>Stability/L1(s)_Calculation
 %
 % Known bugs & wishlist
 % =========================

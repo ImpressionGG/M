@@ -14,7 +14,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @Trf,@TfOverview,...
-                      @Overview,@Rloc,@OpenLoop,...
+                      @Overview,@Rloc,@OpenLoop,@Calc,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros);
    oo = gamma(o);                 % invoke local function
@@ -45,10 +45,11 @@ function oo = Menu(o)                  % Setup Analyse Menu
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
 end
 function oo = Stability(o)             % Closed Loop Stability         
-   oo = mitem(o,'Small Signal Stability');
+   oo = mitem(o,'Stability');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'L1(s): Open Loop',{@WithCuo,'OpenLoop','L1',1,'m'});
+   ooo = mitem(oo,'L1(s): Calculation',{@WithCuo,'Calc','L1',1,'m'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
@@ -226,13 +227,60 @@ function o = OpenLoop(o)               % L(s) Open Loop
    if (idx == 0)
       diagram(o,'Trf',sym,oo,111);
    else
-      title = [sym,'(s): Open Loop Transfer Function'];
+      title = [sym,': Open Loop Transfer Function'];
       diagram(o,'Trf', sym,oo,3111,title);
       diagram(o,'Bode',sym,oo,3221);
       diagram(o,'Rloc',sym,oo,3222);
       diagram(o,'Step',sym,oo,3131);
    end
    
+   display(oo);
+   heading(o);
+end
+function o = Calc(o)                   % Calculation of L(s)           
+   sym = arg(o,1);
+   idx = arg(o,2);
+   col = arg(o,3);
+   
+   oo = cook(o,sym);
+   o = opt(o,'color',col);
+   sym = [sym,'(s)'];
+   
+   diagram(o,'Calc',sym,oo,4312);
+
+   diagram(o,'Bode',sym,oo,4321);
+   diagram(o,'Step',sym,oo,4322);
+   diagram(o,'Rloc',sym,oo,4323);
+   
+   switch sym
+      case 'L1(s)'
+         sym = 'G31';
+      case 'L2(s)'
+         sym = 'G32';
+      otherwise
+         return
+   end
+   o = opt(o,'color','g')
+   
+      % G31(s) or G32(s) diagrams
+      
+   oo = cook(o,sym);
+   sym = [sym,'(s)'];
+   
+   diagram(o,'Bode',sym,oo,4331);
+   diagram(o,'Step',sym,oo,4332);
+   diagram(o,'Rloc',sym,oo,4333);
+
+      % G33(s) diagrams
+
+   sym = 'G33';
+   oo = cook(o,sym);
+   sym = [sym,'(s)'];
+   
+   diagram(o,'Bode',sym,oo,4341);
+   diagram(o,'Step',sym,oo,4342);
+   diagram(o,'Rloc',sym,oo,4343);
+     
    display(oo);
    heading(o);
 end
