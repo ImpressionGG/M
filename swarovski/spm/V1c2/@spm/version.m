@@ -75,6 +75,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - introduce trf/normalizing
 % - bug fix: spm/brew - have to use scaled matrices
 % - add Analyse>Stability/L1(s)_Calculation
+% - cyan color for open loop transfer functions
 %
 % Known bugs & wishlist
 % =========================

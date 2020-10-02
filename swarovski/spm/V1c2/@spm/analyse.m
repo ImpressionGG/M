@@ -48,8 +48,8 @@ function oo = Stability(o)             % Closed Loop Stability
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'L1(s): Open Loop',{@WithCuo,'OpenLoop','L1',1,'m'});
-   ooo = mitem(oo,'L1(s): Calculation',{@WithCuo,'Calc','L1',1,'m'});
+   ooo = mitem(oo,'L1(s): Open Loop',{@WithCuo,'OpenLoop','L1',1,'c'});
+   ooo = mitem(oo,'L1(s): Calculation',{@WithCuo,'Calc','L1',1,'c'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
@@ -96,7 +96,7 @@ function oo = Elongation(o)            % Closed Loop Elongation Menu
    ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
 
-function oo = CriticalMenu(o)          % Critical Path Menu            
+function oo = OldCriticalMenu(o)       % Critical Path Menu            
    oo = mitem(o,'Critical Path');
    ooo = mitem(oo,'Overview',{@Overview});
    

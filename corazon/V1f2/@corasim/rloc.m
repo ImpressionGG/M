@@ -49,10 +49,10 @@ function o = Rloc(o,num,den)           % Plot Root Locus
    plot(o,real(r),imag(r),'mp');
 
    r = roots(add(o,2*K*num,den));      % closed loop roots for K = 2
-   plot(o,real(r),imag(r),'yyrp');
+   plot(o,real(r),imag(r),'rwp');
    
    r = roots(add(o,5*K*num,den));      % closed loop roots for K = 2
-   plot(o,real(r),imag(r),'gkp');
+   plot(o,real(r),imag(r),'mwp');
 
       % determine delta, which is the minimum progress which should
       % be achieved during each itewration
@@ -71,10 +71,10 @@ function o = Rloc(o,num,den)           % Plot Root Locus
       
    Branch(o,[+eps,K],'r');             % calc & plot positive branch
    Branch(o,[K,1.5*K],'m');            % calc & plot positive branch
-   Branch(o,[1.5*K,2*K],'yyr');        % calc & plot positive branch
-   Branch(o,[2*K,5*K],'gk');           % calc & plot positive branch
-   Branch(o,[5*K,10*K],'g');           % calc & plot positive branch
-   Branch(o,10*K,'gw');                % calc & plot positive branch
+   Branch(o,[1.5*K,2*K],'rw');         % calc & plot positive branch
+   Branch(o,[2*K,5*K],'mw');           % calc & plot positive branch
+   Branch(o,[5*K,10*K],'rww');         % calc & plot positive branch
+   Branch(o,10*K,'mww');               % calc & plot positive branch
 
       % negative branch
       
