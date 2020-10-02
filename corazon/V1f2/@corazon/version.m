@@ -464,6 +464,8 @@ function VersionV1F
 % - SPM toolbox pimped
 % - idle(o) at end of subplot(o) to let graphics refresh
 % - bug fix: corasim/display - eliminate Display,Trf
+% - pimp corazon/display to display figure number
+% - bug fix: inherit figure handle to children in corazon/menu/begin
 %
 %
 % Known Bugs / Wishlist

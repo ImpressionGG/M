@@ -39,7 +39,13 @@ function display(o,oo)                 % Display Corazon Object
    fprintf(' WORK Property:');
    bag = work(o);
    if isstruct(bag)
-      fprintf('\n');  disp(bag);
+      fprintf('\n');
+      if isfield(bag,'figure')
+         fig = bag.figure;
+         fprintf('    figure: %g\n',double(fig));
+         bag = rmfield(bag,'figure');
+      end
+      disp(bag);
    elseif ~isempty(bag)
        disp(bag); 
    else

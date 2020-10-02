@@ -92,13 +92,31 @@ function oo = Begin(o)                 % Begin Menu Build (Overloaded)
 
       % set screen dark if dark mode provided (avoid white flickers)
       
-   cls(o);
+   cls(oo);
    
       % prepare menu headers if list provided
       
    list = control(oo,{'menu',{}});
    for (i=1:length(list))
       ooo = mhead(oo,list{i});
+   end
+   
+   Inherit(o);                         % inherit figure handle to children
+   
+   function Inherit(o)
+   %
+   % INHERIT   Inherit figure handle of shell object to all children of
+   %           shell. This is important for the clone process and to
+   %           maintain data integrity
+   %   
+      o = pull(o);                     % refresh shell object
+      assert(container(o));
+   
+      fig = figure(o);
+      for (i=1:length(o.data))         % inherit figure handle to children
+         o.data{i} = figure(o.data{i},fig); 
+      end
+      push(o);                         % refresh shell object
    end
 end
 function oo = End(o)                   % End Menu Build (Overloaded)   
