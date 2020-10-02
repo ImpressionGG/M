@@ -107,19 +107,15 @@ function oo = Export(o)                % Export Menu Items
 end
 function oo = Tools(o)                 % Tools Menu Items              
    oo = mseek(o,{'Tools'});
-   ooo = mitem(oo,'Cache Reset',{@CacheReset});
+   ooo = mitem(oo,'Clear Cache',{@ClearCache});
 end
-function oo = CacheReset(o)            % Clear All Caches              
+function oo = ClearCache(o)            % Clear All Caches              
    o = pull(o);
    for (i=1:length(o.data))
       oo = o.data{i};
-      cache(oo,oo,[]);              % cache hard reset
+      cache(oo,oo,[]);                 % cache hard reset
    end
    message(o,'Caches of all objects have been cleared!');
-end
-function oo = OldExtras(o)             % Extras Menu Items             
-   oo = mseek(o,{'Extras'});
-   enable(oo,0);                       % disable Extras menu
 end
 function oo = Extras(o)                % Extras Menu Items             
    setting(o,{'study.menu'},false);    % provide setting
@@ -481,6 +477,19 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+end
+
+function oo = CacheReset(o)            % Reset All Caches              
+   callback = control(o,'refresh');    % save refresh callback
+   
+   o = pull(o);
+   for (i=1:length(o.data))
+      oo = o.data{i};
+      cache(oo,oo,[]);                 % cache hard reset
+   end
+   
+   control(o,'refresh',callback);      % restore refresh callback
+   refresh(o);
 end
 
 %==========================================================================

@@ -468,6 +468,7 @@ function VersionV1F
 % - bug fix: inherit figure handle to children in corazon/menu/begin
 % - pimp corasim/display to display Ratio details by default
 % - bug fix: corasim/fqr to retrn also omega as output arg2
+% - rloc pimped to have colored branch parts
 %
 %
 % Known Bugs / Wishlist

@@ -20,9 +20,6 @@ function o = rloc(o,num,den)           % Plot Root Locus
    
    o = Auto(o,num,den);                % auto setting of plot range
    o = Rloc(o,num,den);                % plot root locus
-   
-   ylim = get(gca,'Ylim');
-   plot(o,[0 0],ylim,'K2-.');
 end
 
 %==========================================================================
@@ -43,23 +40,44 @@ function o = Rloc(o,num,den)           % Plot Root Locus
       plot(o,real(p),imag(p),'Kx');
       hold on;
    end
+   
+   K = 1;                              % nominal K
+   r = roots(add(o,K*num,den));        % closed loop roots for K = 1
+   plot(o,real(r),imag(r),'rp');
+
+   r = roots(add(o,1.5*K*num,den));    % closed loop roots for K = 1.5
+   plot(o,real(r),imag(r),'mp');
+
+   r = roots(add(o,2*K*num,den));      % closed loop roots for K = 2
+   plot(o,real(r),imag(r),'yyrp');
+   
+   r = roots(add(o,5*K*num,den));      % closed loop roots for K = 2
+   plot(o,real(r),imag(r),'gkp');
+
       % determine delta, which is the minimum progress which should
       % be achieved during each itewration
       
    [xlim,ylim] = opt(o,'xlim,ylim');
-   assert(o.is(xlim) && o.is(ylim));
+   assert(o.is(xlim) && o.is(ylim));   
    set(gca,'Xlim',xlim,'Ylim',ylim);
+   
+   plot(o,[0 0],ylim,'K2-.');
    subplot(o);
    
    delta = opt(o,{'delta',0.01});
    delta = [diff(xlim),diff(ylim)] * delta;
 
-   K1 = 1;
-   r = roots(add(o,K1*num,den));
-   plot(o,real(r),imag(r),'yyrp');
-   
-   Branch(o,[+eps,K1],'r');            % calc & plot positive branch
-   Branch(o,K1,'yyr');                 % calc & plot positive branch
+      % positive branches
+      
+   Branch(o,[+eps,K],'r');             % calc & plot positive branch
+   Branch(o,[K,1.5*K],'m');            % calc & plot positive branch
+   Branch(o,[1.5*K,2*K],'yyr');        % calc & plot positive branch
+   Branch(o,[2*K,5*K],'gk');           % calc & plot positive branch
+   Branch(o,[5*K,10*K],'g');           % calc & plot positive branch
+   Branch(o,10*K,'gw');                % calc & plot positive branch
+
+      % negative branch
+      
    Branch(o,-eps,'bc');                % calc & plot negative branch
    
    subplot(o);
@@ -108,6 +126,7 @@ function o = Rloc(o,num,den)           % Plot Root Locus
          end
          hold on
       end
+      idle(o);                         % show graphics
    end
 end
 
@@ -132,10 +151,11 @@ function o = Auto(o,num,den)           % Auto Setting of Plot Range
         
    if isempty(opt(o,'xlim'))
       if (xlim(2) < 0)
-         xlim(2) = -xlim(1)/5;
+         xlim(2) = -xlim(1)*0.5;
       elseif (xlim(1) > 0)
-         xlim(1) = -xlim(2)/5;
+         xlim(1) = -xlim(2)*0.5;
       end
+      xlim(2) = abs(xlim(1))*0.5;
       
       xlim = xlim*zoom;
             
@@ -146,9 +166,9 @@ function o = Auto(o,num,den)           % Auto Setting of Plot Range
    
    if isempty(opt(o,'ylim'))      
       if (ylim(2) < 0)
-         ylim(2) = -ylim(1)/5;
+         ylim(2) = -ylim(1)*0.5;
       elseif (ylim(1) > 0)
-         ylim(1) = -ylim(2)/5;
+         ylim(1) = -ylim(2)*0.5;
       end
       
       ylim = ylim*zoom;
