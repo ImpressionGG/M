@@ -469,6 +469,7 @@ function VersionV1F
 % - pimp corasim/display to display Ratio details by default
 % - bug fix: corasim/fqr to retrn also omega as output arg2
 % - rloc pimped to have colored branch parts
+% - add modal transformation to corasim/modal method
 %
 %
 % Known Bugs / Wishlist

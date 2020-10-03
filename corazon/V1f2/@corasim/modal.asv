@@ -47,7 +47,6 @@ function [a0,a1,M,N,omega,zeta] = modal(o,num,den)
    if (nargin == 1 && nargout == 1)
       oo = Transform(o);
       a0 = oo;                         % rename out arg
-      return                           % and bye!
    elseif (nargin == 3)
       oo = Modal(o,num,den);
    else
@@ -87,10 +86,7 @@ function oo = Transform(o)             % Transform to Modal Form
       % distinct and the transformation matrix is well conditioned
       
    [Tc,Q] = eig(A);
-   Ad = Tc\A*Tc;  
-   Bd = Tc\B;  
-   Cd = C*Tc;  
-   Dd = D;
+   Ad = Tc\A*Tc;  Bd = Tc\B;  Cd = C*Tc;  Dd = D;
    
    err = norm(Ad-Q);                   % just check numeric quality
    if abs(err) > 1e-10
@@ -166,27 +162,26 @@ function oo = Transform(o)             % Transform to Modal Form
 
          % now we should have the canonical form [Ac,Bc,Cc,Dc]
          
-      Aq = Tq*Ak/Tq;  Bq = Tq*Bk;  Cq = Ck/Tq; 
+      Aq = Tq*Ak/Tq;  Bc = Tc*Bk;  Cc = Ck/Tc; 
       
          % build-up a0 and a1 vector
          
-      a0(k) = -Aq(2,1);  a1(k) = -Aq(2,2);
+      a0(k) = -Ac(2,1);  a1(k) = -Ac(2,2);
       AA(n+k,k) = a0(k);  AA(n+k,n+k) = a1(k);  AA(k,n+k) = 1;
-      BB(k,1:m) = Bq(1,:);
-      BB(n+k,1:m) = Bq(2,:);
-      CC(:,k) = Cq(:,1);
-      CC(:,n+k) = Cq(:,2);
+      BB(k,1:m) = Bc(1,:);
+      BB(n+k,1:m) = Bc(2,:);
+      CC(:,k) = Cc(:,1);
+      CC(:,n+k) = Cc(:,2);
       
          % build total transformation matrix for final check
          
-      Ts(idx,idx) = inv(Tq);           % trafo to canonical form
-      invTs(idx,idx) = Tq;
-      
-      Tp(k,2*k-1) = 1;                 % final permutation trafo
+      Ts(idx,idx) = inv(Tc);
+      invTs(idx,idx) = Tc;
+      Tp(k,2*k-1) = 1;
       Tp(n+k,2*k) = 1;
    end
    
-   Ar = Tr\Ad*Tr;  Br = Tr\Bd;  Cr = Cd*Tr;  Dr = Dd;
+   Ar = invTr*Ad*Tr;  Br = invTr*Bd;  Cr = Cd*Tr;  Dr = Dd;
    
       % check numeric quality
       
@@ -235,7 +230,7 @@ function oo = Transform(o)             % Transform to Modal Form
       %    Tp: trafo for final permutation
       
    oo = system(oo,Am,Bm,Cm,Dm);
-   oo = var(oo,'Tt,Tc,Tr,Ts,Tp,a0,a1,B,C,D',Tt,Tc,Tr,Ts,Tp,a0,a1,Bm,Cm,Dm);
+   oo = var(oo,'Tt,Tc,Tr,Ts,Tp',Tt,Tc,Tr,Ts,Tp);
 end
 
 %==========================================================================

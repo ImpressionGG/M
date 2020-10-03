@@ -180,7 +180,7 @@ function oo = TrfDouble(o)             % Double Transition Matrix
       psi = [ones(n,1) a1(:) a0(:)];
       Modal(o);
       
-      for (k=1:length(psi))
+      for (k=1:size(psi,1))
          Gk = trf(G,1,psi(k,:));
          sym = sprintf('G_%g',k);
          oo = cache(oo,['trfd.',sym],Gk);

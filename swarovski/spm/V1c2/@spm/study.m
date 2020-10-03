@@ -43,16 +43,20 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'-');
    oo = mitem(o,'A,B,C,D');
    ooo = mitem(oo,'Inspect B',{@InspectB});
+   ooo = mitem(oo,'Canonic',{@Canonic});
    
    oo = mitem(o,'-');
    oo = mitem(o,'Arithmetics');
    ooo = mitem(oo,'Quick',{@Quick});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Modal Add',{@ModalAdd});
+   ooo = mitem(oo,'Modal Mul',{@ModalMul});
 
    oo = mitem(o,'Modal Form');
    ooo = mitem(oo,'Modal 1',{@Modal1});
    ooo = mitem(oo,'Modal 2',{@Modal2});
    ooo = mitem(oo,'Modal 3',{@Modal3});
-
+ 
    oo = mitem(o,'-');
    oo = mitem(o,'Motion');
    ooo = mitem(oo,'Motion Overview',{@WithCuo,'MotionOverview'});
@@ -262,6 +266,41 @@ function o = InspectB(o)               % System Matrix Inspection
    K = 1e11;
    B2_1=round(K*B2),B2_2=round(K*BB2) 
 end
+function o = Canonic(o)                % Transform to Canonic Form   
+%
+% CANONIC  transform any system to Schur form and thebn to 1st and second
+%          canonical form. All systems have the same treansfer matrix:
+%
+%                              5 s + 2        
+%             G(s)  =   ----------------------
+%                         s^2 + 0.8 s + 4.16  
+%
+   om = 2;  zeta = 0.1;
+   
+      % Rational form (complex eigen values)
+      
+   Ar = [-2*zeta 1; -1 -2*zeta]*om;
+   Br = [1;2];  Cr = [1 2];  Dr = 0;
+   
+   or = system(corasim,Ar,Br,Cr,Dr);
+   fprintf('Real form\n');
+   display(or)
+   display(trf(set(or,'name','Initial')));
+      
+      % transform to controllable canonic form
+      
+   Qc = [Br Ar*Br];
+   I = eye(size(Ar));
+   t = (I(end,:)/Qc)';
+   Tc = [t'; t'*Ar];
+   
+   Ac = Tc*Ar/Tc;  Bc = Tc*Br;  Cc = Cr/Tc;  Dc = Dr; 
+   
+   oc = system(corasim,Ac,Bc,Cc,Dc);
+   fprintf('Canonical controllable form\n');
+   display(oc)
+   display(trf(set(oc,'name','Control')));
+end
 
 %==========================================================================
 % Arithmetics
@@ -415,6 +454,140 @@ function o = Quick(o)                  % Quick Arithmetics Study
          s = -1;
       end
    end
+end
+function o = ModalAdd(o)               % Add 2 Modal Systems           
+   O = corasim;
+   G1 = trf(O,1,[1 0 4]);
+   G2 = trf(O,1,[1 0 9]);
+   
+   [p1,q1] = peek(G1);
+   [p2,q2] = peek(G2);
+   
+   o1 = modal(G1,p1,q1);
+   o2 = modal(G2,p2,q2);
+   
+   [A1,B1,C1,D1] = system(o1);
+   [A2,B2,C2,D2] = system(o2);
+   
+   n1 = length(A1)/2;
+   n2 = length(A2)/2;
+   a0 = [var(o1,'a0'); var(o2,'a0')];
+   a1 = [var(o1,'a1'); var(o2,'a1')];
+   
+   B = [B1(n1+1:2*n1); B2(n2+1:2*n2)];
+   C = [C1(1:n1) C2(1:n2)];
+   
+   A = [zeros(n1+n2), eye(n1+n2); -diag(a0), -diag(a1)];
+   B = [0*B; B]; C = [C, 0*C];  D = D1+D2;
+   
+   oo = system(O,A,B,C,D);
+end
+function o = ModalMul(o)               % Mul 2 Modal Systems           
+%
+%  x1' = A1*x1 + B1*u
+%  y1  = C1*x1 + D1*u
+%
+%  x2' = A2*x2 + B2*y1 = A2*x2 + B2*(C1*x1 + D1*u)
+%  y2  = C2*x2 + D2*y1 = C2*x2 + D2*(C1*x1 + D1*u) 
+%  
+%  x2' = (B2*C1)*x1 + A2*x2 + B2*D1*u
+%  y2  = (D2*C1)*x1 + C2*x2 + D2*D1*u 
+%  
+%  Partial system:
+%
+%     z1' = (d+j*w)*z1 + b1'*u
+%     z2' = (d-j*w)*z2 + b2'*u
+%     y = c1*z1 + c2*z2 + d*u
+%
+%  Assert: z1 = x1 + j*x2, z2 = x1 - j*x2, u = Re{u}, Im{b1'} = -Im{b2'}
+%
+%  thus: x1 = Re{z1} = Re{z2}, x2 = Im{z1} = -Im{z2}
+%
+%     x1' = Re{z1'} = Re{(d+j*w) * (x1+j*x2) + b1'*u}
+%         = d*x1 - w*x2 + Re{b1'}*u
+%
+%     x2' = Im{z1'} = Im{(d+j*w) * (x1+j*x2) + b1'*u}
+%         = d*x2 + w*x1 + Im{b1'}*u
+%
+%     y = c1*(x1+j*x2) + c2*(x1-j*x2) + d*u
+%
+%  alternatively:
+%
+%     x1' = Re{z2'} = Re{(d-j*w) * (x1-j*x2) + b2'*u}
+%         = d*x1 - w*x2 + Re{b2'}*u
+%         = d*x1 - w*x2 + Re{b1'}*u
+%
+%     x2' = -Im{z2'} = -Im{(d-j*w) * (x1-j*x2) + b1'*u}
+%         = d*x2 + w*x1 - Im{b2'}*u
+%         = d*x2 + w*x1 + Im{b1'}*u
+%
+%  Now substitute: z := z1 + z2,  v := -j*(z1 - z2)
+%
+%     z' = z1' + z2' = (d+j*w)*z1 + (d-j*w)*z2 + (b1'+b2')*u =
+%                    = d*(z1+z2) + j*w*(z1-z2) + 2*Re{b1'}*u
+%                 z' = d*z - w*v + 2*Re{b1'}*u
+%
+%     v' = -j*(z1'-z2') = -j*(d+j*w)*z1 + j*(d-j*w)*z2 - j*(b1'-b2')*u =
+%                       = w*(z1+z2) - j*d*(z1-z2) + 2*Im{b1'}*u
+%                 v' = w*z + d*v + 2*Im{b1'}*u
+%
+% At least we have a system with real coefficients :-)
+%
+%                 z' = d*z - w*v + bz'*u    with bz := 2*Re{b1}
+%                 v' = w*z + d*v + bv'*u    with bv := 2*Im{b1}
+%
+% Transfer function
+%
+%    s*z = d*z - w*v + bz'*u  => (s-d)*z = -w*v + bz'*u
+%    s*v = w*z + d*v + bv'*u  => s2*v = 
+%
+   O = corasim;
+   G1 = trf(O,1,[1 1 4]);
+%  G2 = trf(O,1,[1 1 9]);
+   G2 = trf(O,1,[1 1 4]);
+   
+   [p1,q1] = peek(G1);
+   [p2,q2] = peek(G2);
+   
+   o1 = modal(G1,p1,q1);
+   o2 = modal(G2,p2,q2);
+   
+   [A1,B1,C1,D1] = system(o1);
+   [A2,B2,C2,D2] = system(o2);
+   
+   n1 = length(A1)/2;
+   n2 = length(A2)/2;
+   a0 = [var(o1,'a0'); var(o2,'a0')];
+   a1 = [var(o1,'a1'); var(o2,'a1')];
+   
+   Bv = [B1(n1+1:2*n1); B2(n2+1:2*n2)]; 
+   Cz = [C1(1:n1) C2(1:n2)]; 
+   Az = B2(n2+1:2*n2)*C1(1:n1);
+   A21 = Az*[0 0; 1 0] - diag(a0);
+   A22 = -diag(a1);
+   
+   A = [zeros(n1+n2), eye(n1+n2); A21, A22];
+   B = [0*Bv; Bv]; C = [Cz, 0*Cz];  D = D1+D2;
+   
+   oo = system(O,A,B,C,D);
+   
+      % diagonalization:  x = V*z => z = inv(V)*x = W*x with W := inv(V)
+      %
+      %    x' = A*x + B*u
+      %    z' = W*x'= W*A*x + W*B*u
+      %
+      %    z' = W*A*V*z + W*B*u
+      %    y = C*x + D*u = C*V*z + D*u
+      %
+      %    z' = Q*z + W*B*u   with Q := W*A*V
+      %    y  = C*V*z + D*u
+      
+   [V,Dg] = eig(A);
+   err = norm(Dg-diag(diag(Dg)));
+   
+   W = inv(V);
+   Dg = W*A*V;
+   err = norm(Dg-diag(diag(Dg)));
 end
 
 %==========================================================================

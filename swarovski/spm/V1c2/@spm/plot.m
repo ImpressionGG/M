@@ -415,9 +415,9 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
    real = cache(o,'eigen.real');
    imag = cache(o,'eigen.imag');
 
-   plot(o,real,imag,'yyyrx');
+   plot(o,real,imag,'rwx3');
    hold on;
-   plot(o,real,imag,'yyyro');
+   plot(o,real,imag,'cbo3');
 
    title('Eigenvalues in Complex Plane');
    xlabel('real part');  ylabel('imaginary part');

@@ -20,7 +20,7 @@ function oo = new(o,varargin)          % CORASIM New Method
    [gamma,oo] = manage(o,varargin,@Css,@Dss,@Modal3,@PT1,@Filter2,@PT3,...
                        @Trf23,...
                        @Motion100mm,@Motion200mm,@Motion100um,...
-                       @Modal,@Menu);
+                       @Modal,@Menu,@ModalN);
    oo = gamma(oo);
 end
 
@@ -42,10 +42,20 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'100 mm Motion',{@Callback,'Motion100mm'},[]);
    oo = mitem(o,'200 mm Motion',{@Callback,'Motion200mm'},[]);
    oo = mitem(o,'100 um Motion',{@Callback,'Motion100um'},[]);
-end
+ 
+   oo = mitem(o,'-');
+   oo = mitem(o,'2 Mode Trf',{@Callback  'ModalN'},2);
+   oo = mitem(o,'5 Mode Trf',{@Callback  'ModalN'},5);
+   oo = mitem(o,'10 Mode Trf',{@Callback 'ModalN'},10);
+   oo = mitem(o,'20 Mode Trf',{@Callback 'ModalN'},20);
+   oo = mitem(o,'30 Mode Trf',{@Callback 'ModalN'},30);
+   oo = mitem(o,'40 Mode Trf',{@Callback 'ModalN'},40);
+   oo = mitem(o,'50 Mode Trf',{@Callback 'ModalN'},50);
+ end
 function oo = Callback(o)              % Launch Callback               
    mode = arg(o,1);
-   oo = new(o,mode);
+   arg2 = arg(o,2);
+   oo = new(o,mode,arg2);
    oo = launch(oo,launch(o));          % inherit launch function
    paste(o,{oo});                      % paste object into shell
 end
@@ -152,3 +162,27 @@ function oo = Motion100um(o)           % 100 um Motion
    oo.par.title = sprintf('Motion 100 um (%s)',datestr(now));
    oo.par.comment = {'vmax: 0.15mm/s, amax: 1 mm/s2, Tj = 20 ms'};
 end
+
+%==========================================================================
+% High Order
+%==========================================================================
+
+function oo = ModalN(o)                % Trf Object with N Modes       
+   O = trf(corasim);
+   n = arg(o,1);
+   
+   %om = 1000; 
+   om = 1;
+   k=sqrt(2);
+   
+   G = trf(O,om*om,[1 2*0.1*om om*om]);
+   for (i=2:n)
+      om = k*om;                       % increment circular frequency                  
+      Gi = trf(O,om*om,[1 2*0.1*om om*om]);
+      G = G + Gi;
+   end
+      
+   oo = modal(G);
+   oo.par.title = sprintf('Modal System with %g Modes',n);
+end
+

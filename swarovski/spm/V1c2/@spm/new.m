@@ -17,7 +17,7 @@ function oo = new(o,varargin)          % SPM New Method
 %
 %       See also: SPM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Mode3A,@Mode3B,@Mode3C,...
+   [gamma,oo] = manage(o,varargin,@Mode2,@Mode3A,@Mode3B,@Mode3C,...
                        @Academic1,@Academic2,@Schleif,@Motion,@Menu);
    oo = gamma(oo);
 end
@@ -38,6 +38,8 @@ function oo = Menu(o)                  % New Menu
 %
    oo = mitem(o,'-');
    oo = o;  %                          oo = mhead(o,'Spm');
+   ooo = mitem(oo,'2-Mode Sample',{@Create 'Mode2'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'3-Mode Sample (A)',{@Create 'Mode3A'});
    ooo = mitem(oo,'3-Mode Sample (B)',{@Create 'Mode3B'});
    ooo = mitem(oo,'3-Mode Sample (C)',{@Create 'Mode3C'});
@@ -89,6 +91,37 @@ end
 % SPM Objects
 %==========================================================================
 
+function oo = Mode2(o)                 % 2-Mode Sample                 
+%
+% MODE2 setup a 2-mode system according to the simulated 3-mode sample
+%              exported from ANSYS.
+%
+   zeta = [0.01 0.01]';                % damping coefficients
+%  f = [444 1091 2387]';               % eigen frequencies
+   omega = [3000 7000]';               % circular eigen frequencies
+
+   a0 = omega.*omega;                  % a0 = [7.8e6 47e6]';  
+   a1 = 2*zeta.*omega;                 % a1 = [56 137]
+   
+   M = [-5e-10 -7.0 -2.0e-8; 7.0 -5e-10 2.0e-8];
+  
+  
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M'];
+   D = 0*C*B;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = '2-Mode Sample';
+   oo.par.comment = {'omega = [3000 1/s, 7000 1/s]','zeta = [0.01  0.01]'};
+    
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
 function oo = Mode3A(o)                % 3-Mode Sample, Version A      
 %
 % MODE3SAMPLEA setup an 3-mode system according to the simulated sample
@@ -105,8 +138,8 @@ function oo = Mode3A(o)                % 3-Mode Sample, Version A
    n = length(a0);
    A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
    B = [0*M; M];
-   C = [M' 0*M];
-   D = 0*M;
+   C = [M' 0*M'];
+   D = 0*C*B;
 
    oo = spm('spm');                    % new spm typed object
    oo.par.title = '3-Mode Sample A';
@@ -135,8 +168,8 @@ function oo = Mode3B(o)                % 3-Mode Sample, Version B
    n = length(a0);
    A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
    B = [0*M; M];
-   C = [M' 0*M];
-   D = 0*M;
+   C = [M' 0*M'];
+   D = 0*C*B;
 
    oo = spm('spm');                    % new spm typed object
    oo.par.title = '3-Mode Sample B';
@@ -167,8 +200,8 @@ function oo = Mode3C(o)                % 3-Mode Sample, Version C
    n = length(a0);
    A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
    B = [0*M; M];
-   C = [M' 0*M];
-   D = 0*M;
+   C = [M' 0*M'];
+   D = 0*C*B;
 
    oo = spm('spm');                    % new spm typed object
    oo.par.title = '3-Mode Sample C';
