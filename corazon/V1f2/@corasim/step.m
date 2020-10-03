@@ -24,6 +24,8 @@ function out = step(o)
          error('implementation');
       case 'strf'
          oo = system(o);
+      case 'modal'
+         oo = system(o);
       otherwise
          error('implementation');
    end

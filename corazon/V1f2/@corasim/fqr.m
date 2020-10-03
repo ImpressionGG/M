@@ -64,6 +64,11 @@ function [Gjw,om] = fqr(o,om,i,j)
             Gjw = polyval(num,jw) ./ polyval(den,jw);
          end
          
+      case {'modal'}
+         [num,den] = peek(o);
+         jw = sqrt(-1)*om;
+         Gjw = polyval(num,jw) ./ polyval(den,jw);
+
       otherwise
          error('bad type');
    end

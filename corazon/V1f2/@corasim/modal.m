@@ -1,9 +1,11 @@
-function [a0,a1,M,N,omega,zeta] = modal(o,num,den)                     
+function [a0,a1,M,N,omega,zeta] = modal(o,num,den,varargin)                     
 %
 % MODAL   Modal representation of a rational function
 %
 %            oo = modal(o)             % transform to modal form
 %            [a0,a1,B,C,D] = modal(o)  % Get modal matrices
+%
+%            oo = modal(o,a0,a1,B,C,D) % create modal system
 %
 %            [a0,a1,M,N] = modal(o,num,den)
 %
@@ -44,8 +46,16 @@ function [a0,a1,M,N,omega,zeta] = modal(o,num,den)
 %
 %        See also: CORASIM, SIMU
 %
-   if (nargin == 1 && nargout == 1)
+   if (nargin == 1 && nargout <= 1)
       oo = Transform(o);
+      a0 = oo;                         % rename out arg
+      return                           % and bye!
+   elseif (nargin == 6 && nargout <= 1)
+      a0 = num;  a1 = den;             % rename input args
+      B = varargin{1};                 % rename input arg
+      C = varargin{2};                 % rename input arg
+      D = varargin{3};                 % rename input arg
+      oo = Create(o,a0,a1,B,C,D);
       a0 = oo;                         % rename out arg
       return                           % and bye!
    elseif (nargin == 3)
@@ -234,8 +244,52 @@ function oo = Transform(o)             % Transform to Modal Form
       %    Ts: trafo from real block system to canonical system
       %    Tp: trafo for final permutation
       
-   oo = system(oo,Am,Bm,Cm,Dm);
+   oo = modal(oo,a0,a1,Bm,Cm,Dm);
    oo = var(oo,'Tt,Tc,Tr,Ts,Tp,a0,a1,B,C,D',Tt,Tc,Tr,Ts,Tp,a0,a1,Bm,Cm,Dm);
+end
+
+%==========================================================================
+% Create Modal System
+%==========================================================================
+
+function oo = Create(o,a0,a1,B,C,D)
+   a0 = a0(:);  a1 = a1(:);
+   
+   if any(size(a0)~=size(a1)) || min(size(a0)) ~= 1
+      error('a0 (arg2) and a1 (arg3) must be vectors of same length');
+   end
+   
+   n = length(a0);
+   [nB,m] = size(B);
+   [l,nC] = size(C);
+   [mD,nD] = size(D);
+   
+   if (nB ~= 2*n)
+      error('bad size of B (arg4)');
+   end
+   if (nC ~= 2*n)
+      error('bad size of C (arg5)');
+   end
+   if (mD ~= l) || (nD ~= m)
+      error('bad size of D (arg6)');
+   end
+   
+      % so far everything looks good now ...
+      
+   I = eye(n);
+   A = [0*I, I; -diag(a0) -diag(a1)];
+   
+   oo = inherit(corasim('modal'),o);
+   oo = data(oo,'a0,a1,B,C,D', a0,a1,B,C,D);
+   
+   i1 = 1:n;  i2 = n+1;2*n;
+   A11 = A(i1,i1);  A12 = A(i1,i2);
+   A21 = A(i2,i1);  A22 = A(i2,i2);
+   B1 = B(i1,:);  B2 = B(i2,:);
+   C1 = C(:,i1);  C2 = C(:,i2);
+   
+   oo = var(oo,'a0,a1,A,B,C,D,A11,A12,A21,A22,B1,B2,C1,C2,D',...
+                a0,a1,A,B,C,D,A11,A12,A21,A22,B1,B2,C1,C2,D);
 end
 
 %==========================================================================

@@ -31,7 +31,7 @@ function oo = Menu(o)                  % Setup Plot Menu
    
       % dynamic systems
       
-   if type(current(o),{'css','dss','strf','ztrf'})
+   if type(current(o),{'css','dss','strf','ztrf','modal'})
       oo = mitem(o,'Step Response',{@WithCuo,'Step'});
       oo = mitem(o,'Bode Plot',{@WithCuo,'Bode'});
       oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
@@ -125,7 +125,10 @@ function o = Plot(o)                   % Plot Object
       case 'strf'                      % continuous transfer function
          o = system(o);                % cast strf into css
          PlotCss(o);
-      case 'ztrf'                      % discrete transfer function
+      case 'strf'                      % continuous transfer function
+         o = system(o);                % cast strf into css
+         PlotCss(o);
+      case 'modal'                     % modal system
          o = system(o);                % cast ztrf into dsss
          PlotDss(o);
       case 'motion'                    % motion object
@@ -265,6 +268,9 @@ function o = Step(o)                   % Plot Step Response
       case 'dss'                       % discrete state space system
          StepDss(o);
       case 'strf'                      % s-transfer function
+         o = system(o);                % cast strf to css
+         StepCss(o);
+      case 'modal'                     % modal system
          o = system(o);                % cast strf to css
          StepCss(o);
       case 'ztrf'                      % z-transfer function

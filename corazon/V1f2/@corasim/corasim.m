@@ -6,6 +6,7 @@ classdef corasim < corazon             % Corasim Class Definition
 %
 %              css:          continuous state space representation
 %              dss:          discrete state space representation
+%              modal:        modal state space system (continuous)
 %              strf:         s-transfer function
 %              ztrf:         z-transfer function
 %              qtrf:         q-transfer function

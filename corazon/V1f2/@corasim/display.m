@@ -25,6 +25,26 @@ function txt = display(o)
          fprintf('discrete state space system (T = %g):\n',T);
          System(o);
       
+      case 'modal'
+         [a0,a1] = data(o,'a0,a1');
+         fprintf('Modal system (%g modes)\n',length(a0));
+
+         System(o);
+                  
+         sep = '';
+         fprintf('   a0: [');
+         for (i=1:length(a0))
+            fprintf('%s%g',sep,a0(i));  sep = ', ';
+         end
+         fprintf(']\n');
+         
+         sep = '';
+         fprintf('   a1: [');
+         for (i=1:length(a1))
+            fprintf('%s%g',sep,a1(i));  sep = ', ';
+         end
+         fprintf(']\n');
+                  
       case {'strf','ztrf','qtrf'}
          [num,den] = peek(o);
          if (nargout > 0)

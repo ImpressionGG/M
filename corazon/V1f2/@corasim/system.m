@@ -111,6 +111,14 @@ end
 %==========================================================================
 
 function oo = Cast(o)                  % Cast to a State Space System   
+   if type(o,{'modal'})
+      [a0,a1,B,C,D] = data(o,'a0,a1,B,C,D');
+      I = eye(length(a0));
+      A = [0*I,I; -diag(a0), -diag(a1)];
+      oo = system(o,A,B,C,D);
+      return
+   end
+   
    kind = opt(o,{'sskind','tf2ss'});
   
    switch kind

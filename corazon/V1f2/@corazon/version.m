@@ -470,6 +470,7 @@ function VersionV1F
 % - bug fix: corasim/fqr to retrn also omega as output arg2
 % - rloc pimped to have colored branch parts
 % - add modal transformation to corasim/modal method
+% - new corasim type "modal" introduced
 %
 %
 % Known Bugs / Wishlist

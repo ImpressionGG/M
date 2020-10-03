@@ -58,7 +58,7 @@ function oo = TrimTrf(o)
    
       % build corasim in transfer function representation
       
-   T = data(o,'T');
+   T = o.either(data(o,'T'),0);
    oo = system(corasim,{num,den},T);
    
       % inherit all options from original object

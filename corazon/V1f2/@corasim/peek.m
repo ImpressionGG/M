@@ -16,7 +16,7 @@ function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator
 %        See also: CORASIM, SYSTEM
 %
    switch o.type
-      case {'css','dss'}
+      case {'css','dss','modal'}
          [A,B,C,D,T] = system(o);
          if (nargin < 2)
             i = 1;

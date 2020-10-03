@@ -17,7 +17,10 @@ function oo = plus(o1,o2)
    
       % now we are sure to deal with CORASIM objects only
 
-   if (type(o1,{'matrix'}) && ~type(o2,{'matrix'}))
+   if type(o1,{'modal'}) && type(o2,{'modal'})
+      oo = ModalAdd(o1,o2);
+      return
+   elseif (type(o1,{'matrix'}) && ~type(o2,{'matrix'}))
       error('implementation');
       oo = Addition(o1,o2);            % matrix + scalar
    elseif (~type(o1,{'matrix'}) && type(o2,{'matrix'}))
@@ -55,6 +58,39 @@ function oo = Add(o1,o2)               % Add Two Objects
    den = mul(o1,den1,den2);
    
    oo = poke(o1,num,den);
+end
+
+%==========================================================================
+% Modal Add
+%==========================================================================
+
+function oo = ModalAdd(o1,o2)          % Add Two Objects               
+   if ~isequal(o1.type,o2.type)
+      error('type mismatch');
+   end
+   if ~type(o1,{'modal'})
+      error('bad arg1 type');
+   end
+   if ~type(o2,{'modal'})
+      error('bad arg2 type');
+   end
+   
+   [a01,a11,B1,C1,D1] = data(o1,'a0,a1,B,C,D');
+   n1 = length(a01);  i11 = 1:n1;  i12 = n1+1:2*n1;
+   
+   [a02,a12,B2,C2,D2] = data(o2,'a0,a1,B,C,D');
+   n2 = length(a02);  i21 = 1:n2;  i22 = n2+1:2*n2;
+   
+   if any(size(D1)~=size(D2))
+      error('number of inputs and outputs must be the same');
+   end
+   
+   a0 = [a01;a02];  a1 = [a11;a12];
+   B = [B1(i11,:);B2(i21,:); B1(i12,:);B2(i22,:)];
+   C = [C1(:,i11),C2(:,i21), C1(:,i12),C2(:,i22)];
+   D = D1+D2;
+   
+   oo = modal(o1,a0,a1,B,C,D);
 end
 
 %==========================================================================

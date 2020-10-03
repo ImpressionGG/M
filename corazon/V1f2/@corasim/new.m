@@ -44,13 +44,26 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'100 um Motion',{@Callback,'Motion100um'},[]);
  
    oo = mitem(o,'-');
-   oo = mitem(o,'2 Mode Trf',{@Callback  'ModalN'},2);
-   oo = mitem(o,'5 Mode Trf',{@Callback  'ModalN'},5);
-   oo = mitem(o,'10 Mode Trf',{@Callback 'ModalN'},10);
-   oo = mitem(o,'20 Mode Trf',{@Callback 'ModalN'},20);
-   oo = mitem(o,'30 Mode Trf',{@Callback 'ModalN'},30);
-   oo = mitem(o,'40 Mode Trf',{@Callback 'ModalN'},40);
-   oo = mitem(o,'50 Mode Trf',{@Callback 'ModalN'},50);
+   oo = mitem(o,'Large Modal Systems');
+   ooo = mitem(oo,'1 Mode System',{@Callback  'ModalN'},2);
+   ooo = mitem(oo,'2 Mode System',{@Callback  'ModalN'},2);
+   ooo = mitem(oo,'5 Mode System',{@Callback  'ModalN'},5);
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'10 Mode System',{@Callback  'ModalN'},10);
+   ooo = mitem(oo,'20 Mode System',{@Callback  'ModalN'},20);
+   ooo = mitem(oo,'30 Mode System',{@Callback  'ModalN'},30);
+   ooo = mitem(oo,'40 Mode System',{@Callback  'ModalN'},40);
+   ooo = mitem(oo,'50 Mode System',{@Callback  'ModalN'},50);
+   ooo = mitem(oo,'75 Mode System',{@Callback  'ModalN'},75);
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'100 Mode System',{@Callback  'ModalN'},100);
+   ooo = mitem(oo,'200 Mode System',{@Callback  'ModalN'},200);
+   ooo = mitem(oo,'300 Mode System',{@Callback  'ModalN'},300);
+   ooo = mitem(oo,'400 Mode System',{@Callback  'ModalN'},400);
+   ooo = mitem(oo,'500 Mode System',{@Callback  'ModalN'},500);
+   ooo = mitem(oo,'750 Mode System',{@Callback  'ModalN'},750);
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'1000 Mode System',{@Callback  'ModalN'},1000);
  end
 function oo = Callback(o)              % Launch Callback               
    mode = arg(o,1);
@@ -168,21 +181,27 @@ end
 %==========================================================================
 
 function oo = ModalN(o)                % Trf Object with N Modes       
-   O = trf(corasim);
    n = arg(o,1);
    
    %om = 1000; 
    om = 1;
+   zeta = 0.1;
    k=sqrt(2);
    
-   G = trf(O,om*om,[1 2*0.1*om om*om]);
+   a0 = om*om;
+   a1 = 2*zeta*om;
+   B = [0;1];  C = [1 0]; D = 0;
+   oo = modal(o,a0,a1,B,C,D);
+   
    for (i=2:n)
       om = k*om;                       % increment circular frequency                  
-      Gi = trf(O,om*om,[1 2*0.1*om om*om]);
-      G = G + Gi;
+      a0 = om*om;
+      a1 = 2*zeta*om;
+      
+      oi = modal(o,a0,a1,B,C,D);
+      oo = oo + oi;
    end
       
-   oo = modal(G);
    oo.par.title = sprintf('Modal System with %g Modes',n);
 end
 
