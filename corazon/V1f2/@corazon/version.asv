@@ -471,7 +471,7 @@ function VersionV1F
 % - rloc pimped to have colored branch parts
 % - add modal transformation to corasim/modal method
 % - new corasim type "modal" introduced
-% - corasim/fqr and corasim/bode for large modal systems :-))))) 
+% - corasim/fqr
 %
 %
 % Known Bugs / Wishlist

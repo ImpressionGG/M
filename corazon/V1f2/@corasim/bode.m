@@ -32,11 +32,11 @@ end
 %==========================================================================
 
 function o = Bode(o)                   % Bode Plot                     
-   %o = with(o,'bode');                 % unwrap Bode options
+   %o = with(o,'bode');                % unwrap Bode options
    held = ishold;
 
    o = Auto(o);                        % auto axis limits
-   o = Axes(o);                            % plot axes
+   o = Axes(o);                        % plot axes
    if opt(o,{'magnitude.enable',true})
       Magnitude(o);
       

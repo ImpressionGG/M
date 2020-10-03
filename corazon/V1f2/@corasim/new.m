@@ -186,7 +186,7 @@ function oo = ModalN(o)                % Trf Object with N Modes
    %om = 1000; 
    om = 1;
    zeta = 0.1;
-   k=sqrt(2);
+   k = 1e5^(1/n);
    
    a0 = om*om;
    a1 = 2*zeta*om;

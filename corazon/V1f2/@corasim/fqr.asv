@@ -137,41 +137,44 @@ function Gjw = Modal(o,om,i,j)         % Frequency Rsp. of a Modal Form
 %           Gij(s) = Sum{Gijk(s)} + D
 %                    k=1
 %
-   if ~type(o,{'modal'})
+   if ~type(oo,{'modal'})
       error('modal form expected');
    end
    
+   oo = Partition(o);
    [a0,a1,B,C,D] = data(o,'a0,a1,B,C,D');
    
    n = length(a0);  
    m = size(B,2);                      % number of inputs
    l = size(C,1);                      % number of outputs
    
-   if (i < 1 || i > l)
-      error('bad output index');
-   end
-   if (j < 1 || j > m)
-      error('bad input index');
-   end
-   
    i1 = 1:n;  i2 = n+1:2*n;
    Bz = B(i1,:);  Bv = B(i2,:);
    Cz = C(:,i1);  Cv = C(:,i2); 
    
       % loop through all modes
-      % Fijk(s) = [s*Bv(k,j)-a0(k)*Bz(k,j)] / [s^2+a1(k)*s+a0(k)]
-      % Gijk(s) = Cz(i,k)/s * [Fijk(s) + Bz(k,j)] + Cv(i,k) * Fijk(s)
-      %               n
-      % Gij(s) = D + Sum{Gijk(s)}
-      %              k=1
       
    jw = om*sqrt(-1);
    Gjw = D(i,j);                       % init value of frequency response
    
-   for (k=1:n)      
+   for (k=1:n)
+      
+      % Fijk(s) = [s*Bv(k,j)-a0(k)*Bz(k,j)] / [s^2+a1(k)*s+a0(k)]
+      
       Fijk = [jw*Bv(k,j) - a0(k)*Bz(k,j)] ./ [jw.*jw + a1(k)*jw + a0(k)];
-      Gijk = Cz(i,k)./jw .* [Fijk + Bz(k,j)] + Cv(i,k) * Fijk;
-      Gjw = Gjw + Gijk;
+ 
+   psi = [ones(n,1) a1(:) a0(:)];
+   
+      % calculate weight vector
+      
+   mi = C1(:,i)';  mj = B2(:,j);
+   wij = (mi(:).*mj(:))';        % weight vector
+
+   jw = sqrt(-1)*om;             % j*omega
+   Gjw = 0*jom;                  % init Gjw
+   for (k=1:n)
+      psijw = polyval(psi(k,:),jw);
+      Gjw = Gjw + wij(k) ./ psijw;
    end
 end
 
