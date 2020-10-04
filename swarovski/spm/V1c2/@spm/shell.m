@@ -69,6 +69,9 @@ function oo = New(o)                   % New Menu
 end
 function oo = Import(o)                % Import Menu Items             
    oo = mhead(o,'Import');             % locate Import menu header
+   ooo = mitem(oo,'Package',{@CollectCb});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Package Info (.pkg)',{@ImportCb,'ReadPkgPkg','.pkg',@cute});
    ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spm});
    return
 
@@ -77,6 +80,15 @@ function oo = Import(o)                % Import Menu Items
       ext = arg(o,2);                  % file extension
       cast = arg(o,3);                 % cast method
       list = import(cast(o),drv,ext);  % import object from file
+      paste(o,list);
+   end
+   function o = CollectCb(o)           % Collect All Files of Folder   
+      collect(o,{})                    % reset collection config
+      table = {{@read,'spm','ReadPkgPkg','.pkg'},...
+               {@read,'spm','ReadSpmSpm', '.spm'}};
+      collect(o,{},table);             % only default table
+
+      list = collect(o);               % collect files in directory
       paste(o,list);
    end
 end
@@ -106,7 +118,117 @@ function oo = Export(o)                % Export Menu Items
 end
 function oo = Tools(o)                 % Tools Menu Items              
    oo = mseek(o,{'Tools'});
+   ooo = mitem(oo,'Provide Package Info',{@PackageInfo});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Clear Cache',{@ClearCache});
+end
+function oo = PackageInfo(o)           % Provide Package Info File     
+   caption = 'Provide Package Info File (.pkg)';
+   path = fselect(o,'d','*.*',caption);
+   if isempty(path)
+      return
+   end
+   
+   [dir,file,ext] = fileparts(path);
+   title = [file,ext];              % recombine file&extension to name
+   
+      % extract package type
+      
+   try
+      [package,typ,name,run,mach] = split(o,title);
+   catch
+      typ = '';                        % initiate an error
+   end
+      
+   if isempty(package) || isempty(typ) || isempty(run) || isempty(mach)
+      message(o,'Error: something wrong with package folder syntax!',...
+                '(cannot import files)');
+      return
+   end
+   
+   [date,time] = filedate(o,path);
+   project = context(o,'Project',path);     % extract project from path
+   
+      % create a package object and set package parameters
+      
+   oo = cute('pkg');
+   oo.data = [];                       % make a non-container object
+   oo.par.title = title;
+   oo.par.comment = {};
+   oo.par.date = date;
+   oo.par.time = time;
+   oo.par.kind = typ;
+   oo.par.project = project;
+   oo.par.machine = mach;
+   
+   oo.par.package = package;
+   oo.par.creator = opt(o,{'tools.creator',user(o,'name')});
+   oo.par.version = [upper(class(o)),' ',version(o)];
+   
+      % open a dialog for parameter editing
+      
+   oo = opt(oo,'caption',['Package Object: ',package]);
+   oo = menu(oo,'Dialog');             % dialog for editing key parameters
+   
+   if isempty(oo)
+      return
+   end
+
+      % update some settings
+      
+   setting(o,'tools.creator',get(oo,'creator'));
+   
+      % now write package file (.pkg)
+      
+   file = [FileName(oo,typ,date,time,package),'.pkg'];
+   filepath = [path,'/',file];
+   filepath = o.upath(filepath);
+   
+   oo = write(oo,'WritePkgPkg',filepath);
+   if isempty(oo)
+      o = Error(o,'could not write package file!');
+      o = [];
+      return
+   end
+   
+   folder = o.either(context(o,'Path',path),title);
+   [dir,fname,ext] = fileparts(folder);
+   
+   message(o,'Package info successfully written!',...
+      ['Package: ',package],['Path: ',dir],['Folder: ',title],['File: ',file]);
+   return
+   
+   function file = FileName(o,typ,date,time,pkg)  % Compose File Name             
+      file = [upper(typ),date([1:2,4:6,8:11]),'-',time([1:2,4:5,7:8])];
+
+      if isequal(o.type,'pkg')
+         file = o.either(pkg,file);
+         if ~isempty(typ)
+            file = [file,'.',upper(typ)];
+         end
+      end
+      file = Allowed(file);
+   end
+   function name = Allowed(name)       % Convert to Allowed File Name  
+   %
+   % ALLOWED   Substitute characters in order to have an allowed file name
+   %
+      allowed = '!$%&()=?+-.,#@������ ';
+      for (i=1:length(name))
+         c = name(i);
+         if ('0' <= c && c <= '9')
+            'ok';
+         elseif ('A' <= c && c <= 'Z')
+            'ok';
+         elseif ('a' <= c && c <= 'z')
+            'ok';
+         elseif ~isempty(find(c==allowed))
+            'ok';
+         else
+            name(i) = '-';                % substitute character with '-'
+         end
+      end
+   end
 end
 function oo = ClearCache(o)            % Clear All Caches              
    o = pull(o);
@@ -371,6 +493,9 @@ function oo = Select(o)                % Select Menu
    event(o,'Select',o);                % rebuild menu on 'Select' event
 
    ooo = menu(oo,'Objects');           % add Objects menu
+
+   ooo = mitem(oo,'-');
+   ooo = menu(oo,'Organize');   
    ooo = menu(oo,'Basket');            % add Basket menu
 
    ooo = mitem(oo,'-');

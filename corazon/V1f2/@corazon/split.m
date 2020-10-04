@@ -62,14 +62,14 @@ function [package,typ,name,run,mach] = split(o,title)
    if isempty(mach)
       error('bad package title (machine number)!');
    end
-   if isempty(run) || ~isequal(runtxt,sprintf('%g',run))
+   if isempty(run) || ~isequal(runtxt,sprintf('%d',run))
       error('bad package title (run number)!');
    end      
    if length(typ) == 0 || upper(typ(1)) < 'A' || upper(typ(end)) > 'Z'
       error('bad package title (type)!');
    end      
    
-   package = sprintf('@%s.%g',mach,run);
+   package = sprintf('@%s.%d',mach,run);
 end
 
 %==========================================================================

@@ -86,6 +86,10 @@ function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File
    line = fgetl(fid);
    oo.par.title = oo.trim(line(8:end));
    
+      % extract parameters from file name
+      
+   oo = context(oo,path);
+   
       % skip to 'INPUT LABELS'
    
    lcnt = 0;
@@ -209,11 +213,15 @@ function oo = ReadSpm2Spm(o)           % Read Driver 2 for .spm File
    line = fgetl(fid);
    oo.par.notes = oo.trim(line);
    line = fgetl(fid);
-   oo.par.date = [line(4:5),'-',line(1:2),'-',line(7:10)];
-   oo.par.time = line(17:end);
+   %oo.par.date = [line(4:5),'-',line(1:2),'-',line(7:10)];
+   %oo.par.time = line(17:end);
    line = fgetl(fid);
-   oo.par.title = oo.trim(line(8:end));
+   %oo.par.title = oo.trim(line(8:end));
    
+      % extract parameters from file name
+      
+   oo = context(oo,path);
+
       % skip until line with string 'MatrixA'
    
    lcnt = 0;
