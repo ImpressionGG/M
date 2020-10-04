@@ -153,7 +153,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    
       % refresh caches
       
-   [oo,bag,rfr] = cache(oo,oo,'trfd'); % transfer function cache segment
+   [oo,bag,rfr] = cache(oo,oo,'trf');  % transfer function cache segment
    [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
    [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
    

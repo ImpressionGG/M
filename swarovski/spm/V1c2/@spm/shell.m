@@ -364,11 +364,11 @@ function oo = Select(o)                % Select Menu
    ooo = Friction(oo);                 % Friction menu
    
    ooo = mitem(oo,'-');
-   ooo = Normalize(oo);                % add Normalize menu
    ooo = Simu(oo);                     % add Simu sub menu
-   ooo = Filter(oo);                   % add Filter sub menu
    ooo = Motion(oo);                   % add Motion sub menu
-   ooo = Cancel(oo);                   % add Cancel sub menu
+
+   ooo = mitem(oo,'-');
+   ooo = Internal(oo);                 % add Internal sub menu
 end
 function oo = Friction(o)              % Friction Menu                 
    setting(o,{'process.mu'},0.1);      % Coulomb friction parameter
@@ -376,15 +376,6 @@ function oo = Friction(o)              % Friction Menu
    oo = mitem(o,'Friction');
    ooo = mitem(oo,'Mu (Coefficient)',{},'process.mu');
    charm(ooo,{});
-end
-function oo = Normalize(o)             % Normalize Menu                
-   setting(o,{'brew.T0'},1e-3);
-   
-   oo = mitem(o,'Normalize');
-   ooo = mitem(oo,'T0',{},'brew.T0');
-   choice(ooo,{{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
-               {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
-               {@CacheReset});
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
 %
@@ -461,6 +452,29 @@ function oo = Motion(o)                % Add Motion Menu Items
         choice(ooo,[1e-3 1e-2 1e-1],{});
    ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
         choice(ooo,[0.02 0.01 0.005],{});
+end
+
+function oo = Internal(o)              % Internal Menu                 
+   oo = mitem(o,'Internal');
+   ooo = Trf(oo);                      % add Transfer Function menu
+   ooo = Normalize(oo);                % add Normalize menu   
+   ooo = Cancel(oo);                   % add Cancel sub menu
+   ooo = Filter(oo);                   % add Filter sub menu
+end
+function oo = Trf(o)                   % Transfer Function Menu
+   setting(o,{'trf.type'},'strf');
+   
+   oo = mitem(o,'Transfer Functions',{},'trf.type');
+   choice(oo,{{'Trf Type','strf'},{'Modal Type','modal'}},{});
+end
+function oo = Normalize(o)             % Normalize Menu
+   setting(o,{'brew.T0'},1e-3);
+   
+   oo = mitem(o,'Normalize');
+   ooo = mitem(oo,'T0',{},'brew.T0');
+   choice(ooo,{{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
+               {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
+               {@CacheReset});
 end
 function oo = Cancel(o)                % Add Cancel Menu Items         
    setting(o,{'cancel.G.eps'},1e-5);

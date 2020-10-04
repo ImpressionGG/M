@@ -200,7 +200,7 @@ function o = TrfmDouble(o)             % Double Transfer Matrix
       return
    end
    
-   G = cache(o,'trfd.G');
+   G = cook(o,'G');
    disp(G);
    
    Gij = peek(G,1,1);

@@ -415,9 +415,11 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
    real = cache(o,'eigen.real');
    imag = cache(o,'eigen.imag');
 
-   plot(o,real,imag,'rwx3');
+   plot(o,real,imag,'Ko');
    hold on;
-   plot(o,real,imag,'cbo3');
+   plot(o,real,imag,'rp');
+   plot(o,real,imag,'rh');
+   plot(o,real,imag,'r.');
 
    title('Eigenvalues in Complex Plane');
    xlabel('real part');  ylabel('imaginary part');
@@ -435,8 +437,8 @@ function o = Gs(o)                     % Double Transfer Function
    i = arg(o,1);
    j = arg(o,2);
 
-   G = cache(o,'trfd.G');
-   W = cache(o,'trfd.W');
+   G = cook(o,'G');                    % G = cache(o,'trf.G');
+   W = cook(o,'W');                    % W = cache(o,'trf.W');
    if (i == 0 || j == 0)
       G = opt(G,'maxlen',200);
       str = display(G);
@@ -485,7 +487,7 @@ function o = Gs(o)                     % Double Transfer Function
 end
 function o = GsStep(o)                 % G(s) Step Response Overview   
    o = with(o,'simu');
-   G = cache(o,'trfd.G');              % G(s)
+   G = cook(o,'G');                    % G(s)
    [m,n] = size(G);
    
    for (i=1:m)
@@ -499,7 +501,7 @@ function o = GsStep(o)                 % G(s) Step Response Overview
    heading(o);
 end
 function o = GsBode(o)                 % G(s) Bode Plot Overview       
-   G = cache(o,'trfd.G');              % G(s)
+   G = cook(o,'G');                    % G(s)
    [m,n] = size(G);
    
    for (i=1:m)
@@ -540,8 +542,8 @@ function o = Hs(o)                     % Double Constrained Trf Fct
    i = arg(o,1);
    j = arg(o,2);
 
-   G = cache(o,'trfd.G');
-   H = cache(o,'consd.H');
+   G = cook(o,'G');                    % G(s)
+   H = cook(o,'H');                    % H(s)
    
    if (i == 0 || j == 0)
       H = opt(H,'maxlen',200);
@@ -604,8 +606,8 @@ function o = HsStep(o)                 % H(s) Step Response Overview
    heading(o);
 end
 function o = HsBode(o)                 % L(s) Bode Plot Overview       
-   G = cache(o,'trfd.G');              % G(s)
-   H = cache(o,'consd.H');             % H(s)
+   G = cook(o,'G');                    % G(s)
+   H = cook(o,'H');                    % H(s)
    [m,n] = size(H);
    
    for (i=1:m)

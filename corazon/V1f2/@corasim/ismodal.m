@@ -6,7 +6,7 @@ function ok = ismodal(o)               % Is it a Modal Form?
 %
 %          Copyright(c): Bluenetics 2020
 %
-%          See also: CORSIM, FQR
+%          See also: CORASIM, FQR
 %
    ok = false;                         % false by default
    if isempty(o)
@@ -46,7 +46,7 @@ function oo = Partition(o)             % Partition System
    C1 = C(:,i1);  C2 = C(:,i2);
   
    if (norm(B2-C1') ~= 0)
-      fprintf('*** warning: B2 differs from C1''!\n');
+      %fprintf('*** warning: B2 differs from C1''!\n');
    end
    
    M = B2;  a0 = -diag(A21);  a1 = -diag(A22);

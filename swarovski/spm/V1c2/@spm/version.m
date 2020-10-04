@@ -76,6 +76,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix: spm/brew - have to use scaled matrices
 % - add Analyse>Stability/L1(s)_Calculation
 % - cyan color for open loop transfer functions
+% - rearrange select menu and rename "trfd" cache segment to "trf"
 %
 % Known bugs & wishlist
 % =========================

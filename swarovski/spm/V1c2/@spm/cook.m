@@ -3,6 +3,8 @@ function varargout = cook(o,sym)
 % COOK  Cook up data
 %
 %          G = cook(o,'G')                  % SPM transfer matrix G(s)
+%          W = cook(o,'W')                  % weight matrix for G(s)
+%
 %          H = cook(o,'H')                  % constrained trf matrix H(s)
 %          L = cook(o,'L')                  % open loop trf matrix L(s)
 %
@@ -36,7 +38,7 @@ end
 % Cook
 %==========================================================================
 
-function oo = Cook(o,sym)
+function oo = Cook(o,sym)              % Cook-up Anyhing               
    if length(sym) >= 2
       i = sym(2) - '0';                % prepare row index (just in case)
    end
@@ -46,10 +48,10 @@ function oo = Cook(o,sym)
 
    switch sym
       case 'G'
-         oo = cache(o,'trfd.G');
+         oo = cache(o,'trf.G');
          
       case {'G11','G12','G13', 'G21','G22','G23', 'G31','G32','G33'}
-         G = cache(o,'trfd.G');
+         G = cache(o,'trf.G');
          oo = peek(G,i,j);
          
          % constrained transfer matrix
@@ -90,6 +92,9 @@ function oo = Cook(o,sym)
       case {'Ta1','Ta2'}
          Ta = cache(o,'process.Ta');
          oo = peek(Ta,j,1);
+
+      case 'W'
+         oo = cache(o,'trf.W');
 
       otherwise
          error('unsupported symbol');
