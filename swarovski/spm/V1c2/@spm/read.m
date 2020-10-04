@@ -6,7 +6,7 @@ function oo = read(o,varargin)         % Read SPM Object From File
 %
 %          See also: SPM, IMPORT
 %
-   [gamma,oo] = manage(o,varargin,@ReadLogLog,@ReadSpm1Spm,@ReadSpm2Spm);
+   [gamma,oo] = manage(o,varargin,@ReadLogLog,@ReadSpmSpm);
    oo = gamma(oo);
 end
 
@@ -14,7 +14,7 @@ end
 % Read Driver for Log Data
 %==========================================================================
 
-function oo = ReadLogLog(o)            % Read Driver for .log Data
+function oo = ReadLogLog(o)            % Read Driver for .log Data     
    path = arg(o,1);
    [x,y,par] = Read(path);
 
@@ -39,7 +39,33 @@ end
 % Read Driver for Spm Data
 %==========================================================================
 
-function oo = ReadSpm1Spm(o)            % Read Driver 1 for .spm File  
+function oo = ReadSpmSpm(o)            % Read Driver for SPM Data      
+   path = arg(o,1);                    % get path arg
+   lines = snif(o,path,1);
+   
+      % SPM1 format is characterized by a header line
+      % containing the string 'State-Space'
+      
+   if ~isempty(strfind(lines{1},'State-Space'))
+      oo = ReadSpm1Spm(o);
+      return
+   end
+   
+      % SPM2 format is characterized by a header line
+      % containing the string 'BEGIN ANSOFT HEADER'
+      
+   if ~isempty(strfind(lines{1},'BEGIN ANSOFT HEADER'))
+      oo = ReadSpm2Spm(o);
+      return
+   end
+   
+      % otherwise no idea how to import file
+      
+   message(o,'No idea how to import file!',...
+             {['Path: ',path]});
+   oo = [];
+end
+function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File   
    talk = (control(o,'verbose') >= 3);
 
    path = arg(o,1);                    % get path arg
@@ -167,7 +193,7 @@ function oo = ReadSpm1Spm(o)            % Read Driver 1 for .spm File
       end
    end
 end
-function oo = ReadSpm2Spm(o)            % Read Driver 2 for .spm File  
+function oo = ReadSpm2Spm(o)           % Read Driver 2 for .spm File   
    talk = (control(o,'verbose') >= 3);
 
    path = arg(o,1);                    % get path arg

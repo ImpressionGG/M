@@ -78,6 +78,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - cyan color for open loop transfer functions
 % - rearrange select menu and rename "trfd" cache segment to "trf"
 % - improve weight diagram and add weight overview for G(s)
+% - make SPM import more flexible
 %
 % Known bugs & wishlist
 % =========================

@@ -69,8 +69,7 @@ function oo = New(o)                   % New Menu
 end
 function oo = Import(o)                % Import Menu Items             
    oo = mhead(o,'Import');             % locate Import menu header
-   ooo = mitem(oo,'SPM 1 Data (.spm)',{@ImportCb,'ReadSpm1Spm','.spm',@spm});
-   ooo = mitem(oo,'SPM 2 Data (.spm)',{@ImportCb,'ReadSpm2Spm','.spm',@spm});
+   ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spm});
    return
 
    function o = ImportCb(o)            % Import Log Data Callback

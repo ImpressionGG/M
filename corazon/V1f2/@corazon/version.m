@@ -472,6 +472,7 @@ function VersionV1F
 % - add modal transformation to corasim/modal method
 % - new corasim type "modal" introduced
 % - corasim/fqr and corasim/bode for large modal systems :-))))) 
+% - corazon/snif added
 %
 %
 % Known Bugs / Wishlist
