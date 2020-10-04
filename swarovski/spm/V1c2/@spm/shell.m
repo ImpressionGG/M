@@ -161,6 +161,7 @@ function oo = View(o)                  % View Menu
    ooo = Scale(oo);                    % add Scale sub-menu
    ooo = Bode(oo);                     % add Bode settings menu
    ooo = Rloc(oo);                     % add Root Locus menu
+   ooo = Weight(oo);                   % add Weight diagram settings menu
    
    plugin(o,'spm/shell/View');         % plug point
 
@@ -346,6 +347,19 @@ function oo = Rloc(o)                  % Root Locus Settings Menu
                1.2 1.5 2 5 10 20 50 100],{});
    ooo = mitem(oo,'Delta',{},'rloc.delta');
    choice(ooo,[0.05 0.02 0.01 0.005 0.002 0.001],{});
+end
+function oo = Weight(o)                % Weight Diagram Settings Menu  
+   setting(o,{'weight.equalize'},1);   % enable equalizing by default
+   setting(o,{'weight.db'},1);         % show weight in dB by default
+   setting(o,{'weight.small'},1e-3);   % threshold for small weights
+    
+   oo = mitem(o,'Weight');
+   ooo = mitem(oo,'Equalize',{},'weight.equalize');
+   check(ooo,{});
+   ooo = mitem(oo,'Show in dB',{},'weight.db');
+   check(ooo,{});
+   ooo = mitem(oo,'Small',{},'weight.small');
+   choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6],{});
 end
 
 %==========================================================================

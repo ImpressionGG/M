@@ -64,7 +64,7 @@ function o = Elongation(o)             % Elongation Diagram
    
    Epilog(o,['Elongation ',sym],sym);
 end
-function o = Acceleration(o)           % Acceleration Diagram            
+function o = Acceleration(o)           % Acceleration Diagram          
    o = with(o,'scale');                % unwrap scale options
    o = opt(o,'yscale',opt(o,'ascale'));
    o = opt(o,'yunit',opt(o,'aunit'));
@@ -165,34 +165,74 @@ function o = Trf(o)                    % Transfer Function Diagram
    axis off;
 end
 function o = Weight(o)                 % Weight Function Diagram       
+   weightdb = opt(o,{'weight.db',1});  % show weight in dB
+   
    sym = arg(o,1);
    w = arg(o,2);
+   dB = 20*log10(abs(w));              % weight in decibels
+   
    sub = o.either(arg(o,3),[1 1 1]);
    
    o = opt(o,'subplot',sub);
    
-   small = 1e-3*max(abs(w));
+   small = opt(o,{'weight.small',1e-3});
+   small = small*max(abs(w));
    idx = find(abs(w)<small);
    
    n = 1:length(w);
    if ~isempty(idx)
-      ww = w(idx);  nn = n(idx);
-      plot(o,nn,ww,'|K', nn,ww,'Ko');
+      ww = w(idx);  nn = n(idx);  db = dB(idx);
+      if weightdb
+         plot(o,nn,db,'|K', nn,db,'Ko');
+      else
+         plot(o,nn,ww,'|K', nn,ww,'Ko');
+      end
       hold on;
    end
    
    idx = find(abs(w)>=small);
    if ~isempty(idx)
-      ww = w(idx);  nn = n(idx);
-      plot(o,nn,ww,'|K', nn,ww,'ro');
+      ww = w(idx);  nn = n(idx);  db = dB(idx);
+      if weightdb
+         plot(o,nn,db,'|r', nn,db,'ro');
+      else
+         plot(o,nn,ww,'|r', nn,ww,'ro');
+      end
       hold on;
    end
    
-   set(gca,'Xtick',1:length(w));
-  
+   Xtick(o);                           % set pretty xticks
+   
    title('Modal Weights');
    xlabel('Mode Number');
-   ylabel(sym);
+   if weightdb
+      ylabel([sym,'  [dB]']);
+   else
+      ylabel(sym);
+   end
+   
+   function Xtick(o)                   % Set Pretty Xticks             
+      nw = length(w);
+      if (nw < 20)
+         set(gca,'Xtick',1:nw);
+      elseif (nw < 40)
+         set(gca,'Xtick',2:2:nw);
+      else
+         delta = round(nw/20);
+         switch delta
+            case {3,4}
+               delta = 5;
+            case {6,7,8,9}
+               delta = 10;
+            case {11,12,13,14}
+               delta = 15;
+            otherwise
+               delta = ceil(delta/5)*5;
+         end
+
+         set(gca,'Xtick',delta:delta:nw);
+      end
+   end
 end
 
 %==========================================================================
@@ -339,7 +379,7 @@ end
 % Root Locus Diagram
 %==========================================================================
 
-function o = Rloc(o)                   % Root Locus Diagram                             
+function o = Rloc(o)                   % Root Locus Diagram            
    sym = arg(o,1);
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
@@ -387,7 +427,7 @@ end
 % Calculation Diagram
 %==========================================================================
 
-function o = Calc(o)
+function o = Calc(o)                   % Calculation Diagram           
    sym = arg(o,1);
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);

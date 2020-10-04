@@ -77,6 +77,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add Analyse>Stability/L1(s)_Calculation
 % - cyan color for open loop transfer functions
 % - rearrange select menu and rename "trfd" cache segment to "trf"
+% - improve weight diagram and add weight overview for G(s)
 %
 % Known bugs & wishlist
 % =========================

@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Gs,@Trfr,@GsStep,@GsBode,...
+                   @Gs,@Trfr,@GsStep,@GsBode,@GsWeight,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
@@ -65,6 +65,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    oo = mhead(o,'G(s): Transfer Matrix');
    ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
+   ooo = mitem(oo,'Modal Weights',{@WithCuo,'GsWeight'});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
@@ -437,8 +438,14 @@ function o = Gs(o)                     % Double Transfer Function
    i = arg(o,1);
    j = arg(o,2);
 
-   G = cook(o,'G');                    % G = cache(o,'trf.G');
-   W = cook(o,'W');                    % W = cache(o,'trf.W');
+   G = cook(o,'G');
+   W = cook(o,'W');
+   
+   if opt(o,{'weight.equalize',0})
+      w0 = NominalWeight(o,W);
+   end
+
+   
    if (i == 0 || j == 0)
       G = opt(G,'maxlen',200);
       str = display(G);
@@ -471,6 +478,12 @@ function o = Gs(o)                     % Double Transfer Function
 
       if ~isempty(W)
          wij = W{i,j};
+         if ~opt(o,{'weight.equalize',0})
+            w0 = NominalWeight(o,wij);
+         end
+         if opt(o,{'weight.db',1})
+            wij = wij / w0;
+         end
          diagram(o,'Weight',symw,wij,3232);
       end
 
@@ -513,6 +526,65 @@ function o = GsBode(o)                 % G(s) Bode Plot Overview
       end
    end
    heading(o);
+end
+function o = GsWeight(o)               % G(s) Weight Overview          
+   W = cook(o,'W');                    % weight matrix
+   [m,n] = size(W);
+
+   if opt(o,{'weight.equalize',0})
+      w0 = NominalWeight(o,W);
+   end
+   
+   for (i=1:m)
+      for (j=1:n)
+         if ~isempty(W)
+            wij = W{i,j};
+            if ~opt(o,{'weight.equalize',0})
+               w0 = NominalWeight(o,wij);
+            end
+            if opt(o,{'weight.db',1})
+               wij = wij / w0;
+            end
+            sym = sprintf('w%g%g',i,j);
+            diagram(o,'Weight',sym,wij,[m,n,i,j]);
+         end
+      end
+   end
+   Equalize(o);                        % equalize diagrams
+   
+   heading(o);
+   
+   function Equalize(o)                % Equalize Diagrams             
+      if ~opt(o,{'weight.equalize',0})
+         return                        % bye if equalizing is desabled
+      end
+      
+      ylim = [0 0];                    % asses y-limits
+      for (i=1:m)
+         for (j=1:n)
+            subplot(o,[m,n,i,j]);
+            lim = get(gca,'Ylim');
+            ylim(1) = min(ylim(1),lim(1));
+            ylim(2) = max(ylim(2),lim(2));
+         end
+      end
+      ymax = max(abs(ylim));
+      
+      if ~opt(o,{'weight.db',1})        % show weight in dB
+         ylim = 1.2*[-ymax ymax];
+      else
+         ylim(2) = ylim(2)*1.2;
+      end
+      
+         % now apply y-limit to all diagrams
+
+      for (i=1:m)
+         for (j=1:n)
+            subplot(o,[m,n,i,j]);
+            set(gca,'Ylim',ylim);
+         end
+      end
+   end
 end
 function o = Trfr(o)                   % Rational Transfer Function    
    assert(0);
@@ -1400,4 +1472,26 @@ function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
    I = eye(m);
    u = I(:,index)*t * Fmax/max(t);
 end
-
+function w0 = NominalWeight(o,W)       % Return Nominal Weight         
+%
+% NOMINALWEIGHT
+%
+%    w0 = NominalWeight(o,W)           % nominal weight of a matrix
+%    w0 = NominalWeight(o,wij)         % nominal weight of a weight vector
+%
+   small = opt(o,{'weight.small',1e-3});
+   
+   if isa(W,'double')
+      w0 = max(abs(W))*small;
+   elseif iscell(W)
+      [m,n] = size(W);
+      for (i=1:m)
+         for (j=1:n)
+            w0(i,j) = max(abs(W{i,j}))*small;
+         end
+      end
+      w0 = max(w0(:));
+   else
+      error('bad arg');
+   end
+end
