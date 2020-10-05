@@ -473,6 +473,7 @@ function VersionV1F
 % - new corasim type "modal" introduced
 % - corasim/fqr and corasim/bode for large modal systems :-))))) 
 % - corazon/snif added
+% - add object id stored in o.work.id
 %
 %
 % Known Bugs / Wishlist

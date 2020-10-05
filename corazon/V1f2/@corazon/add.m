@@ -32,11 +32,10 @@ function [o,idx] = add(o,list)
    if ~iscell(list)
       list = {list};                   % make a list
    end
-
-% add the objects
+   
+% add the object
 
    olist = either(data(o),{});
-
    if ~iscell(olist)
       error('object''s data type is not for adding objects!')
    end
@@ -45,6 +44,7 @@ function [o,idx] = add(o,list)
    for (i=1:length(list))
       oo = list{i};                    % pick i-th object from list
       oo = clean(oo);                  % cleanup oject
+      oo = SetId(o,oo,olist);          % set unique id
       olist{end+1} = oo;
       idx(end+1) = length(olist);
    end
@@ -52,7 +52,18 @@ function [o,idx] = add(o,list)
    [olist,idx] = Sort(o,olist,idx);
    
    o = data(o,olist);
-   return
+   
+   function oo = SetId(o,oo,olist)
+      id = 0;
+      for (i=1:length(olist))
+         idi = objid(olist{i});
+         id = max(id,idi);
+      end
+
+      id = floor(id)+1;                   % unique ID
+      oo = figure(oo,figure(o));          % copy figure handle
+      oo = objid(oo,id);                  % set unique object ID
+   end
 end   
 
 %==========================================================================

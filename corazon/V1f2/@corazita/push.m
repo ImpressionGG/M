@@ -35,7 +35,9 @@ function oo = push(corazita,o)
 %
 % clean working property
 %
+   id = work(o,'id');                  % save object ID
    o.work = [];
+   o.work.id = id;                     % restore ID
 %   
 % next store object handle in figure's userdata.
 %

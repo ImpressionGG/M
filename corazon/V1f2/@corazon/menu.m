@@ -103,18 +103,23 @@ function oo = Begin(o)                 % Begin Menu Build (Overloaded)
    
    Inherit(o);                         % inherit figure handle to children
    
-   function Inherit(o)
+   function Inherit(o)                 % Inherit Figure Handles        
    %
    % INHERIT   Inherit figure handle of shell object to all children of
    %           shell. This is important for the clone process and to
-   %           maintain data integrity
+   %           maintain data integrity. Also update object ID
    %   
       o = pull(o);                     % refresh shell object
       assert(container(o));
    
       fig = figure(o);
+      o = objid(o,0);                  % set shell object's object ID
+      
       for (i=1:length(o.data))         % inherit figure handle to children
-         o.data{i} = figure(o.data{i},fig); 
+         oi = o.data{i};
+         oi = figure(oi,fig);
+         oi = objid(oi,i);             % set child's object ID
+         o.data{i} = oi;
       end
       push(o);                         % refresh shell object
    end
