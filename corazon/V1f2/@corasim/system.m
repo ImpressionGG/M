@@ -78,6 +78,8 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
             o = type(o,'strf');        % s-transfer-function
          end
       end
+      
+      o.data = [];                     % clear data
       o = data(o,'num,den,T',num,den,T);
       return
    end

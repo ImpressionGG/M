@@ -474,6 +474,7 @@ function VersionV1F
 % - corasim/fqr and corasim/bode for large modal systems :-))))) 
 % - corazon/snif added
 % - add object id stored in o.work.id
+% - add corasim/new root locus demo objects
 %
 %
 % Known Bugs / Wishlist

@@ -18,8 +18,17 @@ function o = rloc(o,num,den)           % Plot Root Locus
       [num,den] = peek(o);
    end
    
+   held = ishold;
+   
+   o = Inherit(o);                     % inherit options from shell (?!)
    o = Auto(o,num,den);                % auto setting of plot range
    o = Rloc(o,num,den);                % plot root locus
+   
+   if (held)
+      hold on;
+   else
+      hold off;
+   end
 end
 
 %==========================================================================
@@ -27,6 +36,9 @@ end
 %==========================================================================
 
 function o = Rloc(o,num,den)           % Plot Root Locus               
+   col = {'b','bc','r','m','rw','mw','rww','mww'};
+   K = [-inf 0 1 1.5 2 5 10 20];
+   
    [z,p,k] = zpk(o,num,den);
    
    nz = length(z);                     % number of zeros
@@ -41,18 +53,10 @@ function o = Rloc(o,num,den)           % Plot Root Locus
       hold on;
    end
    
-   K = 1;                              % nominal K
-   r = roots(add(o,K*num,den));        % closed loop roots for K = 1
-   plot(o,real(r),imag(r),'rp');
-
-   r = roots(add(o,1.5*K*num,den));    % closed loop roots for K = 1.5
-   plot(o,real(r),imag(r),'mp');
-
-   r = roots(add(o,2*K*num,den));      % closed loop roots for K = 2
-   plot(o,real(r),imag(r),'rwp');
-   
-   r = roots(add(o,5*K*num,den));      % closed loop roots for K = 2
-   plot(o,real(r),imag(r),'mwp');
+   for (i=3:length(col))
+      r = roots(add(o,K(i)*num,den));  % closed loop roots for K = 1
+      plot(o,real(r),imag(r),[col{i},'p']);
+   end
 
       % determine delta, which is the minimum progress which should
       % be achieved during each itewration
@@ -68,21 +72,22 @@ function o = Rloc(o,num,den)           % Plot Root Locus
    delta = [diff(xlim),diff(ylim)] * delta;
 
       % positive branches
-      
-   Branch(o,[+eps,K],'r');             % calc & plot positive branch
-   Branch(o,[K,1.5*K],'m');            % calc & plot positive branch
-   Branch(o,[1.5*K,2*K],'rw');         % calc & plot positive branch
-   Branch(o,[2*K,5*K],'mw');           % calc & plot positive branch
-   Branch(o,[5*K,10*K],'rww');         % calc & plot positive branch
-   Branch(o,10*K,'mww');               % calc & plot positive branch
+         
+   Branch(o,[+eps,K(3)],col{3});       % calc & plot positive branch
+   Branch(o,[K(3),K(4)],col{4});       % calc & plot positive branch
+   Branch(o,[K(4),K(5)],col{5});       % calc & plot positive branch
+   Branch(o,[K(5),K(6)],col{6});       % calc & plot positive branch
+   Branch(o,[K(6),K(7)],col{7});       % calc & plot positive branch
+   Branch(o,K(7),col{7});              % calc & plot positive branch
 
       % negative branch
       
-   Branch(o,-eps,'bc');                % calc & plot negative branch
+   Branch(o,-eps,col{2});              % calc & plot negative branch
    
+   Legend(o,K,col);
    subplot(o);
    
-   function Branch(o,K,col)            % Calculate And Plot Branch    
+   function Branch(o,K,col)            % Calculate And Plot Branch     
    %
    % BRANCH   Calc and plot branch
    %
@@ -119,7 +124,7 @@ function o = Rloc(o,num,den)           % Plot Root Locus
       end
 
       for (i=1:size(x,1))
-         if opt(o,{'bullets',1})
+         if opt(o,{'bullets',0})
             plot(o,x(i,:),y(i,:),col, x(i,:),y(i,:),[col,'K.']);
          else
             plot(o,x(i,:),y(i,:),col);
@@ -127,6 +132,28 @@ function o = Rloc(o,num,den)           % Plot Root Locus
          hold on
       end
       idle(o);                         % show graphics
+   end
+   function Legend(o,K,col)            % Show Legend
+      txt = 'K = ';
+      sep = '';
+      for (i=1:length(K))
+         txt = [txt,sep,sprintf('%g',K(i))];
+         sep = ' -> ';
+      end
+      xlabel(txt);
+      
+      return
+      
+      labels = {};
+      for (i=2:length(K))
+         hdl(i-1) = plot([0 0],[i i]/1e15);
+         o.color(hdl(i-1),col{i});
+         hold on;
+         labels{i-1} = sprintf('K = %g ... %g',K(i-1),K(i));
+      end
+      
+      legend(hdl,labels,'Location','southeast');
+      subplot(o);                      % refresh drawing
    end
 end
 
@@ -205,7 +232,7 @@ function o = Auto(o,num,den)           % Auto Setting of Plot Range
       end
    end
 end
-function [r,K] = Roots(o,num,den,z,p,r,K,Kmax,delta)                        
+function [r,K] = Roots(o,num,den,z,p,r,K,Kmax,delta)                   
    delta = ones(length(r),1)*delta;
    
    r0 = r;
@@ -297,4 +324,14 @@ function N = Interesting(o,r,z,delta,xlim,ylim)  % Interesting Roots
          
    idx = find(d(:,1)>=delta(1) | d(:,2)>=delta(2));            
    N = length(idx);      
+end
+function o = Inherit(o)                % inherit options from shell    
+   if isempty(figure(o))
+      so = pull(o);
+      if ~isempty(so)
+         o = inherit(o,so);
+         o = with(o,'style');
+         o = with(o,'rloc');
+      end
+   end
 end

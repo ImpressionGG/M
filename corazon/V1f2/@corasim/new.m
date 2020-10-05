@@ -18,7 +18,7 @@ function oo = new(o,varargin)          % CORASIM New Method
 %       See also: CORASIM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Css,@Dss,@Modal3,@PT1,@Filter2,@PT3,...
-                       @Trf23,...
+                       @Trf23,@Rloc,...
                        @Motion100mm,@Motion200mm,@Motion100um,...
                        @Modal,@Menu,@ModalN);
    oo = gamma(oo);
@@ -43,6 +43,20 @@ function oo = Menu(o)                  % Setup Menu
    oo = mitem(o,'200 mm Motion',{@Callback,'Motion200mm'},[]);
    oo = mitem(o,'100 um Motion',{@Callback,'Motion100um'},[]);
  
+   oo = mitem(o,'-');
+   oo = mitem(o,'Root Locus Demo');
+   ooo = mitem(oo,'Root Locus 1/2',{@Callback 'Rloc'},'1/2');
+   ooo = mitem(oo,'Root Locus 0/2',{@Callback 'Rloc'},'0/2');
+   ooo = mitem(oo,'Root Locus 0/3',{@Callback 'Rloc'},'0/3');
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Root Locus 4/6 (1)',{@Callback 'Rloc'},'4/6(1)');
+   ooo = mitem(oo,'Root Locus 4/6 (2)',{@Callback 'Rloc'},'4/6(2)');
+   ooo = mitem(oo,'Root Locus 4/6 (3)',{@Callback 'Rloc'},'4/6(3)');
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Root Locus 6/6 (1)',{@Callback 'Rloc'},'6/6(1)');
+   ooo = mitem(oo,'Root Locus 6/6 (2)',{@Callback 'Rloc'},'6/6(2)');
+   ooo = mitem(oo,'Root Locus 6/6 (3)',{@Callback 'Rloc'},'6/6(3)');
+
    oo = mitem(o,'-');
    oo = mitem(o,'Large Modal Systems');
    ooo = mitem(oo,'1 Mode System',{@Callback  'ModalN'},2);
@@ -130,6 +144,81 @@ function oo = Modal3(o)                % New css Object in Modal Form
                           datestr(now));
    oo.par.comment = {'Modal Form',...
      'omega = [1 2 3], zeta = [0.1 0.1 0.1],  M = [1 -1 1],  N = [2 3 4]'};
+end
+
+%==========================================================================
+% Root Locus Demo Object
+%==========================================================================
+
+function oo = Rloc(o)                  % Root Locus Demo Object        
+   mode = arg(o,1);
+   switch mode
+      case '1/2'
+         oo = trf(o,[1 1],[1 2 5]);    
+         oo.par.title = sprintf('Root Locus Demo 1/2 (%s)',datestr(now));
+         oo.par.comment = {'G(s) = (s + 1) / (s^2 + 2s + 5)'};
+         
+      case '0/2'
+         oo = trf(o,1,[1 2 2]);    
+         oo.par.title = sprintf('Root Locus Demo 0/2 (%s)',datestr(now));
+         oo.par.comment = {'G(s) = 1 / (s^2 + 2s + 2)'};
+         
+      case '0/3'
+         oo = trf(o,1,[1 2 2 0]);    
+         oo.par.title = sprintf('Root Locus Demo 0/2 (%s)',datestr(now));
+         oo.par.comment = {'G(s) = 1 / (s^3 + 2s^2 + 2s)'};
+         
+      case '4/6(1)'
+         om = [1   3   5];  
+         Om = [  2   4  ] 
+         oo = Trf(o,om,Om,0.1,'Root Locus Demo 4/6 (1)');    
+
+      case '4/6(2)'
+         om = [1 2      5];
+         Om = [    3 4   ] 
+         oo = Trf(o,om,Om,0.1,'Root Locus Demo 4/6 (2)');    
+         
+      case '4/6(3)'
+         om = [1   3  4  ]; 
+         Om = [  2      5]         
+         oo = Trf(o,om,Om,0.1,'Root Locus Demo 4/6 (3)');    
+
+      case '6/6(1)'
+         om = [1   3   5   ];  
+         Om = [  2   4    6] 
+         oo = Trf(o,om,Om,0.1,'Root Locus Demo 4/6 (1)');    
+
+      case '6/6(2)'
+         om = [  2   4   6];
+         Om = [1   3   5  ] 
+         oo = Trf(o,om,Om,0.1,'Root Locus Demo 4/6 (2)');    
+         
+      case '6/6(3)'
+         om = [1   3   5   ];  
+         Om = [  2   4    -6] 
+         oo = Trf(o,om,Om,0.1,'Root Locus Demo 4/6 (2)');    
+         
+      otherwise
+         error('bad mode');
+   end
+   
+   function oo = Trf(o,om,Om,zeta,name)
+     den = 1;
+      for (i=1:length(om))
+         qf = [1 [2*zeta om(i)]*om(i)];
+         den = conv(den,qf);
+      end
+
+      num = 1;
+      for (i=1:length(Om))
+         qf = [1 [2*zeta Om(i)]*Om(i)];
+         num = conv(num,qf);
+      end
+      
+      oo = trf(o,num,den);    
+      oo.par.title = sprintf('%s (%s)',name,datestr(now));
+
+    end
 end
 
 %==========================================================================
