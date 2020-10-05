@@ -81,6 +81,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - make import of .spm files more flexible
 % - import whole packages
 % - bug fixed: refresh after normalizing
+% - bug fixed: option passing for modal systems
 %
 % Known bugs & wishlist
 % =========================

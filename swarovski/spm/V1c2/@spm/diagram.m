@@ -388,7 +388,8 @@ function o = NewBode(o)                % Bode Diagram
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
 
-   G = set(G,'name',sym); 
+   G = inherit(G,o);                   % inherit options
+   G = set(G,'name',sym);              % set name of transfer function
    
    if isempty(opt(G,'color'))
       G = opt(G,'color','r');

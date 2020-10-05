@@ -68,7 +68,6 @@ end
 %==========================================================================
 
 function oo = Partition(o)             % Partition System              
-   %[A,B,C] = data(o,'A,B,C');
    oo = Normalize(o);
    [A,B,C] = var(oo,'A,B,C');
 
@@ -328,9 +327,6 @@ function oo = TrfModal(o)              % Modal Tranfer Matrix
             end
 
             G = poke(G,Gij,i,j);          % lower half diagonal element
-            if (i ~= j)
-               G = poke(G,Gij,j,i);       % upper half diagonal element
-            end
          end
       end
    end
