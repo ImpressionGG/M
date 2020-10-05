@@ -481,8 +481,18 @@ function Current(o,oo)                 % Store Current Object to Shell
       cb = control(sho,'refresh');     % save refresh callback
       control(sho,'refresh',{});       % make inactive
 
-      oo = arg(oo,{});                 % clear arg list
-      current(o,oo);                   % refresh current object
+         % current object is refreshed if object ID
+         % is matching, otherwise ignore
+         
+      id = objid(current(o));          % fetch current object ID
+      
+      if isequal(id,objid(oo))         % matching IDs?
+         oo = arg(oo,{});              % clear arg list
+         current(o,oo);                % refresh current object
+      else
+         fprintf(['*** warning: cold refresh of cache ignored ',...
+                  'due to object ID mismatch\n']);
+      end
 
       control(sho,'refresh',cb);       % restore refresh callback
    end

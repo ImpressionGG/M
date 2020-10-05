@@ -14,6 +14,10 @@ function oo = inv(o,M)
          [num,den] = peek(o);
          oo = poke(o,den,num);
               
+      case {'modal'}
+         [num,den] = peek(o);
+         oo = trf(o,den,num);
+
       otherwise
          error('type no supported')
    end

@@ -38,7 +38,8 @@ function o = Init(o)                   % Init Object
 
    o = opt(o,{'style.bullets'},0);     % provide bullets default
    o = opt(o,{'view.grid'},1);         % grid on by default
-
+   o = opt(o,{'mode.organized'},'plain');
+ 
    o = provide(o,'par.title','SPM Toolbox');
    o = provide(o,'par.comment',{'Playing around with SPM objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function

@@ -353,7 +353,7 @@ end
 % Bode Diagram
 %==========================================================================
 
-function o = Bode(o)
+function o = Bode(o)                   % Bode Diagram                  
    if isequal(opt(o,{'trf.type','??'}),'strf')
       o = GoodBode(o);
    else
@@ -474,7 +474,11 @@ function o = Numeric(o)                % Numeric Quality
          
       err = (mag1-mag0) ./ mag0;
       dBerr = 20*log10(abs(err));
-      hdl = semilogx(om,dBerr);  
+      if all(err==0)
+         hdl = semilogx(om,-399+0*err); 
+      else
+         hdl = semilogx(om,dBerr); 
+      end
       set(hdl,'Color','m','LineWidth',1)
       
       set(gca,'Ylim',[-inf inf]);

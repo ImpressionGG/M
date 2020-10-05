@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Gs,@Trfr,@GsStep,@GsBode,@GsWeight,@GsNumeric,...
+                   @Gs,@Trfr,@GsStep,@GsBode,@GsWeight,@GsFqr,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
@@ -32,8 +32,15 @@ function oo = Menu(o)                  % Setup Plot Menu
 %       Callback or Basket functions, which do some common tasks
 %
    oo = mitem(o,'About',{@WithCuo,'About'});
-   oo = mitem(o,'Overview',{@WithCuo,'Plot'});
 
+   if ~type(current(o),{'spm'})
+      return
+   end
+   
+      % rest is for spm typed objects only
+
+   oo = mitem(o,'Overview',{@WithCuo,'Plot'});
+      
    oo = mitem(o,'-');
    oo = mitem(o,'Eigenvalues');   
    ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
@@ -66,7 +73,8 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'GsWeight'});
-   ooo = mitem(oo,'Numeric Quality',{@WithCuo,'GsNumeric'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Frequency Response',{@WithCuo,'GsFqr'});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
@@ -587,7 +595,7 @@ function o = GsWeight(o)               % G(s) Weight Overview
       end
    end
 end
-function o = GsNumeric(o)              % G(s) Numeric Quality          
+function o = GsFqr(o)                  % G(s) Frequency Response Error 
    G = cook(o,'G');                    % G(s)
    [m,n] = size(G);
    
