@@ -14,7 +14,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @Gs,@Trfr,@GsStep,@GsBode,@GsWeight,...
+                   @Gs,@Trfr,@GsStep,@GsBode,@GsWeight,@GsNumeric,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
@@ -66,6 +66,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'GsWeight'});
+   ooo = mitem(oo,'Numeric Quality',{@WithCuo,'GsNumeric'});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
@@ -586,7 +587,21 @@ function o = GsWeight(o)               % G(s) Weight Overview
       end
    end
 end
-function o = Trfr(o)                   % Rational Transfer Function    
+function o = GsNumeric(o)              % G(s) Numeric Quality          
+   G = cook(o,'G');                    % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         sym = sprintf('G%g%g(s)',i,j);
+         Gij = peek(G,i,j);
+         o = opt(o,'color','g');
+         diagram(o,'Numeric',sym,Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = OldTrfr(o)                % Rational Transfer Function    
    assert(0);
    i = arg(o,1);
    j = arg(o,2);

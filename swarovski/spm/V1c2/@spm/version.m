@@ -82,6 +82,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - import whole packages
 % - bug fixed: refresh after normalizing
 % - bug fixed: option passing for modal systems
+% - frequency response error plot implemented
 %
 % Known bugs & wishlist
 % =========================
