@@ -352,7 +352,14 @@ end
 % Bode Diagram
 %==========================================================================
 
-function o = Bode(o)                   % Bode Diagram                  
+function o = Bode(o)
+   if isequal(opt(o,{'trf.type','??'}),'strf')
+      o = GoodBode(o);
+   else
+      o = NewBode(o);
+   end
+end
+function o = GoodBode(o)               % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors
    
    sym = arg(o,1);
@@ -370,6 +377,26 @@ function o = Bode(o)                   % Bode Diagram
    subplot(o,sub);
    
    bode(oo);
+   title([sym,': Bode Diagram']);
+
+   subplot(o);                         % subplot done!
+end
+function o = NewBode(o)                % Bode Diagram                  
+   o = Scaling(o);                     % manage scaling factors
+   
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+
+   G = set(G,'name',sym); 
+   
+   if isempty(opt(G,'color'))
+      G = opt(G,'color','r');
+   end
+   
+   subplot(o,sub);
+   
+   bode(G);
    title([sym,': Bode Diagram']);
 
    subplot(o);                         % subplot done!

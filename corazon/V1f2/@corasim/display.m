@@ -26,8 +26,13 @@ function txt = display(o)
          System(o);
       
       case 'modal'
-         [a0,a1] = data(o,'a0,a1');
-         fprintf('Modal system (%g modes)\n',length(a0));
+         [a0,a1,w] = data(o,'a0,a1,w');
+         name = get(o,'name');
+         if isempty(name)
+            fprintf('Modal system (%g modes)\n',length(a0));
+         else
+            fprintf('%s: Modal system (%g modes)\n',name,length(a0));
+         end
 
          System(o);
                   
@@ -44,6 +49,16 @@ function txt = display(o)
             fprintf('%s%g',sep,a1(i));  sep = ', ';
          end
          fprintf(']\n');
+         
+         if ~isempty(w)
+            sep = '';
+            fprintf('   w:  [');
+            for (i=1:length(w))
+               fprintf('%s%g',sep,w(i));  sep = ', ';
+            end
+            fprintf(']\n');
+         end
+
                   
       case {'strf','ztrf','qtrf'}
          [num,den] = peek(o);
@@ -619,6 +634,8 @@ function txt = Ratio(o)                % Display Rational Function
          sym = 'z';
       case 'qtrf'
          sym = 'q'
+      case 'modal'
+         sym = 's';
       otherwise
          error('bad type');
    end

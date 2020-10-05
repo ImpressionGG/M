@@ -17,6 +17,9 @@ function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator
 %
    switch o.type
       case {'css','dss','modal'}
+         if type(o,{'modal'})
+            o = system(o);             % cast to css
+         end
          [A,B,C,D,T] = system(o);
          if (nargin < 2)
             i = 1;

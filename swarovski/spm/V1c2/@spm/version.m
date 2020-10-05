@@ -80,6 +80,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - improve weight diagram and add weight overview for G(s)
 % - make import of .spm files more flexible
 % - import whole packages
+% - bug fixed: refresh after normalizing
 %
 % Known bugs & wishlist
 % =========================

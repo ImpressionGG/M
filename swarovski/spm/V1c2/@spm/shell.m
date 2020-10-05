@@ -599,13 +599,13 @@ function oo = Internal(o)              % Internal Menu
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Filter(oo);                   % add Filter sub menu
 end
-function oo = Trf(o)                   % Transfer Function Menu
+function oo = Trf(o)                   % Transfer Function Menu        
    setting(o,{'trf.type'},'strf');
    
    oo = mitem(o,'Transfer Functions',{},'trf.type');
    choice(oo,{{'Trf Type','strf'},{'Modal Type','modal'}},{});
 end
-function oo = Normalize(o)             % Normalize Menu
+function oo = Normalize(o)             % Normalize Menu                
    setting(o,{'brew.T0'},1e-3);
    
    oo = mitem(o,'Normalize');
@@ -632,7 +632,7 @@ function oo = Cancel(o)                % Add Cancel Menu Items
 end
 
 function oo = CacheReset(o)            % Reset All Caches              
-   callback = control(o,'refresh');    % save refresh callback
+%  callback = control(o,'refresh');    % save refresh callback
    
    o = pull(o);
    for (i=1:length(o.data))
@@ -640,7 +640,7 @@ function oo = CacheReset(o)            % Reset All Caches
       cache(oo,oo,[]);                 % cache hard reset
    end
    
-   control(o,'refresh',callback);      % restore refresh callback
+%  control(o,'refresh',callback);      % restore refresh callback
    refresh(o);
 end
 

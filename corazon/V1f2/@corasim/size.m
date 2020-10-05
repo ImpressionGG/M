@@ -18,6 +18,12 @@ function [n,ni,no] = size(o)
          n = length(A);
          ni = size(B,2);
          no = size(C,1);
+ 
+      case 'modal'
+         [a0,B,C] = data(o,'a0,B,C');
+         n = 2*length(a0);
+         ni = size(B,2);
+         no = size(C,1);
          
       case 'matrix'
          if (nargout <= 2)

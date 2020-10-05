@@ -290,8 +290,8 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       oo = set(o,'comment',...
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
-  end
-  dark(o);                            % do dark mode actions
+   end
+   dark(o);                            % do dark mode actions
 end
 function oo = WithBsk(o)               % 'With Basket' Callback        
 %

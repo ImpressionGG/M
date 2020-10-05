@@ -85,12 +85,12 @@ function oo = Partition(o)             % Partition System
       fprintf('*** warning: B2 differs from C1''!\n');
    end
    
-   M = B2;  a0 = -diag(A21);  a1 = -diag(A22);
+   a0 = -diag(A21);  a1 = -diag(A22);
    omega = sqrt(a0);  zeta = a1./omega/2;
    
    oo = var(oo,'A11,A12,A21,A22',A11,A12,A21,A22);
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
-   oo = var(oo,'M,a0,a1,omega,zeta',M,a0,a1,omega,zeta);
+   oo = var(oo,'a0,a1,omega,zeta',a0,a1,omega,zeta);
 end
 function oo = Normalize(o)             % Normalize System              
    T0 = opt(o,{'brew.T0',1});          % normalization time constant
@@ -107,31 +107,29 @@ function oo = Normalize(o)             % Normalize System
    B(i2,:)  = T0*B(i2,:);
    C(:,i1) = C(:,i1)*T0;
    
+   a0 = -diag(A(i2,i1));
+   a1 = -diag(A(i2,i2));
+
       % refresh system
       
-   %oo = data(o,'A,B,C,D',A,B,C,D);
-   oo = var(o,'A,B,C,D,T0',A,B,C,D,T0);
-     
-      % update simulation parameters
-      
-   %oo = opt(oo,'simu.tmax',opt(o,'simu.tmax')/T0);
-   %oo = opt(oo,'simu.dt',opt(o,'simu.dt')/T0);
-   
-      % set time scale correction for plot routines
-      
-   %oo = var(oo,'Kms',1/T0);
+   oo = var(o,'A,B,C,D,T0,a0,a1',A,B,C,D,T0,a0,a1);
 end
 
 %==========================================================================
 % Transfer Matrix G(s)
 %==========================================================================
 
-function oo = Trf(o)                   % Transfer Matrix               
-   oo = Trfd(o);                       % delegate
-end
-function oo = Trfd(o)                  % Double Transfer Matrix        
+function oo = Trf(o)                  % Double Transfer Matrix        
    message(o,'Brewing Double Transfer Matrix ...');
-   oo = TrfDouble(o);
+   
+   switch opt(o,{'trf.type','strf'})
+      case 'modal'
+         oo = TrfModal(o);
+      case 'strf'
+         oo = TrfDouble(o);
+      otherwise
+         error('bad selection');
+   end
    
      % make cache segment variables available
      
@@ -147,11 +145,11 @@ function oo = Trfd(o)                  % Double Transfer Matrix
    cache(oo,oo);                       % hard refresh cache
    cls(o);
 end
-function oo = TrfDouble(o)             % Double Transition Matrix      
-   refresh(o,{@plot,'About'});         % don't come back here!!!
+function oo = TrfDouble(o)             % Double Transfer Matrix        
+%  refresh(o,{@plot,'About'});         % don't come back here!!!
    
    oo = current(o);
-   oo = brew(oo,'Partition');            % brew partial matrices
+   oo = brew(oo,'Partition');          % brew partial matrices
    
       % get a1,a0 and M
       
@@ -278,60 +276,92 @@ function oo = TrfDouble(o)             % Double Transition Matrix
       end
    end
 end
-
-function oo = Trfr(o)                  % Rational Transfer Matrix      
-   message(o,'Brewing Rational Transfer Matrix ...');
-   oo = TrfRational(o);
-   cache(oo,oo);                       % hard refresh cache
-end
-function oo = TrfRational(o)           % Rational Transition Matrix    
-   refresh(o,{@plot,'About'});         % don't come back here!!!
+function oo = TrfModal(o)              % Modal Tranfer Matrix          
+%  refresh(o,{@plot,'About'});         % don't come back here!!!
    
    oo = current(o);
-   oo = brew(oo,'Partition');            % brew partial matrices
+   oo = brew(oo,'Partition');          % brew partial matrices
    
-   %[A21,A22,B2,C1,D] = var(oo,'A21,A22,B2,C1,D');
-   
-   [A,B,C,D] = data(oo,'A,B,C,D');
-   
-   [n,m] = size(B);  [l,~] = size(C);
+      % get a1,a0 and M
+      
+   [a0,a1,B,C,D] = var(oo,'a0,a1,B,C,D');
 
-   O = base(inherit(corinth,o));       % need to access CORINTH methods
-   G = matrix(O,zeros(l,m));
-
-   for (j=1:m)                         % j indexes B(:,j) (columns of B)
-      [num,den] = ss2tf(A,B,C,D,j);
-      assert(l==size(num,1));
-      for (i=1:l)
-         run = (j-1)*m+i;
-         msg = sprintf('%g of %g: brewing G(%g,%g)',run,l*m,i,j);
-         progress(o,msg,(run-1)/(l*m)*100);
-         
-         numi = num(i,:);
-         p = poly(O,numi);             % numerator polynomial
-         q = poly(O,den);              % denominator polynomial
-         
-         Gij = ratio(O,1);
-         Gij = poke(Gij,p,q);          % Gij not canceled and trimmed
-         
-         fprintf('G%g%g(s):\n',i,j)
-         display(Gij);
-         
-         G = poke(G,Gij,i,j);
-         
-         numtag = sprintf('num_%g_%g',i,j);
-         oo = cache(oo,['trfr.',numtag],numi);
-
-         dentag = sprintf('den_%g_%g',i,j);
-         oo = cache(oo,['trfr.',dentag],den);
-      end
-      progress(o);                     % complete!
+      % calculate weight matrix and transfer matrix in modal form
+      
+   W = [];                             % init W
+   G = matrix(corasim);                % init G
+   Modal(o);                           % calculate W and G in modal form
+   Store(o);                           % store to cache
+        
+   if (control(o,{'verbose',0}) > 0)
+      fprintf('Modal Transfer Matrix\n');
+      display(G);
    end
+   progress(o);                        % complete!
    
-   oo = cache(oo,'trfr.G',G);          % store in cache
-   
-   fprintf('Transfer Matrix (calculated using ratio)\n');
-   display(cache(oo,'trfr.G'));
+   function Modal(o)                   % Gij(s) For Modal Forms        
+      n = length(a0);
+      m = size(B,2);                   % number of inputs
+      l = size(C,1);                   % number of outputs
+
+      for (i=1:l)
+         for (j=1:m)
+            run = (i-1)*m+j; 
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m*l,i,j);
+            progress(o,msg,(run-1)/(m*l)*100);
+
+               % calculate wij
+
+            ci = C(i,1:n)';  bj = B(n+1:2*n,j);  
+            wij = ci.*bj;                 % weight vector
+            W{i,j} = wij;                 % store as matrix element
+
+               % calculate Gij
+               
+            Gij = modal(corasim,a0,a1,B(:,j),C(i,:),D(i,j));
+            Gij = data(Gij,'w',wij);
+            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+
+            if (control(o,{'verbose',0}) > 0)
+               fprintf('G%g%g(s):\n',i,j)
+               display(trf(Gij));
+            end
+
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+   end
+   function Store(o)                   % Store to Cache                
+      
+         % provide mode transfer matrices
+
+      n = length(a0);
+      for (k=1:n)
+         psik = [1 a1(k) a0(k)];
+         Gk = trf(G,1,psik);
+         sym = sprintf('G_%g',k);
+         oo = cache(oo,['trf.',sym],Gk);
+      end
+
+         % store G and W in cache
+
+      oo = cache(oo,'trf.G',G);           % store in cache
+      oo = cache(oo,'trf.W',W);           % store in cache
+
+         % store all transfer matrix elements into cache
+
+      [l,m] = size(G);
+      for (i=1:l)
+         for (j=1:m)
+            Gij = peek(G,i,j);
+            sym = sprintf('G%g%g',i,j);
+            oo = cache(oo,['trf.',sym],Gij);
+         end
+      end
+   end
 end
 
 %==========================================================================
