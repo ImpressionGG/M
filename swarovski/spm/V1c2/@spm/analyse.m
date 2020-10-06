@@ -223,7 +223,8 @@ function oo = Nyq(o)                   % Nyquist Plot
    
    o = with(o,'bode');
    o = opt(o,'color','ccb');
-   o = diagram(o,'Bode',sym,oo,2211);
+   diagram(o,'Bode',sym,oo,2211);
+   diagram(o,'Stability',sym,oo,2221);
    
    o = with(o,'nyq');
    o = opt(o,'color','ccb');

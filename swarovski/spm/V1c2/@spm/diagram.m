@@ -15,6 +15,7 @@ function oo = diagram(o,varargin)
 %              diagram(o,'Astep','Ta1',Ta1,sub)       % accel. step rsp.
 %              diagram(o,'FStep','L51',L51,sub)       % force step response
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
+%              diagram(o,'Stability','L1',L1,sub)     % stability analysis
 %              diagram(o,'Bode','G11',G11,sub)        % bode diagram
 %              diagram(o,'Nyq','G11',G11,sub)         % Nyquist diagram
 %              diagram(o,'Numeric','G11',G11,sub)     % numeric quality
@@ -25,7 +26,7 @@ function oo = diagram(o,varargin)
 %           See also: SPM, PLOT
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
-                       @Mode,@Orbit,@Trf,@Weight,@Numeric,...
+                       @Mode,@Orbit,@Trf,@Weight,@Numeric,@Stability,...
                        @Step,@Vstep,@Astep,@Fstep,@Bode,@Nyq,@Rloc,@Calc);
    oo = gamma(oo);
 end
@@ -426,6 +427,87 @@ function o = Nyq(o)                    % Nyquist Diagram
    title([sym,': Nyquist Diagram']);
 
    subplot(o);                         % subplot done!
+end
+function o = Stability(o)              % Stability Analysis                  
+   o = Scaling(o);                     % manage scaling factors
+   o = with(o,'nyq');                  % override some Scaling opts
+   
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+
+   G = inherit(G,o);                   % inherit options
+   G = set(G,'name',sym);              % set name of transfer function
+   
+   if isempty(opt(G,'color'))
+      G = opt(G,'color','r');
+   end
+   
+   subplot(o,sub);
+   
+   Stable(G);
+   title([sym,': Stability Analysis']);
+
+   subplot(o);                         % subplot done!
+   
+   function o = Stable(o)
+      low = opt(o,{'magnitude.low',-300});
+      high = opt(o,{'magnitude.high',100});
+      delta = opt(o,{'magnitude.delta',20});
+      
+      mag = logspace(low/20,high/20,5000);
+      
+      [num,den] = peek(o);
+      
+      for (i=1:length(mag))
+         K = mag(i);
+         poly = add(o,K*num,den);
+         r = roots(poly);
+         
+         re(i) = max(real(r));
+      end
+      
+      dB = 0*re;
+      
+      idx = find(re>0);
+      if ~isempty(idx)
+         dB(idx) = 20*log(1+re(idx));
+      end
+
+      idx = find(re<0);
+      if ~isempty(idx)
+         dB(idx) = 20*log(-re(idx));
+      end
+      
+      hdl = semilogx(mag,dB);
+      hold on;
+      
+      lw = opt(o,{'linewidth',1});
+      set(hdl,'LineWidth',lw,'Color',0.5*[1 1 1]);
+      
+      idx = find(re>0);
+      margin = inf;
+      
+      if ~isempty(idx)
+         semilogx(mag(idx),dB(idx),'r.');
+         margin = mag(min(idx));
+      end
+      
+      idx = find(re<0);
+      if ~isempty(idx)
+         semilogx(mag(idx),dB(idx),'g.');
+      end
+      
+         % plot axes
+         
+      col = o.iif(dark(o),'w-.','k-.');
+      plot(get(gca,'xlim'),[0 0],col);
+      plot([1 1],get(gca,'ylim'),col);
+      subplot(o);
+      
+      xlabel('log10(K-factor)');
+      ylabel(sprintf('Stability Margin: %g',o.rd(margin,2)));
+   end
 end
 
 %==========================================================================

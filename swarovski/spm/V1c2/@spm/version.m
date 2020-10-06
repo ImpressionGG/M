@@ -85,6 +85,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - frequency response error plot implemented
 % - pimp SPM to make root locus work
 % - nyquist diagram :-)))
+% - stability diagram - gewaltige gschicht :-)))))
 %
 %
 % Known bugs & wishlist
