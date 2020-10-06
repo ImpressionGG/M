@@ -1,6 +1,6 @@
 function oo = menu(o,varargin)         % CORASIM Menu Building Blocks  
    [gamma,o] = manage(o,varargin,@Error,@Filter,@Scale,@Bode,@Rloc,...
-                      @Simu);
+                      @Nyquist,@Simu,@NyquistMapping);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -83,7 +83,7 @@ function oo = Bode(o)                  % Bode Settings Menu
    
    oo = mitem(o,'Bode');
    ooo = mitem(oo,'Lower Frequency',{},'bode.omega.low');
-         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+         Choice(ooo,[1e-4 1e-3 1e-2,1e-1,1e0,1e1,1e2,1e3],{});
    ooo = mitem(oo,'Upper Frequency',{},'bode.omega.high');
          Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
          
@@ -108,6 +108,61 @@ function oo = Bode(o)                  % Bode Settings Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'bode.omega.points');
    choice(ooo,[100,500,1000,5000,10000],{});
+
+   function Choice(o,values,cblist)    % Choice Menu List With Auto    
+      list = {{'Auto',[]},{}};         % list head
+      
+         % sort values in reverse order
+         
+      values = sort(values);
+      values = values(length(values):-1:1);
+      
+         % add values to choice items
+         
+      for (i=1:length(values))
+         list{end+1} = {sprintf('%g',values(i)),values(i)};
+      end
+      
+         % add choice menu items
+         
+      choice(o,list,cblist);
+   end
+end
+function oo = Nyquist(o)               % Nyquist Settings Menu         
+   setting(o,{'nyq.omega.low'},1e-1);
+   setting(o,{'nyq.omega.high'},1e5);
+   setting(o,{'nyq.magnitude.low'},-300);
+   setting(o,{'nyq.magnitude.high'},100);
+   setting(o,{'nyq.magnitude.delta'},20);
+   setting(o,{'nyq.zoom'},2);
+   
+   setting(o,{'nyq.log'},true);
+   setting(o,{'nyq.omega.points'},10000);
+   
+   
+   oo = mitem(o,'Nyquist');
+   ooo = mitem(oo,'Lower Frequency',{},'nyq.omega.low');
+         Choice(ooo,[1e-4 1e-3 1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+   ooo = mitem(oo,'Upper Frequency',{},'nyq.omega.high');
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
+   ooo = mitem(oo,'Points',{},'nyq.omega.points');
+   choice(ooo,[100,500,1000,5000,10000,20000,50000],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Magnitude [dB]',{},'nyq.magnitude.low');
+         Choice(ooo,[-400 -300 -260 -220 -180 -140 -100:10:-20],{});
+   ooo = mitem(oo,'Upper Magnitude [dB]',{},'nyq.magnitude.high');
+         Choice(ooo,[20:10:100],{});
+   ooo = mitem(oo,'Delta Magnitude [dB]',{},'nyq.magnitude.delta');
+         choice(ooo,[10 20 40 60 80 100],{});
+   ooo = mitem(oo,'Zoom',{},'nyq.zoom');         
+   choice(ooo,[0.1 0.2 0.5 1 1.2 1.5 2 5 10 20 50 100],{});
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'More');
+   oooo = mitem(ooo,'Scaling',{},'nyq.log');
+   choice(oooo,{{'Linear',0},{'Logarithmic',1}},{});
+   oooo = mitem(ooo,'Mapping',{@menu,'NyquistMapping'});
 
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head
@@ -182,3 +237,37 @@ function oo = Simu(o)                  % Simulation Parameter Menu
           choice(ooo,{{'50',50},{'100',100},{'200',200},{'500',500},...
                       {'1000',1000},{},{'Maximum',inf}},{});
 end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function o = NyquistMapping(o)         % Plot Nyquist Mapping          
+   refresh(o,o);                       % come back here for refresh
+   
+   o = with(o,'nyq');
+   [olow,ohigh,points,mag] = opt(o,'olow,ohigh,points,magnitude');
+   mag = [mag.low,mag.high];           % change representation
+
+   if (mag(1) >= 0 || mag(2) <= 0)
+      error('bad magnitude boundaries');
+   end
+
+      % calculate order 2 mapping polynomial
+
+   x = [mag(1),0.75*mag(1) 0, mag(2)];
+   y = [0 0.1 1 2];
+   map = polyfit(x,y,3);
+
+      % plot mapping
+
+   cls(o);
+   m = mag(1):0.1:mag(2);           % magnitude range
+   plot(o,m,polyval(map,m),'r1',  x,y,'cp');
+   title('magnitude mapping');
+   xlabel('magnitude [dB]');
+   ylabel('radial distance [1]');
+
+   subplot(o);
+end
+

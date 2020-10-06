@@ -84,6 +84,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fixed: option passing for modal systems
 % - frequency response error plot implemented
 % - pimp SPM to make root locus work
+% - nyquist diagram :-)))
 %
 %
 % Known bugs & wishlist

@@ -1,4 +1,4 @@
-function oo = nyq(o,col)               % NyquistPlot             
+function oo = nyq(o,col)               % NyquistPlot                   
 %
 % NYQ    Nyquist plot of a CORASIM object
 %
@@ -24,106 +24,76 @@ function oo = nyq(o,col)               % NyquistPlot
 %        See also: CORINTH, FQR, BODE, STEP
 %
    oo = Inherit(o);
-   oo = Bode(oo);
-end
-
-%==========================================================================
-% Bode Plot
-%==========================================================================
-
-function o = Bode(o)                   % Bode Plot                     
-   %o = with(o,'bode');                % unwrap Bode options
    held = ishold;
 
-   o = Auto(o);                        % auto axis limits
-   o = Axes(o);                        % plot axes
-   if opt(o,{'magnitude.enable',true})
-      Magnitude(o);
+   oo = Axes(o);                       % plot axes   
+   oo = Nyquist(oo);                   % actual Nyquist plot
       
-      if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high'))
-         set(gca,'Ylim',[-inf,inf]);
-      end
-   end
-   if opt(o,{'phase.enable',true})
-      Phase(o);
-   end
-   
    if (~held)
       hold off;
    end
    
-   heading(o);
+   heading(oo);
 end
 
 %==========================================================================
-% Magnitude & Phase Plot
+% Nyquist Plot
 %==========================================================================
 
-function o = Magnitude(o)              % Plot Magnitude                
+function o = Nyquist(o)                % Nyquist Plot                  
    points = opt(o,{'omega.points',1000});   
+   
    fscale = opt(o,{'fscale',1});       % frequency scaling factor
    
-   xlim = get(gca,'Xlim');
-   ylim = get(gca,'Ylim');
-   zlim = get(gca,'Zlim');
-   
-   olim = log10(xlim);
-   
-   om = logspace(log10(xlim(1)), log10(xlim(2)), points);
+   [~,om] = fqr(o);                    % get omega vector
    Gjw = fqr(o,om*fscale);
-   dB = 20*log10(abs(Gjw));
    
       % plot magnitude
       
-   hdl = semilogx(om,dB);
-   col = opt(o,{'color','r1'});
+   if opt(o,{'log',1})                 % logarithmic plot?
+      phi = angle(Gjw);
+      dB = 20*log10(abs(Gjw));
+      dB = Map(o,dB);
+      
+      hdl = plot(dB.*cos(phi),dB.*sin(phi));
+   else   
+      hdl = plot(real(Gjw),imag(Gjw));
+   end
+   
+      % set attributes
+      
+   col = opt(o,{'color','g'});
    [col,lw,typ] = o.color(col);
    
    set(hdl,'Color',col);
-   if o.is(lw)
+   if o.is(lw) && lw > 1
       set(hdl,'Linewidth',lw);
+   elseif ~isempty(opt(o,'linewidth'))
+      set(hdl,'Linewidth',opt(o,'linewidth'));
    end
-end
-function o = Phase(o)                  % Plot Phase                    
-   points = opt(o,{'omega.points',1000});
-   fscale = opt(o,{'fscale',1});       % frequency scaling factor
-   
-   xlim = get(gca,'Xlim');
-   ylim = get(gca,'Ylim');
-   zlim = get(gca,'Zlim');
-   
-   olim = log10(xlim);
-   
-   om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om*fscale);
-   phase = atan2(imag(Gjw),real(Gjw)) * 180/pi;
-   
-      % prepare phase
-      
-   p = ylim(1) + diff(ylim)/diff(zlim) * (phase-zlim(1));
 
-   idx = find(p<zlim(1));
-   while o.is(idx)
-      p(idx) = p(idx) + 360;
-      idx = find(p<zlim(1));
-   end
-   
-   idx = find(p>zlim(2));
-   while o.is(idx)
-      p(idx) = p(idx) - 360;
-      idx = find(p>zlim(2));
-   end
-   
-      % plot phase
+      % do some decorative actions
       
-   hdl = semilogx(om,p,'r--');
-   col = opt(o,{'color','r--'});
-   [col,lw,typ] = o.color(col);
-   lw = [];
+   Limits(o);                          % set limits properly
+  
+   subplot(o);
    
-   set(hdl,'Color',col);
-   if o.is(lw)
-      set(hdl,'Linewidth',lw);
+   function Limits(o)                  % Set Limits Properly           
+      xlim = shelf(o,gca,'xlim');
+      if isempty(xlim);
+         xlim = 1.1*get(gca,'xlim');
+         set(gca,'xlim',xlim);
+         shelf(o,gca,'xlim',xlim);        % store back to shelf
+      end
+
+      ylim = shelf(o,gca,'ylim');
+      if isempty(ylim);
+         ylim = 1.1*get(gca,'ylim');
+         set(gca,'ylim',ylim);
+         shelf(o,gca,'ylim',ylim);        % store back to shelf
+      end
+      
+      set(gca,'xtick',[], 'ytick',[]);
    end
 end
 
@@ -131,138 +101,81 @@ end
 % Helper
 %==========================================================================
 
-function o = Auto(o)                   % Automatic Axes Limits         
-   if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
-      fscale = opt(o,{'fscale',1});
-      
-      [Gjw,om] = fqr(o);
-      Gjw = fqr(o,om*fscale);
-      
-      high = Ceil(20*log10(max(abs(Gjw))));
-      low = Floor(20*log10(min(abs(Gjw))));
-      
-      if isinf(low) || isinf(high)
-         low = -80;  high = 80;
-      end
-      
-      o = opt(o,'magnitude.low',low);
-      o = opt(o,'magnitude.high',high);
-   end
-   
-   function y = Ceil(x)
-      offset = 10000;               % a big number
-      y = ceil((x+offset)/20)*20 - offset;
-   end
-   function y = Floor(x)
-      offset = 10000;               % a big number
-      y = floor((x+offset)/20)*20 - offset;
-   end
-end
-function [omega,magni,phase] = Lim(o)  % Get Limits                    
-
-      % omega limits
-      
-   omega = shelf(o,gca,'omega');
-   omega = o.either(omega,[1e-1,1e5]);
-   
-   omega(1) = opt(o,{'omega.low',omega(1)});
-   omega(2) = opt(o,{'omega.high',omega(2)});
-
-      % magnitude limits
-      
-   magni = shelf(o,gca,'magnitude');
-   magni = o.either(magni,[-80,80]);
-
-   magni(1) = opt(o,{'magnitude.low',magni(1)});
-   magni(2) = opt(o,{'magnitude.high',magni(2)});
-
-      % phase limits
-      
-   phase = shelf(o,gca,'phase');
-   phase = o.either(phase,[-270,90]);
-
-   phase(1) = opt(o,{'phase.low',phase(1)});
-   phase(2) = opt(o,{'phase.high',phase(2)});
-end
 function o = Axes(o)                   % Plot Bode Axes                
-   kind = shelf(o,gca,'owner');
-   if ~isequal(kind,'bode')
-      o = InitAxes(o);
-   else
-      hax = gca;
-      
-      [xlim,ylim,zlim] = Lim(o);
-      set(hax,'xlim',xlim);
-      set(hax,'ylim',ylim);
-      set(hax,'zlim',zlim);
-   end
+   hold on;
+   grid(o);
 
-   if opt(o,{'phase.enable',true})
-      PhaseTicks(o);
+   shelf(o,gca,'owner','nyq');         % set axis ownership
+   set(gca,'Xlim',[-2 2]);
+   set(gca,'Ylim',[-2 2]);
+   set(gca,'DataAspectRatio',[1 1 1]);
+
+   if opt(o,{'log',1})
+      o = PolarGrid(o);
    end
+   UnitCircle(o);
    
    subplot(o);                         % init axes done
    
-   function o = InitAxes(o)            % Init Axes                           
-      [omega,magni,phase] = Lim(o);
+   function o = UnitCircle(o)          % Plot Unit Circle              
+      phi = 0:pi/100:2*pi;
+      col = o.iif(dark(o),'w-.','k-.');
+      plot(cos(phi),sin(phi),col);
+   end
+   function oo = PolarGrid(o)          % Plot Polar Grid               
+      low = opt(o,{'magnitude.low',-300});
+      high = opt(o,{'magnitude.high',100});
+      delta = opt(o,{'magnitude.delta',20});
       
-      col = o.iif(dark(o),'k.','w.');
-      semilogx(omega,magni,col);
-      hold on;
-      grid(o);
-
-      shelf(o,gca,'kind','owner');     % set axis ownership
-   
-      if diff(magni) < 150
-         dy = 20;
-      elseif diff(magni) < 320
-         dy = 40;
-      elseif diff(magni) < 400
-         dy = 60;
-      else
-         dy = 100;
+      col = [1 1 1]*o.iif(dark(o),0.3,0.7);
+      
+      low = min(low,-20);              % truncate to negative number
+      high = max(high,20);             % truncate to positive number
+      
+      lab = 'grid: ';  sep = '';
+      
+      phi = 0:pi/100:2*pi;
+      for (dB=high:-delta:0)
+         r = Map(o,dB);
+         %if (r > 0)
+            hdl = plot(r*cos(phi),r*sin(phi));
+            set(hdl,'Color',col);
+         %end
+         lab = [lab,sep,sprintf('%g',dB)];  sep = ', ';
+         hold on;
       end
       
-      hax = gca;
-      set(hax,'xlim',omega);
-      set(hax,'ylim',magni);
-      set(hax,'zlim',phase);
-      set(hax,'ytick',magni(1):dy:magni(2)); 
-      set(hax,'Xscale','log');
-   end
-   function PhaseTicks(o)              % Refresh Phase Ticks           
-      hax = gca;
-      
-      xlim = get(hax,'Xlim');
-      ylim = get(hax,'Ylim');
-      zlim = get(hax,'Zlim');
-      
-         % remove current phase ticks
-
-      kids = get(hax,'children');
-      for (i=1:length(kids))
-         kid = kids(i);
-         if isequal(shelf(o,kid,'owner'),'bode')
-            delete(kid);
+      k = 0;
+      for (dB=-delta:-delta:low)
+         r = Map(o,dB);
+         hdl = plot(r*cos(phi),r*sin(phi));
+         set(hdl,'Color',col);
+         
+         if (k <= 2)
+            lab = [lab,sep,sprintf('%g',dB)];  sep = ', ';  k = k+1;
          end
       end
 
-         % update phase ticks
-
-      ytick = get(hax,'ytick');
-
-      dy = ylim(2)-ylim(1);  y0 = ylim(1);
-      dz = zlim(2)-zlim(1);  z0 = zlim(1);
-
-      for (i=1:length(ytick))
-         y = ytick(i);
-         z = z0 + (y-y0) * dz/dy;
-         label = sprintf('   %g',o.rd(z,1));
-         hdl = text(xlim(2),y,label);
-         
-         o.color(hdl,o.iif(dark(o),'w','k'));
-         shelf(o,hdl,'owner','bode');
+      rmax = Map(o,high);
+      for (phi = pi/8:pi/8:pi)
+         hdl = plot(rmax*cos(phi)*[-1 1],rmax*sin(phi)*[1 -1]);
+         set(hdl,'Color',col);
       end
+      
+      hdl = plot([-2.2 2.2],[0 0]);
+      set(hdl,'Color',0.5*[1 1 1]);
+      hdl = plot([0 0],[-2.2 2.2]);
+      set(hdl,'Color',0.5*[1 1 1]);
+      
+         % mark point "-1"
+         
+      col = o.iif(dark(o),'wp','kp');
+      plot(-1,0,col);
+      
+      lab = [lab,'... [dB]'];
+      ylabel(lab);
+      
+      oo = opt(o,'view.grid',0);       % disable grid
    end
 end
 function o = Inherit(o)                % inherit options from shell    
@@ -273,4 +186,24 @@ function o = Inherit(o)                % inherit options from shell
          o = with(o,'bode');
       end
    end
+end
+function dB = Map(o,dB)                % Map Magnitude                 
+   mlow = opt(o,{'magnitude.low',-300});
+   mhigh = opt(o,{'magnitude.high',100});
+   mag = [mlow,mhigh];                 % change representation
+
+   if (mag(1) >= 0 || mag(2) <= 0)
+      error('bad magnitude boundaries');
+   end
+
+      % calculate order 2 mapping polynomial
+
+   x = [mag(1),0.75*mag(1) 0, mag(2)];
+   y = [0 0.1 1 2];
+   map = polyfit(x,y,3);
+
+      % map magnitude
+
+   dB = polyval(map,dB);
+   dB = max(dB,0);                     % truncate to positive numbers
 end

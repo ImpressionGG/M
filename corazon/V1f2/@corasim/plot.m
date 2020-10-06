@@ -15,7 +15,7 @@ function oo = plot(o,varargin)         % CORASIM Plot Method
 %        See also: CORASIM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Basket,@Menu,@Callback,...
-                       @Overview,@Step,@Bode,@Rloc,@Motion);
+                       @Overview,@Step,@Bode,@Nyq,@Rloc,@Motion);
    oo = gamma(oo);
 end
 
@@ -36,6 +36,7 @@ function oo = Menu(o)                  % Setup Plot Menu
       oo = mitem(o,'Step Analysis',{@WithCuo,'Step'},'Analysis');
       oo = mitem(o,'-');
       oo = mitem(o,'Bode Plot',{@WithCuo,'Bode'});
+      oo = mitem(o,'Nyquist Plot',{@WithCuo,'Nyq'});
       oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
 %     oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
    end
@@ -68,8 +69,9 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
       oo = set(o,'comment',...
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
+   else
+      dark(oo);                        % do dark mode actions
    end
-   dark(o);                            % do dark mode actions
 end
 function oo = WithCuo(o)               % 'With Current Object' Callback
 %
@@ -88,8 +90,9 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       oo = set(o,'comment',...
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
+   else
+      dark(oo);                        % do dark mode actions
    end
-   dark(o);                            % do dark mode actions
 end
 function oo = WithBsk(o)               % 'With Basket' Callback        
 %
@@ -105,8 +108,9 @@ function oo = WithBsk(o)               % 'With Basket' Callback
   
    if ~isempty(oo)                     % irregulars happened?
       message(oo);                     % report irregular
+   else
+      dark(oo);                        % do dark mode actions
    end
-   dark(o);                            % do dark mode actions
 end
 
 %==========================================================================
@@ -322,12 +326,18 @@ function o = Step(o)                   % Plot Step Response
 end
 
 %==========================================================================
-% Bode Plot
+% Bode & Nyquist Plot
 %==========================================================================
 
 function o = Bode(o)                   % Bode Plot                     
    o = with(o,'bode');                 % unwrap bode options
    bode(o);                            % plot bode diagram   
+end
+function o = Nyq(o)                    % Nyquist Plot                  
+   o = with(o,'nyq');                  % unwrap bode options
+   o = with(o,'style');                % unwrap style options
+   
+   o = nyq(o);                         % plot Nyquist diagram   
 end
 
 %==========================================================================

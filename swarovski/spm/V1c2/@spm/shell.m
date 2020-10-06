@@ -282,6 +282,7 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Style');             % add plot style sub menu
    ooo = Scale(oo);                    % add Scale sub-menu
    ooo = Bode(oo);                     % add Bode settings menu
+   ooo = Nyquist(oo);                  % add Nyquist settings menu
    ooo = Rloc(oo);                     % add Root Locus menu
    ooo = Weight(oo);                   % add Weight diagram settings menu
    
@@ -439,6 +440,9 @@ function oo = Bode(o)                  % Bode Settings Menu
          
       choice(o,list,cblist);
    end
+end
+function oo = Nyquist(o)               % Nyquist Settings Menu         
+   oo = menu(corasim(o),'Nyquist');    % delegate to corasim/menu
 end
 function oo = Rloc(o)                  % Root Locus Settings Menu      
    setting(o,{'rloc.xlim'},[]);

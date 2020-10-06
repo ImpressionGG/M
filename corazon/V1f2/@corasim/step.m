@@ -1,4 +1,4 @@
-function out = step(o,col)
+function out = step(o,col)             % Step Plot                     
 %
 % STEP   Plot step response
 %
@@ -11,6 +11,7 @@ function out = step(o,col)
 %           out:    output index (default 1)
 %           tmax:   maximum simulation time (default: [] - auto)
 %           dt:     simulation increment (default: [] - auto)
+%           color:  plot color (default: 'r')
 %
 %        Copyright(c): Bluenetics 2020
 %
@@ -40,7 +41,7 @@ end
 % Step Response
 %==========================================================================
 
-function out = Step(o)                 % Step Response   
+function out = Step(o)                 % Step Response                 
    switch o.type
       case {'css'}
          oo = o;

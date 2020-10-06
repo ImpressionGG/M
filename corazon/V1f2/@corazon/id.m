@@ -77,7 +77,7 @@ function [ID,number,machine,digits] = GetId(o)   % Get Object ID
          %error('undefined package ID');
          package = '@ANY.0';
       end
-      ID = sprintf('%s.%d.ANY',package,number);
+      ID = sprintf('%s.%d.%s',package,number,upper(o.type));
    end
    
    chunk = [package,'.'];

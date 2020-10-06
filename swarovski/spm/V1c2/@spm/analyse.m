@@ -14,7 +14,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @Trf,@TfOverview,...
-                      @Overview,@Rloc,@OpenLoop,@Calc,...
+                      @Overview,@Rloc,@Nyq,@OpenLoop,@Calc,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros);
    oo = gamma(o);                 % invoke local function
@@ -47,6 +47,7 @@ end
 function oo = Stability(o)             % Closed Loop Stability         
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
+   ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyq'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'L1(s): Open Loop',{@WithCuo,'OpenLoop','L1',1,'c'});
    ooo = mitem(oo,'L1(s): Calculation',{@WithCuo,'Calc','L1',1,'c'});
@@ -164,8 +165,9 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       oo = set(o,'comment',...
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
-  end
-  dark(o);                            % do dark mode actions
+   else
+      dark(oo);                        % do dark mode actions
+   end
 end
 function oo = WithBsk(o)               % 'With Basket' Callback        
 %
@@ -211,6 +213,29 @@ function o = Rloc(o)                   % Root Locus
    
    heading(o);
 end
+function oo = Nyq(o)                   % Nyquist Plot                  
+   o = with(o,'style');
+   mu = opt(o,{'process.mu',0.1});
+   
+   L1 = cook(o,'L1');      
+   oo = (-mu)*L1;
+   sym = 'L0(s) = mu*L1(s)';
+   
+   o = with(o,'bode');
+   o = opt(o,'color','ccb');
+   o = diagram(o,'Bode',sym,oo,2211);
+   
+   o = with(o,'nyq');
+   o = opt(o,'color','ccb');
+   oo = diagram(o,'Nyq',sym,oo,1212);
+   xlabel(sprintf('Friction Coefficient: mu = %g',mu));
+   
+   if control(o,'verbose') > 0
+      display(o);   
+   end
+   
+   heading(o);
+end
 function o = OpenLoop(o)               % L(s) Open Loop                
    o = with(o,'bode');
    o = with(o,'simu');
@@ -229,9 +254,10 @@ function o = OpenLoop(o)               % L(s) Open Loop
    else
       title = [sym,': Open Loop Transfer Function'];
       diagram(o,'Trf', sym,oo,3111,title);
-      diagram(o,'Bode',sym,oo,3221);
+      diagram(o,'Step',sym,oo,3221);
       diagram(o,'Rloc',sym,oo,3222);
-      diagram(o,'Step',sym,oo,3131);
+      diagram(o,'Bode',sym,oo,3231);
+      diagram(o,'Nyq',sym,oo,3232);
    end
    
    display(oo);

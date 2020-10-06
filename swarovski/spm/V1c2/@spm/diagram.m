@@ -1,4 +1,4 @@
-function o = diagram(o,varargin)                                       
+function oo = diagram(o,varargin)                                       
 %
 % DIAGRAM   Plot diagram
 %
@@ -16,6 +16,7 @@ function o = diagram(o,varargin)
 %              diagram(o,'FStep','L51',L51,sub)       % force step response
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %              diagram(o,'Bode','G11',G11,sub)        % bode diagram
+%              diagram(o,'Nyq','G11',G11,sub)         % Nyquist diagram
 %              diagram(o,'Numeric','G11',G11,sub)     % numeric quality
 %              diagram(o,'Calc','L1',L1,sub)          % calculation diagram
 %
@@ -25,7 +26,7 @@ function o = diagram(o,varargin)
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
                        @Mode,@Orbit,@Trf,@Weight,@Numeric,...
-                       @Step,@Vstep,@Astep,@Fstep,@Bode,@Rloc,@Calc);
+                       @Step,@Vstep,@Astep,@Fstep,@Bode,@Nyq,@Rloc,@Calc);
    oo = gamma(oo);
 end
 
@@ -350,7 +351,7 @@ function o = Fstep(o)                  % Force Step Response
 end
 
 %==========================================================================
-% Bode Diagram
+% Bode & Nyquist Diagram
 %==========================================================================
 
 function o = Bode(o)                   % Bode Diagram                  
@@ -400,6 +401,29 @@ function o = NewBode(o)                % Bode Diagram
    
    bode(G);
    title([sym,': Bode Diagram']);
+
+   subplot(o);                         % subplot done!
+end
+
+function o = Nyq(o)                    % Nyquist Diagram                  
+   o = Scaling(o);                     % manage scaling factors
+   o = with(o,'nyq');                  % override some Scaling opts
+   
+   sym = arg(o,1);
+   G = arg(o,2);
+   sub = o.either(arg(o,3),[1 1 1]);
+
+   G = inherit(G,o);                   % inherit options
+   G = set(G,'name',sym);              % set name of transfer function
+   
+   if isempty(opt(G,'color'))
+      G = opt(G,'color','r');
+   end
+   
+   subplot(o,sub);
+   
+   o = nyq(G);
+   title([sym,': Nyquist Diagram']);
 
    subplot(o);                         % subplot done!
 end

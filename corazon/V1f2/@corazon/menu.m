@@ -378,7 +378,7 @@ function oo = Style(o)                 % Add Style Menu Items
    ooo = mitem(oo,'Bullets','','style.bullets');
    check(ooo,{});
    ooo = mitem(oo,'Line Width','','style.linewidth');
-   choice(ooo,[1:3],{});
+   choice(ooo,[1:5],{});
    ooo = mitem(oo,'Scatter Color','','style.scatter');
    charm(ooo,{});
 end
