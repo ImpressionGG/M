@@ -1,9 +1,10 @@
-function out = step(o)
+function out = step(o,col)
 %
 % STEP   Plot step response
 %
 %           G = trf(o,1,[1,1])
-%           step(G);
+%           step(G);                   % plot step response
+%           step(G,'b');               % plot step response in blue color
 %
 %        Options:
 %           in:     input index  (default 1)
@@ -17,6 +18,10 @@ function out = step(o)
 %
    held = ishold;   
    o = Inherit(o);                     % inherit options from shell
+   
+   if (nargin >= 2 && ischar(col))
+      o = opt(o,'color',col);
+   end
    
    if (nargout > 0)
       out = Step(o);
