@@ -1,8 +1,8 @@
-function oo = bode(o,col)              % Corasim Bode Plot             
+function oo = nyq(o,col)               % NyquistPlot             
 %
-% BODE   Bode plot of a CORASIM object
+% NYQ    Nyquist plot of a CORASIM object
 %
-%           bode(o)                    % plot bode diagram
+%           nyq(o)                     % plot Nyquist diagram
 %
 %        Options:
 %
@@ -21,7 +21,7 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %
 %        Copyright(c): Bluenetics 2020
 %
-%        See also: CORINTH, FQR, NYQ, STEP
+%        See also: CORINTH, FQR, BODE, STEP
 %
    oo = Inherit(o);
    oo = Bode(oo);

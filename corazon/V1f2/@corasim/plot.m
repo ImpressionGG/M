@@ -23,7 +23,7 @@ end
 % Plot Menu
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Plot Menu   
+function oo = Menu(o)                  % Setup Plot Menu               
    oo = mitem(o,'About',{@plot,'About'});
    oo = mitem(o,'Overview',{@WithCuo,'Overview'});
    oo = mitem(o,'-');
@@ -32,7 +32,9 @@ function oo = Menu(o)                  % Setup Plot Menu
       % dynamic systems
       
    if type(current(o),{'css','dss','strf','ztrf','modal'})
-      oo = mitem(o,'Step Response',{@WithCuo,'Step'});
+      oo = mitem(o,'Step Response',{@WithCuo,'Step'},'Response');
+      oo = mitem(o,'Step Analysis',{@WithCuo,'Step'},'Analysis');
+      oo = mitem(o,'-');
       oo = mitem(o,'Bode Plot',{@WithCuo,'Bode'});
       oo = mitem(o,'Root Locus',{@WithCuo,'Rloc'});
 %     oo = mitem(o,'Impulse Response',{@Basket,'Impulse'});
@@ -261,6 +263,17 @@ end
 
 function o = Step(o)                   % Plot Step Response            
    o = with(o,'simu');                 % unpack simulation options
+   o = with(o,'scale');
+   o = with(o,'style');
+   
+   mode = arg(o,1);
+   if isequal(mode,'Response')
+      step(o);
+      return
+   end
+   o = arg(o,{});
+   
+      % otherwise continue with step analysis
    
    switch type(o)
       case 'css'                       % continuous state space system

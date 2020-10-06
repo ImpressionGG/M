@@ -13,10 +13,29 @@ function out = step(o)
 %
 %        Copyright(c): Bluenetics 2020
 %
-%        See also: CORASIM
+%        See also: CORASIM, BODE, NYQ
 %
+   held = ishold;   
    o = Inherit(o);                     % inherit options from shell
    
+   if (nargout > 0)
+      out = Step(o);
+   else
+      Step(o);
+   end
+   
+   if (held)
+      hold on;
+   else
+      hold off;
+   end
+end
+
+%==========================================================================
+% Step Response
+%==========================================================================
+
+function out = Step(o)                 % Step Response   
    switch o.type
       case {'css'}
          oo = o;
@@ -86,20 +105,10 @@ function title = Title(o)              % Get Object Title
       title = [title,' - [',package,']'];
    end
 end
-function t = Time(o)                   % Get Time Vector     
+function t = Time(o)                   % Get Time Vector               
    o = Timing(o);
    [tmax,dt] = opt(o,'tmax,dt');
    t = 0:dt:tmax;
-end
-function t = OldTime(o)                   % Get Time Vector               
-   A = get(o,'system.A');   
-   ev = eig(A);
-   tmax = 5*max(1./abs(ev));
-
-   T = opt(o,{'simu.dt',tmax/1000});
-   T = T(1);
-   tmax = opt(o,{'simu.tmax',tmax});
-   t = 0:T:tmax;
 end
 function u = StepInput(o,t,index)      % Get Step Input Vector         
 %
@@ -124,17 +133,18 @@ function u = StepInput(o,t,index)      % Get Step Input Vector
    I = eye(m);
    u = I(:,index)*ones(size(t));
 end
-function o = Inherit(o)                % inherit options from shell    
+function o = Inherit(o)                % Inherit Options From Shell    
    if isempty(figure(o))
       so = pull(o);
       if ~isempty(so)
          o = inherit(o,so);
          o = with(o,'simu');
          o = with(o,'scale');
+         o = with(o,'style');
       end
    end
 end
-function oo = Timing(o)
+function oo = Timing(o)                % Setup Timing                  
 %
 % TIMING   Set timing options
 %
@@ -151,12 +161,14 @@ function oo = Timing(o)
       [mag,idx] = sort(abs(poles));
       T = 1/min(mag);
       tmax = 10*T;
-      
-      if isempty(dt)
-         dt = tmax / 1000;
-      end
    end
    
+   assert(~isempty(tmax)); 
+   
+   if isempty(dt)
+      dt = tmax / 1000;
+   end
+
    oo = opt(o,{'tmax'},tmax);
    oo = opt(oo,{'dt'},dt);
 end

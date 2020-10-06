@@ -475,6 +475,7 @@ function VersionV1F
 % - corazon/snif added
 % - add object id stored in o.work.id
 % - add corasim/new root locus demo objects
+% - pimp corasim/step and corasim/plot/Step
 %
 %
 % Known Bugs / Wishlist
