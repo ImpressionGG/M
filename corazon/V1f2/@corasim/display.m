@@ -10,6 +10,7 @@ function txt = display(o)
 %                minlen:      minimum length of string (default 10)
 %                maxlen:      maximum length of string (default 70)
 %                detail:      display details (default: true)
+%                braces:      add braces to exponents (default: false)
 %
 %          Copyright(c): Bluenetics 2020
 %
@@ -663,18 +664,25 @@ function txt = Ratio(o)                % Display Rational Function
       
    if (nargout > 0)
       return
-   elseif ~opt(o,{'detail',0})
-      fprintf('rational function (%g/%g)\n\n',...
-              Order(on),Order(od));
-      disp([setstr(' '+zeros(size(txt,1),3)),txt]);
-      fprintf('\n');
-   else
-      %Display(o,num,den);
-      fprintf('rational function (%g/%g)\n\n',...
-              Order(on),Order(od));
-      disp([setstr(' '+zeros(size(txt,1),3)),txt]);
-      fprintf('\n');
+   end
+   
+      % print header
       
+   name = get(o,'name');
+   if isempty(name)
+      fprintf('rational function (%g/%g)\n\n',Order(on),Order(od));
+   else
+      fprintf('%s: rational function (%g/%g)\n\n',name,Order(on),Order(od));
+   end
+   
+      % print numerator/denuminator polynomial
+      
+   disp([setstr(' '+zeros(size(txt,1),3)),txt]);
+   fprintf('\n');
+   
+      % if 'detail' option enable print also poles & zeros
+      
+   if opt(o,{'detail',0})      
       PoleZero(o,num,den);
    end
    
@@ -703,6 +711,7 @@ function txt = Matrix(o)               % Display Matrix
       paragraph = [];
       txt = {};  rows = 0;
       for (j=1:n)
+         M{i,j} = opt(M{i,j},'braces',opt(o,'braces'));
          if (n == 1)
             M{i,j} = opt(M{i,j},'maxlen',opt(o,'maxlen'));
          end
@@ -790,6 +799,7 @@ function str = PolyString(o,poly,sym)       % Readable String for Poly
 %                maxlen:      maximum length of string (default 70)
 %
    trim = @corazito.trim;              % short hand
+   braces = opt(o,{'braces',0});       % insert braces for exponents?
    
       % if polynomial is 0 or 1 we have already a quick answer
       % since 0 and 1 as the highest order coefficient is treated 
@@ -836,6 +846,8 @@ function str = PolyString(o,poly,sym)       % Readable String for Poly
          pow = '';
       elseif (i == 1)
          pow = [' ',sym];
+      elseif (braces)
+         pow = [' ',sym,'^',sprintf('{%g}',i)];
       else
          pow = [' ',sym,'^',sprintf('%g',i)];
       end

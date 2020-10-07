@@ -155,12 +155,12 @@ function o = Trf(o)                    % Transfer Function Diagram
    
    if isequal(sub,111)
       o = opt(o,'subplot',sub,'pitch',0.4);
-      G = opt(G,'maxlen',200);
+      G = opt(G,'maxlen',200,'braces',1);
    elseif isequal(sub,311) || isequal(sub,3111) 
       o = opt(o,'subplot',sub,'pitch',2);
-      G = opt(G,'maxlen',200);
+      G = opt(G,'maxlen',200,'braces',1);
    else
-      o = opt(o,'subplot',sub,'pitch',2);
+      o = opt(o,'subplot',sub,'pitch',2,'braces',1);
    end
    
    comment = [{' '},display(G)];

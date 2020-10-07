@@ -469,8 +469,8 @@ function oo = Rloc(o)                  % Root Locus Settings Menu
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Zoom',{},'rloc.zoom');
-   choice(ooo,[0.01 0.02 0.05 0.1 0.2 0.5 0.6 0.7 0.8 0.9 1 ...
-               1.2 1.5 2 5 10 20 50 100],{});
+   choice(ooo,[0.01 0.02 0.05 0.1:0.1:1 ...
+               1.2 1.5 2 3 4 5 7.5 10 15 20 50 100],{});
    ooo = mitem(oo,'Delta',{},'rloc.delta');
    choice(ooo,[0.05 0.02 0.01 0.005 0.002 0.001],{});
 end

@@ -86,6 +86,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp SPM to make root locus work
 % - nyquist diagram :-)))
 % - stability diagram - gewaltige gschicht :-)))))
+% - activate display:"braces" option for correct display of exponents
 %
 %
 % Known bugs & wishlist

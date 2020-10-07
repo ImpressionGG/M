@@ -472,15 +472,17 @@ function o = Gs(o)                     % Double Transfer Function
       diagram(o,'Trf',sym,G,111);
    else
       Gij = peek(G,i,j);
-      Gij = opt(Gij,'maxlen',200);
-      str = display(Gij);
+      %Gij = opt(Gij,'maxlen',200);
+      %str = display(Gij);
       
       sym = sprintf('G%g%g(s)',i,j);
       symw = sprintf('w%g%g',i,j);
       Gij = set(Gij,'name',sym);  
       
       Gij = opt(Gij,'detail',true);
-      display(Gij);
+      if (control(o,'verbose') > 0)
+         display(Gij);
+      end
       
       diagram(o,'Trf',sym,Gij,3111);      
       diagram(o,'Rloc',sym,Gij,3222);
