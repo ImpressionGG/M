@@ -87,6 +87,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - nyquist diagram :-)))
 % - stability diagram - gewaltige gschicht :-)))))
 % - activate display:"braces" option for correct display of exponents
+% - spm toolbox V1c2 beta (@ corazon V1f2 beta)
 %
 %
 % Known bugs & wishlist

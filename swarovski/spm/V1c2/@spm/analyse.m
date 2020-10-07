@@ -97,22 +97,6 @@ function oo = Elongation(o)            % Closed Loop Elongation Menu
    ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
 
-function oo = OldCriticalMenu(o)       % Critical Path Menu            
-   oo = mitem(o,'Critical Path');
-   ooo = mitem(oo,'Overview',{@Overview});
-   
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F3 -> y3:  G33(s)',{@plot,'WithCuo','Gs',3,3});
-   ooo = mitem(oo,'y3 -> F3:  H33(s)',{@plot,'WithCuo','Hs',3,3});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F1 -> y3:  G31(s)',{@plot,'WithCuo','Gs',3,1});
-   ooo = mitem(oo,'F1 -> y3:  H31(s) = -G31(s)*H33(s)',...
-                                      {@plot,'WithCuo','Hs',3,1});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F1 -> y3:  L51(s) = H31(s)',{@plot,'WithCuo','Ls',5,1});
-   ooo = mitem(oo,'-');
-end
-
 %==========================================================================
 % Launch Callbacks
 %==========================================================================

@@ -505,7 +505,7 @@ function o = Stability(o)              % Stability Analysis
       plot([1 1],get(gca,'ylim'),col);
       subplot(o);
       
-      xlabel('log10(K-factor)');
+      xlabel('K-factor');
       ylabel(sprintf('Stability Margin: %g',o.rd(margin,2)));
    end
 end
