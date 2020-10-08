@@ -111,7 +111,7 @@ function [num,den] = Trim(o,num,den)
    if (nd > 1)
        error('denominator not a row vector');
    elseif (mn > md)
-       error('improper transfer function');
+       %error('improper transfer function');
    end
 
      % make NUM and DEN lengths equal

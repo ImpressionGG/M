@@ -481,6 +481,7 @@ function VersionV1F
 %
 % - starting corazon beta V1f3
 % - trim at the end of corasim/can
+% - corasim/gain, corasim/lf and corasim/qf added
 %
 % Known Bugs / Wishlist
 % - none so far

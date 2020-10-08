@@ -16,7 +16,7 @@ function oo = trf(o,num,den,T)
 %
 %         Copyright(c): Bluenetics 2020
 %
-%         See also: CORASIM, SYSTEM, PEEK
+%         See also: CORASIM, SYSTEM, PEEK, ZPK, GAIN
 %
    if (nargin == 1)
       if isequal(o.type,'shell')
