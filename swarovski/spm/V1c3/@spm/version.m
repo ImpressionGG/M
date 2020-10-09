@@ -94,11 +94,12 @@ function vers = version(o,arg)         % SPM Class Version
 % - adopted omega scaling
 % - super toobox status (reproduced 70-er Kugel stability)
 % - bug fix: import package info
+% - bug fix: spm/brew - remove plot About in spm/brew/ConstrainedDouble
 %
 %
 % Known bugs & wishlist
 % =========================
-% - refresh leads sometimes to plot-about
+% - none so far
 %
 %--------------------------------------------------------------------------
 %

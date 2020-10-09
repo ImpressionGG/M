@@ -386,7 +386,7 @@ function oo = Consd(o)                 % Double Costrained Trf. Matrix
    cls(o);
 end
 function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix 
-   refresh(o,{@plot,'About'});         % don't come back here!!!
+   %refresh(o,{@plot,'About'});        % don't come back here!!!
    
    oo = current(o);
 
