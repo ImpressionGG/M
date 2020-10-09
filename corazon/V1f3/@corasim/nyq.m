@@ -6,7 +6,7 @@ function oo = nyq(o,col)               % NyquistPlot
 %
 %        Options:
 %
-%           fscale           frequency scaling factor => fqr(G,om*fscale)
+%           oscale           omega scaling factor => fqr(G,om*oscale)
 %           color            color propetty (default: 'r')
 %           omega.low        omega range, low limit (default: 0.1)
 %           omega.low        omega range, high limit (default: 100000)
@@ -43,10 +43,10 @@ end
 function o = Nyquist(o)                % Nyquist Plot                  
    points = opt(o,{'omega.points',1000});   
    
-   fscale = opt(o,{'fscale',1});       % frequency scaling factor
+   oscale = opt(o,{'oscale',1});       % omega scaling factor
    
    [~,om] = fqr(o);                    % get omega vector
-   Gjw = fqr(o,om*fscale);
+   Gjw = fqr(o,om*oscale);
    
       % plot magnitude
       
@@ -183,7 +183,8 @@ function o = Inherit(o)                % inherit options from shell
       so = pull(o);
       if ~isempty(so)
          o = inherit(o,so);
-         o = with(o,'bode');
+         o = with(o,'nyq');
+         o = opt(o,'oscale',opt(o,{'brew.T0',1}));
       end
    end
 end

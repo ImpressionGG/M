@@ -130,7 +130,6 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Hs',0,0});
-   %ooo = Rational(oo);
    
    ooo = mitem(oo,'-');
    for (i=1:l)
@@ -813,8 +812,8 @@ function o = HsBode(o)                 % L(s) Bode Plot Overview
          Hij = peek(H,i,j);
          
          o = opt(o,'color','g3');
-         diagram(o,'Bode',Gsym,Gij,[m,n,i,j]);
-         hold on
+         %diagram(o,'Bode',Gsym,Gij,[m,n,i,j]);
+         %hold on
          o = opt(o,'color',o.iif(i==3&&j==3,'r','m'));
          diagram(o,'Bode',Hsym,Hij,[m,n,i,j]);
       end

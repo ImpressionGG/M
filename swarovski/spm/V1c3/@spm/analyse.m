@@ -217,20 +217,20 @@ function oo = Nyq(o)                   % Nyquist Plot
    o = with(o,'style');
    mu = opt(o,{'process.mu',0.1});
    
-   L1 = cook(o,'L1');      
+   %L1 = cook(o,'L1');      
    L0 = cook(o,'L0');
    
-   oo = (-mu)*L1;
-   sym = 'L0(s) = -mu*L1(s)';
+   %oo = (-mu)*L1;
+   sym = 'L0(s)';
    
    o = with(o,'bode');
    o = opt(o,'color','ccb');
-   diagram(o,'Bode',sym,oo,2211);
-   diagram(o,'Stability',sym,oo,2221);
+   diagram(o,'Bode',sym,L0,2211);
+   diagram(o,'Stability',sym,L0,2221);
    
    o = with(o,'nyq');
    o = opt(o,'color','bcc');
-   oo = diagram(o,'Nyq',sym,oo,1212);
+   oo = diagram(o,'Nyq',sym,L0,1212);
    xlabel(sprintf('Friction Coefficient: mu = %g',mu));
    
    if control(o,'verbose') > 0

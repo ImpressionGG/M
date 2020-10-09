@@ -408,8 +408,12 @@ function o = NewBode(o)                % Bode Diagram
 end
 
 function o = Nyq(o)                    % Nyquist Diagram                  
+   T0 = opt(o,{'brew.T0',1});
    o = Scaling(o);                     % manage scaling factors
    o = with(o,'nyq');                  % override some Scaling opts
+   oscale = opt(o,{'oscale',1});       % omega scale factor
+   oscale = oscale*T0;
+   o = opt(o,'oscale',oscale);
    
    sym = arg(o,1);
    G = arg(o,2);
@@ -547,7 +551,7 @@ function o = Numeric(o)                % Numeric Quality
       o = Axes(o);                     % plot axes
 
       points = opt(o,{'omega.points',1000});   
-      fscale = opt(o,{'fscale',1});       % frequency scaling factor
+      oscale = opt(o,{'oscale',1});       % frequency scaling factor
    
       xlim = get(gca,'Xlim');
       ylim = get(gca,'Ylim');
@@ -562,7 +566,7 @@ function o = Numeric(o)                % Numeric Quality
    
          % first plot strf in yellow
          
-      Gjw1 = fqr(o1,om*fscale);
+      Gjw1 = fqr(o1,om*oscale);
       mag1 = abs(Gjw1);
       dB1 = 20*log10(mag1);
       hdl = semilogx(om,dB1);
@@ -571,7 +575,7 @@ function o = Numeric(o)                % Numeric Quality
       
          % then plot modal form in green
          
-      Gjw0 = fqr(o,om*fscale);
+      Gjw0 = fqr(o,om*oscale);
       mag0 = abs(Gjw0);
       dB0 = 20*log10(mag0);
       hdl = semilogx(om,dB0);
@@ -593,10 +597,10 @@ function o = Numeric(o)                % Numeric Quality
    end
    function o = Auto(o)                % Automatic Axes Limits         
       if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
-         fscale = opt(o,{'fscale',1});
+         oscale = opt(o,{'oscale',1});
 
          [Gjw,om] = fqr(o);
-         Gjw = fqr(o,om*fscale);
+         Gjw = fqr(o,om*oscale);
 
          high = Ceil(20*log10(max(abs(Gjw))));
          low = Floor(20*log10(min(abs(Gjw))));
@@ -690,40 +694,6 @@ function o = Numeric(o)                % Numeric Quality
          %set(hax,'ytick',magni(1):dy:magni(2)); 
          set(hax,'Xscale','log');
       end
-      function OldPhaseTicks(o)           % Refresh Phase Ticks        
-         hax = gca;
-
-         xlim = get(hax,'Xlim');
-         ylim = get(hax,'Ylim');
-         zlim = get(hax,'Zlim');
-
-            % remove current phase ticks
-
-         kids = get(hax,'children');
-         for (i=1:length(kids))
-            kid = kids(i);
-            if isequal(shelf(o,kid,'owner'),'bode')
-               delete(kid);
-            end
-         end
-
-            % update phase ticks
-
-         ytick = get(hax,'ytick');
-
-         dy = ylim(2)-ylim(1);  y0 = ylim(1);
-         dz = zlim(2)-zlim(1);  z0 = zlim(1);
-
-         for (i=1:length(ytick))
-            y = ytick(i);
-            z = z0 + (y-y0) * dz/dy;
-            label = sprintf('   %g',o.rd(z,1));
-            hdl = text(xlim(2),y,label);
-
-            o.color(hdl,o.iif(dark(o),'w','k'));
-            shelf(o,hdl,'owner','bode');
-         end
-      end
    end
    function o = Inherit(o)             % inherit options from shell    
       if isempty(figure(o))
@@ -731,6 +701,7 @@ function o = Numeric(o)                % Numeric Quality
          if ~isempty(so)
             o = inherit(o,so);
             o = with(o,'bode');
+            o = opt(o,'oscale',opt(o,{'brew.T0',1}));
          end
       end
    end
@@ -849,7 +820,7 @@ function o = Scaling(o)                % Manage Scaling Factors
    o = opt(o,'xscale',xscale);
  
    o = with(o,'bode');
-   fscale = opt(o,{'fscale',1});
-   fscale = fscale*T0;
-   o = opt(o,'fscale',fscale);
+   oscale = opt(o,{'oscale',1});       % omega scale factor
+   oscale = oscale*T0;
+   o = opt(o,'oscale',oscale);
 end

@@ -13,6 +13,23 @@ function oo = mtimes(o1,o2)
 %
 %          See also: CORASIM, PLUS, MINUS, MTIMES, MRDIVIDE
 %
+
+      % scalar multiplication is handled specifically to avoid 
+      % cancellation at the end of routine, which seems to be not
+      % numerically stable
+      
+   if isa(o1,'double') && length(o1) == 1 && type(o2,{'strf','qtrf','ztrf'})
+      [num,den] = peek(o2);
+      oo = poke(o2,o1*num,den);
+      return
+   elseif isa(o2,'double') && length(o2) == 1 && type(o1,{'strf','qtrf','ztrf'})
+      [num,den] = peek(o1);
+      oo = poke(o1,o2*num,den);
+      return
+   end      
+
+      % no scalar - proceed with the generic algorithm
+      
    [o1,o2] = Comply(o1,o2);            % make compliant to each other
    
       % now we are sure to deal with CORASIM objects only

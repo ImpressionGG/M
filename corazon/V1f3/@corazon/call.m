@@ -78,7 +78,7 @@ end
 % Auxillary Functions
 %==========================================================================
 
-function o = Invoke(o,ilist)           % Invoke Master Level Callback     
+function o = Invoke(o,ilist)           % Invoke Master Level Callback  
    toplevel = (length(dbstack) <= 3);  % do we have a top level condition?
 
    cblist = ilist{1};                  % callback list
@@ -113,8 +113,7 @@ function o = Invoke(o,ilist)           % Invoke Master Level Callback
       o.profiler;                      % print profiling information
    end
 end
-
-function Clc(o,toplevel)               % Clear Command Window
+function Clc(o,toplevel)               % Clear Command Window          
    if opt(o,{'control.autoclc',1});    % perform a CLC (clear command line)
       if (toplevel)
          clc;                          % clear command window

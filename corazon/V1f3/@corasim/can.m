@@ -1,9 +1,10 @@
-function oo = can(o,x,y)               % Cancel Common Factors         
+function oo = can(o,eps)               % Cancel Common Factors         
 %
 % CAN   Cancel transfer function, occasionally convert state space system
 %       to num/den 
 %
 %          oo = can(o)                 % cancel object
+%          oo = can(o,eps)             % cancel @ specific cancel epsilon
 %
 %       Options ('tff' type only):
 %
@@ -11,6 +12,10 @@ function oo = can(o,x,y)               % Cancel Common Factors
 %
 %       See also: CORASIM, TRIM, FORM
 %
+   if (nargin >= 2)
+      o = opt(o,'eps',eps);
+   end
+   
    oo = CanTrf(o);
 end
 
@@ -20,12 +25,12 @@ end
 
 function oo = CanTrf(o)                % Cancel Transfer Function          
    oo = o;                             % just in case
-   caneps = opt(o,{'eps',1e-3});
+   caneps = opt(o,{'eps',1e-7});
    
       % calculate numerator and denominator roots
       
    [rnum,rden] = Roots(o,1);
-   dirty = 0;		     % dirty bit
+   dirty = 0;		     % init dirty state
 
    degnum = length(rnum);
    degden = length(rden);
@@ -35,17 +40,24 @@ function oo = CanTrf(o)                % Cancel Transfer Function
       return; 
    end
 
-      % calculate distance matrix
+      % calculate relative distance matrix D: 
+      %
+      %    D := [D(i,j)] = [dr(i,j)/r(i,j)]
+      %
+      % with
+      %
+      %    dr(i,j) = abs(zero(j)-pole(i))
+      %    r(i,j)  = abs(zero(j)+pole(i))
 
    D = [];
    for (i = 1:degden)
-      avg = abs((rnum + rden(i))/2);
-      dT = abs(rnum - rden(i));
-      idx = find(avg > eps);
+      r = abs((rnum + rden(i))/2);     % mean absolute value
+      dr = abs(rnum - rden(i));        % absolute value of distance
+      idx = find(r > eps);
       if ~isempty(idx)
-         dT(idx) = dT(idx) ./ avg(idx);
+         dr(idx) = dr(idx) ./ r(idx);
       end
-      D = [D, dT];	 % distance matrix
+      D = [D, dr];	 % distance matrix
    end
 
       % prepare cancellation
@@ -61,36 +73,72 @@ function oo = CanTrf(o)                % Cancel Transfer Function
 	      i = found(k);
          
 	      if ( idx_num(i) ~= 0  &  idx_den(j) ~= 0 )
-	         dirty = 1;
-	         re = real(rnum(i));  im = imag(rnum(i));
-	         fprintf('cancel: %g',re);
-	         if ( abs(im) > eps )
-	            if ( im > 0)
-		            fprintf(' + i %g',im);
-               else
-		            fprintf(' - i %g',-im);
-               end
-            end
-            
-            % re = real(r_num(i));  im = imag(r_num(i));
-	         re = real(rden(j));  im = imag(rden(j));
-	         fprintf(' <--> %g',re);
-	         if ( abs(im) > eps )
-	            if ( im > 0)
-		            fprintf(' + i %g',im);
-               else
-		            fprintf(' - i %g',-im);
-               end
-            end
-	         fprintf(' (delta: %g)\n',delta(i));
-	         idx_num(i) = 0;
-            idx_den(j) = 0;
+            Cancel(o);                    % cancel pole/zero
             break;
 	      end
       end
    end
 
+      % if some cancellation happened then we have a dirty state
+      % which has to be handeled ...
+      
    if ( dirty ~= 0 )
+      HandleDirty(o);
+   end
+   
+      % normalize to denominator coefficien
+      
+   cn = den(1);
+   if (cn ~= 0 && cn ~= 1)
+      num = num/cn;                    % normalize numerator
+      den = den/cn;                    % normalize denominator
+   end
+   
+         % poke num/den back to transfer function
+
+   oo = poke(o,num,den);
+   oo = trim(oo);
+   
+   function [rnum,rden] = Roots(o,mode)% Get Transfer Function Roots   
+      [num,den] = peek(o);
+      
+         % numerator roots
+         
+      if (all(num == 0)) 
+         rnum = []; 
+      else
+         rnum = roots(num);
+      end
+
+         % denominator roots
+      
+      if ( mode == 1 )
+         [ans,idx1] = sort(abs(rnum));
+      else
+         [ans,idx1] = sort(real(rnum));
+      end
+      rnum = rnum(idx1);               % re-order numerator roots
+
+      %num = num(m-deg_num-1:m-1);
+
+         % denominator roots
+
+      if (all(den == 0))
+         rden = []; 
+      else
+         rden = roots(den);
+      end
+      
+         % sort denominator roots
+         
+      if ( mode == 1 ) 
+         [~,idx2] = sort(abs(rden));
+      else
+         [~,idx2] = sort(real(rden));
+      end
+      rden = rden(idx2);               % re-order denominator roots
+   end
+   function HandleDirty(o)             % Handle Dirty Status           
       idx_num(find(idx_num == 0)) = [];
       idx_den(find(idx_den == 0)) = [];
 
@@ -137,57 +185,31 @@ function oo = CanTrf(o)                % Cancel Transfer Function
       
       num = K/K1*num;
    end
-   
-      % normalize to denominator coefficien
-      
-   cn = den(1);
-   if (cn ~= 0 && cn ~= 1)
-      num = num/cn;                    % normalize numerator
-      den = den/cn;                    % normalize denominator
-   end
-   
-         % poke num/den back to transfer function
-
-   oo = poke(o,num,den);
-   oo = trim(oo);
-   
-   function [rnum,rden] = Roots(o,mode) % Get Roots of Transfer Function
-      [num,den] = peek(o);
-      
-         % numerator roots
-         
-      if (all(num == 0)) 
-         rnum = []; 
-      else
-         rnum = roots(num);
+   function Cancel(o)                  % Cancel Pole/Zero              
+      dirty = 1;
+      re = real(rnum(i));  im = imag(rnum(i));
+      fprintf('cancel: %g',re);
+      if ( abs(im) > eps )
+         if ( im > 0)
+            fprintf(' + i %g',im);
+         else
+            fprintf(' - i %g',-im);
+         end
       end
 
-         % denominator roots
-      
-      if ( mode == 1 )
-         [ans,idx1] = sort(abs(rnum));
-      else
-         [ans,idx1] = sort(real(rnum));
+      % re = real(r_num(i));  im = imag(r_num(i));
+      re = real(rden(j));  im = imag(rden(j));
+      fprintf(' <--> %g',re);
+      if ( abs(im) > eps )
+         if ( im > 0)
+            fprintf(' + i %g',im);
+         else
+            fprintf(' - i %g',-im);
+         end
       end
-      rnum = rnum(idx1);               % re-order numerator roots
 
-      %num = num(m-deg_num-1:m-1);
-
-         % denominator roots
-
-      if (all(den == 0))
-         rden = []; 
-      else
-         rden = roots(den);
-      end
-      
-         % sort denominator roots
-         
-      if ( mode == 1 ) 
-         [~,idx2] = sort(abs(rden));
-      else
-         [~,idx2] = sort(real(rden));
-      end
-      rden = rden(idx2);               % re-order denominator roots
+      fprintf(' (delta: %g)\n',delta(i));
+      idx_num(i) = 0;
+      idx_den(j) = 0;
    end
 end

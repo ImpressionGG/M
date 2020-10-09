@@ -6,7 +6,7 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %
 %        Options:
 %
-%           fscale           frequency scaling factor => fqr(G,om*fscale)
+%           oscale           omega scaling factor => fqr(G,om*oscale)
 %           color            color propetty (default: 'r')
 %           omega.low        omega range, low limit (default: 0.1)
 %           omega.low        omega range, high limit (default: 100000)
@@ -42,6 +42,7 @@ function o = Bode(o)                   % Bode Plot
       
       if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high'))
          set(gca,'Ylim',[-inf,inf]);
+         shelf(o,gca,'ylim',[-inf,inf]);
       end
    end
    if opt(o,{'phase.enable',true})
@@ -61,7 +62,7 @@ end
 
 function o = Magnitude(o)              % Plot Magnitude                
    points = opt(o,{'omega.points',1000});   
-   fscale = opt(o,{'fscale',1});       % frequency scaling factor
+   oscale = opt(o,{'oscale',1});       % frequency scaling factor
    
    xlim = get(gca,'Xlim');
    ylim = get(gca,'Ylim');
@@ -70,7 +71,7 @@ function o = Magnitude(o)              % Plot Magnitude
    olim = log10(xlim);
    
    om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om*fscale);
+   Gjw = fqr(o,om*oscale);
    dB = 20*log10(abs(Gjw));
    
       % plot magnitude
@@ -86,7 +87,7 @@ function o = Magnitude(o)              % Plot Magnitude
 end
 function o = Phase(o)                  % Plot Phase                    
    points = opt(o,{'omega.points',1000});
-   fscale = opt(o,{'fscale',1});       % frequency scaling factor
+   oscale = opt(o,{'oscale',1});       % frequency scaling factor
    
    xlim = get(gca,'Xlim');
    ylim = get(gca,'Ylim');
@@ -95,7 +96,7 @@ function o = Phase(o)                  % Plot Phase
    olim = log10(xlim);
    
    om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om*fscale);
+   Gjw = fqr(o,om*oscale);
    phase = atan2(imag(Gjw),real(Gjw)) * 180/pi;
    
       % prepare phase
@@ -133,16 +134,19 @@ end
 
 function o = Auto(o)                   % Automatic Axes Limits         
    if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
-      fscale = opt(o,{'fscale',1});
+      oscale = opt(o,{'oscale',1});
       
       [Gjw,om] = fqr(o);
-      Gjw = fqr(o,om*fscale);
+      Gjw = fqr(o,om*oscale);
       
       high = Ceil(20*log10(max(abs(Gjw))));
       low = Floor(20*log10(min(abs(Gjw))));
       
-      if isinf(low) || isinf(high)
-         low = -80;  high = 80;
+      if isinf(low)
+         low = -300;
+      end
+      if isinf(high)
+         high = 120;
       end
       
       o = opt(o,'magnitude.low',low);
@@ -211,7 +215,7 @@ function o = Axes(o)                   % Plot Bode Axes
       hold on;
       grid(o);
 
-      shelf(o,gca,'kind','owner');     % set axis ownership
+      shelf(o,gca,'owner','bode');     % set axis ownership
    
       if diff(magni) < 150
          dy = 20;
@@ -271,6 +275,7 @@ function o = Inherit(o)                % inherit options from shell
       if ~isempty(so)
          o = inherit(o,so);
          o = with(o,'bode');
+         o = opt(o,'oscale',opt(o,{'brew.T0',1}));
       end
    end
 end

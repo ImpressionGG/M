@@ -144,7 +144,7 @@ function oo = Trf(o)                   % Double Transfer Matrix
    cache(oo,oo);                       % hard refresh cache
    cls(o);
 end
-function oo = TrfDouble(o)             % Double Transfer Matrix           
+function oo = TrfDouble(o)             % Double Transfer Matrix        
    oo = current(o);
    oo = brew(oo,'Partition');          % brew partial matrices
    
@@ -541,23 +541,112 @@ end
 function oo = ClosedLoop(o)            % Closed Loop Linear System     
    mu = opt(o,{'process.mu',0.1});     % friction coefficient
    s = system(corasim,{[1 0],[1]});    % differentiation trf
-   s = CanEpsT(o,s);
-   
-   oo = Force(o);                      % calc force trf
+   s = CanEpsT(o,s);   
+
+   oo = L0(o);                         % open loop incorporating mu
+   oo = Force(oo);                     % calc force trf
    oo = Elongation(oo);                % calc elongation trf
    oo = Velocity(oo);                  % calc velocity trf
    oo = Acceleration(oo);              % calc acceleration trf
    
-   function oo = Force(o)              % Calc Force Transfer Function        
+   function oo = L0(o)                 % Calc L0(s)                     
+   %
+   % L0   Calculate L0(s)
+   %      Remember:
+   %         H31(s) = - G31(s)/G33(s)
+   %         L1(s)  = H31(s)
+   %         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
+   %
+      G31 = cache(o,'trf.G31');
+      G33 = cache(o,'trf.G33');
+      mu = opt(o,{'process.mu',0.1});     % friction coefficient
+
+         % calculate L0(s) = -mu*L1(s)
+      
+      L0 = mu * G31/G33
+      L0 = set(L0,'name','L0(s)');
+   
+         % store L in cache
+      
+      oo = cache(o,'process.L0',L0);
+   end
+   function oo = Force(o)              % Calc Force Transfer Function     
+   %
+   % These are the force transfer functions from Fc(s) to Fi(s):
+   % Let Mu = [mu1,mu2]' = mu*[1 0]', then
+   %
+   %    Tf(s) = [Tf1(s),Tf2(s)]' = (I-Mu*[-G31(s),-G32(s)]/G33(s)) \ Mu
+   %
+   % means:
+   %
+   %    [ Tf1(s) ]   ([1    0]   [mu1]                       )   [mu1]
+   %    [        ] = ([      ] + [   ]*[G31(s) G32(s)]/G33(s)) \ [   ]
+   %    [ Tf2(s) ]   ([0    1]   [mu2]                       )   [mu2]
+   %
+   % in the linearized case we have Mu = [mu 0'] which leads to
+   %
+   %    [ Tf1(s) ]   ([1    0]   [ mu ]                       )   [ mu ]
+   %    [        ] = ([      ] + [    ]*[G31(s) G32(s)]/G33(s)) \ [    ]
+   %    [ Tf2(s) ]   ([0    1]   [ 0  ]                       )   [ 0  ]
+   %
+   %    [ Tf1(s) ]   ([1    0]   [ mu*G31(s) mu*G32(s) ]       )   [ mu ]
+   %    [        ] = ([      ] + [                     ]/G33(s)) \ [    ]
+   %    [ Tf2(s) ]   ([0    1]   [   0            0    ]       )   [  0 ]
+   %
+   %    [ Tf1(s) ]      ([1+mu*G31(s)/G33(s)  1+mu*G32(s)/G33(s)])   [ mu ]
+   %    [        ] = inv([                                      ]) * [    ]
+   %    [ Tf2(s) ]      ([        0                     1       ])   [ 0  ]
+   %
+   %    [ Tf1(s) ]          1            [  1  -1-mu*G32(s)/G33(s)]   [mu ]
+   %    [        ] = ----------------- * [                        ] * [   ]
+   %    [ Tf2(s) ]   1+mu*G31(s)/G33(s)  [  0   1+mu*G31(s)/G32(s)]   [ 0 ]
+   %
+   % finally we get:
+   %
+   %    [ Tf1(s) ]           mu            [ 1 ]   [1/(1+mu*G31(s)/G33(s))]
+   %    [        ] = ------------------- * [   ] = [                      ]
+   %    [ Tf2(s) ]   1 + mu*G31(s)/G33(s)  [ 0 ]   [           0          ]
+   %
+   % now we can read out:
+   %
+   %    Tf1(s) = mu / (1 + mu*G31(s)/G33(s) )
+   %    Tf2(s) = 0
+   %
+   % as we defined 
+   %  
+   %    L0(s) := mu * G31(s)/G33(s)
+   %
+   % we can also write
+   %
+   %    Tf(s) = T0(s) := mu / (1 + L0(s))
+   %
+      mu = opt(o,{'process.mu',0.1});     % friction coefficient
+
       G31 = cache(o,'trf.G31');
       G32 = cache(o,'trf.G32');
       G33 = cache(o,'trf.G33');
+      
+      H31 = cache(o,'consd.H31');
 
-      L0 = mu*G33 / (G33 + mu*G31);
-      L0 = set(L0,'name','L0(s)');
-
-      Tf1 = L0;
+         % first way to calculate: T0 = mu / (1 + L0(s))
+         
+      L0 = cache(o,'process.L0');
+      T0 = mu / (1 + L0);
+         
+         % additionally we calculate Tf1(s) = mu / (1 + mu*G31(s)/G33(s))
+         % or Tf1(s) = mu*G33(s) / (G33(s) + mu*G31(s)) 
+         
+      Tf1 = mu*G33 / (G33 + mu*G31);
       Tf2 = 0*Tf1;
+      
+         % make a cross check
+         
+      Terr = Tf1 - T0;
+      dBerr = 20*log10(abs(fqr(Terr)));
+      if max(dBerr) >= -200
+         fprintf('*** warning: differing results\n');
+         beep
+      end
 
       Tf = set(matrix(corasim),'name','Tf[s]');
       Tf = poke(Tf,Tf1,1,1);

@@ -256,7 +256,7 @@ end
 % Refresh
 %==========================================================================
 
-function varargout = SoftRefresh(o,seg,brewer)
+function varargout = SoftRefresh(o,seg,brewer)                         
 %
 % SOFTREFRESH Refresh cache segment (soft) if not up to date
 %
@@ -472,7 +472,7 @@ end
 % Helper
 %==========================================================================
 
-function Current(o,oo)                 % Store Current Object to Shell
+function Current(o,oo)                 % Store Current Object to Shell 
 %
 % CURRENT Store current object back to shell (hard operation) while
 %         making sure that there is no figure refresh!
@@ -497,7 +497,7 @@ function Current(o,oo)                 % Store Current Object to Shell
       control(sho,'refresh',cb);       % restore refresh callback
    end
 end
-function [seg,brewer,tag] = Split(tag) % Split Tag into Ingredients
+function [seg,brewer,tag] = Split(tag) % Split Tag into Ingredients    
    idx = find(tag=='.');
    if isempty(idx)
       seg = tag;
