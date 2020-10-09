@@ -14,8 +14,8 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @TffDisp,@TffStep,@TffBode,@TffNyq,... 
-                   @Gs,@Trfr,@GsStep,@GsBode,@GsWeight,@GsFqr,...
+                   @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfNyq,... 
+                   @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
@@ -71,11 +71,12 @@ function oo = ModeShapes(o)            % Mode Shapes Menu
 end
 function oo = TransferFunction(o)      % Transfer Function Menu        
    oo = mitem(o,'Transfer Function');
-   ooo = mitem(oo,'Display',{@WithCuo,'TffDisp'});
+   ooo = mitem(oo,'Display',{@WithCuo,'TrfDisp'});
+   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'TrfRloc'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Step Response',{@WithCuo,'TffStep'});
-   ooo = mitem(oo,'Bode Plot',{@WithCuo,'TffBode'});
-   ooo = mitem(oo,'Nyquist Plot',{@WithCuo,'TffNyq'});   
+   ooo = mitem(oo,'Step Response',{@WithCuo,'TrfStep'});
+   ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
+   ooo = mitem(oo,'Nyquist Plot',{@WithCuo,'TrfNyq'});   
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -84,6 +85,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'G(s): Transfer Matrix');
+   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'GsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'GsWeight'});
@@ -259,7 +261,7 @@ function oo = MotionResponse(o)        % Motion Response Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'y3 -> F3',{@WithCuo,'MotionRsp',33});
 end
-function oo = NoiseResponse(o)         % Noise Response Menu          
+function oo = NoiseResponse(o)         % Noise Response Menu           
    oo = mitem(o,'Noise Response');
    ooo = mitem(oo,'Acceleration',{@WithCuo,'NoiseRsp'});
 end
@@ -448,7 +450,7 @@ end
 % Transfer Function
 %==========================================================================
 
-function o = TffDisp(o)                % Display Transfer Function     
+function o = TrfDisp(o)                % Display Transfer Function     
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -471,7 +473,19 @@ function o = TffDisp(o)                % Display Transfer Function
    diagram(o,'Trf',sym,Gij,1111);      
    heading(o);
 end
-function o = TffStep(o)                % Step Response Plot            
+function o = TrfRloc(o)                % Pole/Zero Plot                
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   [Gij,sym] = TrfSelect(o);
+   o = opt(o,'color','g');
+   
+   diagram(o,'Rloc',sym,Gij,1111);      
+   heading(o);
+end
+function o = TrfStep(o)                % Step Response Plot            
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -492,7 +506,7 @@ function o = TffStep(o)                % Step Response Plot
    diagram(o,'Step',sym,Gij,1111);      
    heading(o);
 end
-function o = TffBode(o)                % Bode Plot                     
+function o = TrfBode(o)                % Bode Plot                     
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -513,7 +527,7 @@ function o = TffBode(o)                % Bode Plot
    diagram(o,'Bode',sym,Gij,1111);      
    heading(o);
 end
-function o = TffNyq(o)                 % Nyquist Plot                  
+function o = TrfNyq(o)                 % Nyquist Plot                  
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -533,6 +547,17 @@ function o = TffNyq(o)                 % Nyquist Plot
    o = opt(o,'color','g');
    diagram(o,'Nyq',sym,Gij,1111);      
    heading(o);
+end
+
+function [Gij,sym] = TrfSelect(o)      % Select Transfer Function      
+   idx = opt(o,{'select.channel',[1 1]});
+   i = idx(1);  j = idx(2);
+   
+   G = cook(o,'G');
+   Gij = peek(G,i,j);
+   
+   sym = sprintf('G%g%g(s)',i,j);
+   Gij = set(Gij,'name',sym);  
 end
 
 %==========================================================================
@@ -603,6 +628,20 @@ function o = Gs(o)                     % Double Transfer Function
          diagram(o,'Step',sym,Gij,3231);
       end
       diagram(o,'Bode',sym,Gij,3221);
+   end
+   heading(o);
+end
+function o = GsRloc(o)                 % G(s) Poles/Zeros Overview     
+   o = with(o,'simu');
+   G = cook(o,'G');                    % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         sym = sprintf('G%g%g(s)',i,j);
+         Gij = peek(G,i,j);
+         diagram(o,'Rloc',sym,Gij,[m,n,i,j]);
+      end
    end
    heading(o);
 end
@@ -707,23 +746,6 @@ function o = GsFqr(o)                  % G(s) Frequency Response Error
       end
    end
    heading(o);
-end
-function o = OldTrfr(o)                % Rational Transfer Function    
-   assert(0);
-   i = arg(o,1);
-   j = arg(o,2);
-
-   G = cache(o,'trfr.G');
-
-   Gij = peek(G,i,j);
-   Gij = opt(Gij,'maxlen',200);
-   str = display(Gij);
-
-   comment = {get(o,{'title',''}),' '};
-   for (k=1:size(str,1))
-      comment{end+1} = str(k,:);
-   end
-   message(o,sprintf('rational Transfer Function G(%g,%g)',i,j),comment);
 end
 
 %==========================================================================

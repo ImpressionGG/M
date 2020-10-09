@@ -27,6 +27,12 @@ function txt = display(o)
          System(o);
       
       case 'modal'
+         if (nargout > 0)
+            oo = trf(o);
+            txt = Ratio(oo);
+            return
+         end
+         
          [a0,a1,w] = data(o,'a0,a1,w');
          name = get(o,'name');
          if isempty(name)

@@ -230,7 +230,9 @@ function hdl = Plot(hax,x,y,rgb,lwid,ltyp) % Plot graph and hold
       switch c
          case '|'
             if ~all(size(x)==size(y))
-               error('sizes of arg1 and arg2 do not match!');
+               if ~(min(size(x))==1 && min(size(y))==1)
+                  error('sizes of arg1 and arg2 do not match!');
+               end
             end
             hdl = plot(hax,[x(:),x(:)]',[0*y(:),y(:)]','k-');
             hold on

@@ -483,6 +483,7 @@ function VersionV1F
 % - trim at the end of corasim/can
 % - corasim/gain, corasim/lf and corasim/qf added
 % - corasim/display pimped to show also gain
+% - bug fix: corazito/plot - tolerant against mix of column & row vectors
 %
 % Known Bugs / Wishlist
 % - none so far

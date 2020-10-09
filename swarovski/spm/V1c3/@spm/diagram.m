@@ -155,10 +155,10 @@ function o = Trf(o)                    % Transfer Function Diagram
    
    if isequal(sub,111) || isequal(sub,1111)
       o = opt(o,'subplot',sub,'pitch',0.4);
-      G = opt(G,'maxlen',200,'braces',1);
+      G = opt(G,'maxlen',300,'braces',1);
    elseif isequal(sub,311) || isequal(sub,3111) 
       o = opt(o,'subplot',sub,'pitch',2);
-      G = opt(G,'maxlen',200,'braces',1);
+      G = opt(G,'maxlen',300,'braces',1);
    else
       o = opt(o,'subplot',sub,'pitch',2,'braces',1);
    end
@@ -732,8 +732,11 @@ function o = Rloc(o)                   % Root Locus Diagram
    hold on;
    
    center = sum(real([p(:);z(:)]))/(length(p)+length(z));
-   title(sprintf('%s: Poles/ Zeros - Re(z) <= %g,  Re(p) <= %g',...
-          sym,o.rd(max(real(z)),1), o.rd(max(real(p)),1)) );
+   pmax = o.either(max(real(p)),-inf);
+   zmax = o.either(max(real(z)),-inf);
+   
+   title(sprintf('%s: Poles/ Zeros',sym));
+   xlabel(sprintf('Re(z) <= %g,  Re(p) <= %g',zmax,pmax));
    
    t = 0:1/10:100;
    K = 10.^t - 1;
@@ -741,18 +744,53 @@ function o = Rloc(o)                   % Root Locus Diagram
    for (i=1:length(p))
       plot(o,[center real(p(i))],[0 imag(p(i))],'r');
       hold on
+      
+         % for instable poles we also draw a line from the mirrored
+         % center in the right complex half plane to alert attention
+         
+      if (real(p(i)) >= 0)
+         plot(o,[abs(center) real(p(i))],[0 imag(p(i))],'r');
+      end
    end
    for (i=1:length(z))
       plot(o,[center real(z(i))],[0 imag(z(i))],'cb');
       hold on
+
+         % for 'instable zeros' we also draw a line from the mirrored
+         % center in the right complex half plane to alert attention
+         
+      if (real(z(i)) >= 0)
+         plot(o,[abs(center) real(z(i))],[0 imag(z(i))],'cb');
+      end
    end
    
-   xlim = get(gca,'Xlim');
-   xlim = [xlim(1) max(xlim(2),abs(xlim(1)))];
-   set(gca,'Xlim',xlim);
-   
-   plot(o,[0 0],get(gca,'Ylim'),'K1-.');
+   SetLimits(o);   
+   plot(o,[0 0],get(gca,'ylim'),'K1-.');
    subplot(o);                         % subplot done!
+   
+   function SetLimits(o)
+      o = with(o,'rloc');
+      zoom = opt(o,{'zoom',1});
+      
+      xlim = get(gca,'xlim');
+      xlim = [xlim(1) max(xlim(2),abs(xlim(1)))];
+      set(gca,'xlim',zoom*xlim);
+
+      ylim = get(gca,'ylim');
+      set(gca,'ylim',zoom*ylim);
+      
+         % option dependent settings
+         
+      xlim = opt(o,{'xlim',[]});
+      ylim = opt(o,{'ylim',[]});
+      
+      if ~isempty(xlim)
+         set(gca,'xlim',zoom*xlim);
+      end
+      if ~isempty(ylim)
+         set(gca,'ylim',zoom*ylim);
+      end
+   end
 end
 
 %==========================================================================
