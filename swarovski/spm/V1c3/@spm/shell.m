@@ -72,7 +72,7 @@ function oo = Import(o)                % Import Menu Items
    oo = mhead(o,'Import');             % locate Import menu header
    ooo = mitem(oo,'Package',{@CollectCb});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Package Info (.pkg)',{@ImportCb,'ReadPkgPkg','.pkg',@cute});
+   ooo = mitem(oo,'Package Info (.pkg)',{@ImportCb,'ReadPkgPkg','.pkg',@spm});
    ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spm});
    return
 

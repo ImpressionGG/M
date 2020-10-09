@@ -676,8 +676,9 @@ function o = Progress(o,msg)           % Show Progress Message
    msg = uscore(msg);                  % substitute underscores
    if isempty(msg)
       %menu(pull(o),'Title');          % restore figure title
-      hbar = var(o,'hbar');            % handle to wait bar
-      close(hbar);
+      %hbar = var(o,'hbar');           % handle to wait bar
+      %close(hbar);
+      progress(o);                     % finish progress message
    else
       [~,file,ext] = fileparts(var(o,{'path','?'}));
       fid = var(o,'fid');
@@ -687,13 +688,14 @@ function o = Progress(o,msg)           % Show Progress Message
          txt = uscore(['Importing file: ',file,ext]);
          percent = round(100*ftell(fid)/fsize); 
          
-         hbar = var(o,'hbar');         % handle to wait bar
-         if isempty(hbar)
-            hbar = waitbar(0,txt);
-            o = var(o,'hbar',hbar);
-         end
+         %hbar = var(o,'hbar');         % handle to wait bar
+         %if isempty(hbar)
+         %   hbar = waitbar(0,txt);
+         %   o = var(o,'hbar',hbar);
+         %  end
          txt = [txt,sprintf(' (%g%%)',percent)];
-         set(figure(o),'Name',txt);
+         progress(o,txt);
+         %set(figure(o),'Name',txt);
          %shg; pause(0.1);
       end
    end

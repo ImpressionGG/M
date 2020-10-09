@@ -484,6 +484,7 @@ function VersionV1F
 % - corasim/gain, corasim/lf and corasim/qf added
 % - corasim/display pimped to show also gain
 % - bug fix: corazito/plot - tolerant against mix of column & row vectors
+% - remove dialog box in corazon/read/Progress
 %
 % Known Bugs / Wishlist
 % - none so far
