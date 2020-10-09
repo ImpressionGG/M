@@ -90,9 +90,10 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm toolbox V1c2 beta (@ corazon V1f2 beta)
 % - good menu Plot>Transfer_Function implementation
 %
-%
 % - started V1c3 beta
 % - adopted omega scaling
+% - super toobox status (reproduced 70-er Kugel stability)
+%
 %
 % Known bugs & wishlist
 % =========================

@@ -471,7 +471,13 @@ function o = Stability(o)              % Stability Analysis
       subplot(o);
       
       xlabel('K-factor');
-      ylabel(sprintf('Stability Margin: %g',o.rd(margin,2)));
+      mu = opt(o,'process.mu');
+      if isempty(mu)
+         ylabel(sprintf('Stability Margin: %g',o.rd(margin,2)));
+      else
+         ylabel(sprintf('Stability Margin: %g  (mu = %g)',...
+                o.rd(margin,2),mu));
+      end         
    end
 end
 

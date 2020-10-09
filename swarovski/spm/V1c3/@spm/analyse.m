@@ -231,7 +231,7 @@ function oo = Nyq(o)                   % Nyquist Plot
    o = with(o,'nyq');
    o = opt(o,'color','bcc');
    oo = diagram(o,'Nyq',sym,L0,1212);
-   xlabel(sprintf('Friction Coefficient: mu = %g',mu));
+   %xlabel(sprintf('Friction Coefficient: mu = %g',mu));
    
    if control(o,'verbose') > 0
       display(o);   

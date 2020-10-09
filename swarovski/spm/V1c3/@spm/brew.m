@@ -511,12 +511,11 @@ function oo = OpenLoop(o)              % Open Loop Linear System
       % store L in cache
       
    oo = cache(oo,'consd.L',L);
-   
-   function Ls = CancelL(o,Ls)         % Set cancel Epsilon            
-      eps = opt(o,'cancel.L.eps');
-      if ~isempty(eps)
-         Ls = opt(Ls,'eps',eps);
-      end
+end
+function Ls = CancelL(o,Ls)         % Set cancel Epsilon            
+   eps = opt(o,'cancel.L.eps');
+   if ~isempty(eps)
+      Ls = opt(Ls,'eps',eps);
    end
 end
 
@@ -565,6 +564,8 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       G33 = cache(o,'trf.G33');
       mu = opt(o,{'process.mu',0.1});     % friction coefficient
 
+      G31 = CancelL(o,G31);
+      
          % calculate L0(s) = -mu*L1(s)
       
       L0 = mu * G31/G33
