@@ -93,7 +93,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - started V1c3 beta
 % - adopted omega scaling
 % - super toobox status (reproduced 70-er Kugel stability)
-% - bug fix: import package info 
+% - bug fix: import package info
 %
 %
 % Known bugs & wishlist
