@@ -41,8 +41,7 @@ end
 %==========================================================================
 
 function o = Nyquist(o)                % Nyquist Plot                  
-   points = opt(o,{'omega.points',1000});   
-   
+   points = opt(o,{'omega.points',10000});      
    oscale = opt(o,{'oscale',1});       % omega scaling factor
    
    [~,om] = fqr(o);                    % get omega vector
@@ -53,9 +52,9 @@ function o = Nyquist(o)                % Nyquist Plot
    if opt(o,{'log',1})                 % logarithmic plot?
       phi = angle(Gjw);
       dB = 20*log10(abs(Gjw));
-      dB = Map(o,dB);
+      r = Map(o,dB);
       
-      hdl = plot(dB.*cos(phi),dB.*sin(phi));
+      hdl = plot(r.*cos(phi),r.*sin(phi));
    else   
       hdl = plot(real(Gjw),imag(Gjw));
    end
@@ -173,7 +172,10 @@ function o = Axes(o)                   % Plot Bode Axes
       plot(-1,0,col);
       
       lab = [lab,'... [dB]'];
-      ylabel(lab);
+      xlabel(lab);
+      
+      axis on;
+      set(gca,'xtick',[],'ytick',[]);
       
       oo = opt(o,'view.grid',0);       % disable grid
    end
@@ -188,7 +190,7 @@ function o = Inherit(o)                % inherit options from shell
       end
    end
 end
-function dB = Map(o,dB)                % Map Magnitude                 
+function r = Map(o,dB)                 % Map Magnitude                 
    mlow = opt(o,{'magnitude.low',-300});
    mhigh = opt(o,{'magnitude.high',100});
    mag = [mlow,mhigh];                 % change representation
@@ -201,10 +203,16 @@ function dB = Map(o,dB)                % Map Magnitude
 
    x = [mag(1),0.75*mag(1) 0, mag(2)];
    y = [0 0.1 1 2];
+   
    map = polyfit(x,y,3);
 
       % map magnitude
 
-   dB = polyval(map,dB);
-   dB = max(dB,0);                     % truncate to positive numbers
+   r = 0*dB;                          % default: init zeros
+   idx = find(dB>=mag(1));
+   if ~isempty(idx)
+      r(idx) = polyval(map,dB(idx));
+   end
+   
+   r = max(r,0);                      % truncate to positive numbers
 end

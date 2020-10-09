@@ -88,6 +88,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - stability diagram - gewaltige gschicht :-)))))
 % - activate display:"braces" option for correct display of exponents
 % - spm toolbox V1c2 beta (@ corazon V1f2 beta)
+% - good menu Plot>Transfer_Function implementation
+%
 %
 % - started V1c3 beta
 % - adopted omega scaling

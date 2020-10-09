@@ -131,8 +131,8 @@ end
 function oo = Nyquist(o)               % Nyquist Settings Menu         
    setting(o,{'nyq.omega.low'},1e-1);
    setting(o,{'nyq.omega.high'},1e5);
-   setting(o,{'nyq.magnitude.low'},-300);
-   setting(o,{'nyq.magnitude.high'},100);
+   setting(o,{'nyq.magnitude.low'},-60);
+   setting(o,{'nyq.magnitude.high'},60);
    setting(o,{'nyq.magnitude.delta'},20);
    setting(o,{'nyq.zoom'},2);
    

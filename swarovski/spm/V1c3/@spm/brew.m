@@ -230,6 +230,7 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
             fprintf('G%g%g(s):\n',i,j)
             display(Gij);
 
+            Gij = set(Gij,'name',sprintf('G%g%g',i,j));
             G = poke(G,Gij,i,j);          % lower half diagonal element
             if (i ~= j)
                G = poke(G,Gij,j,i);       % upper half diagonal element
@@ -258,6 +259,7 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
             fprintf('G%g%g(s):\n',i,j)
             display(Gij);
 
+            Gij = set(Gij,'name',sprintf('G%g%g',i,j));
             G = poke(G,Gij,i,j);          % lower half diagonal element
             if (i ~= j)
                G = poke(G,Gij,j,i);       % upper half diagonal element

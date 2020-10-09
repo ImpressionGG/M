@@ -169,6 +169,7 @@ function o = Trf(o)                    % Transfer Function Diagram
 end
 function o = Weight(o)                 % Weight Function Diagram       
    weightdb = opt(o,{'weight.db',1});  % show weight in dB
+   w0 = opt(o,'weight.nominal');       % nominal weight
    
    sym = arg(o,1);
    w = arg(o,2);
@@ -208,8 +209,10 @@ function o = Weight(o)                 % Weight Function Diagram
    
    title('Modal Weights');
    xlabel('Mode Number');
-   if weightdb
+   if weightdb && isempty(w0)
       ylabel([sym,'  [dB]']);
+   elseif weightdb && ~isempty(w0)
+      ylabel(sprintf([sym,'/%g  [dB]'],o.rd(w0,.2)));
    else
       ylabel(sym);
    end
@@ -245,24 +248,12 @@ end
 function o = Step(o)                   % Elongation Step Response      
    o = Scaling(o);                     % manage scaling factors
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
    
-   G = set(G,'name',sym); 
    G = inherit(G,o);
-   G = arg(G,{});                      % clear args
-   
-   if isempty(opt(G,'color')) && ~isempty(sym)
-      switch sym(1)
-         case 'H'
-            G = opt(G,'color','m');
-         case 'L'
-            G = opt(G,'color','bcc');
-         otherwise
-            G = opt(G,'color','g.');
-      end
-   end
+   G = Color(G);
    
    if length(num(G)) > length(den(G))
       G = system(G,{0,1});
@@ -281,26 +272,17 @@ function o = Vstep(o)                  % Velocity Step Response
    o = opt(o,'yscale',opt(o,'vscale'));
    o = opt(o,'yunit',opt(o,'vunit'));
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
    
-   G = set(G,'name',sym); 
    G = inherit(G,o);
-   
-   if isempty(opt(G,'color'))
-      if o.is(sym(2:3),{'11','12','21','22'})
-         G = opt(G,'color','bc');
-      elseif isequal(sym(1),'L')
-         G = opt(G,'color','yyr');
-      else
-         G = opt(G,'color','g.');
-      end
-   end
+   G = Color(G);
+
    subplot(o,sub);
    step(G);
+   
    ylabel(['dy/dt [',opt(o,{'yunit','1'}),']']);
-
    subplot(o);                         % subplot done!
 end
 function o = Astep(o)                  % Acceleration Step Response    
@@ -308,20 +290,17 @@ function o = Astep(o)                  % Acceleration Step Response
    o = opt(o,'yscale',opt(o,'ascale'));
    o = opt(o,'yunit',opt(o,'aunit'));
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
    
-   G = set(G,'name',sym); 
    G = inherit(G,o);
+   G = Color(G);
    
-   if isempty(opt(G,'color'))
-      G = opt(G,'color','r');
-   end
    subplot(o,sub);
    step(G);
+   
    ylabel(['dy2/dt2 [',opt(o,{'yunit','1'}),']']);
-
    subplot(o);                         % subplot done!
 end
 function o = Fstep(o)                  % Force Step Response           
@@ -329,26 +308,17 @@ function o = Fstep(o)                  % Force Step Response
    o = opt(o,'yscale',opt(o,'fscale'));
    o = opt(o,'yunit',opt(o,'funit'));
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
    
-   G = set(G,'name',sym); 
    G = inherit(G,o);
-   
-   if isempty(opt(G,'color'))
-      if o.is(sym(2:3),{'11','12','21','22'})
-         G = opt(G,'color','bc');
-      elseif isequal(sym(1),'L')
-         G = opt(G,'color','yyr');
-      else
-         G = opt(G,'color','g.');
-      end
-   end
+   G = Color(G);
+
    subplot(o,sub);
    step(G);
+   
    ylabel(['F [',opt(o,{'yunit','1'}),']']);
-
    subplot(o);                         % subplot done!
 end
 
@@ -366,17 +336,14 @@ end
 function o = GoodBode(o)               % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
 
    [num,den] = peek(G);
    oo = system(inherit(corasim,o),{num,den});   
    oo = set(oo,'name',sym); 
-   
-   if isempty(opt(oo,'color'))
-      oo = opt(oo,'color','r');
-   end
+   oo = Color(oo);
    
    subplot(o,sub);
    
@@ -388,39 +355,32 @@ end
 function o = NewBode(o)                % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
 
    G = inherit(G,o);                   % inherit options
    G = set(G,'name',sym);              % set name of transfer function
+   G = Color(G);
    
-   if isempty(opt(G,'color'))
-      G = opt(G,'color','r');
-   end
-   
-   subplot(o,sub);
-   
+   subplot(o,sub);  
    bode(G);
+   
    title([sym,': Bode Diagram']);
-
    subplot(o);                         % subplot done!
 end
 
-function o = Nyq(o)                    % Nyquist Diagram                  
-   T0 = opt(o,{'brew.T0',1});
+function o = Nyq(o)                    % Nyquist Diagram               
    o = Scaling(o);                     % manage scaling factors
    o = with(o,'nyq');                  % override some Scaling opts
-   oscale = opt(o,{'oscale',1});       % omega scale factor
-   oscale = oscale*T0;
-   o = opt(o,'oscale',oscale);
    
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
 
    G = inherit(G,o);                   % inherit options
    G = set(G,'name',sym);              % set name of transfer function
+   G = Color(G);
    
    if isempty(opt(G,'color'))
       G = opt(G,'color','r');
@@ -433,7 +393,7 @@ function o = Nyq(o)                    % Nyquist Diagram
 
    subplot(o);                         % subplot done!
 end
-function o = Stability(o)              % Stability Analysis                  
+function o = Stability(o)              % Stability Analysis            
    o = Scaling(o);                     % manage scaling factors
    o = with(o,'nyq');                  % override some Scaling opts
    
@@ -519,7 +479,7 @@ end
 % Numeric Quality
 %==========================================================================
 
-function o = Numeric(o)                % Numeric Quality
+function o = Numeric(o)                % Numeric Quality               
 %
 % Compare frequency response calculations for usual transfer function
 % representations against modal representations. Convert error to dB
@@ -862,3 +822,29 @@ function o = Scaling(o)                % Manage Scaling Factors
    oscale = oscale*T0;
    o = opt(o,'oscale',oscale);
 end
+function sym = Sym(o)                  % Build Symbiol from Name       
+   sym = [get(o,{'name','?'}),'(s)'];
+end
+function o = Color(o)                  % Set Color Default             
+   sym = get(o,{'name','?'});
+   if isempty(opt(o,'color')) 
+      switch sym(1)
+         case 'G'
+            col = 'g';
+         case 'H'
+            col = 'm';
+         case 'L'
+            col = 'bcc';
+         case '?'
+            col = 'rk';
+         otherwise
+            col = 'r.';
+      end
+      o = opt(o,'color',col);
+   end
+   
+      % we also clear args
+      
+   o = arg(o,{});                      % clear args
+end
+

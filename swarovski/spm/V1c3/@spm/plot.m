@@ -14,7 +14,8 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @Overview,@About,@Real,@Imag,@Complex,...
-                   @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfNyq,... 
+                   @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
+                   @TrfNyq,@TrfWeight,... 
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
                    @Hs,@Consr,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
@@ -76,7 +77,9 @@ function oo = TransferFunction(o)      % Transfer Function Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Step Response',{@WithCuo,'TrfStep'});
    ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
+   ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
    ooo = mitem(oo,'Nyquist Plot',{@WithCuo,'TrfNyq'});   
+   ooo = mitem(oo,'Modal Weights',{@WithCuo,'TrfWeight'});
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -479,10 +482,8 @@ function o = TrfRloc(o)                % Pole/Zero Plot
       return
    end
    
-   [Gij,sym] = TrfSelect(o);
-   o = opt(o,'color','g');
-   
-   diagram(o,'Rloc',sym,Gij,1111);      
+   Gij = TrfSelect(o);   
+   diagram(o,'Rloc','',Gij,1111);      
    heading(o);
 end
 function o = TrfStep(o)                % Step Response Plot            
@@ -491,19 +492,11 @@ function o = TrfStep(o)                % Step Response Plot
       return
    end
    
-   idx = opt(o,{'select.channel',[1 1]});
-   i = idx(1);  j = idx(2);
+   Gij = TrfSelect(o);
+   diagram(o,'Step','',Gij,2111);
    
-   G = cook(o,'G');
-   Gij = peek(G,i,j);
-   
-   sym = sprintf('G%g%g(s)',i,j);
-   Gij = set(Gij,'name',sym);  
-
-      % plot step response
-      
-   o = opt(o,'color','g');
-   diagram(o,'Step',sym,Gij,1111);      
+   o = opt(o,'simu.tmax',1);
+   diagram(o,'Step','',Gij,2112);
    heading(o);
 end
 function o = TrfBode(o)                % Bode Plot                     
@@ -512,19 +505,22 @@ function o = TrfBode(o)                % Bode Plot
       return
    end
    
-   idx = opt(o,{'select.channel',[1 1]}); 
-   i = idx(1);  j = idx(2);
+   Gij = TrfSelect(o);
+   o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+   diagram(o,'Bode','',Gij,2111);      
+   o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
+   diagram(o,'Bode','',Gij,2112);      
+   heading(o);
+end
+function o = TrfMagni(o)               % Magnitude Plot                
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
    
-   G = cook(o,'G');
-   Gij = peek(G,i,j);
-   
-   sym = sprintf('G%g%g(s)',i,j);
-   Gij = set(Gij,'name',sym);  
-
-      % plot step response
-      
-   o = opt(o,'color','g');
-   diagram(o,'Bode',sym,Gij,1111);      
+   Gij = TrfSelect(o);
+   o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+   diagram(o,'Bode','',Gij,1111);      
    heading(o);
 end
 function o = TrfNyq(o)                 % Nyquist Plot                  
@@ -533,31 +529,45 @@ function o = TrfNyq(o)                 % Nyquist Plot
       return
    end
    
-   idx = opt(o,{'select.channel',[1 1]}); 
-   i = idx(1);  j = idx(2);
-   
-   G = cook(o,'G');
-   Gij = peek(G,i,j);
-   
-   sym = sprintf('G%g%g(s)',i,j);
-   Gij = set(Gij,'name',sym);  
-
-      % plot step response
-      
-   o = opt(o,'color','g');
-   diagram(o,'Nyq',sym,Gij,1111);      
+   Gij = TrfSelect(o);
+   diagram(o,'Nyq','',Gij,1111);      
    heading(o);
 end
+function o = TrfWeight(o)              % Plot Modal Weights            
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   [wij,w0,sym] = WeightSelect(o);
+   o = opt(o,'weight.nominal',w0);
+   wij = wij/w0;
+   
+   diagram(o,'Weight',sym,wij,1111);      
+   heading(o);
 
-function [Gij,sym] = TrfSelect(o)      % Select Transfer Function      
+   function [wij,w0,sym] = WeightSelect(o) % Select Transfer Function      
+      idx = opt(o,{'select.channel',[1 1]});
+      i = idx(1);  j = idx(2);
+
+      W = cook(o,'W');
+      wij = W{i,j};
+      sym = sprintf('w%g%g',i,j);
+      
+      if opt(o,{'weight.equalize',0})
+         w0 = NominalWeight(o,W);
+      else
+         w0 = NominalWeight(o,wij);
+      end
+   end
+end
+
+function Gij = TrfSelect(o)            % Select Transfer Function      
    idx = opt(o,{'select.channel',[1 1]});
    i = idx(1);  j = idx(2);
    
    G = cook(o,'G');
    Gij = peek(G,i,j);
-   
-   sym = sprintf('G%g%g(s)',i,j);
-   Gij = set(Gij,'name',sym);  
 end
 
 %==========================================================================
@@ -594,10 +604,7 @@ function o = Gs(o)                     % Double Transfer Function
       diagram(o,'Trf',sym,G,111);
    else
       Gij = peek(G,i,j);
-      %Gij = opt(Gij,'maxlen',200);
-      %str = display(Gij);
-      
-      sym = sprintf('G%g%g(s)',i,j);
+      sym = [get(Gij,{'name','?'}),'(s)'];
       symw = sprintf('w%g%g',i,j);
       Gij = set(Gij,'name',sym);  
       
@@ -638,8 +645,8 @@ function o = GsRloc(o)                 % G(s) Poles/Zeros Overview
    
    for (i=1:m)
       for (j=1:n)
-         sym = sprintf('G%g%g(s)',i,j);
          Gij = peek(G,i,j);
+         sym = [get(Gij,{'name','?'}),'(s)'];
          diagram(o,'Rloc',sym,Gij,[m,n,i,j]);
       end
    end
@@ -652,10 +659,8 @@ function o = GsStep(o)                 % G(s) Step Response Overview
    
    for (i=1:m)
       for (j=1:n)
-         sym = sprintf('G%g%g(s)',i,j);
          Gij = peek(G,i,j);
-         o = opt(o,'color','g');
-         diagram(o,'Step',sym,Gij,[m,n,i,j]);
+         diagram(o,'Step','',Gij,[m,n,i,j]);
       end
    end
    heading(o);
@@ -666,10 +671,8 @@ function o = GsBode(o)                 % G(s) Bode Plot Overview
    
    for (i=1:m)
       for (j=1:n)
-         sym = sprintf('G%g%g(s)',i,j);
          Gij = peek(G,i,j);
-         o = opt(o,'color','g');
-         diagram(o,'Bode',sym,Gij,[m,n,i,j]);
+         diagram(o,'Bode','',Gij,[m,n,i,j]);
       end
    end
    heading(o);
@@ -693,6 +696,7 @@ function o = GsWeight(o)               % G(s) Weight Overview
                wij = wij / w0;
             end
             sym = sprintf('w%g%g',i,j);
+            o = opt(o,'weight.nominal',w0);
             diagram(o,'Weight',sym,wij,[m,n,i,j]);
          end
       end
@@ -739,9 +743,8 @@ function o = GsFqr(o)                  % G(s) Frequency Response Error
    
    for (i=1:m)
       for (j=1:n)
-         sym = sprintf('G%g%g(s)',i,j);
+         sym = [get(Gij,{'name','?'}),'(s)'];
          Gij = peek(G,i,j);
-         o = opt(o,'color','g');
          diagram(o,'Numeric',sym,Gij,[m,n,i,j]);
       end
    end
