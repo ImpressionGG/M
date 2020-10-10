@@ -13,6 +13,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Consr')       % brew rational constrained trf mat.
 %
 %           oo = brew(o,'Process')     % brew closed loop transfer fct
+%           oo = brew(o,'Nyq')         % brew nyquist stuff
 %
 %        Examples
 %
@@ -31,7 +32,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partition,...
-                                  @Trf,@Consd,@Consr,@Process);
+                                  @Trf,@Consd,@Consr,@Process,@Nyq);
    oo = gamma(oo);
 end              
 
@@ -458,17 +459,17 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       
    H = matrix(corasim);
 
-   H = poke(H,H11,1,1);
-   H = poke(H,H12,1,2);
-   H = poke(H,H13,1,3);
+   H = poke(H,set(H11,'name','H11'),1,1);
+   H = poke(H,set(H12,'name','H12'),1,2);
+   H = poke(H,set(H13,'name','H13'),1,3);
    
-   H = poke(H,H21,2,1);
-   H = poke(H,H22,2,2);
-   H = poke(H,H23,2,3);
+   H = poke(H,set(H21,'name','H21'),2,1);
+   H = poke(H,set(H22,'name','H22'),2,2);
+   H = poke(H,set(H23,'name','H23'),2,3);
    
-   H = poke(H,H31,3,1);
-   H = poke(H,H32,3,2);
-   H = poke(H,H33,3,3);
+   H = poke(H,set(H31,'name','H31'),3,1);
+   H = poke(H,set(H32,'name','H32'),3,2);
+   H = poke(H,set(H33,'name','H33'),3,3);
    
       % store H in cache
       
@@ -512,7 +513,7 @@ function oo = OpenLoop(o)              % Open Loop Linear System
       
    oo = cache(oo,'consd.L',L);
 end
-function Ls = CancelL(o,Ls)         % Set cancel Epsilon            
+function Ls = CancelL(o,Ls)            % Set Cancel Epsilon            
    eps = opt(o,'cancel.L.eps');
    if ~isempty(eps)
       Ls = opt(Ls,'eps',eps);
@@ -650,7 +651,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       dBerr = 20*log10(abs(fqr(Terr)));
       if max(dBerr) >= -200
          fprintf('*** warning: differing results\n');
-         beep
+         %beep
       end
 
       Tf = set(matrix(corasim),'name','Tf[s]');
@@ -708,4 +709,45 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
          Gs = opt(Gs,'eps',eps);
       end
    end
+end
+
+%==========================================================================
+% Nyquist Stuff
+%==========================================================================
+
+function oo = Nyq(o)                   % Brew Nyquist Stuff            
+   o = with(o,'nyq');                  % unwrap nyquist options
+   
+   oo = current(o);
+   oo = brew(oo,'Partition');          % brew partial matrices
+   
+      % get a1,a0 and B,C,D
+      
+   [a0,a1,B,C,D] = var(oo,'a0,a1,B,C,D');
+   
+      % setup G31 transfer system
+      
+   G31 = modal(corasim,a0,a1,B(:,1),C(3,:),D(3,1));
+   G31 = set(G31,'name','G31');
+   
+      % setup G33 transfer system
+      
+   G33 = modal(corasim,a0,a1,B(:,3),C(3,:),D(3,3));
+   G33 = set(G33,'name','G33');
+   
+      % get omega set
+      
+   oscale = opt(o,{'brew.T0',1});
+   [~,omega] = fqr(inherit(G33,o));
+   
+   G31jw = fqr(G31,omega*oscale);
+   G33jw = fqr(G33,omega*oscale); 
+   L0jw = G31jw./G33jw;
+   
+      % store in cache
+      
+   oo = cache(oo,'nyq.G31',G31);
+   oo = cache(oo,'nyq.G33',G33);
+   oo = cache(oo,'nyq.omega',omega);
+   oo = cache(oo,'nyq.L0jw',L0jw);  
 end

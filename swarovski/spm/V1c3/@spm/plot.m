@@ -13,11 +13,11 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %        See also: SPM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                   @Overview,@About,@Real,@Imag,@Complex,...
+                   @Overview,@About,@Image,@Real,@Imag,@Complex,...
                    @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
                    @TrfNyq,@TrfWeight,... 
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
-                   @Hs,@Consr,@HsStep,@HsBode,...
+                   @Hs,@Consr,@HsRloc,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @AnalyseRamp,@NormRamp);
@@ -28,19 +28,22 @@ end
 % Plot Menu
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Plot Menu               
+function oo = Menu(o)                   % Setup Plot Menu              
+   switch type(current(o))
+      case 'spm'
+         oo = SpmMenu(o);
+      case 'pkg'
+         oo = PkgMenu(o);
+      otherwise
+         oo = mitem(o,'About',{@WithCuo,'About'});
+   end
+end
+function oo = SpmMenu(o)                % Setup Plot Menu @ SPM-Type   
 %
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
 %
    oo = mitem(o,'About',{@WithCuo,'About'});
-
-   if ~type(current(o),{'spm'})
-      return
-   end
-   
-      % rest is for spm typed objects only
-
    oo = mitem(o,'Overview',{@WithCuo,'Plot'});
    
    oo = mitem(o,'-');
@@ -61,6 +64,13 @@ function oo = Menu(o)                  % Setup Plot Menu
    oo = RampResponse(o);               % ramp response sub-menu
    oo = MotionResponse(o);             % motion response sub menu
    oo = NoiseResponse(o);              % noise response sub menu
+end
+function oo = PkgMenu(o)                % Setup Plot Menu @ PKG-Type   
+   oo = mitem(o,'About',{@WithCuo,'About'});
+   oo = mitem(o,'Image',{@WithCuo,'Image'});
+   enable(oo,~isempty(get(current(o),'image')));
+   
+   oo = mitem(o,'-');
 end
 
 function oo = ModeShapes(o)            % Mode Shapes Menu              
@@ -130,6 +140,7 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'H(s): Constrained Matrix');
+   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'HsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'HsBode'});
 
@@ -373,7 +384,47 @@ function o = Overview(o)               % Plot Overview
    heading(o);
 end
 function o = About(o)                  % About Object                  
-   o = menu(o,'About');                % keep it simple
+   switch type(current(o))
+      case 'pkg'
+         o = AboutPkg(o);
+      otherwise
+         o = menu(o,'About');          % keep it simple
+   end
+end
+
+%==========================================================================
+% Package Objects
+%==========================================================================
+
+function o = AboutPkg(o)               % About Package                 
+   if ~type(o,{'pkg'})
+      o = plot(o,'About');
+      return
+   end
+   
+   oo = opt(o,'subplot',211,'pitch',2);
+   message(oo);
+   axis off
+   
+   subplot(o,2322);
+   Image(o);
+   
+     % increase axis width
+     
+   pos = get(gca,'position');
+   w = pos(3);  k = 1.5;               % k: stretch factor
+   pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
+   set(gca,'position',pos);
+end
+function o = Image(o)                  % Plot Image                    
+   path = [get(o,'dir'),'/',get(o,'image')];
+   im = imread(path);
+   if ~isempty(im)
+      hdl = image(im);
+      axis off
+   else
+      message('cannot display image',{['path: ',path]});
+   end
 end
 
 %==========================================================================
@@ -639,15 +690,13 @@ function o = Gs(o)                     % Double Transfer Function
    heading(o);
 end
 function o = GsRloc(o)                 % G(s) Poles/Zeros Overview     
-   o = with(o,'simu');
    G = cook(o,'G');                    % G(s)
    [m,n] = size(G);
    
    for (i=1:m)
       for (j=1:n)
          Gij = peek(G,i,j);
-         sym = [get(Gij,{'name','?'}),'(s)'];
-         diagram(o,'Rloc',sym,Gij,[m,n,i,j]);
+         diagram(o,'Rloc','',Gij,[m,n,i,j]);
       end
    end
    heading(o);
@@ -802,6 +851,18 @@ function o = Hs(o)                     % Double Constrained Trf Fct
       
       o = opt(o,'color','yyyr');
       diagram(o,'Bode',Hsym,Hij,3221);
+   end
+   heading(o);
+end
+function o = HsRloc(o)                 % H(s) Poles/Zeros Overview     
+   H = cook(o,'H');                    % G(s)
+   [m,n] = size(H);
+   
+   for (i=1:m)
+      for (j=1:n)
+         Hij = peek(H,i,j);
+         diagram(o,'Rloc','',Hij,[m,n,i,j]);
+      end
    end
    heading(o);
 end

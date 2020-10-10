@@ -152,7 +152,7 @@ function oo = PackageInfo(o)           % Provide Package Info File
    
       % create a package object and set package parameters
       
-   oo = cute('pkg');
+   oo = spm('pkg');
    oo.data = [];                       % make a non-container object
    oo.par.title = title;
    oo.par.comment = {};
@@ -643,7 +643,7 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   choice(ooo,[0.1,0.07,0.05,0.02,0.01,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end

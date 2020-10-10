@@ -84,6 +84,30 @@ function o = Magnitude(o)              % Plot Magnitude
    if o.is(lw)
       set(hdl,'Linewidth',lw);
    end
+   
+   Instabilities(o)                    % draw instabilities
+   
+   function Instabilities(o)
+      [z,p,k] = zpk(o);                % get pole zeros
+      
+      idx = find(real(p)>= 0);
+      for (i=1:length(idx))
+         k = idx(i);
+         sk = p(k);
+         
+         if (imag(sk) ~= 0)            % complex pole
+            om = sqrt(abs(sk))/oscale;
+            Gjw = fqr(o,om*oscale);
+            dB = 20*log10(abs(Gjw));
+   
+               % plot magnitude
+      
+            hdl = semilogx(om,dB,'rp');
+            hdl = semilogx(om,dB,'w.');
+         end
+      end
+      
+   end
 end
 function o = Phase(o)                  % Plot Phase                    
    points = opt(o,{'omega.points',1000});

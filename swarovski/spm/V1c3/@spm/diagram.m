@@ -410,12 +410,12 @@ function o = Stability(o)              % Stability Analysis
    
    subplot(o,sub);
    
-   Stable(G);
+   stable(o,G);
    title([sym,': Stability Analysis']);
 
    subplot(o);                         % subplot done!
    
-   function o = Stable(o)
+   function o = OldStable(o)
       low = opt(o,{'magnitude.low',-300});
       high = opt(o,{'magnitude.high',100});
       delta = opt(o,{'magnitude.delta',20});
@@ -678,14 +678,17 @@ end
 %==========================================================================
 
 function o = Rloc(o)                   % Root Locus Diagram            
-   sym = arg(o,1);
-   G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
    
-   o = opt(o,'subplot',sub);
-   G = set(G,'name',sym); 
+   G = inherit(G,o);                   % inherit options
+   G = set(G,'name',sym);              % set name of transfer function
+   G = Color(G);
 
+   o = opt(o,'subplot',sub);
    subplot(o,sub);
+
    p = roots(den(G));                  % poles
    col = o.iif(dark(o),'yx','gx');
    plot(corazon(o),real(p),imag(p),col);

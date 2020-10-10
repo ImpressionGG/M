@@ -95,6 +95,9 @@ function vers = version(o,arg)         % SPM Class Version
 % - super toobox status (reproduced 70-er Kugel stability)
 % - bug fix: import package info
 % - bug fix: spm/brew - remove plot About in spm/brew/ConstrainedDouble
+% - add About plot for packages
+% - implement plot/Image
+% - add spm/stable method
 %
 %
 % Known bugs & wishlist

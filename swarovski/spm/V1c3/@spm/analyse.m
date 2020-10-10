@@ -25,7 +25,7 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Analyse Menu      
+function oo = Menu(o)                  % Setup Analyse Menu            
    oo = OpenLoopMenu(o);               % add Open Loop menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
@@ -44,7 +44,7 @@ function oo = Menu(o)                  % Setup Analyse Menu
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
 end
-function oo = OpenLoopMenu(o)          % Open Loop Menu
+function oo = OpenLoopMenu(o)          % Open Loop Menu                
    oo = mitem(o,'Open Loop');
    ooo = mitem(oo,'Overview',{@WithCuo,'OpenLoop','L0',1,'bcc'});
    ooo = mitem(oo,'L0(s)',{@WithCuo,'L0Disp'});
@@ -55,7 +55,7 @@ function oo = OpenLoopMenu(o)          % Open Loop Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Calculation',{@WithCuo,'Calc','L0',1,'bcc'});
 end
-function oo = ClosedLoopMenu(o)        % Closed Loop Menu
+function oo = ClosedLoopMenu(o)        % Closed Loop Menu              
    oo = mitem(o,'Closed Loop');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
@@ -234,7 +234,7 @@ function oo = Nyq(o)                   % Nyquist Plot
    %xlabel(sprintf('Friction Coefficient: mu = %g',mu));
    
    if control(o,'verbose') > 0
-      display(o);   
+      display(L0);   
    end
    
    heading(o);
@@ -271,46 +271,24 @@ function o = Calc(o)                   % Calculation of L(s)
    idx = arg(o,2);
    col = arg(o,3);
    
-   oo = cook(o,sym);
-   o = opt(o,'color',col);
-   sym = [sym,'(s)'];
+   G31 = cook(o,'G31');
+   G33 = cook(o,'G33');
+   L0 = cook(o,'L0');
    
-   diagram(o,'Calc',sym,oo,4312);
+   diagram(o,'Calc','L0(s)',L0,4312);
 
-   diagram(o,'Bode',sym,oo,4321);
-   diagram(o,'Step',sym,oo,4322);
-   diagram(o,'Rloc',sym,oo,4323);
-   
-   switch sym
-      case 'L1(s)'
-         sym = 'G31';
-      case 'L2(s)'
-         sym = 'G32';
-      otherwise
-         return
-   end
-   o = opt(o,'color','g')
-   
-      % G31(s) or G32(s) diagrams
-      
-   oo = cook(o,sym);
-   sym = [sym,'(s)'];
-   
-   diagram(o,'Bode',sym,oo,4331);
-   diagram(o,'Step',sym,oo,4332);
-   diagram(o,'Rloc',sym,oo,4333);
+   diagram(o,'Bode','',G31,4321);
+   diagram(o,'Step','',G31,4322);
+   diagram(o,'Rloc','',G31,4323);
 
-      % G33(s) diagrams
-
-   sym = 'G33';
-   oo = cook(o,sym);
-   sym = [sym,'(s)'];
+   diagram(o,'Bode','',G33,4331);
+   diagram(o,'Step','',G33,4332);
+   diagram(o,'Rloc','',G33,4333);
    
-   diagram(o,'Bode',sym,oo,4341);
-   diagram(o,'Step',sym,oo,4342);
-   diagram(o,'Rloc',sym,oo,4343);
-     
-   display(oo);
+   diagram(o,'Bode','',L0,4441);
+   diagram(o,'Step','',L0,4342);
+   diagram(o,'Rloc','',L0,4343);
+           
    heading(o);
 end
 
@@ -467,7 +445,7 @@ end
 % Closed Loop Force
 %==========================================================================
 
-function o = Overview(o)              % Closed Loop Overview           
+function o = Overview(o)               % Closed Loop Overview          
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
@@ -494,7 +472,7 @@ function o = Overview(o)              % Closed Loop Overview
 
    heading(o);
 end
-function o = Trf(o)                   % Transfer Function              
+function o = Trf(o)                    % Transfer Function             
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
