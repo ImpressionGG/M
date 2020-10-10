@@ -99,6 +99,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - implement plot/Image
 % - add spm/stable method
 % - add File>SetupParameter menu
+% - first time stability margin chart over pivot angle :-)))
 %
 %
 % Known bugs & wishlist

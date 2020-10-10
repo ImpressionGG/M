@@ -91,6 +91,8 @@ function oo = Import(o)                % Import Menu Items
 
       list = collect(o);               % collect files in directory
       paste(o,list);
+      
+      plot(current(o),'About');
    end
 end
 function oo = Export(o)                % Export Menu Items             
@@ -689,7 +691,8 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
-   choice(ooo,[0.1,0.07,0.05,0.02,0.01,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   choice(ooo,[0.1,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,...
+               0.005,0.002,0.001,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
    ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end

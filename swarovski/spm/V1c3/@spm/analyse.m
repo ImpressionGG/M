@@ -15,7 +15,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @Trf,@TfOverview,...
                       @L0Disp,@L0Step,@L0Bode,@L0Nyq,...
-                      @Overview,@Rloc,@Nyq,@OpenLoop,@Calc,...
+                      @Overview,...
+                      @Margin,@Rloc,@Nyq,@OpenLoop,@Calc,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros);
    oo = gamma(o);                 % invoke local function
@@ -63,6 +64,8 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
 end
 function oo = Stability(o)             % Closed Loop Stability         
    oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'Margin'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
    ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyq'});
    ooo = mitem(oo,'-');
@@ -192,9 +195,12 @@ function o = Err(o)                    % Error Handler
 end
 
 %==========================================================================
-% Root Locus
+% Stability
 %==========================================================================
 
+function o = Margin(o)                 % Stability Margin              
+   stable(o);
+end
 function o = Rloc(o)                   % Root Locus                    
    o = with(o,'rloc');
    o = with(o,'style');
@@ -239,6 +245,11 @@ function oo = Nyq(o)                   % Nyquist Plot
    
    heading(o);
 end
+
+%==========================================================================
+% Open Loop
+%==========================================================================
+
 function o = OpenLoop(o)               % L(s) Open Loop                
    o = with(o,'bode');
    o = with(o,'simu');
@@ -291,10 +302,6 @@ function o = Calc(o)                   % Calculation of L(s)
            
    heading(o);
 end
-
-%==========================================================================
-% Open Loop
-%==========================================================================
 
 function o = L0Disp(o)                 % Display Transfer Function     
    if ~type(o,{'spm'})

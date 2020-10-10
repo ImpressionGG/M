@@ -411,7 +411,7 @@ function o = Stability(o)              % Stability Analysis
    subplot(o,sub);
    
    stable(o,G);
-   title([sym,': Stability Analysis']);
+   %title([sym,': Stability Analysis']);
 
    subplot(o);                         % subplot done!
    

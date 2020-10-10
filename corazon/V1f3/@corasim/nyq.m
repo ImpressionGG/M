@@ -169,7 +169,9 @@ function o = Axes(o)                   % Plot Bode Axes
          % mark point "-1"
          
       col = o.iif(dark(o),'wp','kp');
-      plot(-1,0,col);
+      hdl = plot(-1,0,col);
+      set(hdl,'Linewidth',2);
+      plot(-1,0,'r.');
       
       lab = [lab,'... [dB]'];
       xlabel(lab);
