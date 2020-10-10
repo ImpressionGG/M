@@ -98,6 +98,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add About plot for packages
 % - implement plot/Image
 % - add spm/stable method
+% - add File>SetupParameter menu
 %
 %
 % Known bugs & wishlist

@@ -120,6 +120,7 @@ end
 function oo = Tools(o)                 % Tools Menu Items              
    oo = mseek(o,{'Tools'});
    ooo = mitem(oo,'Provide Package Info',{@PackageInfo});
+   ooo = mitem(oo,'Setup Parameters',{@SetupParameters});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Clear Cache',{@ClearCache});
 end
@@ -229,6 +230,51 @@ function oo = PackageInfo(o)           % Provide Package Info File
             name(i) = '-';                % substitute character with '-'
          end
       end
+   end
+end
+function oo = SetupParameters(o)       % Setup Specific Parameters     
+   o = pull(o);
+   oo = current(o);
+   setup = get(oo,'choice');
+   
+   if isempty(setup)
+      message(o,'No setup info provided in current object',...
+         {['object: ',get(o,{'title',''})],'empty ''choice'' parameter!'});
+      return
+   end
+   
+   list = fields(setup);
+   for (i=1:length(list))
+      value = setup.(list{i});
+      Choice(o,list{i},value);
+   end
+   
+   message(o,'Parameters have been setup!',{'see: get(cuo,''choice'')'});
+   
+   function Choice(o,tag,val,context)   % Change parameters             
+      if (nargin < 4)
+         context = '';
+      end
+      
+      if isstruct(val)
+         if isempty(context)
+            context = tag;
+         else
+            context = [context,'.',tag];
+         end
+            
+         tags = fields(val);
+         for (j=1:length(tags))
+            tagj = tags{j};
+            valj = val.(tagj);
+            Choice(o,tagj,valj,context);
+         end
+      elseif isempty(context)
+         choice(o,tag,val);          % change setting
+      else
+         tag = [context,'.',tag];
+         choice(o,tag,val);
+      end    
    end
 end
 function oo = ClearCache(o)            % Clear All Caches              
