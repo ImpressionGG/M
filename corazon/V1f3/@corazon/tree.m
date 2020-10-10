@@ -1,29 +1,34 @@
-function oo = select(o,i,j)            % CORAZON Select Method         
+function oo = tree(o,i,j)              % Object Tree                            
 %
-% SELECT   Get object tree or select object by package and object index.
+% TREE     Get object tree or select object by package and object index.
+%          if object is a container object the whole object tree is
+%          returned (or displayed). If object is a package object (of type
+%          'pkg' then the subtree of the package object is being returned
+%          (displayed).
 %
-%             tree = select(o)         % get (hierarchical) object tree
+%             list = tree(o)           % get (hierarchical) object tree
 %
-%          Output arg numbers has dimension equal to number of packages
-%          where numbers(i) tells the number of objects in package i
+%          Input argument must be container object (shell object) or
+%          package object (type 'pkg'). Output arg is a list of lists with
+%          length equal to number of packages.
 %
-%             list = select(o,i)       % get all objects of i-th package
-%             oo = select(o,i,j)       % get j-th object from i-th package
+%             list = tree(o,i)         % get all objects of i-th package
+%             oo = tree(o,i,j)         % get j-th object from i-th package
 %
 %          Show object tree:
 %
-%             select(sho)
+%             tree(sho)
 %
 %          Select by object ID
 %
-%             oo = select(o,id(oo))               % select by object ID
-%             oo = select(o,'@LPC03.200609.3')    % select by object ID
+%             oo = tree(o,id(oo))                 % select by object ID
+%             oo = tree(o,'@LPC03.200609.3')      % select by object ID
 %
 %          Example:
 %
-%             tree = select(o);
-%             for (i=1:length(tree))
-%                list = tree{i};       % package list
+%             otree = tree(o);         % get object tree
+%             for (i=1:length(otree))
+%                list = otree{i};      % package list
 %                fprintf('package %s\n',get(list{1},{'title','?'}));
 %                for (j=2:length(list))
 %                   oo = list{j};      % package object
@@ -35,15 +40,12 @@ function oo = select(o,i,j)            % CORAZON Select Method
 %
 %         See also: CORAZON
 %
-   fprintf('*** warning: corazon/select will be obsoleted.\n');
-   fprintf('*** use corazon/tree instead!\n');
-   
    if (nargin == 1)
-      tree = Tree(o);                  % get object tree
+      otree = Tree(o);                 % get object tree
       if (nargout >= 1)
-         oo = tree;
+         oo = otree;
       else
-         Show(o,tree);                 % show object tree
+         Show(o,otree);                % show object tree
       end
    elseif (nargin == 2)
       if ischar(i)
@@ -63,9 +65,14 @@ end
 %==========================================================================
 
 function Show(o,list)                  % Show Object Tree              
-   tree = select(o);
-   for (i=1:length(tree))
-      list = tree{i};                  % package list
+   if isempty(list) && ~container(o) && ~type(o,{'pkg'})
+      fprintf('   Empty tree for data objects!\n');
+      return
+   end
+
+   otree = tree(o);
+   for (i=1:length(otree))
+      list = otree{i};                  % package list
       fprintf('package %s\n',get(list{1},{'title','?'}));
       for (j=2:length(list))
          oo = list{j};                 % package object
@@ -78,9 +85,15 @@ end
 % Helper
 %==========================================================================
 
-function tree = Tree(o)                % Build Object Tree             
+function otree = Tree(o)                % Build Object Tree             
    if ~container(o)
-      error('no shell object');
+      if type(o,{'pkg'})
+         otree = PackageTree(o);
+         return
+      else
+         otree = {};
+         return
+      end
    end
    
    list = o.data;
@@ -88,14 +101,14 @@ function tree = Tree(o)                % Build Object Tree
    
       % first find all packages
       
-   tree = {};  package = {};  index = [];
+   otree = {};  package = {};  index = [];
    
    for (k=1:length(list))
       oo = list{k};
       if isequal(oo.type,'pkg')
          index(end+1) = k;
          package{end+1} = get(oo,{'package',''});
-         tree{end+1} = {oo};
+         otree{end+1} = {oo};
       end
    end
    
@@ -106,13 +119,34 @@ function tree = Tree(o)                % Build Object Tree
       if ~isequal(oo.type,'pkg')
          for (i=1:length(package))
             if isequal(get(oo,{'package','?'}),package{i})
-               branch = tree{i};
+               branch = otree{i};
                branch{end+1} = oo;
-               tree{i} = branch;
+               otree{i} = branch;
             end
          end
       end
    end   
+end
+function list = PackageTree(o)         % Get Subtree of Package
+   oo = o;                             % rename package object
+   package = get(oo,'package');
+   if isempty(package)
+      error('empty package ID');
+   end
+   
+   o = pull(oo);                       % pull shell object
+   otree = Tree(o);
+
+   for (i=1:length(otree))
+      list = otree{i};
+      oi = list{1};
+      if isequal(get(oi,'package'),package)
+         list = {list};
+         return
+      end
+   end
+   
+   error('cannot retrieve package tree');
 end
 function list = List(o,i)              % Get Object List of a Package  
    tree = Tree(o);

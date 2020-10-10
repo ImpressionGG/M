@@ -20,6 +20,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
                    @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
+                   @Stability,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -71,6 +72,7 @@ function oo = PkgMenu(o)                % Setup Plot Menu @ PKG-Type
    enable(oo,~isempty(get(current(o),'image')));
    
    oo = mitem(o,'-');
+   oo = mitem(o,'Stability Margin',{@WithCuo,'Stability'});
 end
 
 function oo = ModeShapes(o)            % Mode Shapes Menu              
@@ -1607,6 +1609,10 @@ function o = PlotY(o)                  % Plot Output Signals
       grid(o);
    end
 end
+
+%==========================================================================
+% Stability
+%==========================================================================
 
 %==========================================================================
 % Helper

@@ -485,6 +485,7 @@ function VersionV1F
 % - corasim/display pimped to show also gain
 % - bug fix: corazito/plot - tolerant against mix of column & row vectors
 % - remove dialog box in corazon/read/Progress
+% - add method corazon/tree, while obsoleting corazon/select
 %
 % Known Bugs / Wishlist
 % - none so far
