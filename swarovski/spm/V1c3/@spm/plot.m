@@ -17,9 +17,10 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
                    @TrfNyq,@TrfWeight,... 
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
-                   @Hs,@Consr,@HsRloc,@HsStep,@HsBode,...
-                   @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,...
-                   @Step,@Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
+                   @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
+                   @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
+                   @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
+                   @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @Stability,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
@@ -29,7 +30,7 @@ end
 % Plot Menu
 %==========================================================================
 
-function oo = Menu(o)                   % Setup Plot Menu              
+function oo = Menu(o)                  % Setup Plot Menu               
    switch type(current(o))
       case 'spm'
          oo = SpmMenu(o);
@@ -39,7 +40,7 @@ function oo = Menu(o)                   % Setup Plot Menu
          oo = mitem(o,'About',{@WithCuo,'About'});
    end
 end
-function oo = SpmMenu(o)                % Setup Plot Menu @ SPM-Type   
+function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
 %
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
@@ -55,10 +56,7 @@ function oo = SpmMenu(o)                % Setup Plot Menu @ SPM-Type
    oo = mitem(o,'-');
    oo = TransferMatrix(o);             % G(s)
    oo = ConstrainMatrix(o);            % H(s)
-   
-   %oo = mitem(o,'-');
-   %oo = OpenLoopSystem(o);            % L(s)
-   %oo = ClosedLoopSystem(o);          % T(s)
+   oo = Principal(o);                  % P(s)/Q(s)
 
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
@@ -66,7 +64,7 @@ function oo = SpmMenu(o)                % Setup Plot Menu @ SPM-Type
    oo = MotionResponse(o);             % motion response sub menu
    oo = NoiseResponse(o);              % noise response sub menu
 end
-function oo = PkgMenu(o)                % Setup Plot Menu @ PKG-Type   
+function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type    
    oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'Image',{@WithCuo,'Image'});
    enable(oo,~isempty(get(current(o),'image')));
@@ -99,9 +97,10 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [~,m] = size(B);
    [l,~] = size(C);
    
-   oo = mhead(o,'G(s): Transfer Matrix');
+   oo = mhead(o,'Free Transfer Matrix');
    ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'GsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'GsWeight'});
    ooo = mitem(oo,'-');
@@ -141,9 +140,10 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    [~,m] = size(B);
    [l,~] = size(C);
    
-   oo = mhead(o,'H(s): Constrained Matrix');
+   oo = mhead(o,'Constrained Tansfer Matrix');
    ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'HsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'HsBode'});
 
    ooo = mitem(oo,'-');
@@ -174,6 +174,22 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
          end
       end
    end
+end
+function oo = Principal(o)             % Pricipal Menu                 
+   oo = current(o);
+   oo = mhead(o,'Principal Transfer Functions');
+   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'PsQsRloc'});
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'PsQsStep'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'PsQsBode'});
+   ooo = mitem(oo,'Nyquist Plots',{@WithCuo,'PsQsNyq'});
+   ooo = mitem(oo,'Bode/Nyquist',{@WithCuo,'PsQsBodeNyq'});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('P(s)'),{@WithCuo,'PsQs',1,0});
+   ooo = mitem(oo,sprintf('Q(s)'),{@WithCuo,'PsQs',2,0});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('L(s) = P(s)/Q(s)'),{@WithCuo,'PsQs',0,0});
 end
 
 function oo = OpenLoopSystem(o)        % Open Loop System Menu         
@@ -934,6 +950,88 @@ function o = Consr(o)                  % Rational Constrained Trf Funct
    end
    message(o,sprintf('Constrained Transfer Function %s (Rational)',sym),...
                      comment);
+end
+
+%==========================================================================
+% Plot Transfer Matrix G(s)
+%==========================================================================
+
+function o = PsQs(o)                   % Principal Transfer Function   
+   o = with(o,'simu');
+   i = arg(o,1);
+   j = arg(o,2);
+
+   [P,Q,L0] = cook(o,'P,Q,L0');
+
+   switch i
+      case 0
+         G = L0;
+      case 1
+         G = P;
+      case 2
+         G = Q;
+      otherwise
+         assert(0);
+   end
+         
+   if (control(o,'verbose') > 0)
+      G = opt(G,'detail',true);
+      display(G);
+   end
+      
+   diagram(o,'Trf', '',G,3111);      
+   diagram(o,'Step','',G,3221);
+   diagram(o,'Rloc','',G,3222);
+   diagram(o,'Bode','',G,3231);
+   diagram(o,'Nyq', '',G,3232);
+   
+   heading(o);
+end
+function o = PsQsRloc(o)               % Ps/Qs(s) Poles/Zeros Overview 
+   [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
+   
+   diagram(o,'Rloc','',P,2211);
+   diagram(o,'Rloc','',Q,2221);
+   diagram(o,'Rloc','',L0,1212);
+   
+   heading(o);
+end
+function o = PsQsStep(o)               % P(s)/Q(s)) Step Resp. Overview
+   [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
+   
+   diagram(o,'Step','',P,311);
+   diagram(o,'Step','',Q,312);
+   diagram(o,'Step','',L0,313);
+   
+   heading(o);
+end
+function o = PsQsBode(o)               % P(s)/Q(s) Bode Plot Overview  
+   [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
+   
+   diagram(o,'Bode','',P,311);
+   diagram(o,'Bode','',Q,312);
+   diagram(o,'Bode','',L0,313);
+   
+   heading(o);
+end
+function o = PsQsNyq(o)                % P(s)/Q(s) Bode Plot Overview  
+   [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
+   
+   diagram(o,'Nyq','',P,2211);
+   diagram(o,'Nyq','',Q,2221);
+   diagram(o,'Nyq','',L0,1212);
+   
+   heading(o);
+end
+function o = PsQsBodeNyq(o)            % P(s)/Q(s) Bode Plot Overview  
+   [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
+   
+   diagram(o,'Bode','',P,3211);
+   diagram(o,'Bode','',Q,3221);
+   diagram(o,'Bode','',L0,3231);
+   diagram(o,'Nyq','',L0,122);
+   
+   heading(o);
 end
 
 %==========================================================================

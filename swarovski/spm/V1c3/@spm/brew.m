@@ -10,19 +10,36 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
+%           oo = brew(o,'Principal')   % brew principal transfer functions
 %           oo = brew(o,'Loop')        % brew loop analysis stuff
 %           oo = brew(o,'Process')     % brew closed loop transfer fct
 %
 %           oo = brew(o,'Nyq')         % brew nyquist stuff
 %
+%        The following cache segments are here by managed:
+%
+%           'trf'                           % free system TRFs
+%           'consd'                         % constrained system TRFs
+%           'principal'                     % principal transfer functions
+%           'loop'                          % loop transfer function
+%           'process'                       % closed loop process 
+%
 %        Examples
 %
-%           oo = brew(o,'Trf')
-%           G = cache(oo,'trd.G');     % get G(s)
+%           oo = brew(o,'Trf')              % brew free TRF cache segment
+%           G = cache(oo,'trd.G');          % G(s)
 %
-%           oo = brew(o,'Constrain')
-%           H = cache(oo,'consd.H');   % get H(s)
-%           L = cache(oo,'consd.L');   % get L(s)
+%           oo = brew(o,'Constrain')        % brew constrained cache segm.
+%           H = cache(oo,'consd.H');        % H(s)
+%           L = cache(oo,'consd.L');        % L(s)
+%    
+%           oo = brew(o,'Pricipal');        % brew principal cache segment
+%           P = cache(oo,'pricipal.P')      % P(s)
+%           Q = cache(oo,'pricipal.Q')      % Q(s)
+%           L0 = cache(oo,'pricipal.L0')    % L0(s) := P(s)/Q(s)
+%
+%           oo = brew(o,'Loop');            % brew loop cache segment
+%           Lmu = cache(oo,'loop.Lmu');     % Lmu(s) = mu*L0(s)
 %
 %           oo = brew(o,'Process')
 %           T = cache(oo,'process.T'); % get T(s)
@@ -32,7 +49,8 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partition,...
-                       @Trf,@Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
+                       @Trf,@Principal,...
+                       @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
 
@@ -357,7 +375,7 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
       display(G);
    end
    
-   function ok = HasModalForm(o)
+   function ok = HasModalForm(o)       % Has System a Modal Form       
       ok = isequal(A11,Z) && isequal(A12,I) && ...
               isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
    end
@@ -440,17 +458,6 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
                G = poke(G,Gij,j,i);       % upper half diagonal element
             end
          end
-      end
-   end
-   function Gs = CancelG(o,Gs)         % Set Cancel Epsilon            
-      eps = opt(o,'cancel.G.eps');
-      Gs = opt(Gs,'control.verbose',control(o,'verbose'));
-      
-      if ~isempty(eps)
-         if isa(Gs,'corinth')
-            Gs = touch(Gs);
-         end
-         Gs = opt(Gs,'eps',eps);
       end
    end
 end
@@ -540,6 +547,179 @@ function oo = TrfModal(o)              % Modal Tranfer Matrix
 end
 
 %==========================================================================
+% Principal Transfer Functions P(s), Q(s) and P(s)/Q(s)
+%==========================================================================
+
+function oo = Principal(o)             % Calculate P(s) and Q(s)       
+%
+% PRINCIPAL  Brew 'principal' cache segment. Calculate the two important
+%            transfer functions P(s) and Q(s) with 
+%
+%               P(s) := G31(s), Q(s) := G33(s)
+%
+%            oo = Principal(o)
+%            P  = cache(oo,'principal.P')      % P(s)
+%            Q  = cache(oo,'principal.Q')      % Q(s)
+%            Lp = cache(oo,'principal.Lp')     % Lp(s) := P(s)/Q(s)
+%
+   progress(o,'Brewing Principal Transfer Functions ...');
+   oo = brew(o,'Partition');           % brew partial matrices
+   
+      % get a1,a0 and M
+      
+   [A11,A12,A21,A22,B2,C1,D] = var(oo,'A11,A12,A21,A22,B2,C1,D');
+   a0 = -diag(A21);
+   a1 = -diag(A22);
+   I = eye(length(a0));  Z = zeros(length(a0));
+   
+   if ~isequal(B2,C1')
+      error('B2 does not match C1');
+   end
+   M = B2;
+   
+      % now since we have a1,a0 and M we can start calculating the transfer
+      % matrix
+   
+   n = length(a0);
+   m = size(M,2);
+
+   if HasModalForm(o)
+      [P,Q] = ModalPQ(o);  
+   else
+      [P,Q] = NormalPQ(o);
+   end
+
+   P = set(P,'name','P(s)');
+   Q = set(Q,'name','Q(s)');
+   
+   oo = o;
+   oo = cache(oo,'principal.P',P);
+   oo = cache(oo,'principal.Q',Q);
+
+   L0 = CalcL0(oo,P,Q);
+   oo = cache(oo,'principal.L0',L0);   % store in loop cache segment
+
+      % unconditional hard refresh of cache
+   
+   cache(oo,oo);                       % hard refresh cache
+   progress(o);                        % progress complete
+
+      % done
+      
+   function ok = HasModalForm(o)       % Has System a Modal Form       
+      ok = isequal(A11,Z) && isequal(A12,I) && ...
+              isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
+   end
+   function [P,Q] = ModalPQ(o)         % P(s)/Q(s) For Modal Forms     
+      psi = [ones(n,1) a1(:) a0(:)];
+
+      for (i=1:m)
+         for (j=1:i)
+               % calculate Gij
+
+            if ~((i==3 && j==1) || (i==3 && j==3))
+               continue
+            end
+            
+            mi = M(:,i)';  mj = M(:,j);
+            wij = (mi(:).*mj(:))';        % weight vector
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+
+            Gij = trf(corasim,0);         % init Gij
+            Gij = CancelG(o,Gij);         % set cancel epsilon
+            Gij = set(Gij,'name',o.iif(j==1,'P(s)','Q(s)'));
+            
+            for (k=1:n)
+               Gk = trf(Gij,wij(k),psi(k,:));
+               Gij = Gij + Gk;
+            end
+
+            if isequal(opt(o,{'trf.type','strf'}),'szpk')
+               Gij = zpk(Gij);            % convert to ZPK
+            end
+            
+            if control(o,'verbose') > 0
+               fprintf('%s',get(Gij,'name'),i,j);
+               display(Gij);
+            end
+
+               % assign to either P(s) or Q(s)
+
+            if (j==1)
+               P = Gij;                % P(s) = G31(s)
+            else
+               Q = Gij;                % Q(s) = G33(s)
+            end
+         end
+      end
+   end
+   function [P,Q] = NormalPQ(o)        % P(s)/Q(s) Normal Calculation  
+      [AA,BB,CC,DD] = var(oo,'A,B,C,D');
+      sys = system(corasim,AA,BB,CC,DD);
+      
+      for (i=1:n)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            [num,den] = peek(sys,i,j);
+            Gij = system(G,{num,den});    % Gij(s)
+            Gij = can(CancelG(o,Gij));
+            Gij = set(Gij,'name',o.iif(j==1,'P(s)','Q(s)'));
+            
+            if control(o,'verbose') > 0
+               fprintf('%s:\n',get(Gij,'name'),i,j)
+               display(Gij);
+            end
+
+               % assign to either P(s) or Q(s)
+               
+            if (j==1)
+               P = Gij;                % P(s) = G31(s)
+            else
+               Q = Gij;                % Q(s) = G33(s)
+            end
+         end
+      end
+   end
+   function L0 = CalcL0(o,P,Q)         % Calc L0(s)                    
+   %
+   % CALCL0    Calculate L0(s) = P(s)/Q(s)
+   %
+      P = CancelG(o,P);                   % set cancel epsilon
+      Q = CancelL(o,Q);                   % set cancel epsilon
+
+      L0 = P/Q;
+
+      [z,p,K] = zpk(L0);
+      if any(real(p) >= 0)
+         fprintf(['*** warning: L0(s) seeming instable',...
+                  ' => searching cancelation ...\n']); 
+
+         eps = option(o,'cancel.L.eps',1e-7);
+         epsi = logspace(log10(min(eps,0.1)),0,25);
+
+         for(i=1:length(epsi))
+            L0 = opt(L0,'eps',epsi(i));
+            L0 = can(L0);
+            if all(real(p) < 0)
+               fprintf('*** L0(s) cancel epsilon: %g\n',epsi(i));
+               break;
+            end
+         end
+      end
+
+         % set name and store L(s) in 'loop' cache segment
+
+      L0 = set(L0,'name','L0(s) = P(s)/Q(s)');
+   end
+end
+
+%==========================================================================
 % Constrained Transfer Matrix H(s)
 %==========================================================================
 
@@ -625,6 +805,27 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
 end
 
 %==========================================================================
+% Loop Analysis Stuff
+%==========================================================================
+
+function oo = Loop(o)                  % Loop Analysis Stuff           
+   progress(o,'Brewing Open Loop Transfer Function ...');
+   mu = opt(o,{'process.mu',0.1});     % friction coefficient
+   
+   L0 = cook(o,'L0');
+   Lmu = mu * L0;                      % Loop TRF under friction mu
+
+      % store in 'loop' cache segment
+      
+   oo = cache(o,'loop.Lmu');
+   
+      % unconditional hard refresh of cache
+   
+   cache(oo,oo);                       % hard refresh cache
+   progress(o);                        % progress complete
+end
+
+%==========================================================================
 % Open Loop L(s)
 %==========================================================================
 
@@ -677,7 +878,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    s = system(corasim,{[1 0],[1]});    % differentiation trf
    s = CancelT(o,s);   
 
-   oo = L0(o,mu);                      % open loop incorporating mu
+   %oo = L0(o,mu);                     % open loop incorporating mu
    oo = Force(oo,mu);                  % calc force trf
    oo = Elongation(oo);                % calc elongation trf
    oo = Velocity(oo);                  % calc velocity trf
@@ -737,8 +938,8 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
 
          % first way to calculate: T0 = mu / (1 + L0(s))
          
-      L0 = CancelT(o,L0);                 % set cancel epsilon
-      T0 = mu / (1 + L0);
+      L0 = CancelT(o,L0);              % set cancel epsilon
+      T0 = mu / (1 + mu*L0);
          
          % additionally we calculate Tf1(s) = mu / (1 + mu*G31(s)/G33(s))
          % or Tf1(s) = mu*G33(s) / (G33(s) + mu*G31(s)) 
@@ -813,52 +1014,6 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
 end
 
 %==========================================================================
-% Loop Analysis Stuff
-%==========================================================================
-
-function oo = Loop(o)                  % Loop Analysis Stuff           
-   mu = opt(o,{'process.mu',0.1});     % friction coefficient
-end
-function oo = L0(o,mu)              % Calc L0(s)                     
-%
-% L0   Calculate L0(s)
-%      Remember:
-%         H31(s) = - G31(s)/G33(s)
-%         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
-%
-   [G31,G33] = cook(o,'G31,G33');
-   mu = opt(o,{'process.mu',0.1});     % friction coefficient
-
-   G_31 = zpk(CancelL(o,G31));
-   G_33 = zpk(CancelL(o,G33));
-   L_0 = mu * G_31/G_33;
-
-   [z,p,K] = zpk(L_0);
-   if any(real(p) >= 0)
-      fprintf(['*** warning: L0(s) seeming instable',...
-               ' => searching cancelation ...\n']); 
-
-      eps = option(o,'cancel.L.eps',1e-7);
-      epsi = logspace(log10(min(eps,0.1)),0,25);
-
-      for(i=1:length(epsi))
-         L_0 = opt(o,'eps',epsi(i));
-         L_0 = can(L_0);
-         if all(real(p) < 0)
-            fprintf('*** L0(s) cancel epsilon: %g\n',epsi(i));
-            break;
-         end
-      end
-   end
-
-   L0 = set(L_0,'name','L0(s)');
-
-      % store L in cache
-
-   oo = cache(o,'process.L0',L0);
-end
-
-%==========================================================================
 % Nyquist Stuff
 %==========================================================================
 
@@ -897,4 +1052,20 @@ function oo = Nyq(o)                   % Brew Nyquist Stuff
    oo = cache(oo,'nyq.G33',G33);
    oo = cache(oo,'nyq.omega',omega);
    oo = cache(oo,'nyq.L0jw',L0jw);  
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function Gs = CancelG(o,Gs)            % Set Cancel Epsilon for G(s)   
+   eps = opt(o,'cancel.G.eps');
+   Gs = opt(Gs,'control.verbose',control(o,'verbose'));
+
+   if ~isempty(eps)
+      if isa(Gs,'corinth')
+         Gs = touch(Gs);
+      end
+      Gs = opt(Gs,'eps',eps);
+   end
 end

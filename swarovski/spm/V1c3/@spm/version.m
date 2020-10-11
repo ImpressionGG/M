@@ -105,6 +105,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - brew L0(s) to a stable transfer function
 % - first time good stability margin chart
 % - pimp speed of rloc diagram, access poles/zeros voa zpk()
+% - pricipal TRF plot menu added 
 %
 %
 % Known bugs & wishlist

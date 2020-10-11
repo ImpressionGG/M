@@ -32,6 +32,11 @@ function varargout = cook(o,sym)
 %          [G21,G22,G23] = cook(o,'G21,G22,G23')   % free system trf
 %          [G31,G32,G33] = cook(o,'G31,G32,G33')   % free system trf
 %
+%       Principal transfer functions
+%
+%          [P,Q] = cook(o,'P,Q')            % principal TRF's P(s),Q(s)
+%          Lp = cook(o,'Lp')                % Lp(s) := P(s)/Q(s)
+%
 %       Constrained system transfer matrix
 %
 %          H = cook(o,'H')                  % constrained trf matrix H(s)
@@ -39,7 +44,7 @@ function varargout = cook(o,sym)
 %       Open loop transfer matrix and open loop transfer function
 %
 %          L = cook(o,'L')                  % open loop trf matrix L(s)
-%          L0 = cook(o,'L0')                % open loop trf L0(s)
+%          L0 = cook(o,'L0')                % open loop trf L0(s) with mu
 %
 %       Closed Loop Transfer Matrices
 %
@@ -118,9 +123,12 @@ function oo = Cook(o,sym)              % Cook-up Anyhing
       case 'L'
          oo = cache(o,'consd.L');
          
-      case 'L0'
-         oo = cache(o,'process.L0');
+      case {'P','Q','L0'}
+         oo = cache(o,['principal.',sym]);
 
+      case 'Lmu'
+         oo = cache(o,'loop.Lmu');
+         
       case {'L1','L2'}
          L = cache(o,'consd.L');
          oo = peek(L,1,i);

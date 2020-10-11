@@ -146,12 +146,12 @@ end
 %==========================================================================
 
 function o = Trf(o)                    % Transfer Function Diagram     
-   sym = arg(o,1);
-   tit = [sym,': Transfer Function'];  % default title
+   sub = o.either(arg(o,3),[1 1 1]);
    G = arg(o,2);
-   sub = o.either(arg(o,3),111);       % subplot ID
+   sym = o.either(arg(o,1),Sym(G));
+
+   tit = [sym,': Transfer Function'];  % default title
    tit = o.either(arg(o,4),tit);       % title
-   
    
    if isequal(sub,111) || isequal(sub,1111)
       o = opt(o,'subplot',sub,'pitch',0.4);
@@ -817,6 +817,10 @@ function o = Scaling(o)                % Manage Scaling Factors
 %
    T0 = opt(o,{'brew.T0',1});
    
+      % unwrap style options
+      
+   o = with(o,'style');
+   
       % modify simu options
       
    o = with(o,'simu');
@@ -849,6 +853,10 @@ function o = Color(o)                  % Set Color Default
             col = 'm';
          case 'L'
             col = 'bcc';
+         case 'P'
+            col = 'bbw';
+         case 'Q'
+            col = 'mmmb';
          case '?'
             col = 'rk';
          otherwise
