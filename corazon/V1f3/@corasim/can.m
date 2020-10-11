@@ -187,29 +187,33 @@ function oo = CanTrf(o)                % Cancel Transfer Function
    end
    function Cancel(o)                  % Cancel Pole/Zero              
       dirty = 1;
-      re = real(rnum(i));  im = imag(rnum(i));
-      fprintf('cancel: %g',re);
-      if ( abs(im) > eps )
-         if ( im > 0)
-            fprintf(' + i %g',im);
-         else
-            fprintf(' - i %g',-im);
-         end
-      end
-
-      % re = real(r_num(i));  im = imag(r_num(i));
-      re = real(rden(j));  im = imag(rden(j));
-      fprintf(' <--> %g',re);
-      if ( abs(im) > eps )
-         if ( im > 0)
-            fprintf(' + i %g',im);
-         else
-            fprintf(' - i %g',-im);
-         end
-      end
-
-      fprintf(' (delta: %g)\n',delta(i));
       idx_num(i) = 0;
       idx_den(j) = 0;
+
+      if (control(o,{'verbose',1}) > 0)
+         re = real(rnum(i));  im = imag(rnum(i));
+         fprintf('cancel: %g',re);
+
+         if ( abs(im) > eps )
+            if ( im > 0)
+               fprintf(' + i %g',im);
+            else
+               fprintf(' - i %g',-im);
+            end
+         end
+
+         re = real(rden(j));  im = imag(rden(j));
+         fprintf(' <--> %g',re);
+
+         if ( abs(im) > eps )
+            if ( im > 0)
+               fprintf(' + i %g',im);
+            else
+               fprintf(' - i %g',-im);
+            end
+         end
+
+         fprintf(' (delta: %g)\n',delta(i));
+      end
    end
 end

@@ -281,51 +281,18 @@ function oo = SetupParameters(o)       % Setup Specific Parameters
    end
 end
 function oo = BrewCache(o)             % Re-Brew Cache Segments        
-   oo = current(o);
-   switch oo.type
+   switch type(current(o))
       case 'spm'
-         oo = Brew(oo);
-         
+         message(o,'Brew all cache segments of data object ...');
       case 'pkg'
-         package = get(oo,'package');
-         if isempty(package)
-            error('empty package ID');
-         end
-         
-            % brew all data objects belonging to package except package
-            
-         o = pull(o);                  % make sure to have shell object
-         assert(container(o));
-
-         for (i=1:length(o.data))
-            oi = o.data{i};
-            if isequal(package,get(oi,'package')) && ~type(oi,{'pkg'})
-               oi = inherit(oi,o);     % inherit shell settings
-               oi = Brew(oi);
-            end
-         end
-         
-      case 'shell'
-         assert(container(oo));
-         for (i=1:length(oo.data))
-            oi = inherit(oi,oo);       % inherit shell settings
-            oi = oo.data{i};
-            oi = Brew(oi);
-         end
-         
+         message(o,'Brew all cache segments of package ...',...
+                 {'(this may take a while)'});
       otherwise
-         'ok';                         % ignore other types
+         message(o,'Select data object or package object for brewing!');
    end
-   
-   function o = Brew(o)
-      o = cache(o,o,[]);               % clear cache hard
-
-         % only 'trf' and 'consd' segments are brewed (not other)
-         % note that brewing function hard refreshes cache segment
-
-      [o,~,rfr] = cache(o,'trf');      % brew 'trf' cache segment
-      [o,~,rfr] = cache(o,'consd');    % brew 'consd' cache segment
-   end
+   oo = brew(o);
+   message(o,'Brewing complete!');
+   return
 end
 function oo = ClearCache(o)            % Clear All Caches              
    o = pull(o);

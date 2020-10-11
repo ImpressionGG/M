@@ -13,8 +13,8 @@ function K = stable(o,L0)              % Critical K for Stability
 %          See also: SPM, COOK
 %
   oo = o;
-  [oo,~,rfr] = cache(oo,oo,'trf');
-  [oo,~,rfr] = cache(oo,oo,'process');
+  %[oo,~,rfr] = cache(oo,oo,'trf');
+  %[oo,~,rfr] = cache(oo,oo,'process');
   
   if (nargin == 1)
      L0 = cook(oo,'L0');

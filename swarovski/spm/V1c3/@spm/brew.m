@@ -9,10 +9,9 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Partition')     % brew partial matrices
 %
 %           oo = brew(o,'Trf')         % brew transfer matrix
-%           oo = brew(o,'Consd')       % brew double constrained trf matrix
-%           oo = brew(o,'Consr')       % brew rational constrained trf mat.
-%
+%           oo = brew(o,'Constrain')   % brew double constrained trf matrix
 %           oo = brew(o,'Process')     % brew closed loop transfer fct
+%
 %           oo = brew(o,'Nyq')         % brew nyquist stuff
 %
 %        Examples
@@ -20,7 +19,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Trf')
 %           G = cache(oo,'trd.G');     % get G(s)
 %
-%           oo = brew(o,'Consd')
+%           oo = brew(o,'Constrain')
 %           H = cache(oo,'consd.H');   % get H(s)
 %           L = cache(oo,'consd.L');   % get L(s)
 %
@@ -32,7 +31,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partition,...
-                                  @Trf,@Consd,@Consr,@Process,@Nyq);
+                       @Trf,@Constrain,@Consd,@Consr,@Process,@Nyq);
    oo = gamma(oo);
 end              
 
@@ -40,13 +39,69 @@ end
 % Brew All
 %==========================================================================
 
-function oo = Brew(o)                  % Brew All                      
+function oo = OldBrew(o)               % Brew All                      
    oo = o;
    oo = Normalize(oo);                 % first normalize the system
    oo = Eigen(oo);                     % brew eigenvalues
    oo = Trfd(oo);
    oo = Consd(oo);
 end
+function oo = Brew(o)                  % Brew All Cache Segments       
+   oo = current(o);
+   switch oo.type
+      case 'spm'
+         oo = BrewSpm(oo);
+         
+      case 'pkg'
+         package = get(oo,'package');
+         if isempty(package)
+            error('empty package ID');
+         end
+         
+            % brew all data objects belonging to package except package
+            
+         o = pull(o);                  % make sure to have shell object
+         assert(container(o));
+
+         n = length(o.data);
+         for (i=1:n)
+            oi = o.data{i};
+            progress(o,sprintf('brewing: %s',get(oi,{'title',''})),i/n*100);
+            
+            if isequal(package,get(oi,'package')) && ~type(oi,{'pkg'})
+               oi = inherit(oi,o);     % inherit shell settings
+               oi = opt(oi,'progress',0);    % disable progress details
+               oi = BrewSpm(oi);
+            end
+            
+               % at the end brew package object
+         end
+               
+         progress(o,sprintf('brewing: %s',get(oo,{'title',''})),99);
+         oo = opt(oo,'progress',0); % disable progress details
+         %oo = Brew(oo);
+         
+         progress(o);                  % progress complete
+         
+      case 'shell'
+         message(o,'Brewing not performed for shell object!',...
+                   {'select package or data object!'});
+         
+      otherwise
+         'ok';                         % ignore other types
+   end
+   
+   function o = BrewSpm(o)
+      o = cache(o,o,[]);               % clear cache hard
+
+         % note that brewing function hard refreshes cache segment
+
+      o = brew(o,'Trf');
+      o = brew(o,'Constrain');
+      o = brew(o,'Process');
+   end
+end
+
 function oo = Eigen(o)                 % Brew Eigenvalues              
    oo = o;                             % copy to out arg
    A = data(oo,'A');
@@ -171,8 +226,10 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
    oo = cache(oo,'trf.G',G);           % store in cache
    oo = cache(oo,'trf.W',W);           % store in cache
        
-   fprintf('Double Transfer Matrix\n');
-   display(G);
+   if control(o,'verbose') > 0
+      fprintf('Double Transfer Matrix\n');
+      display(G);
+   end
    
    function ok = HasModalForm(o)
       ok = isequal(A11,Z) && isequal(A12,I) && ...
@@ -203,10 +260,12 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
                Gij = Gij + Gk;
             end
 
-            fprintf('G%g%g(s):\n',i,j)
-            display(Gij);
+            if control(o,'verbose') > 0
+               fprintf('G%g%g(s):\n',i,j)
+               display(Gij);
+            end
 
-            Gij = set(Gij,'name',sprintf('G%g%g',i,j));
+            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
             G = poke(G,Gij,i,j);          % lower half diagonal element
             if (i ~= j)
                G = poke(G,Gij,j,i);       % upper half diagonal element
@@ -216,9 +275,10 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
       
          % characteristic transfer functions
          
-      Gpsi = matrix(corasim);
+      Gpsi = set(matrix(corasim),'name','Gpsi[s]');
       for (k=1:size(psi,1))
          Gk = trf(Gpsi,1,psi(k,:));
+         Gk = set(Gk,'name',sprintf('G_%g(s)',k));
          Gpsi = poke(Gpsi,Gk,k,1);
       end
       oo = cache(oo,'trf.Gpsi',Gpsi);  
@@ -252,8 +312,10 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
          end
       end
    end
-   function Gs = CancelG(o,Gs)         % Set Cacel Epsilon             
+   function Gs = CancelG(o,Gs)         % Set Cancel Epsilon            
       eps = opt(o,'cancel.G.eps');
+      Gs = opt(Gs,'control.verbose',control(o,'verbose'));
+      
       if ~isempty(eps)
          if isa(Gs,'corinth')
             Gs = touch(Gs);
@@ -351,6 +413,9 @@ end
 % Constrained Transfer Matrix H(s)
 %==========================================================================
 
+function oo = Constrain(o)             % Brew Constrain Cache Segment  
+   oo = Consd(o);                      % delegate
+end
 function oo = Consd(o)                 % Double Costrained Trf. Matrix 
    progress(o,'Brewing Double Constrained Transfer Matrix ...');
    oo = ConstrainedDouble(o);          % brew H(s) matrix
@@ -403,17 +468,17 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
    H = matrix(corasim);
    H = set(H,'name','H');
 
-   H = poke(H,set(H11,'name','H11'),1,1);
-   H = poke(H,set(H12,'name','H12'),1,2);
-   H = poke(H,set(H13,'name','H13'),1,3);
+   H = poke(H,set(H11,'name','H11(s)'),1,1);
+   H = poke(H,set(H12,'name','H12(s)'),1,2);
+   H = poke(H,set(H13,'name','H13(s)'),1,3);
    
-   H = poke(H,set(H21,'name','H21'),2,1);
-   H = poke(H,set(H22,'name','H22'),2,2);
-   H = poke(H,set(H23,'name','H23'),2,3);
+   H = poke(H,set(H21,'name','H21(s)'),2,1);
+   H = poke(H,set(H22,'name','H22(s)'),2,2);
+   H = poke(H,set(H23,'name','H23(s)'),2,3);
    
-   H = poke(H,set(H31,'name','H31'),3,1);
-   H = poke(H,set(H32,'name','H32'),3,2);
-   H = poke(H,set(H33,'name','H33'),3,3);
+   H = poke(H,set(H31,'name','H31(s)'),3,1);
+   H = poke(H,set(H32,'name','H32(s)'),3,2);
+   H = poke(H,set(H33,'name','H33(s)'),3,3);
    
       % store H in cache
       
@@ -421,6 +486,8 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
 
    function Hs = CancelH(o,Hs)         % Set Cancel Epsilon for H(s)   
       eps = opt(o,'cancel.H.eps');
+      Hs = opt(Hs,'control.verbose',control(o,'verbose'));
+
       if ~isempty(eps)
          Hs = opt(Hs,'eps',eps);
       end
@@ -444,7 +511,7 @@ function oo = OpenLoop(o)              % Open Loop Linear System
       % assemble L(s) matrix
       
    L = matrix(corasim);
-   L = set(L,'name','L');
+   L = set(L,'name','L[s]');
    
    L = poke(L,set(L1,'name','L1'),1,1);
    L = poke(L,set(L2,'name','L2'),1,2);
@@ -455,6 +522,8 @@ function oo = OpenLoop(o)              % Open Loop Linear System
 end
 function Ls = CancelL(o,Ls)            % Set Cancel Epsilon            
    eps = opt(o,'cancel.L.eps');
+   Ls = opt(Ls,'control.verbose',control(o,'verbose'));
+
    if ~isempty(eps)
       Ls = opt(Ls,'eps',eps);
    end
@@ -467,16 +536,7 @@ end
 function oo = Process(o)               % Brew Process Segment          
    progress(o,'Brewing Closed Loop Transfer Function ...');
    oo = ClosedLoop(o);
-   
-     % make cache segment variables available
-     
-   [oo,bag,rfr] = cache(oo,'process'); % get bag of cached variables
-   tags = fields(bag);
-   for (i=1:length(tags))
-      tag = tags{i};
-      oo = var(oo,tag,bag.(tag));      % copy cached variable to variables
-   end
-   
+      
       % unconditional hard refresh of cache
       
    cache(oo,oo);                       % hard refresh cache
@@ -485,7 +545,7 @@ end
 function oo = ClosedLoop(o)            % Closed Loop Linear System     
    mu = opt(o,{'process.mu',0.1});     % friction coefficient
    s = system(corasim,{[1 0],[1]});    % differentiation trf
-   s = CanEpsT(o,s);   
+   s = CancelT(o,s);   
 
    oo = L0(o);                         % open loop incorporating mu
    oo = Force(oo);                     % calc force trf
@@ -501,22 +561,21 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    %         L1(s)  = H31(s)
    %         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
    %
-      G31 = cache(o,'trf.G31');
-      G33 = cache(o,'trf.G33');
+      [G31,G33] = cook(o,'G31,G33');
       mu = opt(o,{'process.mu',0.1});     % friction coefficient
 
       G31 = CancelL(o,G31);
       
          % calculate L0(s) = -mu*L1(s)
       
-      L0 = mu * G31/G33
+      L0 = mu * G31/G33;
       L0 = set(L0,'name','L0(s)');
    
          % store L in cache
       
       oo = cache(o,'process.L0',L0);
    end
-   function oo = Force(o)              % Calc Force Transfer Function     
+   function oo = Force(o)              % Calc Force Transfer Function  
    %
    % These are the force transfer functions from Fc(s) to Fi(s):
    % Let Mu = [mu1,mu2]' = mu*[1 0]', then
@@ -568,15 +627,11 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    %
       mu = opt(o,{'process.mu',0.1});     % friction coefficient
 
-      G31 = cache(o,'trf.G31');
-      G32 = cache(o,'trf.G32');
-      G33 = cache(o,'trf.G33');
-      
-      H31 = cache(o,'consd.H31');
+      [G31,G32,G33,H31,L0] = cook(o,'G31,G32,G33,H31,L0');
 
          % first way to calculate: T0 = mu / (1 + L0(s))
          
-      L0 = cache(o,'process.L0');
+      L0 = CancelT(o,L0);                 % set cancel epsilon
       T0 = mu / (1 + L0);
          
          % additionally we calculate Tf1(s) = mu / (1 + mu*G31(s)/G33(s))
@@ -590,7 +645,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Terr = Tf1 - T0;
       dBerr = 20*log10(abs(fqr(Terr)));
       if max(dBerr) >= -200
-         fprintf('*** warning: differing results\n');
+         fprintf('*** warning: Tf1(s) - bad numerical conditions\n');
          %beep
       end
 
@@ -598,8 +653,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Tf = poke(Tf,Tf1,1,1);
       Tf = poke(Tf,Tf2,2,1);
 
-      oo = cache(o,'process.L0',L0);
-      oo = cache(oo,'process.Tf',Tf);
+      oo = cache(o,'process.Tf',Tf);
    end
    function oo = Elongation(o)         % Calc Elongation Transfer Fct. 
       [Tf1,Tf2] = cook(o,'Tf1,Tf2');
@@ -611,9 +665,9 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       end
 
       Ts1 = H11*Tf1 + H12*Tf2;
-      Ts2 = H21*Tf1 + H22*Tf2
+      Ts2 = H21*Tf1 + H22*Tf2;
 
-      Ts = matrix(corasim);
+      Ts = set(matrix(corasim),'name','Ts[s]');
       Ts = poke(Ts,Ts1,1,1);
       Ts = poke(Ts,Ts2,2,1);
 
@@ -625,7 +679,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Tv1 = Ts1 * s;
       Tv2 = Ts2 * s;
 
-      Tv = matrix(corasim);
+      Tv = set(matrix(corasim),'name','Tv[s]');;
       Tv = poke(Tv,Tv1,1,1);
       Tv = poke(Tv,Tv2,2,1);
 
@@ -637,16 +691,17 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       Ta1 = Tv1 * s;
       Ta2 = Tv2 * s;
 
-      Ta = matrix(corasim);
+      Ta = set(matrix(corasim),'name','Ta[s]');
       Ta = poke(Ta,Ta1,1,1);
       Ta = poke(Ta,Ta2,2,1);
 
       oo = cache(o,'process.Ta',Ta);
    end
-   function Gs = CanEpsT(o,Gs)         % Set Cancel Epsilon            
+   function Ts = CancelT(o,Ts)         % Set Cancel Epsilon            
       eps = opt(o,'cancel.T.eps');
+      Ts = opt(Ts,'control.verbose',control(o,'verbose'));
       if ~isempty(eps)
-         Gs = opt(Gs,'eps',eps);
+         Ts = opt(Ts,'eps',eps);
       end
    end
 end
