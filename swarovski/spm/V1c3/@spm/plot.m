@@ -1639,9 +1639,8 @@ function o = Stability(o)              % Plot Stability Margin
    x = Axes(o);                        % get variation range and plot axes
    
       % calculate stability margin and plot
-      
    
-   for (i=1:n)      
+   for (i=1:n)                         % calc & plot stability margin  
       txt = sprintf('calculate stability margin of %s',get(oo,'title'));
       progress(o,txt,i/n*100);
       
@@ -1657,7 +1656,7 @@ function o = Stability(o)              % Plot Stability Margin
    
    progress(o);                        % progress completed
    
-   function x = Axes(o)                % Plot Axes                      
+   function x = Axes(o)                % Plot Axes                     
       variation = get(o,'variation');
       for (i=1:n)
          oo = list{i};

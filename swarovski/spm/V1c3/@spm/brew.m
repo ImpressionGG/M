@@ -553,7 +553,7 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    oo = Velocity(oo);                  % calc velocity trf
    oo = Acceleration(oo);              % calc acceleration trf
    
-   function oo = L0(o)                 % Calc L0(s)                     
+   function oo = OldL0(o)              % Calc L0(s)                     
    %
    % L0   Calculate L0(s)
    %      Remember:
@@ -564,6 +564,35 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       [G31,G33] = cook(o,'G31,G33');
       mu = opt(o,{'process.mu',0.1});     % friction coefficient
 
+      G31 = CancelL(o,G31);
+      
+         % calculate L0(s) = -mu*L1(s)
+      
+      L0 = mu * G31/G33;
+      L0 = set(L0,'name','L0(s)');
+   
+         % store L in cache
+      
+      oo = cache(o,'process.L0',L0);
+   end
+   function oo = L0(o)                 % Calc L0(s)                     
+   %
+   % L0   Calculate L0(s)
+   %      Remember:
+   %         H31(s) = - G31(s)/G33(s)
+   %         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
+   %
+      [G31,G33] = cook(o,'G31,G33');
+      mu = opt(o,{'process.mu',0.1});     % friction coefficient
+
+      [zerp,polp,Kp] = zpk(G31);
+      [zerq,polq,Kq] = zpk(G33);
+      
+      zero = [zerp,polq];
+      pole = [polp,zerq];
+      K = Kp/Kq;
+      %[zero,pole] = Can(o,zero,pole);
+      
       G31 = CancelL(o,G31);
       
          % calculate L0(s) = -mu*L1(s)

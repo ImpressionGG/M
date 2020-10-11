@@ -76,6 +76,16 @@ function txt = display(o)
             Ratio(o);
          end
             
+      case {'szpk','zzpk','qzpk'}
+         o = trf(o);                   % cast to trf type
+         [num,den] = peek(o);
+         if (nargout > 0)
+            txt = Ratio(o);
+         else
+            o = opt(o,{'detail'},true);
+            Ratio(o);
+         end
+            
       case 'matrix'  
          if (nargout == 0)
             [m,n] = size(o.data.matrix);

@@ -487,6 +487,9 @@ function VersionV1F
 % - remove dialog box in corazon/read/Progress
 % - add method corazon/tree, while obsoleting corazon/select
 % - bug fix @ corazon/arg: could not handle o = arg(o,[])
+% - corasim types 'szpk','zzpk' and 'qzpk' added
+% - pimp corasim/mul and corasim/inv to deal with new types
+% - corasim/can extended to deal with new types
 %
 % Known Bugs / Wishlist
 % - none so far

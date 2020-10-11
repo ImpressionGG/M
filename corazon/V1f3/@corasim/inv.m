@@ -14,6 +14,16 @@ function oo = inv(o,M)
          [num,den] = peek(o);
          oo = poke(o,den,num);
               
+      case {'szpk','zzpk','qzpk'}
+         zeros = o.data.zeros;
+         poles = o.data.poles;
+         K = o.data.K;
+         
+         o.data.zeros = poles;
+         o.data.poles = zeros;
+         o.data.K = 1/K;
+         oo = o;
+         
       case {'modal'}
          [num,den] = peek(o);
          oo = trf(o,den,num);

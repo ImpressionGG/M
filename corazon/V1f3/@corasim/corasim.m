@@ -7,9 +7,12 @@ classdef corasim < corazon             % Corasim Class Definition
 %              css:          continuous state space representation
 %              dss:          discrete state space representation
 %              modal:        modal state space system (continuous)
-%              strf:         s-transfer function
-%              ztrf:         z-transfer function
-%              qtrf:         q-transfer function
+%              strf:         s-transfer function (rational function)
+%              ztrf:         z-transfer function (rational function)
+%              qtrf:         q-transfer function (rational function)
+%              szpk:         s-transfer function (zero/pole/K)
+%              zzpk:         z-transfer function (zero/pole/K)
+%              qzpk:         q-transfer function (zero/pole/K)
 %              motion:       motion objects
 %
 %           Copyright(c): Bluenetics 2020

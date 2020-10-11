@@ -107,8 +107,9 @@ function oo = Bode(o)                  % Bode Settings Menu
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'bode.omega.points');
-   choice(ooo,[100,500,1000,5000,10000],{});
-
+   choice(ooo,[100,500,1000,5000,10000,20000,50000,...
+               1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
+         
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head
       
@@ -137,7 +138,7 @@ function oo = Nyquist(o)               % Nyquist Settings Menu
    setting(o,{'nyq.zoom'},2);
    
    setting(o,{'nyq.log'},true);
-   setting(o,{'nyq.omega.points'},10000);
+   setting(o,{'nyq.omega.points'},200000);
    
    
    oo = mitem(o,'Nyquist');
@@ -146,7 +147,8 @@ function oo = Nyquist(o)               % Nyquist Settings Menu
    ooo = mitem(oo,'Upper Frequency',{},'nyq.omega.high');
          Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8],{});
    ooo = mitem(oo,'Points',{},'nyq.omega.points');
-   choice(ooo,[100,500,1000,5000,10000,20000,50000],{});
+   choice(ooo,[100,500,1000,5000,10000,20000,50000,...
+               1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Magnitude [dB]',{},'nyq.magnitude.low');

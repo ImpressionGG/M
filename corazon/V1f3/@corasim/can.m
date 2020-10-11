@@ -16,14 +16,18 @@ function oo = can(o,eps)               % Cancel Common Factors
       o = opt(o,'eps',eps);
    end
    
-   oo = CanTrf(o);
+   if type(o,{'szpk','zzpk','qzpk'})
+      oo = CanZpk(o);
+   else
+      oo = CanTrf(o);
+   end
 end
 
 %==========================================================================
-% Cancel Trf
+% Cancel Transfer Function
 %==========================================================================
 
-function oo = CanTrf(o)                % Cancel Transfer Function          
+function oo = CanTrf(o)                % Cancel Trf-Transfer Function  
    oo = o;                             % just in case
    caneps = opt(o,{'eps',1e-7});
    
@@ -73,8 +77,8 @@ function oo = CanTrf(o)                % Cancel Transfer Function
 	      i = found(k);
          
 	      if ( idx_num(i) ~= 0  &  idx_den(j) ~= 0 )
-            Cancel(o);                    % cancel pole/zero
-            break;
+            Cancel(o);                 % cancel pole/zero
+            break;                     % can only cancel one pole/zero pair
 	      end
       end
    end
@@ -99,45 +103,6 @@ function oo = CanTrf(o)                % Cancel Transfer Function
    oo = poke(o,num,den);
    oo = trim(oo);
    
-   function [rnum,rden] = Roots(o,mode)% Get Transfer Function Roots   
-      [num,den] = peek(o);
-      
-         % numerator roots
-         
-      if (all(num == 0)) 
-         rnum = []; 
-      else
-         rnum = roots(num);
-      end
-
-         % denominator roots
-      
-      if ( mode == 1 )
-         [ans,idx1] = sort(abs(rnum));
-      else
-         [ans,idx1] = sort(real(rnum));
-      end
-      rnum = rnum(idx1);               % re-order numerator roots
-
-      %num = num(m-deg_num-1:m-1);
-
-         % denominator roots
-
-      if (all(den == 0))
-         rden = []; 
-      else
-         rden = roots(den);
-      end
-      
-         % sort denominator roots
-         
-      if ( mode == 1 ) 
-         [~,idx2] = sort(abs(rden));
-      else
-         [~,idx2] = sort(real(rden));
-      end
-      rden = rden(idx2);               % re-order denominator roots
-   end
    function HandleDirty(o)             % Handle Dirty Status           
       idx_num(find(idx_num == 0)) = [];
       idx_den(find(idx_den == 0)) = [];
@@ -216,4 +181,154 @@ function oo = CanTrf(o)                % Cancel Transfer Function
          fprintf(' (delta: %g)\n',delta(i));
       end
    end
+end
+function oo = CanZpk(o)                % Cancel Zpk-Transfer Function  
+   caneps = opt(o,{'eps',1e-7});
+   
+      % calculate numerator and denominator roots
+      
+   rnum = o.data.zeros;
+   rden = o.data.poles;
+   
+   if (isempty(rden) || isempty(rnum)) 
+      oo = o;
+      return; 
+   end
+
+   D = Distance(o,rnum,rden);          % calculate distance matrix
+   
+      % prepare cancellation
+
+   inum = 1:length(rnum);  iden = 1:length(rden);  
+
+   for (j = 1:length(rden))  
+      delta = abs(D(:,j));
+      fdx = find( delta < caneps );  
+      
+      for ( k = 1:length(fdx) )
+	      i = fdx(k);
+	      if ( inum(i) ~= 0  &  iden(j) ~= 0 )
+            inum(i) = 0;  iden(j) = 0; % cancel i-th zero with j-th pole
+            Trace(o,i,j);             
+            break;                     % can only cancel one pole/zero pair
+	      end
+      end
+   end
+   
+   oo = Result(o);                     % build result of cancellation
+   
+   function oo = Result(o)
+      zeros = Remain(o,rnum,inum);
+      poles = Remain(o,rden,iden);
+
+      oo = o;                             % just in case
+      oo.data.zeros = zeros;
+      oo.data.poles = poles;
+   end
+   function r = Remain(o,r,index)      % Pick Remaining Roots          
+      idx = find(index > 0);
+      index = index(idx);              % index of remaining roots
+      r = r(index);                    % pick remaining roots
+   end
+   function Trace(o,i,j)               % Trace i/j-th Cancelation         
+      if (control(o,{'verbose',1}) == 0)
+         return                        % tracing disabled
+      end
+      
+      re = real(rnum(i));  im = imag(rnum(i));
+      fprintf('cancel: %g',re);
+
+      if ( abs(im) > eps )
+         if ( im > 0)
+            fprintf(' + i %g',im);
+         else
+            fprintf(' - i %g',-im);
+         end
+      end
+
+      re = real(rden(j));  im = imag(rden(j));
+      fprintf(' <--> %g',re);
+
+      if ( abs(im) > eps )
+         if ( im > 0)
+            fprintf(' + i %g',im);
+         else
+            fprintf(' - i %g',-im);
+         end
+      end
+
+      fprintf(' (delta: %g)\n',delta(i));
+   end
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function D = Distance(o,rnum,rden)     % Distance Matrix               
+%
+% DISTANCE   calculate relative distance matrix D: 
+%
+%               D := [D(i,j)] = [dr(i,j)/r(i,j)]
+%
+%            with
+%
+%               dr(i,j) = abs(zero(j)-pole(i))
+%               r(i,j)  = abs(zero(j)+pole(i))
+%
+   D = [];
+   for (i = 1:length(rden))
+      r = abs((rnum + rden(i))/2);     % mean absolute value
+      dr = abs(rnum - rden(i));        % absolute value of distance
+      idx = find(r > eps);
+      if ~isempty(idx)
+         dr(idx) = dr(idx) ./ r(idx);
+      end
+      D = [D, dr];	 % distance matrix
+   end
+end
+function [rnum,rden] = Roots(o,mode)   % Get Transfer Function Roots   
+   if type(o,{'szpk','zzpk','qzpk'})
+      rnum = o.data.zeros;
+      rden = o.data.poles;
+      return
+   end
+
+   [num,den] = peek(o);
+
+      % numerator roots
+
+   if (all(num == 0)) 
+      rnum = []; 
+   else
+      rnum = roots(num);
+   end
+
+      % denominator roots
+
+   if ( mode == 1 )
+      [ans,idx1] = sort(abs(rnum));
+   else
+      [ans,idx1] = sort(real(rnum));
+   end
+   rnum = rnum(idx1);               % re-order numerator roots
+
+   %num = num(m-deg_num-1:m-1);
+
+      % denominator roots
+
+   if (all(den == 0))
+      rden = []; 
+   else
+      rden = roots(den);
+   end
+
+      % sort denominator roots
+
+   if ( mode == 1 ) 
+      [~,idx2] = sort(abs(rden));
+   else
+      [~,idx2] = sort(real(rden));
+   end
+   rden = rden(idx2);               % re-order denominator roots
 end

@@ -55,20 +55,34 @@ function oo = Mul(o1,o2)               % Multiply Two Objects
    if ~isequal(o1.type,o2.type)
       error('type mismatch');
    end
-   if ~type(o1,{'strf','ztrf','qtrf'})
-      error('bad arg1 type');
-   end
-   if ~type(o2,{'strf','ztrf','qtrf'})
-      error('bad arg2 type');
-   end
    
-   [num1,den1] = peek(o1);
-   [num2,den2] = peek(o2);
+   if type(o1,{'strf','ztrf','qtrf'})   
+   
+      [num1,den1] = peek(o1);
+      [num2,den2] = peek(o2);
 
-   num = mul(o1,num1,num2);
-   den = mul(o1,den1,den2);
-   
-   oo = poke(o1,num,den);
+      num = mul(o1,num1,num2);
+      den = mul(o1,den1,den2);
+
+      oo = poke(o1,num,den);
+
+   elseif type(o1,{'szpk','zzpk','qzpk'})
+      
+      if ~isequal(o1.data.T,o2.data.T)
+         error('sampling time mismatch');
+      end
+      
+      [z1,p1,K1] = data(o1,'zeros','poles','K');
+      [z2,p2,K2] = data(o2,'zeros','poles','K');
+      
+      oo = o1;
+      oo.data.zeros = [z1;z2];
+      oo.data.poles = [p1;p2];
+      oo.data.K = K1*K2;
+      
+   else
+      error('bad arg type');
+   end
 end
 
 %==========================================================================

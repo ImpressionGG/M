@@ -454,7 +454,7 @@ function oo = Bode(o)                  % Bode Settings Menu
    
    setting(o,{'bode.magnitude.enable'},true);
    setting(o,{'bode.phase.enable'},false);
-   setting(o,{'bode.omega.points'},1000);
+   setting(o,{'bode.omega.points'},200000);
    
    
    oo = mitem(o,'Bode');
@@ -483,7 +483,8 @@ function oo = Bode(o)                  % Bode Settings Menu
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'bode.omega.points');
-   choice(ooo,[100,500,1000,5000,10000],{});
+   choice(ooo,[100,500,1000,5000,10000,20000,50000,...
+               1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
    
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head
