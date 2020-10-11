@@ -1681,17 +1681,13 @@ end
       progress(o,txt,i/n*100);
       
       oo = list{i};
-      try
-         margin(i) = stable(oo); 
-         if (margin(i) > 1)
-            plot(o,x(i),margin(i),'g|o2');
-         else
-            plot(o,x(i),margin(i),'r|o2');
-         end
-         idle(o);                      % show graphics
-      catch
-         margin(i) = NaN;
+      margin(i) = stable(oo); 
+      if (margin(i) > 1)
+         plot(o,x(i),margin(i),'g|o2');
+      else
+         plot(o,x(i),margin(i),'r|o2');
       end
+      idle(o);                         % show graphics
    end
    
    progress(o);                        % progress completed

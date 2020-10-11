@@ -15,6 +15,9 @@ function oo = arg(o,index)
 %
    if (nargin == 1)
       oo = work(o,'arg');              % same as arg(o,0)
+   elseif isempty(index)               % like empty list
+      o.work.arg = {};                 % important for save args & restore!
+      oo = o;
    elseif iscell(index)
       o.work.arg = index;
       oo = o;

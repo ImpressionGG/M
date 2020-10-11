@@ -17,14 +17,14 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %        Examples
 %
-%           oo = brew(o,o,'trf')
+%           oo = brew(o,'Trf')
 %           G = cache(oo,'trd.G');     % get G(s)
 %
-%           oo = brew(o,o,'consd')
+%           oo = brew(o,'Consd')
 %           H = cache(oo,'consd.H');   % get H(s)
 %           L = cache(oo,'consd.L');   % get L(s)
 %
-%           oo = brew(o,o,'process')
+%           oo = brew(o,'Process')
 %           T = cache(oo,'process.T'); % get T(s)
 %
 %        Copyright(c): Bluenetics 2020
@@ -68,6 +68,28 @@ end
 % Partition and Normalizing
 %==========================================================================
 
+function oo = Normalize(o)             % Normalize System              
+   T0 = opt(o,{'brew.T0',1});          % normalization time constant
+
+      % normalize system (select T0 = 1e-3 for a good effect!)
+      
+   [A,B,C,D] = data(o,'A,B,C,D');
+
+   n = floor(length(A)/2);
+   i1 = 1:n;  i2 = n+1:2*n;
+   
+   A(i2,i1) = T0*T0*A(i2,i1);
+   A(i2,i2) = T0*A(i2,i2);
+   B(i2,:)  = T0*B(i2,:);
+   C(:,i1) = C(:,i1)*T0;
+   
+   a0 = -diag(A(i2,i1));
+   a1 = -diag(A(i2,i2));
+
+      % refresh system
+      
+   oo = var(o,'A,B,C,D,T0,a0,a1',A,B,C,D,T0,a0,a1);
+end
 function oo = Partition(o)             % Partition System              
    oo = Normalize(o);
    [A,B,C] = var(oo,'A,B,C');
@@ -92,35 +114,13 @@ function oo = Partition(o)             % Partition System
    oo = var(oo,'B1,B2,C1,C2',B1,B2,C1,C2);
    oo = var(oo,'a0,a1,omega,zeta',a0,a1,omega,zeta);
 end
-function oo = Normalize(o)             % Normalize System              
-   T0 = opt(o,{'brew.T0',1});          % normalization time constant
-
-      % normalize system (select T0 = 1e-3 for a good effect!)
-      
-   [A,B,C,D] = data(o,'A,B,C,D');
-
-   n = floor(length(A)/2);
-   i1 = 1:n;  i2 = n+1:2*n;
-   
-   A(i2,i1) = T0*T0*A(i2,i1);
-   A(i2,i2) = T0*A(i2,i2);
-   B(i2,:)  = T0*B(i2,:);
-   C(:,i1) = C(:,i1)*T0;
-   
-   a0 = -diag(A(i2,i1));
-   a1 = -diag(A(i2,i2));
-
-      % refresh system
-      
-   oo = var(o,'A,B,C,D,T0,a0,a1',A,B,C,D,T0,a0,a1);
-end
 
 %==========================================================================
 % Transfer Matrix G(s)
 %==========================================================================
 
 function oo = Trf(o)                   % Double Transfer Matrix        
-   message(o,'Brewing Double Transfer Matrix ...');
+   progress(o,'Brewing Double Transfer Matrix ...');
    
    switch opt(o,{'trf.type','strf'})
       case 'modal'
@@ -130,24 +130,14 @@ function oo = Trf(o)                   % Double Transfer Matrix
       otherwise
          error('bad selection');
    end
-   
-     % make cache segment variables available
-     
-   [oo,bag,rfr] = cache(oo,'trf');     % get bag of cached variables
-   tags = fields(bag);
-   for (i=1:length(tags))
-      tag = tags{i};
-      oo = var(oo,tag,bag.(tag));      % copy cached variable to variables
-   end
-   
+      
       % unconditional hard refresh of cache
       
    cache(oo,oo);                       % hard refresh cache
-   cls(o);
+   progress(o);                        % progress complete
 end
 function oo = TrfDouble(o)             % Double Transfer Matrix        
-   oo = current(o);
-   oo = brew(oo,'Partition');          % brew partial matrices
+   oo = brew(o,'Partition');           % brew partial matrices
    
       % get a1,a0 and M
       
@@ -164,25 +154,15 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
       % now since we have a1,a0 and M we can start calculating the transfer
       % matrix
    
-   n = length(A21);
+   n = length(a0);
    m = size(M,2);
-   %O = base(inherit(corinth,o));       % need to access CORINTH methods
-   %G = corinth(O,'matrix');
    G = matrix(corasim);
    W = [];
    
       % depending on modal form ...
      
-   if isequal(A11,Z) && isequal(A12,I) && ...
-              isequal(A21,-diag(a0)) && isequal(A22,-diag(a1))
-      psi = [ones(n,1) a1(:) a0(:)];
-      Modal(o);
-      
-      for (k=1:size(psi,1))
-         Gk = trf(G,1,psi(k,:));
-         sym = sprintf('G_%g',k);
-         oo = cache(oo,['trf.',sym],Gk);
-      end
+   if HasModalForm(o)
+      Modal(o);  
    else
       Normal(o);
    end
@@ -190,22 +170,17 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
    progress(o);                        % complete!
    oo = cache(oo,'trf.G',G);           % store in cache
    oo = cache(oo,'trf.W',W);           % store in cache
-   
-      % store all transfer matrix elements into cache
-      
-   [m,n] = size(G);
-   for (i=1:m)
-      for (j=1:n)
-         Gij = peek(G,i,j);
-         sym = sprintf('G%g%g',i,j);
-         oo = cache(oo,['trf.',sym],Gij);
-      end
-   end
-     
+       
    fprintf('Double Transfer Matrix\n');
    display(G);
    
+   function ok = HasModalForm(o)
+      ok = isequal(A11,Z) && isequal(A12,I) && ...
+              isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
+   end
    function Modal(o)                   % Gij(s) For Modal Forms        
+      psi = [ones(n,1) a1(:) a0(:)];
+
       for (i=1:m)
          for (j=1:i)
             run = (j-1)*n+i; m = n*(n+1)/2;
@@ -238,6 +213,15 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
             end
          end
       end
+      
+         % characteristic transfer functions
+         
+      Gpsi = matrix(corasim);
+      for (k=1:size(psi,1))
+         Gk = trf(Gpsi,1,psi(k,:));
+         Gpsi = poke(Gpsi,Gk,k,1);
+      end
+      oo = cache(oo,'trf.Gpsi',Gpsi);  
    end
    function Normal(o)                  % Normal Gij(s) Calculation     
       %[AA,BB,CC,DD] = data(oo,'A,B,C,D');
@@ -281,8 +265,8 @@ end
 function oo = TrfModal(o)              % Modal Tranfer Matrix          
 %  refresh(o,{@plot,'About'});         % don't come back here!!!
    
-   oo = current(o);
-   oo = brew(oo,'Partition');          % brew partial matrices
+   %oo = current(o);
+   oo = brew(o,'Partition');          % brew partial matrices
    
       % get a1,a0 and M
       
@@ -368,7 +352,7 @@ end
 %==========================================================================
 
 function oo = Consd(o)                 % Double Costrained Trf. Matrix 
-   message(o,'Brewing Double Constrained Transfer Matrix ...');
+   progress(o,'Brewing Double Constrained Transfer Matrix ...');
    oo = ConstrainedDouble(o);          % brew H(s) matrix
    oo = OpenLoop(oo);                  % brew L(s) matrix
    
@@ -384,80 +368,40 @@ function oo = Consd(o)                 % Double Costrained Trf. Matrix
       % unconditional hard refresh of cache
    
    cache(oo,oo);                       % hard refresh cache
-   cls(o);
+   progress(o);                        % progress complete
 end
 function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix 
-   %refresh(o,{@plot,'About'});        % don't come back here!!!
-   
-   oo = current(o);
+   oo = o;
 
-      % calculate Hnn(s)
-      
-   G33 = cache(oo,'trf.G33');
-   Gnn = G33;                          % the same
-%  Hnn = inv(Gnn) * trf(Gnn,[1],[1 0 0]);
-   Hnn = CancelH(o,inv(Gnn));
-   H33 = Hnn;
-
-      % calculate Hnd(s) = [H31(s) H32(s)]
-      
-   G31 = cache(oo,'trf.G31');
-   G32 = cache(oo,'trf.G32');
-   H31 = CancelH(o,(-1)*Hnn*G31);
-   H32 = CancelH(o,(-1)*Hnn*G32);
+      % fetch free system transfer matrices
+            
+   [G11,G12,G13] = cook(oo,'G11,G12,G13');
+   [G21,G22,G23] = cook(oo,'G21,G22,G23');
+   [G31,G32,G33] = cook(oo,'G31,G32,G33');
    
-      % build Hnd(s) = [H31(s) H32(s)]
-      
-   Hnd = matrix(corasim);
-   Hnd = poke(Hnd,H31,1,1);
-   Hnd = poke(Hnd,H32,1,2);  
+      % calculate H31(s), H32(s), H33(s)
+
+   H33 = CancelH(o,inv(G33));
+   H31 = CancelH(o,(-1)*H33*G31);
+   H32 = CancelH(o,(-1)*H33*G32);
 
       % build Hdn(s) = [H13(s); H23(s)]
 
-   G13 = cache(oo,'trf.G13');
-   G23 = cache(oo,'trf.G23');
-   H13 = CancelH(o,G13*Hnn);
-   H23 = CancelH(o,G23*Hnn);
+   H13 = CancelH(o,G13*H33);
+   H23 = CancelH(o,G23*H33);
       
-   Hdn = matrix(corasim);
-   Hdn = poke(Hdn,H13,1,1);
-   Hdn = poke(Hdn,H23,2,1);  
-
       % build Hdd(s) = [H11(s) H12(s); H21(s) H22(s)]
-
-   G11 = cache(oo,'trf.G11');
-   G12 = cache(oo,'trf.G12');
-   G21 = cache(oo,'trf.G21');
-   G22 = cache(oo,'trf.G22');
 
    H11 = CancelH(o,G11 - G13*G31*H33);
    H12 = CancelH(o,G12 - G13*G32*H33);
    H21 = CancelH(o,G21 - G23*G31*H33);
    H22 = CancelH(o,G22 - G23*G32*H33);
-      
-   Hdd = matrix(corasim);
-   Hdd = poke(Hdd,H11,1,1);
-   Hdd = poke(Hdd,H12,1,2);  
-   Hdd = poke(Hdd,H21,2,1);
-   Hdd = poke(Hdd,H22,2,2);  
-   
-      % store all partial constraine transfer functions in cache
-      
-   oo = cache(oo,'consd.H11',H11);
-   oo = cache(oo,'consd.H12',H12);
-   oo = cache(oo,'consd.H13',H13);
-
-   oo = cache(oo,'consd.H21',H21);
-   oo = cache(oo,'consd.H22',H22);
-   oo = cache(oo,'consd.H23',H23);
-
-   oo = cache(oo,'consd.H31',H31);
-   oo = cache(oo,'consd.H32',H32);
-   oo = cache(oo,'consd.H33',H33);
- 
-      % build H(s) = [Hdd(s) Hdn(s); Hnd(s) Hnn(s)]
+         
+      % store all constrained transfer functions in constrained trf matrix
+      % i.e. build H(s) = [Hdd(s) Hdn(s); Hnd(s) Hnn(s)]
       
    H = matrix(corasim);
+   H = set(H,'name','H');
 
    H = poke(H,set(H11,'name','H11'),1,1);
    H = poke(H,set(H12,'name','H12'),1,2);
@@ -475,7 +419,7 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       
    oo = cache(oo,'consd.H',H);
 
-   function Hs = CancelH(o,Hs)
+   function Hs = CancelH(o,Hs)         % Set Cancel Epsilon for H(s)   
       eps = opt(o,'cancel.H.eps');
       if ~isempty(eps)
          Hs = opt(Hs,'eps',eps);
@@ -490,24 +434,20 @@ end
 function oo = OpenLoop(o)              % Open Loop Linear System       
    [oo,bag,rfr] = cache(o,o,'consd');
    
-   H31 = cache(oo,'consd.H31');
-   H32 = cache(oo,'consd.H32');
+   H = cache(oo,'consd.H');
+   H31 = peek(H,3,1);
+   H32 = peek(H,3,2);
       
    L1 = CancelL(o,H31);
    L2 = CancelL(o,H32);
    
-      % store all partial constraine transfer functions in cache
-      
-   oo = cache(oo,'consd.L1',L1);
-   oo = cache(oo,'consd.L2',L2);
-
       % assemble L(s) matrix
       
    L = matrix(corasim);
-   L = set(L,'name','L(s)');
+   L = set(L,'name','L');
    
-   L = poke(L,L1,1,1);
-   L = poke(L,L2,1,2);
+   L = poke(L,set(L1,'name','L1'),1,1);
+   L = poke(L,set(L2,'name','L2'),1,2);
 
       % store L in cache
       
@@ -525,7 +465,7 @@ end
 %==========================================================================
 
 function oo = Process(o)               % Brew Process Segment          
-   message(o,'Brewing Closed Loop Transfer Function ...');
+   progress(o,'Brewing Closed Loop Transfer Function ...');
    oo = ClosedLoop(o);
    
      % make cache segment variables available
@@ -540,7 +480,7 @@ function oo = Process(o)               % Brew Process Segment
       % unconditional hard refresh of cache
       
    cache(oo,oo);                       % hard refresh cache
-   cls(o);
+   progress(o);                        % progress complete
 end
 function oo = ClosedLoop(o)            % Closed Loop Linear System     
    mu = opt(o,{'process.mu',0.1});     % friction coefficient

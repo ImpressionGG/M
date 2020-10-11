@@ -158,7 +158,7 @@ function varargout = cache(o,varargin) % Cache Method
          varargout{1} = Segment(o,seg);
          return
       elseif (isobject(varargin{1}) && nargout == 0) % 7) cache(oo,oo)
-         Current(o,varargin{1});       % hard store back of obj to shell
+         Hard(o,varargin{1});       % hard store back of obj to shell
          return
       elseif isempty(varargin{1})      % 6) oo = cache(oo,[]) 
          [varargout{1},varargout{2},varargout{3}] = SoftRefresh(o,[]);
@@ -315,7 +315,7 @@ function varargout = HardRefresh(o,seg,brewer)
    end
    
    if (rfr)
-      Current(o,oo);                   % hard store back of obj to shell
+      Hard(o,oo);                   % hard store back of obj to shell
    end
 
    varargout{1} = oo;                  % updated object
@@ -472,7 +472,7 @@ end
 % Helper
 %==========================================================================
 
-function Current(o,oo)                 % Store Current Object to Shell 
+function OldCurrent(o,oo)              % Store Current Object to Shell 
 %
 % CURRENT Store current object back to shell (hard operation) while
 %         making sure that there is no figure refresh!
@@ -495,6 +495,27 @@ function Current(o,oo)                 % Store Current Object to Shell
       end
 
       control(sho,'refresh',cb);       % restore refresh callback
+   end
+end
+function Hard(o,oo)                    % Hard Store Object to Shell 
+%
+% HARD   Hard store updated object to shell (hard operation)
+%
+   if ~type(current(o),{'shell'})
+      o = pull(o);                     % fetch shell object
+      id = objid(oo);
+      for (i=1:length(o.data))
+         oi = o.data{i};
+         if isequal(objid(oi),id)      % matching object IDs?
+            o.data{i} = oo;
+            push(o);
+            return                     % and we are done
+         end
+      end
+      
+         % if we come beyond this point then something suspicious
+         
+      fprintf('*** warning: cold refresh of cache not possible!\n');
    end
 end
 function [seg,brewer,tag] = Split(tag) % Split Tag into Ingredients    

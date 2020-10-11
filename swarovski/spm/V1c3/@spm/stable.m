@@ -12,17 +12,25 @@ function K = stable(o,L0)              % Critical K for Stability
 %
 %          See also: SPM, COOK
 %
+  oo = o;
+  [oo,~,rfr] = cache(oo,oo,'trf');
+  [oo,~,rfr] = cache(oo,oo,'process');
+  
   if (nargin == 1)
-     L0 = cook(o,'L0');
+     L0 = cook(oo,'L0');
   end
   
   if (nargout == 0)
-     Stable(o,L0);                     % plot
+     Stable(oo,L0);                     % plot
   else
-     K0 = Stable(o,L0);
-     o = opt(o,'magnitude.low',20*log10(K0*0.95));
-     o = opt(o,'magnitude.high',20*log10(K0*1.05));
-     K = Stable(o,L0);
+     K0 = Stable(oo,L0);
+     if isinf(K0) || (K0 == 0)
+        K = K0;
+     else
+        oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
+        oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
+        K = Stable(oo,L0);
+     end
   end
 end
 
@@ -44,7 +52,11 @@ function K = Stable(o,L0)
       poly = add(L0,K*num,den);
       r = roots(poly);
 
-      re(i) = max(real(r));
+      if isempty(r)
+         re(i) = -inf;
+      else
+         re(i) = max(real(r));
+      end
    end
 
       % find critical K

@@ -124,6 +124,7 @@ function oo = Tools(o)                 % Tools Menu Items
    ooo = mitem(oo,'Provide Package Info',{@PackageInfo});
    ooo = mitem(oo,'Setup Parameters',{@SetupParameters});
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Brew Cache',{@BrewCache});
    ooo = mitem(oo,'Clear Cache',{@ClearCache});
 end
 function oo = PackageInfo(o)           % Provide Package Info File     
@@ -277,6 +278,53 @@ function oo = SetupParameters(o)       % Setup Specific Parameters
          tag = [context,'.',tag];
          choice(o,tag,val);
       end    
+   end
+end
+function oo = BrewCache(o)             % Re-Brew Cache Segments        
+   oo = current(o);
+   switch oo.type
+      case 'spm'
+         oo = Brew(oo);
+         
+      case 'pkg'
+         package = get(oo,'package');
+         if isempty(package)
+            error('empty package ID');
+         end
+         
+            % brew all data objects belonging to package except package
+            
+         o = pull(o);                  % make sure to have shell object
+         assert(container(o));
+
+         for (i=1:length(o.data))
+            oi = o.data{i};
+            if isequal(package,get(oi,'package')) && ~type(oi,{'pkg'})
+               oi = inherit(oi,o);     % inherit shell settings
+               oi = Brew(oi);
+            end
+         end
+         
+      case 'shell'
+         assert(container(oo));
+         for (i=1:length(oo.data))
+            oi = inherit(oi,oo);       % inherit shell settings
+            oi = oo.data{i};
+            oi = Brew(oi);
+         end
+         
+      otherwise
+         'ok';                         % ignore other types
+   end
+   
+   function o = Brew(o)
+      o = cache(o,o,[]);               % clear cache hard
+
+         % only 'trf' and 'consd' segments are brewed (not other)
+         % note that brewing function hard refreshes cache segment
+
+      [o,~,rfr] = cache(o,'trf');      % brew 'trf' cache segment
+      [o,~,rfr] = cache(o,'consd');    % brew 'consd' cache segment
    end
 end
 function oo = ClearCache(o)            % Clear All Caches              

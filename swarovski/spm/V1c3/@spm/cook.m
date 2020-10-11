@@ -2,11 +2,46 @@ function varargout = cook(o,sym)
 %
 % COOK  Cook up data
 %
-%          G = cook(o,'G')                  % SPM transfer matrix G(s)
+%       Basic syntax
+%
+%          G = cook(o,'G');                 % single argument
+%          [A,B,C,D] = cook(o,'A,B,C,D');   % multiple arguments
+%
+%       System matrices and partial matrices
+%
+%          [A,B,C,D] = cook(o,'A,B,C,D');   % system matrices
+%
+%          [A11,A12] = cook(o,'A11,A12');   % partial matrices
+%          [A21,A22] = cook(o,'A21,A22');   % partial matrices
+%          [B1,B2]   = cook(o,'B1,B2');     % partial matrices
+%          [C1,C2]   = cook(o,'C1,C2');     % partial matrices
+%
+%       Modal parametes
+%
+%          [a0,a1] = cook(o,'a0,a1');       % modal parameters 
+%          omega = cook(o,'omega');         % eigen frequencies
+%          zeta = cook(o,'zeta');           % dampings
+%
+%       Free system transfer matrix and transfer function
+%
+%          G = cook(o,'G')                  % free sys transfer matrix G(s)
+%          Gpsi = cook(o,'Gpsi')            % characteristic transfer fcts.
 %          W = cook(o,'W')                  % weight matrix for G(s)
 %
+%          [G11,G12,G13] = cook(o,'G11,G12,G13')   % free system trf
+%          [G21,G22,G23] = cook(o,'G21,G22,G23')   % free system trf
+%          [G31,G32,G33] = cook(o,'G31,G32,G33')   % free system trf
+%
+%       Constrained system transfer matrix
+%
 %          H = cook(o,'H')                  % constrained trf matrix H(s)
+%
+%       Open loop transfer matrix and open loop transfer function
+%
 %          L = cook(o,'L')                  % open loop trf matrix L(s)
+%          L0 = cook(o,'L0')                % open loop trf L0(s)
+%
+%       Closed Loop Transfer Matrices
 %
 %          Tf = cook(o,'Tf')                % Force transfer matrix Tf(s)
 %          Ts = cook(o,'Ts')                % Elongation trf matrix Ts(s)
@@ -47,9 +82,24 @@ function oo = Cook(o,sym)              % Cook-up Anyhing
    end
 
    switch sym
+      case {'A','B','C', 'D'}
+         oo = brew(o,'Partition');
+         oo = var(oo,sym);
+
+      case {'A11','A12','A21', 'A22','B1','B2','C1','C2'}
+         oo = brew(o,'Partition');
+         oo = var(oo,sym);
+
+      case {'a0','a1','omega','zeta'}
+         oo = brew(o,'Partition');
+         oo = var(oo,sym);
+
       case 'G'
          oo = cache(o,'trf.G');
          
+      case 'Gpsi'
+         oo = cache(o,'trf.Gpsi');
+
       case {'G11','G12','G13', 'G21','G22','G23', 'G31','G32','G33'}
          G = cache(o,'trf.G');
          oo = peek(G,i,j);
