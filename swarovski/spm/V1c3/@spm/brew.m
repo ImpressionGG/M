@@ -10,6 +10,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
+%           oo = brew(o,'Loop')        % brew loop analysis stuff
 %           oo = brew(o,'Process')     % brew closed loop transfer fct
 %
 %           oo = brew(o,'Nyq')         % brew nyquist stuff
@@ -31,7 +32,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Eigen,@Normalize,@Partition,...
-                       @Trf,@Constrain,@Consd,@Consr,@Process,@Nyq);
+                       @Trf,@Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
 
@@ -676,73 +677,13 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    s = system(corasim,{[1 0],[1]});    % differentiation trf
    s = CancelT(o,s);   
 
-   oo = L0(o);                         % open loop incorporating mu
-   oo = Force(oo);                     % calc force trf
+   oo = L0(o,mu);                      % open loop incorporating mu
+   oo = Force(oo,mu);                  % calc force trf
    oo = Elongation(oo);                % calc elongation trf
    oo = Velocity(oo);                  % calc velocity trf
    oo = Acceleration(oo);              % calc acceleration trf
    
-   function oo = OldL0(o)              % Calc L0(s)                     
-   %
-   % L0   Calculate L0(s)
-   %      Remember:
-   %         H31(s) = - G31(s)/G33(s)
-   %         L1(s)  = H31(s)
-   %         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
-   %
-      [G31,G33] = cook(o,'G31,G33');
-      mu = opt(o,{'process.mu',0.1});     % friction coefficient
-
-      G31 = CancelL(o,G31);
-      
-         % calculate L0(s) = -mu*L1(s)
-      
-      L0 = mu * G31/G33;
-      L0 = set(L0,'name','L0(s)');
-   
-         % store L in cache
-      
-      oo = cache(o,'process.L0',L0);
-   end
-   function oo = L0(o)                 % Calc L0(s)                     
-   %
-   % L0   Calculate L0(s)
-   %      Remember:
-   %         H31(s) = - G31(s)/G33(s)
-   %         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
-   %
-      [G31,G33] = cook(o,'G31,G33');
-      mu = opt(o,{'process.mu',0.1});     % friction coefficient
-
-      G_31 = zpk(CancelL(o,G31));
-      G_33 = zpk(CancelL(o,G33));
-      L_0 = mu * G_31/G_33;
-      
-      [z,p,K] = zpk(L_0);
-      if any(real(p) >= 0)
-         fprintf(['*** warning: L0(s) seeming instable',...
-                  ' => searching cancelation ...\n']); 
-         
-         eps = option(o,'cancel.L.eps',1e-7);
-         epsi = logspace(log10(min(eps,0.1)),0,25);
-         
-         for(i=1:length(epsi))
-            L_0 = opt(o,'eps',epsi(i));
-            L_0 = can(L_0);
-            if all(real(p) < 0)
-               fprintf('*** L0(s) cancel epsilon: %g\n',epsi(i));
-               break;
-            end
-         end
-      end
-      
-      L0 = set(L_0,'name','L0(s)');
-   
-         % store L in cache
-      
-      oo = cache(o,'process.L0',L0);
-   end
-   function oo = Force(o)              % Calc Force Transfer Function  
+   function oo = Force(o,mu)           % Calc Force Transfer Function  
    %
    % These are the force transfer functions from Fc(s) to Fi(s):
    % Let Mu = [mu1,mu2]' = mu*[1 0]', then
@@ -792,8 +733,6 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
    %
    %    Tf(s) = T0(s) := mu / (1 + L0(s))
    %
-      mu = opt(o,{'process.mu',0.1});     % friction coefficient
-
       [G31,G32,G33,H31,L0] = cook(o,'G31,G32,G33,H31,L0');
 
          % first way to calculate: T0 = mu / (1 + L0(s))
@@ -871,6 +810,52 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
          Ts = opt(Ts,'eps',eps);
       end
    end
+end
+
+%==========================================================================
+% Loop Analysis Stuff
+%==========================================================================
+
+function oo = Loop(o)                  % Loop Analysis Stuff           
+   mu = opt(o,{'process.mu',0.1});     % friction coefficient
+end
+function oo = L0(o,mu)              % Calc L0(s)                     
+%
+% L0   Calculate L0(s)
+%      Remember:
+%         H31(s) = - G31(s)/G33(s)
+%         L0(s)  = -mu*H31(s) = mu * G31(s)/G33(s)
+%
+   [G31,G33] = cook(o,'G31,G33');
+   mu = opt(o,{'process.mu',0.1});     % friction coefficient
+
+   G_31 = zpk(CancelL(o,G31));
+   G_33 = zpk(CancelL(o,G33));
+   L_0 = mu * G_31/G_33;
+
+   [z,p,K] = zpk(L_0);
+   if any(real(p) >= 0)
+      fprintf(['*** warning: L0(s) seeming instable',...
+               ' => searching cancelation ...\n']); 
+
+      eps = option(o,'cancel.L.eps',1e-7);
+      epsi = logspace(log10(min(eps,0.1)),0,25);
+
+      for(i=1:length(epsi))
+         L_0 = opt(o,'eps',epsi(i));
+         L_0 = can(L_0);
+         if all(real(p) < 0)
+            fprintf('*** L0(s) cancel epsilon: %g\n',epsi(i));
+            break;
+         end
+      end
+   end
+
+   L0 = set(L_0,'name','L0(s)');
+
+      % store L in cache
+
+   oo = cache(o,'process.L0',L0);
 end
 
 %==========================================================================

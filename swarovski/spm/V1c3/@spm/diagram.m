@@ -689,15 +689,16 @@ function o = Rloc(o)                   % Root Locus Diagram
    o = opt(o,'subplot',sub);
    subplot(o,sub);
 
-   p = roots(den(G));                  % poles
-   col = o.iif(dark(o),'yx','gx');
-   plot(corazon(o),real(p),imag(p),col);
+   [z,p,K] = zpk(G);                   % zeros , poles, K
+   
+   col = o.iif(dark(o),'y','g');
+   hdl = plot(corazon(o),real(p),imag(p),'x');
+   set(hdl,'color',col);
    hold on;
 
-   z = roots(num(G));                  % zeros
    oo = corazon(o);
-   col = o.iif(dark(o),'yo','go');
-   plot(oo,real(z),imag(z),col);
+   hdl = plot(oo,real(z),imag(z),'o');
+   set(hdl,'color',col);
    hold on;
    
    center = sum(real([p(:);z(:)]))/(length(p)+length(z));
@@ -711,25 +712,29 @@ function o = Rloc(o)                   % Root Locus Diagram
    K = 10.^t - 1;
       
    for (i=1:length(p))
-      plot(o,[center real(p(i))],[0 imag(p(i))],'r');
+      plot([center real(p(i))],[0 imag(p(i))],'r');
       hold on
       
          % for instable poles we also draw a line from the mirrored
          % center in the right complex half plane to alert attention
          
       if (real(p(i)) >= 0)
-         plot(o,[abs(center) real(p(i))],[0 imag(p(i))],'r');
+         plot([abs(center) real(p(i))],[0 imag(p(i))],'r');
       end
    end
+   
+   col = o.color('cb');
    for (i=1:length(z))
-      plot(o,[center real(z(i))],[0 imag(z(i))],'cb');
+      hdl = plot([center real(z(i))],[0 imag(z(i))],'b');
+      set(hdl,'color',col);
       hold on
 
          % for 'instable zeros' we also draw a line from the mirrored
          % center in the right complex half plane to alert attention
          
       if (real(z(i)) >= 0)
-         plot(o,[abs(center) real(z(i))],[0 imag(z(i))],'cb');
+         hdl = plot([abs(center) real(z(i))],[0 imag(z(i))],'c');
+         set(hdl,'color',col);
       end
    end
    
