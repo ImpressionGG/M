@@ -51,6 +51,11 @@ function [Gjw,om] = fqr(o,om,i,j)
          expjw = exp(sqrt(-1)*om*T);
          Gjw = polyval(num,expjw) ./ polyval(den,expjw);
 
+      case {'szpk','qzpk'}
+         [num,den] = peek(o);
+         jw = sqrt(-1)*om;
+         Gjw = polyval(num,jw) ./ polyval(den,jw);
+
       case 'css'
          if (nargin < 3)
             i = 1;

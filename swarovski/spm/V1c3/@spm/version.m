@@ -102,6 +102,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - first time stability margin chart over pivot angle :-)))
 % - pimp brewing of data object and package object - brew menu item
 % - stability margin chart
+% - brew L0(s) to a stable transfer function
 %
 %
 % Known bugs & wishlist

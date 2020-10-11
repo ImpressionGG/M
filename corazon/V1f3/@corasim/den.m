@@ -13,6 +13,10 @@ function oo = den(o)                   % Get CORASIM Denominator
       case {'strf','ztrf','qtrf','css','dss'}
          [num,den] = peek(o);
          oo = Trim(o,den);
+      case {'szpk','zzpk','qzpk'}
+         o = trf(o);
+         [num,den] = peek(o);
+         oo = Trim(o,den);
       case 'modal'
          o = trf(o);
          [num,den] = peek(o);

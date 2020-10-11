@@ -49,6 +49,9 @@ function out = Step(o)                 % Step Response
          error('implementation');
       case 'strf'
          oo = system(o);
+      case 'szpk'
+         o = trf(o);
+         oo = system(o);
       case 'modal'
          oo = system(o);
       otherwise

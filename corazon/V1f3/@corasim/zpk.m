@@ -1,12 +1,12 @@
-function [z,p,k] = zpk(o,num,den)
+function [z,p,k,T] = zpk(o,num,den,k,T)
 %
 % ZPK   Find zeros, poles and K-factor of a rational function
 %
-%          o = trf(corinth,[5 6],[1 2 3]);
+%          o = trf(corasim,[5 6],[1 2 3]);
 %
 %          [z,p,k] = zpk(o)
 %          [z,p,k] = zpk(o,num,den)
-%          [z,p,k] ) zpk(o,poly)
+%          [z,p,k] = zpk(o,poly)
 %
 %       From a rational transfer function in polynomial form
 %
@@ -24,21 +24,76 @@ function [z,p,k] = zpk(o,num,den)
 %       returned in column vector P, and the gains for each numerator 
 %       transfer function in vector K. 
 %
+%       Create ZPK objects
+%
+%          oo = zpk(o,num,den)
+%          oo = zpk(o,poly)
+%
+%          oo = zpk(o,z,p,K)           % s-type ZPK (continuous)
+%          oo = zpk(o,z,p,K,0)         % sameas above
+%
+%          oo = zpk(o,z,p,K,T)         % z-type ZPK (discrete)
+%          oo = zpk(o,z,p,K,-T)        % q-type ZPK (discrete)
+%
+%          [z,p,K,T] = zpk(o)          % retriev poles/zeros, K and T
+%
+%          oo = zpk(o)                 % cast to ZPK type
+%
 %       Copyright(c): Bluenetics 2020
 %
 %       See also: CORASIM
 %
    switch nargin
       case {0,1}
-         [num,den] = peek(o);
-         [z,p,k] = Zpk(o,num,den);
+         if (nargout <= 1)             % cast to ZPK object
+            if type(o,{'szpk','zzpk','qzpk'})
+               oo = o;                 % nothing left to do
+            else
+               [num,den] = peek(o);    % first cast to ZPK object
+               oo = zpk(o,num,den);
+               oo.data.T = o.data.T;
+            end
+            z = oo;                    % rename out arg
+         else                          % nargout >= 2
+            if type(o,{'szpk','zzpk','qzpk'})
+               z = o.data.zeros;
+               p = o.data.poles;
+               k = o.data.K;
+               T = o.data.T;
+            else
+               [num,den] = peek(o);
+               [z,p,k] = Zpk(o,num,den);
+               T = o.data.T;
+            end
+         end
+         
       case 2
          den = 1;
          [z,p,k] = Zpk(o,num,den);
+         
+         if (nargout <= 1)
+            oo = Create(o,z,p,k,0);
+            z = oo;                    % rename out arg
+         end
       case 3
          [z,p,k] = Zpk(o,num,den);
+         if (nargout <= 1)
+            oo = Create(o,z,p,k,0);
+            z = oo;                    % rename out arg
+         end
+         
+      case 4
+         z = num;  p = den;
+         oo = Create(o,z,p,k,0);
+         z = oo;                       % rename out arg
+         
+      case 5
+         z = num;  p = den;
+         oo = Create(o,z,p,k,T);
+         z = oo;                       % rename out arg
+         
       otherwise
-         error('1,2 or 3 input args expected');
+         error('up to 5 input args expected');
    end
 end
 
@@ -46,7 +101,7 @@ end
 % Find Zeros, Poles and K-factor
 %==========================================================================
 
-function [z,p,k] = Zpk(o,num,den)
+function [z,p,k] = Zpk(o,num,den)      % Convert Num/Den to Zero/Pole/K            
    [num,den] = Trim(o,num,den);
 
    if ~isempty(den)
@@ -92,6 +147,20 @@ end
 % Helper
 %==========================================================================
 
+function oo = Create(o,z,p,K,T)        % Create ZPK Object             
+   if (T > 0)
+      oo = corasim('zzpk');
+   elseif (T < 0)
+      oo = corasim('qzpk');
+   else
+      oo = corasim('szpk');
+   end
+   
+   oo.data.zeros = z;
+   oo.data.poles = p;
+   oo.data.K = K;
+   oo.data.T = T;
+end
 function [num,den] = Trim(o,num,den)
 %
 % TRIM Trim numerator and denominator to get equal length and perform 

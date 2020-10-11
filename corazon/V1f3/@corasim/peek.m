@@ -40,6 +40,10 @@ function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator
       case {'strf','ztrf','qtrf'}
          [num,den,T] = data(o,'num,den,T');
          
+      case {'szpk','zzpk','qzpk'}
+         o = trf(o);                   % cast to TRF
+         [num,den,T] = data(o,'num,den,T');
+
       case 'matrix'
          num = o.data.matrix{i,j};
    end

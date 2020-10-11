@@ -39,13 +39,6 @@ end
 % Brew All
 %==========================================================================
 
-function oo = OldBrew(o)               % Brew All                      
-   oo = o;
-   oo = Normalize(oo);                 % first normalize the system
-   oo = Eigen(oo);                     % brew eigenvalues
-   oo = Trfd(oo);
-   oo = Consd(oo);
-end
 function oo = Brew(o)                  % Brew All Cache Segments       
    oo = current(o);
    switch oo.type
@@ -101,7 +94,6 @@ function oo = Brew(o)                  % Brew All Cache Segments
       o = brew(o,'Process');
    end
 end
-
 function oo = Eigen(o)                 % Brew Eigenvalues              
    oo = o;                             % copy to out arg
    A = data(oo,'A');
@@ -585,20 +577,29 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
       [G31,G33] = cook(o,'G31,G33');
       mu = opt(o,{'process.mu',0.1});     % friction coefficient
 
-      [zerp,polp,Kp] = zpk(G31);
-      [zerq,polq,Kq] = zpk(G33);
+      G_31 = zpk(CancelL(o,G31));
+      G_33 = zpk(CancelL(o,G33));
+      L_0 = mu * G_31/G_33;
       
-      zero = [zerp,polq];
-      pole = [polp,zerq];
-      K = Kp/Kq;
-      %[zero,pole] = Can(o,zero,pole);
+      [z,p,K] = zpk(L_0);
+      if any(real(p) >= 0)
+         fprintf(['*** warning: L0(s) seeming instable',...
+                  ' => searching cancelation ...\n']); 
+         
+         eps = option(o,'cancel.L.eps',1e-7);
+         epsi = logspace(log10(min(eps,0.1)),0,25);
+         
+         for(i=1:length(epsi))
+            L_0 = opt(o,'eps',epsi(i));
+            L_0 = can(L_0);
+            if all(real(p) < 0)
+               fprintf('*** L0(s) cancel epsilon: %g\n',epsi(i));
+               break;
+            end
+         end
+      end
       
-      G31 = CancelL(o,G31);
-      
-         % calculate L0(s) = -mu*L1(s)
-      
-      L0 = mu * G31/G33;
-      L0 = set(L0,'name','L0(s)');
+      L0 = set(L_0,'name','L0(s)');
    
          % store L in cache
       

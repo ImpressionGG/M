@@ -116,6 +116,9 @@ end
 function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other  
    if ~isa(o1,'corasim')
       o1 = Cast(o1);
+      if type(o2,{'szpk','zzpk','qzpk'})
+         o2 = trf(o2);                 % cast to trf
+      end
       if ~type(o2,{'strf','ztrf','qtrf'})
          error('bad operand type');
       end
@@ -124,6 +127,9 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
    end
    if ~isa(o2,'corasim')
       o2 = Cast(o2);
+      if type(o1,{'szpk','zzpk','qzpk'})
+         o1 = trf(o1);                 % cast to trf
+      end
       if ~type(o1,{'strf','ztrf','qtrf'})
          error('bad operand type');
       end
@@ -135,7 +141,11 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
    
    function oo = Cast(o)               % Cast to Corasim               
       if isa(o,'corasim')
-         oo = o;
+         if type(o,{'szpk','zzpk','qzpk'})
+            oo = trf(o);               % cast
+         else
+            oo = o;
+         end
       elseif isa(o,'double')
          num = o;  den = 1;
          if (size(num,1) ~= 1)

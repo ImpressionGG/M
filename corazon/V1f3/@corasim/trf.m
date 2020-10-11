@@ -92,7 +92,7 @@ function oo = TrfZpk(o,zpk,T)          % Create Trf from Zero/Poles/K
    oo.data.poles = poles;
    oo.data.K = K;
 end
-function oo = Zp2Tf(o)
+function oo = Zp2Tf(o)                 % Convert Zeros/Poles/K to TRF  
 %
 % ZP2TF	Zero-pole to transfer function conversion.
 %	      

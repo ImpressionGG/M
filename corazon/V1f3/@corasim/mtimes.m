@@ -52,11 +52,11 @@ end
 %==========================================================================
 
 function oo = Mul(o1,o2)               % Multiply Two Objects          
-   if (type(o1,{'szpk','zzpk','qzpk'}) && order(o2) == 0)
-      o2 = trf(o2,{[],[],gain(o2)},o2.data.T);
-   elseif (type(o2,{'szpk','zzpk','qzpk'}) && order(o1) == 0)
-      o1 = trf(o1,{[],[],gain(o1)},o1.data.T);
-   end
+   %if (type(o1,{'szpk','zzpk','qzpk'}) && order(o2) == 0)
+   %   o2 = trf(o2,{[],[],gain(o2)},o2.data.T);
+   %elseif (type(o2,{'szpk','zzpk','qzpk'}) && order(o1) == 0)
+   %   o1 = trf(o1,{[],[],gain(o1)},o1.data.T);
+   %end
 
    if ~isequal(o1.type,o2.type)
       error('type mismatch');
@@ -78,13 +78,10 @@ function oo = Mul(o1,o2)               % Multiply Two Objects
          error('sampling time mismatch');
       end
       
-      [z1,p1,K1] = data(o1,'zeros','poles','K');
-      [z2,p2,K2] = data(o2,'zeros','poles','K');
+      [z1,p1,K1] = zpk(o1);
+      [z2,p2,K2] = zpk(o2);
       
-      oo = o1;
-      oo.data.zeros = [z1;z2];
-      oo.data.poles = [p1;p2];
-      oo.data.K = K1*K2;
+      oo = zpk(o1,[z1;z2],[p1;p2],K1*K2);
       
    else
       error('bad arg type');
@@ -114,19 +111,25 @@ end
 function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other  
    if ~isa(o1,'corasim')
       o1 = Cast(o1);
-      if ~type(o2,{'strf','ztrf','qtrf'})
-         error('bad operand type');
-      end
-      o1.type = o2.type;
-      o1.data.T = o2.data.T;
-   end
-   if ~isa(o2,'corasim')
-      o2 = Cast(o2);
       if ~type(o1,{'strf','ztrf','qtrf'})
          error('bad operand type');
       end
-      o2.type = o1.type;
-      o2.data.T = o1.data.T;
+      o1.data.T = o2.data.T;           % inherit sampling time
+
+      if type(o2,{'szpk','zzpk','qzpk'})
+         o1 = zpk(o1);                 % convert to ZPK
+      end
+   end
+   if ~isa(o2,'corasim')
+      o2 = Cast(o2);
+      if ~type(o2,{'strf','ztrf','qtrf'})
+         error('bad operand type');
+      end
+      o2.data.T = o1.data.T;           % inherit sampling time
+      
+      if type(o1,{'szpk','zzpk','qzpk'})
+         o2 = zpk(o2);                 % convert to ZPK
+      end
    end
     
    assert(isa(o1,'corasim') && isa(o2,'corasim'));

@@ -13,6 +13,10 @@ function oo = num(o)                   % Get CORASIM Numerator
       case {'strf','ztrf','qtrf','css','dss'}
          [num,den] = peek(o);
          oo = Trim(o,num);
+      case {'szpk','zzpk','qzpk'}
+         o = trf(o);
+         [num,den] = peek(o);
+         oo = Trim(o,num);
       case 'modal'
          o = trf(o);
          [num,den] = peek(o);

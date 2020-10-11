@@ -86,6 +86,7 @@ function oo = CanTrf(o)                % Cancel Trf-Transfer Function
       % if some cancellation happened then we have a dirty state
       % which has to be handeled ...
       
+   [num,den] = peek(o);                % peek numerator/denominator
    if ( dirty ~= 0 )
       HandleDirty(o);
    end
@@ -106,7 +107,7 @@ function oo = CanTrf(o)                % Cancel Trf-Transfer Function
    function HandleDirty(o)             % Handle Dirty Status           
       idx_num(find(idx_num == 0)) = [];
       idx_den(find(idx_den == 0)) = [];
-
+      
          % K factor
 
       if ( all(num == 0)  &  all( den == 0 ) )
@@ -126,7 +127,7 @@ function oo = CanTrf(o)                % Cancel Trf-Transfer Function
 
          % new numerator and denominator
 
-      [num,den] = zp2tf(rnum(idx_num),rden(idx_den),K);
+      [num,den] = Zp2Tf(o,rnum(idx_num),rden(idx_den),K);
 
       if ( length(num) == 0 ) num = 1; end	   % V1.0a
       if ( length(den) == 0 ) den = 1; end	   % V1.0a
@@ -311,7 +312,7 @@ function [rnum,rden] = Roots(o,mode)   % Get Transfer Function Roots
    else
       [ans,idx1] = sort(real(rnum));
    end
-   rnum = rnum(idx1);               % re-order numerator roots
+   rnum = rnum(idx1);                  % re-order numerator roots
 
    %num = num(m-deg_num-1:m-1);
 
@@ -330,5 +331,35 @@ function [rnum,rden] = Roots(o,mode)   % Get Transfer Function Roots
    else
       [~,idx2] = sort(real(rden));
    end
-   rden = rden(idx2);               % re-order denominator roots
+   rden = rden(idx2);                  % re-order denominator roots
+end
+function [num,den] = Zp2Tf(o,z,p,K)    % Convert Zeros/Poles/K to TRF  
+%
+% ZP2TF	Zero-pole to transfer function conversion.
+%	      
+%           [num,den] = Zp2Tf(o,Z,P,K) % form transfer function to num/den
+%
+%        forms the transfer function:
+%
+%			           num(s)
+%		      G(s) = -------- 
+%			           den(s)
+%
+%	given a set of zero locations in vector Z, a set of pole locations
+%	in vector P, and a gain in scalar K.  Vectors NUM and DEN are 
+%	returned with numerator and denominator coefficients in descending
+%	powers of s.  See TF2PZ to convert the other way.
+%  
+   T = data(o,'T');
+   
+   den = real(poly(p(:)));
+   [m,n] = size(z);
+   
+   for j=1:n
+      zj = z(:,j);
+      pj = real(poly(zj)*K(j));
+      num(j,:) = [zeros(1,1+m-length(pj)) pj];
+   end
+   
+   oo = trf(o,num,den,T);
 end
