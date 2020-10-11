@@ -38,10 +38,18 @@ function oo = Sub(o1,o2)               % Subtract Two Objects
    if ~isequal(o1.type,o2.type)
       error('type mismatch');
    end
+   
+   if type(o1,{'szpk','zzpk','qzpk'})
+      o1 = trf(o1);
+   end
    if ~type(o1,{'strf','ztrf','qtrf'})
       error('bad arg1 type');
    end
-   if ~type(o2,{'strf','ztrf','qtrf'})
+   
+   if type(o2,{'szpk','zzpk','qzpk'})
+      o2 = trf(o2);
+   end
+   if ~type(o2,{'strf','ztrf','qtrf','szpk','zzpk','qzpk'})
       error('bad arg2 type');
    end
    

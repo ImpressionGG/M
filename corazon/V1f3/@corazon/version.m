@@ -491,6 +491,8 @@ function VersionV1F
 % - pimp corasim/mul and corasim/inv to deal with new types
 % - corasim/can extended to deal with new types
 % - corasim zpk types implemented with basic arithmetic
+% - some adaptions in arithmetic basic routines regarding ZPK objects
+%
 %
 % Known Bugs / Wishlist
 % - none so far

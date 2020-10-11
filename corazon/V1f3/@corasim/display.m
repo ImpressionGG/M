@@ -122,11 +122,11 @@ end
 
 function txt = Ratio(o)                % Display Rational Function     
    switch o.type
-      case 'strf'
+      case {'strf','szpk'}
          sym = 's';
-      case 'ztrf'
+      case {'ztrf','zzpk'}
          sym = 'z';
-      case 'qtrf'
+      case {'qtrf','qzpk'}
          sym = 'q'
       case 'modal'
          sym = 's';

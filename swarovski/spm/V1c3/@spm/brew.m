@@ -172,7 +172,7 @@ function oo = Trf(o)                   % Double Transfer Matrix
    switch opt(o,{'trf.type','strf'})
       case 'modal'
          oo = TrfModal(o);
-      case 'strf'
+      case {'strf','szpk'}
          oo = TrfDouble(o);
       otherwise
          error('bad selection');
@@ -182,6 +182,139 @@ function oo = Trf(o)                   % Double Transfer Matrix
       
    cache(oo,oo);                       % hard refresh cache
    progress(o);                        % progress complete
+end
+function oo = OldTrfDouble(o)          % Double Transfer Matrix        
+   oo = brew(o,'Partition');           % brew partial matrices
+   
+      % get a1,a0 and M
+      
+   [A11,A12,A21,A22,B2,C1,D] = var(oo,'A11,A12,A21,A22,B2,C1,D');
+   a0 = -diag(A21);
+   a1 = -diag(A22);
+   I = eye(length(a0));  Z = zeros(length(a0));
+   
+   if ~isequal(B2,C1')
+      error('B2 does not match C1');
+   end
+   M = B2;
+   
+      % now since we have a1,a0 and M we can start calculating the transfer
+      % matrix
+   
+   n = length(a0);
+   m = size(M,2);
+   G = matrix(corasim);
+   W = [];
+   
+      % depending on modal form ...
+     
+   if HasModalForm(o)
+      Modal(o);  
+   else
+      Normal(o);
+   end
+         
+   progress(o);                        % complete!
+   oo = cache(oo,'trf.G',G);           % store in cache
+   oo = cache(oo,'trf.W',W);           % store in cache
+       
+   if control(o,'verbose') > 0
+      fprintf('Double Transfer Matrix\n');
+      display(G);
+   end
+   
+   function ok = HasModalForm(o)
+      ok = isequal(A11,Z) && isequal(A12,I) && ...
+              isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
+   end
+   function Modal(o)                   % Gij(s) For Modal Forms        
+      psi = [ones(n,1) a1(:) a0(:)];
+
+      for (i=1:m)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            mi = M(:,i)';  mj = M(:,j);
+            wij = (mi(:).*mj(:))';        % weight vector
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+
+            Gij = system(G,{[0],[1]});    % init Gij
+            Gij = CancelG(o,Gij);         % set cancel epsilon
+            
+            for (k=1:n)
+   %           Gk = trf(O,mi(k)*mj(k),psi(k,:));
+               Gk = system(G,{wij(k),psi(k,:)});
+               Gij = Gij + Gk;
+            end
+
+            if control(o,'verbose') > 0
+               fprintf('G%g%g(s):\n',i,j)
+               display(Gij);
+            end
+
+            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+      
+         % characteristic transfer functions
+         
+      Gpsi = set(matrix(corasim),'name','Gpsi[s]');
+      for (k=1:size(psi,1))
+         Gk = trf(Gpsi,1,psi(k,:));
+         Gk = set(Gk,'name',sprintf('G_%g(s)',k));
+         Gpsi = poke(Gpsi,Gk,k,1);
+      end
+      oo = cache(oo,'trf.Gpsi',Gpsi);  
+   end
+   function Normal(o)                  % Normal Gij(s) Calculation     
+      %[AA,BB,CC,DD] = data(oo,'A,B,C,D');
+      [AA,BB,CC,DD] = var(oo,'A,B,C,D');
+       sys = system(corasim,AA,BB,CC,DD);
+      
+      for (i=1:n)
+         for (j=1:i)
+            run = (j-1)*n+i; m = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            [num,den] = peek(sys,i,j);
+%           Gij = trf(O,num,den);         % Gij(s)
+            Gij = system(G,{num,den});    % Gij(s)
+            Gij = can(CancelG(o,Gij));
+            
+            fprintf('G%g%g(s):\n',i,j)
+            display(Gij);
+
+            Gij = set(Gij,'name',sprintf('G%g%g',i,j));
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+   end
+   function Gs = CancelG(o,Gs)         % Set Cancel Epsilon            
+      eps = opt(o,'cancel.G.eps');
+      Gs = opt(Gs,'control.verbose',control(o,'verbose'));
+      
+      if ~isempty(eps)
+         if isa(Gs,'corinth')
+            Gs = touch(Gs);
+         end
+         Gs = opt(Gs,'eps',eps);
+      end
+   end
 end
 function oo = TrfDouble(o)             % Double Transfer Matrix        
    oo = brew(o,'Partition');           % brew partial matrices
@@ -257,6 +390,10 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
                display(Gij);
             end
 
+            if isequal(opt(o,{'trf.type','strf'}),'szpk')
+               Gij = zpk(Gij);            % convert to ZPK
+            end
+            
             Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
             G = poke(G,Gij,i,j);          % lower half diagonal element
             if (i ~= j)

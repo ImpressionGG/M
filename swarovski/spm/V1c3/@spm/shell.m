@@ -681,10 +681,11 @@ function oo = Internal(o)              % Internal Menu
    ooo = Filter(oo);                   % add Filter sub menu
 end
 function oo = Trf(o)                   % Transfer Function Menu        
-   setting(o,{'trf.type'},'strf');
+   setting(o,{'trf.type'},'szpk');
    
    oo = mitem(o,'Transfer Functions',{},'trf.type');
-   choice(oo,{{'Trf Type','strf'},{'Modal Type','modal'}},{});
+   choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
+              {'Modal Type','modal'}},{});
 end
 function oo = Normalize(o)             % Normalize Menu                
    setting(o,{'brew.T0'},1e-3);

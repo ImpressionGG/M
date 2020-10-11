@@ -59,7 +59,15 @@ function oo = Mul(o1,o2)               % Multiply Two Objects
    %end
 
    if ~isequal(o1.type,o2.type)
-      error('type mismatch');
+      if type(o1,{'szpk','zzpk','qzpk'})
+         o1 = trf(o1);                 % cast to TRF
+      end
+      if type(o2,{'szpk','zzpk','qzpk'})
+         o2 = trf(o2);                 % cast to TRF
+      end
+      if ~isequal(o1.type,o2.type)     % final trial
+         error('type mismatch');
+      end
    end
    
    if type(o1,{'strf','ztrf','qtrf'})   
