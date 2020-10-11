@@ -490,6 +490,7 @@ function VersionV1F
 % - corasim types 'szpk','zzpk' and 'qzpk' added
 % - pimp corasim/mul and corasim/inv to deal with new types
 % - corasim/can extended to deal with new types
+% - corasim zpk types implemented with basic arithmetic
 %
 % Known Bugs / Wishlist
 % - none so far

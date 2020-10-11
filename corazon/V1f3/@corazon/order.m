@@ -26,7 +26,7 @@ function n = order(o)                  % system order
          
       case {'szpk','zzpk','qzpk'}
          zeros = data(o,'zeros');
-         poles = data(o.'poles');
+         poles = data(o,'poles');
          n = max(length(zeros),length(poles));
          
       otherwise

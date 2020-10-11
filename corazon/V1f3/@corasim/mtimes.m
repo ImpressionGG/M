@@ -52,6 +52,12 @@ end
 %==========================================================================
 
 function oo = Mul(o1,o2)               % Multiply Two Objects          
+   if (type(o1,{'szpk','zzpk','qzpk'}) && order(o2) == 0)
+      o2 = trf(o2,{[],[],gain(o2)},o2.data.T);
+   elseif (type(o2,{'szpk','zzpk','qzpk'}) && order(o1) == 0)
+      o1 = trf(o1,{[],[],gain(o1)},o1.data.T);
+   end
+
    if ~isequal(o1.type,o2.type)
       error('type mismatch');
    end
