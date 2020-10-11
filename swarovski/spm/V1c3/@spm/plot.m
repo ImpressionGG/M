@@ -1625,57 +1625,22 @@ function o = Stability(o)              % Plot Stability Margin
       error('no package ID provided');
    end
       
-      % note that first list element was the package object, which has 
-      % been deleted. calculate stability margin for all data objects
-      
-if(0)
-   o = pull(o);                        % get shell object
-   [oo,idx] = current(o);              % save index of current object
-
-   for (i=1:length(o.data))
-      oo = o.data{i};
-      if ~isequal(get(oo,'package'),package) || ~type(oo,{'spm'})
-         continue;
-      end
-      
-      current(o,i);
-      [oo,~,rfr] = cache(oo,oo,'trf');
-      [oo,~,rfr] = cache(oo,oo,'consd');
-      [oo,~,rfr] = cache(oo,oo,'process');
-      
-      idle(o);
-   end
-   current(o,idx);                     % restore current object index
-end   
       % get object list of package
+      % note that first list element is the package object, which has 
+      % to been deleted. calculate stability margin for all data objects
       
    olist = tree(o);                    % get list of package objects
    list = olist{1};                    % pick object list
    list(1) = [];                       % delete package object from list
 
    o = with(o,'style');
-
    n = length(list);
 
-      % get variation range and plot axes
-      
-   variation = get(o,'variation');
-   for (i=1:n)
-      oo = list{i};
-
-      if ~isempty(variation)
-         x(i) = get(oo,{variation,i});
-      else
-         x(i) = i;
-      end
-   end   
-   plot(o,x,0*x,'K.');
-   hold on;
-   plot(o,get(gca,'xlim'),[1 1],'K-.2');
-   subplot(o);                         % refresh graphics
-
+   x = Axes(o);                        % get variation range and plot axes
+   
       % calculate stability margin and plot
       
+   
    for (i=1:n)      
       txt = sprintf('calculate stability margin of %s',get(oo,'title'));
       progress(o,txt,i/n*100);
@@ -1692,22 +1657,38 @@ end
    
    progress(o);                        % progress completed
    
-   mu = opt(o,'process.mu');
-   if isempty(mu)
-      title('Stability Margin @ Parameter Variation');
-   else
-      title(sprintf('Stability Margin @ Parameter Variation (mu = %g)',mu));
+   function x = Axes(o)                % Plot Axes                      
+      variation = get(o,'variation');
+      for (i=1:n)
+         oo = list{i};
+
+         if ~isempty(variation)
+            x(i) = get(oo,{variation,i});
+         else
+            x(i) = i;
+         end
+      end   
+      plot(o,x,0*x,'K.');
+      hold on;
+      plot(o,get(gca,'xlim'),[1 1],'K-.2');
+
+      mu = opt(o,'process.mu');
+      if isempty(mu)
+         title('Stability Margin @ Parameter Variation');
+      else
+         title(sprintf('Stability Margin @ Parameter Variation (mu = %g)',mu));
+      end
+
+      ylabel('Stability Margin');
+
+      if ~isempty(variation)
+         xlabel(sprintf('Variation Parameter: %s',variation));
+      else
+         xlabel('Variation Parameter');
+      end
+
+      subplot(o);                         % subplot complete
    end
-   
-   ylabel('Stability Margin');
-   
-   if ~isempty(variation)
-      xlabel(sprintf('Variation Parameter: %s',variation));
-   else
-      xlabel('Variation Parameter');
-   end
-   
-   subplot(o);                         % subplot complete
 end
 
 %==========================================================================
