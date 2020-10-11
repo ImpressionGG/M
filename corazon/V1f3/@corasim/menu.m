@@ -135,7 +135,7 @@ function oo = Nyquist(o)               % Nyquist Settings Menu
    setting(o,{'nyq.magnitude.low'},-60);
    setting(o,{'nyq.magnitude.high'},60);
    setting(o,{'nyq.magnitude.delta'},20);
-   setting(o,{'nyq.zoom'},2);
+   setting(o,{'nyq.zoom'},1);
    
    setting(o,{'nyq.log'},true);
    setting(o,{'nyq.omega.points'},200000);
@@ -158,7 +158,7 @@ function oo = Nyquist(o)               % Nyquist Settings Menu
    ooo = mitem(oo,'Delta Magnitude [dB]',{},'nyq.magnitude.delta');
          choice(ooo,[10 20 40 60 80 100],{});
    ooo = mitem(oo,'Zoom',{},'nyq.zoom');         
-   choice(ooo,[0.1 0.2 0.5 1 1.2 1.5 2 5 10 20 50 100],{});
+   choice(ooo,[0.01 0.02 0.05 0.1 0.2 0.5 1 1.2 1.5 2 5 10 20 50 100],{});
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'More');

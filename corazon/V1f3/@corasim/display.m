@@ -70,20 +70,38 @@ function txt = display(o)
       case {'strf','ztrf','qtrf'}
          [num,den] = peek(o);
          if (nargout > 0)
-            txt = Ratio(o);
+            try
+               txt = Ratio(o);
+            catch
+               fprintf('*** exception catched\n');
+               txt = '';
+            end
          else
             o = opt(o,{'detail'},true);
-            Ratio(o);
+            try
+               Ratio(o);
+            catch
+               fprintf('*** exception catched\n');
+            end
          end
             
       case {'szpk','zzpk','qzpk'}
          o = trf(o);                   % cast to trf type
          [num,den] = peek(o);
          if (nargout > 0)
-            txt = Ratio(o);
+            try
+               txt = Ratio(o);
+            catch
+               fprintf('*** exception catched\n');
+               txt = '';
+            end
          else
             o = opt(o,{'detail'},true);
-            Ratio(o);
+            try
+               Ratio(o);
+            catch
+               fprintf('*** exception catched\n');
+            end
          end
             
       case 'matrix'  

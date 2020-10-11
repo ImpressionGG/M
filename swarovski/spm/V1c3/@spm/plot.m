@@ -794,8 +794,8 @@ function o = GsFqr(o)                  % G(s) Frequency Response Error
    
    for (i=1:m)
       for (j=1:n)
-         sym = [get(Gij,{'name','?'}),'(s)'];
          Gij = peek(G,i,j);
+         sym = [get(Gij,{'name','?'}),'(s)'];
          diagram(o,'Numeric',sym,Gij,[m,n,i,j]);
       end
    end

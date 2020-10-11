@@ -103,6 +103,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp brewing of data object and package object - brew menu item
 % - stability margin chart
 % - brew L0(s) to a stable transfer function
+% - first time good stability margin chart 
 %
 %
 % Known bugs & wishlist

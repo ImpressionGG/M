@@ -155,10 +155,10 @@ function o = Trf(o)                    % Transfer Function Diagram
    
    if isequal(sub,111) || isequal(sub,1111)
       o = opt(o,'subplot',sub,'pitch',0.4);
-      G = opt(G,'maxlen',300,'braces',1);
+      G = opt(G,'maxlen',250,'braces',1);
    elseif isequal(sub,311) || isequal(sub,3111) 
       o = opt(o,'subplot',sub,'pitch',2);
-      G = opt(G,'maxlen',300,'braces',1);
+      G = opt(G,'maxlen',250,'braces',1);
    else
       o = opt(o,'subplot',sub,'pitch',2,'braces',1);
    end
@@ -832,7 +832,7 @@ function o = Scaling(o)                % Manage Scaling Factors
    o = opt(o,'oscale',oscale);
 end
 function sym = Sym(o)                  % Build Symbiol from Name       
-   sym = [get(o,{'name','?'}),'(s)'];
+   sym = [get(o,{'name','?'}),''];
 end
 function o = Color(o)                  % Set Color Default             
    sym = get(o,{'name','?'});
