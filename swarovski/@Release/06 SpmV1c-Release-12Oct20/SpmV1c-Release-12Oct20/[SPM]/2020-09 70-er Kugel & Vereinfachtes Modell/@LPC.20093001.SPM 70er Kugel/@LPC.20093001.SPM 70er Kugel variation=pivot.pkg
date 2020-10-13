@@ -1,0 +1,18 @@
+$type='pkg'
+%
+% Parameters
+%
+$title='@LPC.20093001.SPM 70er Kugel'
+$date='02-Oct-2020'
+$time='12:42:28'
+$kind='spm'
+$project='70er-Kugel'
+$machine='LPC'
+$package='@LPC.20093001'
+$creator='hux'
+$version='SPM 1C2'
+$variation='pivot'
+$image='70-er Kugel.png'
+%
+% End of Package Object
+%

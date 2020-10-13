@@ -1,0 +1,27 @@
+$type='pkg'
+%
+% Parameters
+%
+$title='@LPC.20101001.SPM 70-er R&D-Kugel  Standardkappl variation=pivot'
+$comment='Variation: Lagewinkel'
+$comment=''
+$comment='Der Ersatzartikel für die 70er-Kugel (Lagenartikel) hat nun 5°-Schritte (siehe Bild unten)'
+$comment='Die Masse und der Schwerpunkt sind recht ähnlich zur 70er Kugel'
+$comment='Dieser Artikel ließe sich so für einen Vergleich auch wirklich schleifen, weshalb er recht ideal zu sein scheint.'
+$comment='Das Kappl wurde auf Standard-Alu-Kappl geändert. Das entspricht dem aktuellen Setup bei den Messungen (alle 3-achsigen Messungen am Kappl)'
+$comment='Als Dämpfung ist die Serienvariante verbaut (Grauguss Version, aber nicht NEXT-Generation)'
+$date='10-Oct-2020'
+$time='08:07:36'
+$kind='spm'
+$project='70er-Kugel'
+$machine='LPC'
+$package='@LPC.20101001'
+$creator='hux'
+$version='SPM 1C3'
+$variation='pivot'
+$choice.cancel.G.eps=[1e-5]
+$choice.cancel.L.eps=[0.03]
+$image='image002@01D69ED6.83402F60.png'
+%
+% End of Package Object
+%

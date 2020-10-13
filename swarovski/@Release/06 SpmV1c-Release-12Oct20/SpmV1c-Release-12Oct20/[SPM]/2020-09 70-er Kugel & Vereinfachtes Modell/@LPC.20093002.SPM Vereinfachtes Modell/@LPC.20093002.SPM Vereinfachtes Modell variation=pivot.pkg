@@ -1,0 +1,18 @@
+$type='pkg'
+%
+% Parameters
+%
+$title='@LPC.20093002.SPM Vereinfachtes Modell'
+$date='04-Oct-2020'
+$time='13:44:56'
+$kind='spm'
+$project='70er-Kugel'
+$machine='LPC'
+$package='@LPC.20093002'
+$creator='hux'
+$version='SPM 1C2'
+$variation='pivot'
+$image='Vereinfachtes Modell.png'
+%
+% End of Package Object
+%

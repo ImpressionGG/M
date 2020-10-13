@@ -25,9 +25,11 @@ function use(tag,version)
 %           use cute-v1b3  % Cute V1b3   beta @ 31Aug20
 %           use cute-v1b   % Cute V1b release @ 07Aug20
 %
+%           use spm-v1c    % SPM V1c release @ 12Oct20
+%
    if (nargin < 2)
       version.carabao = 'V1l';
-      version.corazon = 'V1f3';
+      version.corazon = 'V1f';
       version.corinth = 'V1f';
       version.cordoba = 'V1c';
       version.rat = 'V1a';
@@ -35,8 +37,7 @@ function use(tag,version)
       version.cute = 'V1b';
       version.trf = 'V2a';
       
-      version.spm = 'V1c3';
-      version.spmx = 'V1a';
+      version.spm = 'V1c';
       
       version.pll = 'V1a';
       version.kalman = 'V1a';
@@ -128,12 +129,7 @@ function use(tag,version)
       case 'spm'
          use corazon
          addpath([mhome,'/swarovski/spm/',version.spm]);
-         fprintf(['   using SPM toolbox ',version.spm,'\n']);   
-      case 'spmx'
-         use corazon
-         addpath([mhome,'/swarovski/spmx/',version.spmx]);
-         fprintf(['   using SPMX toolbox ',version.spmx,'\n']);   
-         
+         fprintf(['   using SPM toolbox ',version.spm,'\n']);            
          
       case 'uled'
          use corazon
@@ -155,6 +151,9 @@ function use(tag,version)
          CuteV1b3Beta;
       case 'cute-v1b'
          CuteV1bRelease;
+
+      case 'spm-v1c'
+         SpmV1cRelease;
    end
 end
 
@@ -307,6 +306,32 @@ function CuteV1bRelease                % CuteV1b Release @ 07Sep20
       
    artpath = '/users/hux/Documents/Bluenetics/[Database]/@Article';
    articles(cute,artpath);
+   disp(['   ',pwd]);
+end
+
+function SpmV1cRelease                 % SpmV1c  Release @ 12Oct20     
+   release = 'SpmV1c-Release-12Oct20';
+   dirnum = '06';
+   version.corazon = 'V1f';
+   version.spm = 'V1c';
+   
+   fprintf('Setting up for %s\n',release); 
+   relpath = [mhome,'/swarovski/@Release/',dirnum,' ',release,'/',release];
+
+      % use corazon
+
+   corazonpath = [relpath,'/corazon/',version.corazon];
+   addpath(corazonpath);
+   fprintf(['   using Corazon Toolbox ',version.corazon,'\n']);
+
+      % use spm
+
+   spmpath = [relpath,'/spm/',version.spm];
+   addpath(spmpath);
+   fprintf(['   using SPM Toolbox ',version.spm,'\n']);
+   
+      % show current directory path
+      
    disp(['   ',pwd]);
 end
 
