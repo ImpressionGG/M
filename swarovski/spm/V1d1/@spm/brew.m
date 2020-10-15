@@ -637,15 +637,17 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       [P,Q] = NormalPQ(o);
    end
 
-   P = set(P,'name','P(s)');
-   Q = set(Q,'name','Q(s)');
+   [P,Q,F0] = Normalize(oo,P,Q)        % calc normalized P(s)/Q(s)
+   
+   F0 = set(F0,'name','F0(s)');        % normalizing transfer function
+   P = set(P,'name','P(s)');           % normalized P(s)
+   Q = set(Q,'name','Q(s)');           % normalized Q(s)
    
    oo = o;
+   oo = cache(oo,'principal.F0',F0);
    oo = cache(oo,'principal.P',P);
    oo = cache(oo,'principal.Q',Q);
-        
-   oo = NormalizePQ(oo)                % calc normalized P0(s)/Q0(s)
-        
+                
    L0 = CalcL0(oo,P,Q);
    oo = cache(oo,'principal.L0',L0);   % store in loop cache segment
 
@@ -765,7 +767,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       oo = cache(oo,'principal.P0',P0);   
       oo = cache(oo,'principal.Q0',Q0);   
    end
-   function oo = NormalizePQ(o)        % Normalize P(s) and Q(s)       
+   function [P,Q,F0] = Normalize(o,P,Q)% Normalize P(s) and Q(s)   
       V0 = fqr(Q,0);                      % gain of P
 
          % calculate normalizing factor F0(s)
@@ -782,17 +784,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 
          % calculate normalized principal transfer matrices
 
-      P0 = P/F0;
-      P0 = set(P0,'name','P0(s)');
-
-      Q0 = Q/F0;
-      Q0 = set(Q0,'name','Q0(s)');
-
-         % store F0,P0,Q0 in 'principal' cache
-
-      oo = cache(o,'principal.F0',F0);   
-      oo = cache(oo,'principal.P0',P0);   
-      oo = cache(oo,'principal.Q0',Q0);   
+      P = P/F0;
+      Q = Q/F0;
    end
    function L0 = CalcL0(o,P,Q)         % Calc L0(s)                    
    %

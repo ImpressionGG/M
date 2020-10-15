@@ -187,13 +187,13 @@ function oo = Principal(o)             % Pricipal Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'PsQsBode'});
    ooo = mitem(oo,'Nyquist Plots',{@WithCuo,'PsQsNyq'});
-   ooo = mitem(oo,'Bode/Nyquist',{@WithCuo,'PsQsBodeNyq'});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('P(s)'),{@WithCuo,'PsQs',1,0});
    ooo = mitem(oo,sprintf('Q(s)'),{@WithCuo,'PsQs',2,0});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('L(s) = P(s)/Q(s)'),{@WithCuo,'PsQs',0,0});
+   ooo = mitem(oo,sprintf('F0(s)'),{@WithCuo,'PsQs',3,0});
+   ooo = mitem(oo,sprintf('L0(s) = P(s)/Q(s)'),{@WithCuo,'PsQs',0,0});
 end
 
 function oo = OpenLoopSystem(o)        % Open Loop System Menu         
@@ -1006,24 +1006,24 @@ end
 %==========================================================================
 
 function o = PsQsOverview(o)            % P(s)/Q(s) Bode Plot Overview  
-   [P0,Q0,L0] = cook(o,'P0,Q0,L0');        % G(s)
+   [P,Q,L0] = cook(o,'P,Q,L0');
    
-   diagram(o,'Bode','',P0,3211);
-   diagram(o,'Bode','',Q0,3221);
+   diagram(o,'Bode','',P,3211);
+   diagram(o,'Bode','',Q,3221);
    diagram(o,'Bode','',L0,3231);
    diagram(o,'Nyq','',L0,122);
    
    heading(o);
 end
 function o = PsQsNormalizing(o)         % P(s)/Q(s) Bode Plot Overview  
-   [G31,G33,F0,P0,Q0,L0] = cook(o,'G31,G33,F0,P0,Q0,L0');
+   [G31,G33,F0,P,Q,L0] = cook(o,'G31,G33,F0,P,Q,L0');
    
    diagram(o,'Bode','',G31,3211);
    diagram(o,'Bode','',G33,3221);
    diagram(o,'Bode','',F0,3231);
 
-   diagram(o,'Bode','',P0,3212);
-   diagram(o,'Bode','',Q0,3222);
+   diagram(o,'Bode','',P,3212);
+   diagram(o,'Bode','',Q,3222);
    diagram(o,'Bode','',L0,3232);
    
    heading(o);
@@ -1033,7 +1033,7 @@ function o = PsQs(o)                   % Principal Transfer Function
    i = arg(o,1);
    j = arg(o,2);
 
-   [P,Q,L0] = cook(o,'P,Q,L0');
+   [P,Q,F0,L0] = cook(o,'P,Q,F0,L0');
 
    switch i
       case 0
@@ -1042,6 +1042,8 @@ function o = PsQs(o)                   % Principal Transfer Function
          G = P;
       case 2
          G = Q;
+      case 3
+         G = F0;
       otherwise
          assert(0);
    end
@@ -1095,7 +1097,7 @@ function o = PsQsNyq(o)                % P(s)/Q(s) Bode Plot Overview
    
    heading(o);
 end
-function o = PsQsBodeNyq(o)            % P(s)/Q(s) Bode Plot Overview  
+function o = OldPsQsBodeNyq(o)         % P(s)/Q(s) Bode Plot Overview  
    [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
    
    diagram(o,'Bode','',P,3211);

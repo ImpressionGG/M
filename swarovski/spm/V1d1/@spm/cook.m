@@ -35,7 +35,7 @@ function varargout = cook(o,sym)
 %       Principal transfer functions
 %
 %          [P,Q] = cook(o,'P,Q')            % principal TRF's P(s),Q(s)
-%          [P0,Q0,F0] = cook(o,'P0,Q0,F0')  % normalized principal TRF's
+%          F0 = cook(o,'F0')                % normalizing TRF
 %          Lp = cook(o,'Lp')                % Lp(s) := P(s)/Q(s)
 %
 %       Constrained system transfer matrix
@@ -124,7 +124,7 @@ function oo = Cook(o,sym)              % Cook-up Anyhing
       case 'L'
          oo = cache(o,'consd.L');
          
-      case {'P','Q','F0','P0','Q0','L0'}
+      case {'P','Q','F0','L0'}
          oo = cache(o,['principal.',sym]);
 
       case 'Lmu'

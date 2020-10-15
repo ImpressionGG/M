@@ -847,6 +847,8 @@ function o = Color(o)                  % Set Color Default
    sym = get(o,{'name','?'});
    if isempty(opt(o,'color')) 
       switch sym(1)
+         case 'F'
+            col = 'gb';
          case 'G'
             col = 'g';
          case 'H'
@@ -861,6 +863,10 @@ function o = Color(o)                  % Set Color Default
             col = 'rk';
          otherwise
             col = 'r.';
+      end
+      
+      if length(sym) >= 2 && isequal(sym(1:2),'L0')
+         col = 'yyyyyr';
       end
       o = opt(o,'color',col);
    end
