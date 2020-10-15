@@ -36,7 +36,11 @@ function varargout = cook(o,sym)
 %
 %          [P,Q] = cook(o,'P,Q')            % principal TRF's P(s),Q(s)
 %          F0 = cook(o,'F0')                % normalizing TRF
-%          Lp = cook(o,'Lp')                % Lp(s) := P(s)/Q(s)
+%          L0 = cook(o,'L0')                % Open loop L0(s) := P(s)/Q(s)
+%          K0 = cook(o,'K0')                % critical gain (mu)
+%          S0 = cook(o,'S0')                % closed loop Sensitivity @ K0
+%          T0 = cook(o,'T0')                % total closed loop TRF @ K0 
+%          
 %
 %       Constrained system transfer matrix
 %
@@ -45,7 +49,7 @@ function varargout = cook(o,sym)
 %       Open loop transfer matrix and open loop transfer function
 %
 %          L = cook(o,'L')                  % open loop trf matrix L(s)
-%          L0 = cook(o,'L0')                % open loop trf L0(s) with mu
+%          Lmu = cook(o,'Lmu')              % open loop trf L0(s) with mu
 %
 %       Closed Loop Transfer Matrices
 %
@@ -124,7 +128,7 @@ function oo = Cook(o,sym)              % Cook-up Anyhing
       case 'L'
          oo = cache(o,'consd.L');
          
-      case {'P','Q','F0','L0'}
+      case {'P','Q','F0','L0','K0','S0','T0'}
          oo = cache(o,['principal.',sym]);
 
       case 'Lmu'

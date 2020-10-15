@@ -859,6 +859,10 @@ function o = Color(o)                  % Set Color Default
             col = 'bbw';
          case 'Q'
             col = 'mmmb';
+         case 'S'
+            col = o.iif(dark(o),'wwk','kkw');
+         case 'T'
+            col = 'rrrb';
          case '?'
             col = 'rk';
          otherwise

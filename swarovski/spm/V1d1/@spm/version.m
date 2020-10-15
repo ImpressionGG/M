@@ -140,6 +140,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - extend spm/brew to calc P0/Q0
 % - introduce normalizing for principal transfer functions
 % - pimping pricipal transfer functions completed
+% - Plot>Critical_Loop menu
 %
 % Known bugs & wishlist
 % =========================

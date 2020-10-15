@@ -19,7 +19,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
-                   @PsQsOverview,@PsQsNormalizing,...
+                   @PsQsOverview,@PsQsNormalizing,@Critical,@T0S0,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @Stability,...
@@ -57,8 +57,11 @@ function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type
    oo = mitem(o,'-');
    oo = TransferMatrix(o);             % G(s)
    oo = ConstrainMatrix(o);            % H(s)
-   oo = Principal(o);                  % P(s)/Q(s)
 
+   oo = mitem(o,'-');
+   oo = Principal(o);                  % P(s)/Q(s)
+   oo = CriticalLoop(o);               % K0, S0(s), T0(s)
+   
    oo = mitem(o,'-');
    oo = StepResponse(o);               % step response sub-menu
    oo = RampResponse(o);               % ramp response sub-menu
@@ -195,7 +198,15 @@ function oo = Principal(o)             % Pricipal Menu
    ooo = mitem(oo,sprintf('F0(s)'),{@WithCuo,'PsQs',3,0});
    ooo = mitem(oo,sprintf('L0(s) = P(s)/Q(s)'),{@WithCuo,'PsQs',0,0});
 end
-
+function oo = CriticalLoop(o)          % Critical Loop Menu            
+   oo = mitem(o,'Critical Loop');
+   ooo = mitem(oo,'Critical Gain',{@WithCuo,'Critical','K0'});
+   ooo = mitem(oo,'Closed Loop T0(s)',{@WithCuo,'Critical','T0'});   
+   ooo = mitem(oo,'Sensitivity S0(s)',{@WithCuo,'Critical','S0'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('T0(s)'),{@WithCuo,'T0S0','T0'});
+   ooo = mitem(oo,sprintf('S0(s)'),{@WithCuo,'T0S0','S0'});
+end
 function oo = OpenLoopSystem(o)        % Open Loop System Menu         
    oo = mhead(o,'L(s): Open Loop');
 
@@ -1005,7 +1016,7 @@ end
 % Plot Transfer Matrix G(s)
 %==========================================================================
 
-function o = PsQsOverview(o)            % P(s)/Q(s) Bode Plot Overview  
+function o = PsQsOverview(o)           % P(s)/Q(s) Bode Plot Overview  
    [P,Q,L0] = cook(o,'P,Q,L0');
    
    diagram(o,'Bode','',P,3211);
@@ -1015,7 +1026,7 @@ function o = PsQsOverview(o)            % P(s)/Q(s) Bode Plot Overview
    
    heading(o);
 end
-function o = PsQsNormalizing(o)         % P(s)/Q(s) Bode Plot Overview  
+function o = PsQsNormalizing(o)        % P(s)/Q(s) Bode Plot Overview  
    [G31,G33,F0,P,Q,L0] = cook(o,'G31,G33,F0,P,Q,L0');
    
    diagram(o,'Bode','',G31,3211);
@@ -1097,14 +1108,35 @@ function o = PsQsNyq(o)                % P(s)/Q(s) Bode Plot Overview
    
    heading(o);
 end
-function o = OldPsQsBodeNyq(o)         % P(s)/Q(s) Bode Plot Overview  
-   [P,Q,L0] = cook(o,'P,Q,L0');        % G(s)
+function o = Critical(o)               % Critical TRFs                 
+   [L0,K0,S0,T0] = cook(o,'L0,K0,S0,T0');
+   mode = arg(o,1);
    
-   diagram(o,'Bode','',P,3211);
-   diagram(o,'Bode','',Q,3221);
-   diagram(o,'Bode','',L0,3231);
-   diagram(o,'Nyq','',L0,122);
+   switch mode
+      case 'K0'
+         subplot(o,111);
+         stable(o,K0*L0);
+         title(sprintf('Critical Gain: %g',o.rd(K0,4)));
+      case 'S0'
+         diagram(o,'Bode','',S0,2111);
+         diagram(o,'Step','',S0,2121);
+      case 'T0'
+         diagram(o,'Bode','',T0,2111);
+         diagram(o,'Step','',T0,2121);
+   end
    
+   heading(o);
+end
+function o = T0S0(o)                   % T0(s), S0(s)                  
+   sym = arg(o,1);
+   G = cook(o,sym);
+
+   diagram(o,'Trf', '',G,3111);      
+   diagram(o,'Step','',G,3221);
+   diagram(o,'Rloc','',G,3222);
+   diagram(o,'Bode','',G,3231);
+   diagram(o,'Nyq', '',G,3232);
+    
    heading(o);
 end
 

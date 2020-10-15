@@ -649,8 +649,22 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    oo = cache(oo,'principal.Q',Q);
                 
    L0 = CalcL0(oo,P,Q);
-   oo = cache(oo,'principal.L0',L0);   % store in loop cache segment
+   oo = cache(oo,'principal.L0',L0);
 
+      % calc critical K and closed loop TRF
+      
+   K0 = stable(o,L0);
+   L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
+   S0 = 1/(1+K0*L0);                   % closed loop sensitivity
+   T0 = S0*K0*L0;                      % total TRF
+
+   S0 = set(S0,'name','S0(s)');
+   T0 = set(T0,'name','T0(s)');
+   
+   oo = cache(oo,'principal.K0',K0);
+   oo = cache(oo,'principal.S0',S0);
+   oo = cache(oo,'principal.T0',T0);
+   
       % unconditional hard refresh of cache
    
    cache(oo,oo);                       % hard refresh cache
@@ -738,42 +752,13 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
          end
       end
    end
-   function oo = OldNormalizePQ(o)     % Normalize P(s) and Q(s)       
-      V0 = fqr(P,0);                      % gain of P
-
-         % calculate normalizing factor F0(s)
-
-      if (V0 == 0)
-         K0 = zpk(P,[],[],1);
-      else
-         [num,den] = peek(P/V0);
-         Vinf = num(1)/den(1);
-         om0 = sqrt(abs(Vinf));
-         F0 = 1/V0*lf(P,om0)*lf(P,om0);   % normalizing factor
-      end
-      F0 = set(F0,'name','F0(s)');
-
-         % calculate normalized principal transfer matrices
-
-      P0 = P*F0;
-      P0 = set(P0,'name','P0(s)');
-
-      Q0 = Q*F0;
-      Q0 = set(Q0,'name','Q0(s)');
-
-         % store F0,P0,Q0 in 'principal' cache
-
-      oo = cache(o,'principal.F0',F0);   
-      oo = cache(oo,'principal.P0',P0);   
-      oo = cache(oo,'principal.Q0',Q0);   
-   end
    function [P,Q,F0] = Normalize(o,P,Q)% Normalize P(s) and Q(s)   
       V0 = fqr(Q,0);                      % gain of P
 
          % calculate normalizing factor F0(s)
 
       if (V0 == 0)
-         K0 = zpk(Q,[],[],1);
+         F0 = zpk(Q,[],[],1);
       else
          [num,den] = peek(Q/V0);
          Vinf = num(1)/den(1);
@@ -894,15 +879,6 @@ function oo = ConstrainedDouble(o)     % Double Constrained Trf Matrix
       % store H in cache
       
    oo = cache(oo,'consd.H',H);
-
-   function Hs = CancelH(o,Hs)         % Set Cancel Epsilon for H(s)   
-      eps = opt(o,'cancel.H.eps');
-      Hs = opt(Hs,'control.verbose',control(o,'verbose'));
-
-      if ~isempty(eps)
-         Hs = opt(Hs,'eps',eps);
-      end
-   end
 end
 
 %==========================================================================
@@ -954,14 +930,6 @@ function oo = OpenLoop(o)              % Open Loop Linear System
       % store L in cache
       
    oo = cache(oo,'consd.L',L);
-end
-function Ls = CancelL(o,Ls)            % Set Cancel Epsilon            
-   eps = opt(o,'cancel.L.eps');
-   Ls = opt(Ls,'control.verbose',control(o,'verbose'));
-
-   if ~isempty(eps)
-      Ls = opt(Ls,'eps',eps);
-   end
 end
 
 %==========================================================================
@@ -1108,13 +1076,6 @@ function oo = ClosedLoop(o)            % Closed Loop Linear System
 
       oo = cache(o,'process.Ta',Ta);
    end
-   function Ts = CancelT(o,Ts)         % Set Cancel Epsilon            
-      eps = opt(o,'cancel.T.eps');
-      Ts = opt(Ts,'control.verbose',control(o,'verbose'));
-      if ~isempty(eps)
-         Ts = opt(Ts,'eps',eps);
-      end
-   end
 end
 
 %==========================================================================
@@ -1171,5 +1132,28 @@ function Gs = CancelG(o,Gs)            % Set Cancel Epsilon for G(s)
          Gs = touch(Gs);
       end
       Gs = opt(Gs,'eps',eps);
+   end
+end
+function Hs = CancelH(o,Hs)            % Set Cancel Epsilon for H(s)   
+   eps = opt(o,'cancel.H.eps');
+   Hs = opt(Hs,'control.verbose',control(o,'verbose'));
+
+   if ~isempty(eps)
+      Hs = opt(Hs,'eps',eps);
+   end
+end
+function Ls = CancelL(o,Ls)            % Set Cancel Epsilon            
+   eps = opt(o,'cancel.L.eps');
+   Ls = opt(Ls,'control.verbose',control(o,'verbose'));
+
+   if ~isempty(eps)
+      Ls = opt(Ls,'eps',eps);
+   end
+end
+function Ts = CancelT(o,Ts)            % Set Cancel Epsilon            
+   eps = opt(o,'cancel.T.eps');
+   Ts = opt(Ts,'control.verbose',control(o,'verbose'));
+   if ~isempty(eps)
+      Ts = opt(Ts,'eps',eps);
    end
 end
