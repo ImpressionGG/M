@@ -492,6 +492,7 @@ function VersionV1F
 % - corasim/can extended to deal with new types
 % - corasim zpk types implemented with basic arithmetic
 % - some adaptions in arithmetic basic routines regarding ZPK objects
+% - corasim/lf pimped to allow zpk typed linear factors
 %
 % Change Log V1f:
 %
