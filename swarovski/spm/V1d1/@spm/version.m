@@ -138,6 +138,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - start Beta SPM V1D1
 % - add heading at the end of stability margin plot
 % - extend spm/brew to calc P0/Q0
+% - introduce normalizing for principal transfer functions
 %
 % Known bugs & wishlist
 % =========================

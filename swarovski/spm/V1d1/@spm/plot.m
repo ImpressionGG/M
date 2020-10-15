@@ -19,6 +19,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
+                   @PsQsOverview,@PsQsNormalizing,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @Stability,...
@@ -178,6 +179,9 @@ end
 function oo = Principal(o)             % Pricipal Menu                 
    oo = current(o);
    oo = mhead(o,'Principal Transfer Functions');
+   ooo = mitem(oo,'Overview',{@WithCuo,'PsQsOverview'});
+   ooo = mitem(oo,'Normalizing',{@WithCuo,'PsQsNormalizing'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'PsQsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'PsQsStep'});
    ooo = mitem(oo,'-');
@@ -1001,6 +1005,29 @@ end
 % Plot Transfer Matrix G(s)
 %==========================================================================
 
+function o = PsQsOverview(o)            % P(s)/Q(s) Bode Plot Overview  
+   [P0,Q0,L0] = cook(o,'P0,Q0,L0');        % G(s)
+   
+   diagram(o,'Bode','',P0,3211);
+   diagram(o,'Bode','',Q0,3221);
+   diagram(o,'Bode','',L0,3231);
+   diagram(o,'Nyq','',L0,122);
+   
+   heading(o);
+end
+function o = PsQsNormalizing(o)         % P(s)/Q(s) Bode Plot Overview  
+   [G31,G33,F0,P0,Q0,L0] = cook(o,'G31,G33,F0,P0,Q0,L0');
+   
+   diagram(o,'Bode','',G31,3211);
+   diagram(o,'Bode','',G33,3221);
+   diagram(o,'Bode','',F0,3231);
+
+   diagram(o,'Bode','',P0,3212);
+   diagram(o,'Bode','',Q0,3222);
+   diagram(o,'Bode','',L0,3232);
+   
+   heading(o);
+end
 function o = PsQs(o)                   % Principal Transfer Function   
    o = with(o,'simu');
    i = arg(o,1);
@@ -1337,7 +1364,7 @@ function o = TsBode(o)                 % T(s) Bode Plot Overview
 end
 
 %==========================================================================
-% Plot Menu Plugins
+% Force Step & Ramp Responses
 %==========================================================================
 
 function o = Step(o)                   % Step Response                 
