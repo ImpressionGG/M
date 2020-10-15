@@ -496,6 +496,7 @@ function VersionV1F
 % Change Log V1f:
 %
 % - starting corazon beta V1g1
+% - corasim/mrdivide to preserve type if one operand is a double
 %
 %
 % Known Bugs / Wishlist
