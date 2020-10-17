@@ -118,8 +118,8 @@ function oo = MulTrf(o1,o2)            % Product Of Transfer Functions
    [num1,den1] = peek(o1);
    [num2,den2] = peek(o2);
    
-   num = conv(num1,num2);
-   den = conv(den1,den2);
+   num = conv(o1,num1,num2);
+   den = conv(o1,den1,den2);
       
    oo = poke(oo,0,num,den);
    

@@ -25,7 +25,11 @@ function o = poke(o,o1,o2,o3)         % Poke CORINTH Object @ Index
 %
    if ~isobject(o1)                    % super fast access
       data = o.data;
-      data.expo = o1;  data.num = o2;  data.den = o3;
+      if (nargin == 3)
+         data.num = o1;  data.den = o2;
+      else
+         data.expo = o1;  data.num = o2;  data.den = o3;
+      end
       o.data = data;
       return
    end

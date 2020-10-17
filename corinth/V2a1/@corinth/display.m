@@ -72,16 +72,16 @@ end
 % Display Transfer Function
 %==========================================================================
 
-function txt = Trf(o)                  % Display Transfer Function                
+function txt = OldTrf(o)               % Display Transfer Function     
    assert(isequal(o.type,'trf'));
    [num,den] = peek(o);
       
       % compile readable text string; distinguish if denominator equals
       % one or else      
          
-   if isequal(den,vpa(1))
+   if isequal(vpa(den),vpa(1))
       txt = PolyString(o,num,'s');
-      col = zeros(size(txt,1),2);
+      col = zeros(size(txt,1),1);
       if isequal(o.type,'trf')
          txt = [setstr('['+col),txt,setstr(']'+col)];
       else
@@ -105,6 +105,68 @@ function txt = Trf(o)                  % Display Transfer Function
       fprintf('\n');
    else
       Display(o,num,den);
+   end
+end
+function txt = Trf(o)                  % Display Transfer Function     
+   [on,od] = peek(o);
+   sym = Symbol(o);
+      
+      % fetch numerator ans denominator objects
+      
+   num = real(on);
+   den = real(od);
+   
+      % compile readable text string; distinguish if denominator equals
+      % one or else      
+         
+   if isequal(vpa(od),vpa(1))
+      txt = PolyString(o,num,sym);
+      txt = ['((',txt,'))'];
+   else
+      txt = RatioString(o,num,den,sym);
+      txt = Trim(o,txt);
+   end
+   
+      % depending on calling syntax return readable text string or
+      % print to console
+      
+   if (nargout > 0)
+      return
+   end
+   
+      % print header
+      
+   name = get(o,'name');
+   if isempty(name)
+      fprintf('rational function (%g/%g)\n\n',Order(on),Order(od));
+   else
+      fprintf('%s: rational function (%g/%g)\n\n',name,Order(on),Order(od));
+   end
+   
+      % print numerator/denuminator polynomial
+      
+   disp([setstr(' '+zeros(size(txt,1),3)),txt]);
+   fprintf('\n');
+   
+      % if 'detail' option enable print also poles & zeros
+      
+   if opt(o,{'detail',1})      
+      PoleZero(o,num,den);
+   end
+   
+   function sym = Symbol(o)            % Variable Symbol               
+      T = data(o,{'T',0});
+      if (T == 0)
+         sym = 's';
+      elseif (T > 0)
+         sym = 'z';
+      else
+         sym = 'q';
+      end
+   end
+   function n = Order(p)               % Order of a Polynomial         
+      p = trim(o,p);
+      n = length(p) - 1;
    end
 end
 
@@ -250,7 +312,7 @@ end
 % Display Rational Function
 %==========================================================================
 
-function txt = OldRatio(o)             % Old Display Rational Function 
+function txt = Ratio(o)                % Display Rational Function     
    assert(isequal(o.type,'ratio'));
    [on,od] = peek(o);
    
@@ -282,70 +344,6 @@ function txt = OldRatio(o)             % Old Display Rational Function
       fprintf('\n');
    else
       Display(o,num,den);
-   end
-end
-function txt = Ratio(o)                % Display Rational Function     
-   switch o.type
-      case {'strf','szpk'}
-         sym = 's';
-      case {'ztrf','zzpk'}
-         sym = 'z';
-      case {'qtrf','qzpk'}
-         sym = 'q'
-      case 'modal'
-         sym = 's';
-      otherwise
-         error('bad type');
-   end
-   
-   [on,od] = peek(o);
-   
-      % fetch numerator ans denominator objects
-      
-   num = real(on);
-   den = real(od);
-   
-      % compile readable text string; distinguish if denominator equals
-      % one or else      
-         
-   if isequal(od,1)
-      txt = PolyString(o,num,sym);
-      txt = ['((',txt,'))'];
-   else
-      txt = RatioString(o,num,den,sym);
-      txt = Trim(o,txt);
-   end
-   
-      % depending on calling syntax return readable text string or
-      % print to console
-      
-   if (nargout > 0)
-      return
-   end
-   
-      % print header
-      
-   name = get(o,'name');
-   if isempty(name)
-      fprintf('rational function (%g/%g)\n\n',Order(on),Order(od));
-   else
-      fprintf('%s: rational function (%g/%g)\n\n',name,Order(on),Order(od));
-   end
-   
-      % print numerator/denuminator polynomial
-      
-   disp([setstr(' '+zeros(size(txt,1),3)),txt]);
-   fprintf('\n');
-   
-      % if 'detail' option enable print also poles & zeros
-      
-   if opt(o,{'detail',0})      
-      PoleZero(o,num,den);
-   end
-   
-   function n = Order(p)
-      p = trim(o,p);
-      n = length(p) - 1;
    end
 end
 
@@ -917,6 +915,7 @@ function str = PolyString(o,poly,sym)       % Readable String for Poly
       % since 0 and 1 as the highest order coefficient is treated 
       % as a special we cannot run through the general procedure
       
+   poly = vpa(poly);
    while (length(poly) > 1 && poly(1) == 0)
       poly(1) = [];                    % delete trailing zeros
    end

@@ -85,7 +85,8 @@ function VersionV2A
 % Change Log V2a1:
 %
 % - starting corinth beta V2a1
-% - add VPA support and adopt plus/minus arithmetics for TRFs 
+% - add VPA support and adopt plus/minus arithmetics for TRFs
+% - adopt corinth/display
 %
 %
 % Known Bugs / Wishlist
