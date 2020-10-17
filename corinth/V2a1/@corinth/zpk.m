@@ -1,4 +1,4 @@
-function [z,p,k] = zpk(o,num,den)
+function [z,p,k] = zpk(o,num,den,arg4)
 %
 % ZPK   Find zeros, poles and K-factor of a rational function
 %
@@ -6,7 +6,9 @@ function [z,p,k] = zpk(o,num,den)
 %
 %          [z,p,k] = zpk(o)
 %          [z,p,k] = zpk(o,num,den)
-%          [z,p,k] ) zpk(o,poly)
+%          [z,p,k] = zpk(o,poly)
+%
+%          o = zpk(o,z,p,k);           % create TRF
 %
 %       From a rational transfer function in polynomial form
 %
@@ -37,6 +39,12 @@ function [z,p,k] = zpk(o,num,den)
          [z,p,k] = Zpk(o,num,den);
       case 3
          [z,p,k] = Zpk(o,num,den);
+      case 4
+         z = num;  p = den;  K = arg4;
+         num = K * polynom(o,z);
+         den = polynom(o,p);
+         oo = trf(o,num,den);          % create trf
+         z = oo;                       % rename output
       otherwise
          error('1,2 or 3 input args expected');
    end

@@ -88,7 +88,7 @@ function VersionV2A
 % - add VPA support and adopt plus/minus arithmetics for TRFs
 % - adopt corinth/display
 % - corinth/polynom and corinth/ss2tf implemented
-%
+% - corinth/ss2zp implemented
 %
 % Known Bugs / Wishlist
 % - none so far

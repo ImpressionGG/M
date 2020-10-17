@@ -37,7 +37,7 @@ function [num,den] = ss2tf(o,A,B,C,D,iu) % State Space to Transfer Fct.
       iu = 1;
    end
    
-      % convert to VPA matrices
+      % convert to VPA matrices and select relevant input
       
    A = vpa(A);  B = vpa(B);  C = vpa(C);  D = vpa(D); 
    B = B(:,iu);
