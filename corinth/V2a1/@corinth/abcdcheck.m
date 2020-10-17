@@ -7,7 +7,7 @@ function err = abcdcheck(o,A,B,C,D)
 %
 %           Copyright(c): Bluenetics 2020
 %
-%           See also: CORASIM, SIMU
+%           See also: CORINTH, SIMU
 %
    err = 0;
    [ma,na] = size(A);

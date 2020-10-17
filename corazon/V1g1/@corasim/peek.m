@@ -110,7 +110,7 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu) % State Space to Zero/Pole
 %
 %   SS2ZP	State-space to zero-pole conversion.
 %
-%	            [z,p,k] = SS2ZP(A,B,C,D,iu)  factored transfer function
+%	            [z,p,k] = SS2ZP(o,A,B,C,D,iu)  factored transfer function
 %
 %           calculates the transfer function in factored form
 %

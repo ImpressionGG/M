@@ -649,13 +649,13 @@ function [num,den] = Zp2Tf(o,z,p,K)    % Convert Zeros/Poles/K to TRF
 %  
    T = data(o,'T');
    
-   den = real(Poly(o,p(:)));
+   den = real(polynom(o,p(:)));
    [m,n] = size(z);
    
    num = vpa([]);
    for j=1:n
       zj = z(:,j);
-      pj = real(Poly(o,zj)*K(j));
+      pj = real(polynom(o,zj)*K(j));
       num(j,:) = [zeros(1,1+m-length(pj),class(pj)) pj];
    end
    
@@ -663,53 +663,5 @@ function [num,den] = Zp2Tf(o,z,p,K)    % Convert Zeros/Poles/K to TRF
       num = K;
    end
    oo = trf(o,num,den,T);
-end
-function c = Poly(o,x)
-%
-% POLY  Convert roots to polynomial.
-%       POLY(A), when A is an N by N matrix, is a row vector with
-%       N+1 elements which are the coefficients of the
-%       characteristic polynomial, det(lambda*eye(size(A)) - A).
-%
-%       POLY(V), when V is a vector, is a vector whose elements are
-%       the coefficients of the polynomial whose roots are the
-%       elements of V. For vectors, ROOTS and POLY are inverse
-%       functions of each other, up to ordering, scaling, and
-%       roundoff error.
-%
-%       Examples:
-%
-%          roots(poly(1:20)) generates Wilkinson's famous example.
-%
-%       Class support for inputs A,V: double, single, sym
-%
-%       See also ROOTS, CONV, RESIDUE, POLYVAL.
-%
-   [m,n] = size(x);
-   if m == n                           % square matrix?
-      e = eig(x);                      % Characteristic polynomial
-   elseif (m==1) || (n==1)
-      e = x;
-   else
-      error(message('MATLAB:poly:InputSize'))
-   end
-
-      % Strip out infinities
-      
-   e = e(isfinite(e));
-
-      % Expand recursion formula
-      
-   n = length(e);
-   c = [1 zeros(1,n,class(x))];
-   for j=1:n
-       c(2:(j+1)) = c(2:(j+1)) - e(j).*c(1:j);
-   end
-
-      % The result should be real if the roots are complex conjugates.
-      
-   if isequal(sort(e(imag(e)>0)),sort(conj(e(imag(e)<0))))
-       c = real(c);
-   end
 end
 

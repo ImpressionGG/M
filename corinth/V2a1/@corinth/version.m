@@ -87,6 +87,7 @@ function VersionV2A
 % - starting corinth beta V2a1
 % - add VPA support and adopt plus/minus arithmetics for TRFs
 % - adopt corinth/display
+% - corinth/polynom and corinth/ss2tf implemented
 %
 %
 % Known Bugs / Wishlist
