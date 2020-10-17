@@ -34,6 +34,13 @@ function vers = version(o,arg)         % SPM Class Version
 % - loading and analysis of packages
 % - cook method to access all important interna data
 %
+% Features SPM/V1D
+% ================
+%
+% - Replace old style principal transfer functions by normalized (and in-
+%   vertible) principal transfer functions.
+% - introduce plot menu for critical closed loop transfer functions
+%
 %--------------------------------------------------------------------------
 %
 % Roadmap

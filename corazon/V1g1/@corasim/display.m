@@ -1,4 +1,4 @@
-function txt = display(o)
+function txt = display(o)              % Display Corasim Object        
 %
 % DISPLAY   Display a CORINTH object (rational object)
 %
@@ -488,7 +488,7 @@ end
 % Display Poles & Zeros
 %==========================================================================
 
-function list = PoleZero(o,num,den)         % Display Poles & Zeros         
+function list = PoleZero(o,num,den)         % Display Poles & Zeros    
    [V,lambda] = gain(o);
 
    if (nargout == 0)

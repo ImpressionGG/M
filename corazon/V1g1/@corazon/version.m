@@ -41,32 +41,10 @@ function oo = Version(o,nin)           % Actual Version Work Horse
 end   
 
 %==========================================================================
-% Known Bugs & ToDo's
+% Corazon Power Features
 %==========================================================================
 
-function KnownBugsAndRoadmap           % Just a Dummy Function         
-%
-% Known Bugs
-% ==========
-%
-% - no known bugs so far :-)
-%
-% Roadmap
-% =======
-%
-% - default support for import/export of CSV files
-% - easier dynamic menu management:
-% -    a) move 'dynamic(o)' from shell to method!
-% -    b) make shell/Dynamic an obsolete function (no update required)
-% - version core for better support of version method of rapid toolboxes
-%
-end
-
-%==========================================================================
-% Release Notes
-%==========================================================================
-
-function CorazonPowerFeatures
+function CorazonPowerFeatures                                          
 %
 % - universal data model with type, tag, parameters, data and working
 %   variables. easy casting of an object from one class to another class
@@ -99,6 +77,32 @@ function CorazonPowerFeatures
 % - rapid toolbox or plugin generation
 %
 end
+
+%==========================================================================
+% Known Bugs & ToDo's
+%==========================================================================
+
+function KnownBugsAndRoadmap           % Just a Dummy Function         
+%
+% Known Bugs
+% ==========
+%
+% - no known bugs so far :-)
+%
+% Roadmap
+% =======
+%
+% - default support for import/export of CSV files
+% - easier dynamic menu management:
+% -    a) move 'dynamic(o)' from shell to method!
+% -    b) make shell/Dynamic an obsolete function (no update required)
+% - version core for better support of version method of rapid toolboxes
+%
+end
+
+%==========================================================================
+% Release Notes
+%==========================================================================
 
 function VersionV1A                                                    
 %--------------------------------------------------------------------------
@@ -494,7 +498,20 @@ function VersionV1F
 % - some adaptions in arithmetic basic routines regarding ZPK objects
 % - corasim/lf pimped to allow zpk typed linear factors
 %
-% Change Log V1f:
+%
+% Known Bugs / Wishlist
+% - none so far
+end
+
+function VersionV1G                                                    
+%
+% Release Notes Corazon/V1G
+% =========================
+%
+% - Support of MATLAB symbolic toolbox
+%
+%
+% Change Log V1g1:
 %
 % - starting corazon beta V1g1
 % - corasim/mrdivide to preserve type if one operand is a double
@@ -502,4 +519,5 @@ function VersionV1F
 %
 % Known Bugs / Wishlist
 % - none so far
+%
 end
