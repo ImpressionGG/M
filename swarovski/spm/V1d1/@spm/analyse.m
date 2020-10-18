@@ -46,7 +46,7 @@ function oo = Menu(o)                  % Setup Analyse Menu
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
    
-   oo = Checks(o);
+   oo = Precision(o);
 end
 function oo = OpenLoopMenu(o)          % Open Loop Menu                
    oo = mitem(o,'Open Loop');
@@ -121,8 +121,8 @@ function oo = Elongation(o)            % Closed Loop Elongation Menu
    ooo = mitem(oo,'Ts1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Checks(o)                % Checks Menu                   
-   oo = mitem(o,'Checks');
+function oo = Precision(o)             % Precision Menu                
+   oo = mitem(o,'Precision');
    ooo = mitem(oo,'Eigenvalues',{@WithCuo,'EigenvalueCheck'});
 end
 

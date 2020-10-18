@@ -149,7 +149,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimping pricipal transfer functions completed
 % - Plot>Critical_Loop menu
 % - Analyse>Checks>Eigenvalues menu
-%
+% - check availability of symbolic toolbox
 % Known bugs & wishlist
 % =========================
 % - none so far

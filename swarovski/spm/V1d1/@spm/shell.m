@@ -752,14 +752,29 @@ function oo = Trf(o)                   % Transfer Function Menu
    choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
               {'Modal Type','modal'}},{});
 end
-function oo = Precision(o)             % 
+function oo = Precision(o)             % Variable Presicion Menu       
    setting(o,{'select.digits'},[]);
    
    oo = mitem(o,'Precision');
    ooo = mitem(oo,'VPA Digits',{},'select.digits');
    choice(ooo,{{'Off',[]},{},{'VPA 32',32},{'VPA 100',100},...
                {'VPA 200',200},{'VPA 500',500},{'VPA 1000',1000}},...
-               {@CacheReset});
+               {@DigitCb});
+   function o = DigitCb(o)
+      digs = setting(o,'select.digits');
+      if isempty(digs)
+         CacheReset(o);
+      else
+         try
+            digits(digs);
+            CacheReset(o);
+         catch
+            choice(o,'select.digits',[]);
+            message(o,'Selection rejected!',...
+                      {'Seems that Symbolic Toolbox is not supported!'});
+         end
+      end
+   end
 end
 function oo = Normalize(o)             % Normalize Menu                
    setting(o,{'brew.T0'},1e-3);
