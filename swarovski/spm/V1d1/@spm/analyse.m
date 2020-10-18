@@ -18,7 +18,8 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@Nyquist,@OpenLoop,@Calc,...
                       @AnalyseRamp,@NormRamp,...
-                      @BodePlots,@StepPlots,@PolesZeros);
+                      @BodePlots,@StepPlots,@PolesZeros,...
+                      @EigenvalueCheck);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -44,6 +45,8 @@ function oo = Menu(o)                  % Setup Analyse Menu
    oo = mitem(o,'Normalized System');
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
+   
+   oo = Checks(o);
 end
 function oo = OpenLoopMenu(o)          % Open Loop Menu                
    oo = mitem(o,'Open Loop');
@@ -118,6 +121,10 @@ function oo = Elongation(o)            % Closed Loop Elongation Menu
    ooo = mitem(oo,'Ts1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
+function oo = Checks(o)                % Checks Menu                   
+   oo = mitem(o,'Checks');
+   ooo = mitem(oo,'Eigenvalues',{@WithCuo,'EigenvalueCheck'});
+end
 
 %==========================================================================
 % Launch Callbacks
@@ -160,9 +167,9 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    
       % refresh caches
       
-   [oo,bag,rfr] = cache(oo,oo,'trf');  % transfer function cache segment
-   [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
-   [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
+%  [oo,bag,rfr] = cache(oo,oo,'trf');  % transfer function cache segment
+%  [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
+%  [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
    
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
@@ -506,7 +513,7 @@ function o = Trf(o)                    % Transfer Function
 end
 
 %==========================================================================
-% Analyse Menu Plugins
+% Normalized System
 %==========================================================================
 
 function o = NormRamp(o)               % Normalized System's Force Ramp
@@ -533,6 +540,155 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
    PlotY(oo);
    
    heading(o,sprintf('Analyse Force Ramp: F%g->y - %s',index,Title(o)));
+end
+
+%==========================================================================
+% Checks
+%==========================================================================
+
+function o = EigenvalueCheck(o)       % Check Numeric Quality of EVs   
+   [a0,a1,A] = cook(o,'a0,a1,A');
+      
+   if Vpa(o)                           % use variable precision arithmetic?
+      a1 = vpa(a1);  a0 = vpa(a0);
+      
+      s1 = -a1/2 + sqrt(a1.*a1-a0);
+      s2 = -a1/2 - sqrt(a1.*a1-a0);
+      sm = [s1(:);s2(:)];                 % EVs from modal form
+      
+      A = vpa(A);                      % convert matrix to MPA
+      eps = 1e-30;
+      s = eig(A);
+      
+      sm = double(sm);
+      s = double(s);                   % convert back to double precision
+   else
+      s1 = -a1/2 + sqrt(a1.*a1-a0);
+      s2 = -a1/2 - sqrt(a1.*a1-a0);
+      sm = [s1(:);s2(:)];                 % EVs from modal form
+
+      s = eig(A);
+   end
+   
+      % calculate differences
+      
+   n = length(s);
+   [sm,s] = Sort(o,sm,s);              % sort eigenvalues
+   ds = sm - s;
+   
+   dr = abs(ds);  dx = real(ds);  dy = imag(ds);
+   
+   PlotE(o,2211);
+   PlotS(o,2221);
+
+   PlotR(o,3212);
+   PlotX(o,3222);
+   PlotY(o,3232);
+   
+   heading(o);
+   
+   function PlotS(o,sub)               % Plot Radial (Absolute) Devi.  
+      subplot(o,sub);
+      plot(o,real(s),imag(s),'yyyyyro');
+      hold on
+      plot(o,real(sm),imag(sm),'rx');
+      title(sprintf('Eigenvalues in Complex Plane'));
+      ylabel('imag(s)');
+      xlabel('real(s)');
+      subplot(o);                      % subplot complete
+   end
+   function PlotE(o,sub)               % Plot Relative Error
+      subplot(o,sub);
+      e = abs(ds) ./ abs(s);
+      maxe = max(e);
+      plot(o,1:n,e,'r', 1:n,e,'Ko');
+      title(sprintf('Relative Error: max %g',maxe));
+      ylabel('e = abs(ds) / abs(s)');
+      xlabel('Eigenvalue Index');
+      subplot(o);                      % subplot complete
+   end
+   function PlotR(o,sub)               % Plot Radial (Absolute) Devi.
+      subplot(o,sub);
+      maxr = max(abs(dr));
+      plot(o,1:n,dr,'yyyyyr', 1:n,dr,'Ko');
+      title(sprintf('Absolute Deviation: max %g',maxr));
+      ylabel('abs(ds)');
+      xlabel('Eigenvalue Index');
+      subplot(o);                      % subplot complete
+   end
+   function PlotX(o,sub)               % Plot Real Deviation           
+      subplot(o,sub);
+      maxx = max(abs(dx));
+      plot(o,1:n,dx,'bc', 1:n,dx,'Ko');
+      title(sprintf('Real Deviation: max %g',maxx));
+      ylabel('real(ds)');
+      xlabel('Eigenvalue Index');
+      subplot(o);                      % subplot complete
+   end
+   function PlotY(o,sub)               % Plot Imaginary Deviation      
+      subplot(o,sub);
+      
+      maxy = max(abs(dy));
+      plot(o,1:n,dy,'g', 1:n,dy,'Ko');
+      title(sprintf('Imaginary Deviation: max %g',maxy));
+      ylabel('imag(ds)');
+      xlabel('Eigenvalue Index');
+      subplot(o);                      % subplot complete
+   end
+   function [sm,s] = Sort(o,sm,s)      % Sort Eigenvalues              
+
+         % first sort by real value
+
+      [~,idx] = sort(real(sm));
+      sm = sm(idx);
+
+      [~,idx] = sort(real(s));
+      s = s(idx);
+
+         % finally bubble sort on the imaginary part
+
+      dirty = 1;                          % init to start loop
+      while (dirty)
+         dirty = 0;
+         for (i=1:n-1)
+            same = real(sm(i)) == real(sm(i+1));
+            if (same && imag(sm(i)) > imag(sm(i+1)))
+               tmp = sm(i);  sm(i) = sm(i+1);  sm(i+1) = tmp;   % swap
+               dirty = 1;
+            end
+
+            same = real(s(i)) <= real(s(i+1));
+            if (same && imag(s(i)) > imag(s(i+1)))
+               tmp = s(i);  s(i) = s(i+1);  s(i+1) = tmp;       % swap
+               dirty = 1;
+            end
+         end
+      end
+      
+         % finally sort step by step
+         
+      for (i=1:n)
+         smi = sm(i);
+         delta = abs(s-smi);
+         
+         idx = find(delta == min(delta));
+         idx = idx(1);
+         err(i) = delta(idx);
+         
+         ss(i,1) = s(idx);             % sorted s
+         s(idx) = [];
+      end
+      s = ss;                          % copy back
+   end
+end
+function ok = Vpa(o)                   % use var precision arithmetics?
+   digs = opt(o,'select.digits');
+   if isempty(digs)
+      ok = false;
+   else
+      digits(digs);
+      ok = true;
+   end
 end
 
 %==========================================================================

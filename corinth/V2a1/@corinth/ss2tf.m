@@ -50,5 +50,15 @@ function [num,den] = ss2tf(o,A,B,C,D,iu) % State Space to Transfer Fct.
    for i=1:no
       num(i,:) = polynom(o,A-B*C(i,:)) + (D(i) - 1) * den;
    end
+   
+      % pick real part of num,den
+      
+   if (norm(imag(den))/norm(den) < vpa(eps))
+      den = imag(den);
+   end
+   
+   if (norm(imag(num))/norm(num) < vpa(eps))
+      num = imag(num);
+   end
 end
 

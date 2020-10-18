@@ -18,7 +18,7 @@ function o = Shell(o)                  % Shell Setup
    oo = Select(o);                     % add Select menu
    oo = Plot(o);                       % add Plot menu
 %  oo = Analysis(o);                   % add Analysis menu
-%  oo = Study(o);                      % add Study menu
+   oo = Study(o);                      % add Study menu
    oo = menu(o,'Gallery');             % add Gallery menu
    oo = Info(o);                       % add Info menu
    oo = menu(o,'Figure');              % add Figure menu
@@ -52,6 +52,7 @@ function oo = File(o)                  % File Menu
    ooo = New(oo);                      % add New menu
    ooo = Import(oo);                   % add Import menu items
    ooo = Export(oo);                   % add Export menu items
+   ooo = Extras(oo);                   % add Extras menu
 end
 function oo = New(o)                   % New Menu                      
    oo = mseek(o,{'New'});
@@ -97,7 +98,22 @@ function oo = Export(o)                % Export Menu Items
       end
    end
 end
-
+function oo = Extras(o)                % Extras Menu Items             
+   setting(o,{'study.menu'},false);    % provide setting
+   
+   oo = mseek(o,{'Extras'});
+   ooo = mitem(oo,'Study Menu',{},'study.menu');
+         check(ooo,{@StudyMenu});
+   return
+   function o = StudyMenu(o)
+      menu = opt(o,'study.menu');
+      if (menu)
+         rebuild(o);
+      else
+         rebuild(o);
+      end
+   end
+end
 %==========================================================================
 % View Menu
 %==========================================================================
@@ -157,9 +173,16 @@ end
 % Study Menu
 %==========================================================================
 
-function oo = Study(o)                 % Study Menu                    
+function oo = Study(o)                 % Study Menu                       
    oo = mhead(o,'Study');              % add roll down header menu item
    dynamic(oo);                        % make this a dynamic menu
+
+   if ~setting(o,{'study.menu',1})
+      visible(o,0);
+      oo = o; 
+      return
+   end
+   
    ooo = study(oo,'Menu');             % setup study menu
 end
 

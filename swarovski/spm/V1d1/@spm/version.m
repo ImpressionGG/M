@@ -148,6 +148,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - introduce normalizing for principal transfer functions
 % - pimping pricipal transfer functions completed
 % - Plot>Critical_Loop menu
+% - Analyse>Checks>Eigenvalues menu
 %
 % Known bugs & wishlist
 % =========================

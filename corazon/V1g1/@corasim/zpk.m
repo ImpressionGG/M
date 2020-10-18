@@ -128,6 +128,10 @@ function [z,p,k] = Zpk(o,num,den)      % Convert Num/Den to Zero/Pole/K
 
       % zeros and gain
       
+   if any(any(isnan(num))) || any(any(isinf(num)))
+      error('cannot handle NaNs or INFs');
+   end
+      
    k = zeros(ny,1);
    linf = inf;
    z = linf(ones(np-1,1),ones(ny,1));

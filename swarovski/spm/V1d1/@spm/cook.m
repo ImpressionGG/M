@@ -75,7 +75,15 @@ function varargout = cook(o,sym)
    
    for (i=1:length(idx)-1)
       sym = symbols(idx(i)+1:idx(i+1)-1);
-      varargout{i} = Cook(o,sym);
+      oo = Cook(o,sym);
+      
+         % inherit and unwrap options
+         
+      if isa(oo,'corazon')
+         oo = inherit(oo,o);
+         oo = with(oo,{'bode','simu','rloc','nyq'});
+      end
+      varargout{i} = oo;
    end
 end
 

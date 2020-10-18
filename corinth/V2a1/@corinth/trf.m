@@ -88,6 +88,7 @@ function oo = Trf(o,num,den)           % Construct Rational Function
    oo = corinth(o,'trf');                % 'trf' typed output arg   
    num = vpa(num);
    den = vpa(den);
+   
    oo = poke(oo,0,num,den);
    
    oo = touch(oo);

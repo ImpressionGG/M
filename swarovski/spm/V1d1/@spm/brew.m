@@ -11,6 +11,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
 %           oo = brew(o,'Principal')   % brew principal transfer functions
+%           oo = brew(o,'Inverse')     % brew inverse system
 %           oo = brew(o,'Loop')        % brew loop analysis stuff
 %           oo = brew(o,'Process')     % brew closed loop transfer fct
 %
@@ -60,11 +61,11 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %              +-----------------+  +-----------------+
 %        L0(s) |    principal    |  |       trf       | G(s)
 %              +-----------------+  +-----------------+
-%                             |              |
-%                             |              v
-%                             |      +-----------------+
-%                             |      |     consd       | H(s)
-%                             |      +-----------------+
+%                   |         |              |
+%                   v         |              v
+%       +-----------------+   |      +-----------------+
+%       |     inverse     |   |      |     consd       | H(s)
+%       +-----------------+   |      +-----------------+
 %                             |       
 %                             |           friction
 %                             |              |
@@ -85,7 +86,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@System,...
-                       @Trf,@Principal,...
+                       @Trf,@Principal,@Inverse,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -655,9 +656,14 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       
    K0 = stable(o,L0);
    L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
-   S0 = 1/(1+K0*L0);                   % closed loop sensitivity
-   T0 = S0*K0*L0;                      % total TRF
-
+   if ~isinf(K0)
+      S0 = 1/(1+K0*L0);                % closed loop sensitivity
+      T0 = S0*K0*L0;                   % total TRF
+   else                                % use K0 = 1 instead
+      S0 = 1/(1+L0);                   % closed loop sensitivity
+      T0 = S0*L0;                      % total TRF
+   end
+   
    S0 = set(S0,'name','S0(s)');
    T0 = set(T0,'name','T0(s)');
    
@@ -786,7 +792,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
          fprintf(['*** warning: L0(s) seeming instable',...
                   ' => searching cancelation ...\n']); 
 
-         eps = option(o,'cancel.L.eps',1e-7);
+         eps = opt(o,{'cancel.L.eps',1e-7});
          epsi = logspace(log10(min(eps,0.1)),0,25);
 
          for(i=1:length(epsi))
@@ -803,6 +809,123 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 
       L0 = set(L0,'name','L0(s) = P(s)/Q(s)');
    end
+end
+
+%==========================================================================
+% Inverse System [Ai,Bi,Ci,Di]
+%==========================================================================
+
+function oo = Inverse(o)
+%
+% INVERSE  Calculate inverse system, i.e., find a state space
+%          representation for inv(Q(s))
+%
+%    Theory/Part 1: Single Mode Transfer Function
+%
+%    - consider the modal differential equations of a single mode
+%
+%         x`= v
+%         v`= -a0*x - a1*v + b0*u
+%         y = c0*x
+%
+%    - Laplace transform
+%
+%         s*x = v   =>  x = v/s
+%         s*v = -a0*x - a1*v + b0*u   |*s
+%         y = c0*x
+%     
+%         s^2*v = a0*(s*x) + a1*s*v + b0*s*u    (remember: (s*x) = v
+%         (s^2 + a1*s + a0)*v = b0*s*u
+%         y = c0*v/s = c0/s * v
+%
+%    - Introduce psi(s) := s^2 + a1*s + a0
+%
+%         v = psi(s)\b0*s*u
+%         y = c0/s * psi(s)\b0*s*u = (c0*b0)/psi(s) * u
+%
+%    - transfer function of a single mode
+%
+%         y(s) = G0(s) * u(s)
+%
+%                      b0*c0          b0*c0
+%      with  G0(s) = --------- = -----------------                   (1)
+%                      psi(s)     s^2 + a1*s + a0
+%
+%    Theory/Part 2: Invertible  Transfer Function of a Single Mode
+%
+%    - G0(s) is strictly proper, thus not invertible. We want extend G0(s)
+%      by a factor K0*(s + w0)^2 such that the result
+%
+%         Q0(s) := G0(s) * K0*(s + w0)^2
+%
+%                    K0*b0*c0 * (s + w0)^2
+%         Q0(s) = ---------------------------                        (2)
+%                       s^2 + a1*s + a0
+%
+%      is invertible. Since K0 and w0 are parameters which can be chosen
+%      freely we want to choose K0 and w0 to achieve
+%
+%         Q0(0) = 1,  Q0(inf) = 1                                    (3)
+%
+%      Consulting (2) we see
+%
+%         Q0(inf) = 1 = K0*b0*c0/1      =>  K0 = 1/(b0*c0)
+%         Q0(0) = 1 = K0*b0*c0*w0^2/a0 = w0^2/a0  =>  w0 = sqrt(a0)
+%
+%    - this we get
+%
+%                    (s + w0)^2
+%         Q0(s) = -----------------                                  (4)
+%                  s^2 + a1*s + a0
+%
+%    - Try the following state space representation for Q0(s) and see how
+%      the parameters have to be chosen to fulfill (2)
+%
+%         x`= v                                                      (5a)
+%         v`= -a0*x - a1*v + u                                       (5b)
+%         y = c1*x  + c2*v + d*u                                     (5c)
+%
+%    - Laplace transform
+%
+%         s*x = v   =>  x = v/s
+%         s*v = -a0*x - a1*v + u   |*s
+%         y = c1*x + c2*v + d*u 
+%     
+%         s^2*v = a0*(s*x) + a1*s*v + s*u    (remember: (s*x) = v
+%         (s^2 + a1*s + a0)*v = s*u  => v = s/psi(s) * u
+%         y = c1/s*v + c2*v + d*u = 1/s*(c1+c2*s)*v + d*u
+%         
+%         y = 1/s * (c1 + c2*s) * s/psi(s)*u + d*u              
+%         y = [(c1 + c2*s)/psi(s) + d] * u
+%
+%         y(s) = Q(s) * u(s)
+%
+%                     c2*s + c1             c2*s + c1
+%      with  Q(s) = ------------- + d = ----------------- + d
+%                       psi(s)           s^2 + a1*s + a0
+%
+%         c1 + c2*s + d*(s^2 + a1*s + a0) =
+%               = d*s^2 + (c2 + d*a1)*s + (c1 + d*a0)
+%
+%                    d*s^2 + (c2 + d*a1)*s + (c1 + d*a0)
+%            Q(s) = -----------------------------------------        (6)
+%                              s^2 + a1*s + a0
+%
+%    - by comparison with (2) we see that the denominators of (4) and (6) 
+%      are already matching so we only have to match the numerators
+%
+%         d*s^2 + (c2 + d*a1)*s + (c1 + d*a0) = s^2 + 2*w0*s + w0^2
+%
+%      which means
+%
+%      (i)    d = 1                                                  (7a)
+%      (ii)   c2 + d*a1 = 2*w0  =>  c2 = 2*w0 - a1                   (7b)
+%      (iii)  c1 + d*a0 = w0^2  =>  c1 = w0^2 - a0                   (7c)
+%            
+%    - Conclusion: By choice of c1,c2 and accoding to (7a,7b,7c) we can
+%      find a state space representation (5a,5b,5c) for the principal
+%      transfer function (4) which is invertible.
+%     
 end
 
 %==========================================================================

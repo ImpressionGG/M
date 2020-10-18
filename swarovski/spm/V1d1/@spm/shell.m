@@ -740,6 +740,7 @@ end
 function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');
    ooo = Trf(oo);                      % add Transfer Function menu
+   ooo = Precision(oo);                % add Precision Menu
    ooo = Normalize(oo);                % add Normalize menu   
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Filter(oo);                   % add Filter sub menu
@@ -750,6 +751,15 @@ function oo = Trf(o)                   % Transfer Function Menu
    oo = mitem(o,'Transfer Functions',{},'trf.type');
    choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
               {'Modal Type','modal'}},{});
+end
+function oo = Precision(o)             % 
+   setting(o,{'select.digits'},[]);
+   
+   oo = mitem(o,'Precision');
+   ooo = mitem(oo,'VPA Digits',{},'select.digits');
+   choice(ooo,{{'Off',[]},{},{'VPA 32',32},{'VPA 100',100},...
+               {'VPA 200',200},{'VPA 500',500},{'VPA 1000',1000}},...
+               {@CacheReset});
 end
 function oo = Normalize(o)             % Normalize Menu                
    setting(o,{'brew.T0'},1e-3);
@@ -777,7 +787,6 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end
-
 function oo = CacheReset(o)            % Reset All Caches              
 %  callback = control(o,'refresh');    % save refresh callback
    

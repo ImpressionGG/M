@@ -159,17 +159,45 @@ function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File
    oo.data.C = C;
    oo.data.D = D;
    
-   ev = eig(A);       % eigenvalues
-   t = 1:length(ev);
-   x = real(ev);
-   y = imag(ev);
-   [~,idx] = sort(abs(imag(ev)));
-   
-   oo.data.t = t;
-   oo.data.x = x(idx)';
-   oo.data.y = y(idx)';
+   if (0)                              % do not support anymore
+      ev = eig(A);                     % eigenvalues
+      t = 1:length(ev);
+      x = real(ev);
+      y = imag(ev);
+      [~,idx] = sort(abs(imag(ev)));
+
+      oo.data.t = t;
+      oo.data.x = x(idx)';
+      oo.data.y = y(idx)';
+   end
    return
    
+   function [mat] = OldReadMatrix(fid,name)
+      % if 'name' is missing, start from current position
+      
+      mat = [];
+      
+      if nargin>1
+         % skip lines until matrix starts
+         while (true)
+            l = fgetl(fid);
+            if (isequal(l,[name,' MATRIX']))
+               break;
+            end
+         end
+      end
+      
+      % read dimensions
+      l = fgetl(fid);
+      [rows,columns] = sscanf(l,'%f');
+
+      % read matrix
+      for i=1:rows
+         l = fgetl(fid);
+         entries = sscanf(l,'%f');
+         mat = [mat;entries'];
+      end
+   end
    function [mat] = ReadMatrix(fid,name)
       % if 'name' is missing, start from current position
       
@@ -187,13 +215,27 @@ function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File
       
       % read dimensions
       l = fgetl(fid);
-      [rows,~] = sscanf(l,'%f');
+      sizes = sscanf(l,'%f');
+      rows = sizes(1);
+      cols = sizes(2);
 
       % read matrix
       for i=1:rows
-         l = fgetl(fid);
-         entries = sscanf(l,'%f');
-         mat = [mat;entries'];
+         row = [];
+         while(1)
+            l = fgetl(fid);
+            entries = sscanf(l,'%f');
+            row = [row entries'];
+            if (length(row) >= cols)
+               break;
+            end
+         end
+         
+         if (length(row) > cols)
+            fprintf('*** warning: row length = %g (%g expected)\n',...
+                    length(row),cols);
+         end
+         mat = [mat; row];
       end
    end
 end

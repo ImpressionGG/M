@@ -449,12 +449,17 @@ function o = AboutPkg(o)               % About Package
 end
 function o = Image(o)                  % Plot Image                    
    path = [get(o,'dir'),'/',get(o,'image')];
-   im = imread(path);
+   try
+      im = imread(path);
+   catch
+      im = [];
+   end
+   
    if ~isempty(im)
       hdl = image(im);
       axis off
    else
-      message('cannot display image',{['path: ',path]});
+      message(o,'cannot display image',{['path: ',path]});
    end
 end
 
