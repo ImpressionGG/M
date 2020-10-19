@@ -150,7 +150,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - Plot>Critical_Loop menu
 % - Analyse>Checks>Eigenvalues menu
 % - check availability of symbolic toolbox
-% - add expression based FQR
+% - add expression based FQR to principal TRFs
 %
 % Known bugs & wishlist
 % =========================
