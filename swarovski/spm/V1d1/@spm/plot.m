@@ -13,7 +13,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %        See also: SPM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                   @Overview,@About,@Image,@Real,@Imag,@Complex,...
+                   @WithSpm,@Overview,@About,@Image,@Real,@Imag,@Complex,...
                    @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
                    @TrfNyq,@TrfWeight,... 
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
@@ -182,21 +182,21 @@ end
 function oo = Principal(o)             % Pricipal Menu                 
    oo = current(o);
    oo = mhead(o,'Principal Transfer Functions');
-   ooo = mitem(oo,'Overview',{@WithCuo,'PsQsOverview'});
-   ooo = mitem(oo,'Normalizing',{@WithCuo,'PsQsNormalizing'});
+   ooo = mitem(oo,'Overview',{@WithSpm,'PsQsOverview'});
+   ooo = mitem(oo,'Normalizing',{@WithSpm,'PsQsNormalizing'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'PsQsRloc'});
-   ooo = mitem(oo,'Step Responses',{@WithCuo,'PsQsStep'});
+   ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'PsQsRloc'});
+   ooo = mitem(oo,'Step Responses',{@WithSpm,'PsQsStep'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Bode Plots',{@WithCuo,'PsQsBode'});
-   ooo = mitem(oo,'Nyquist Plots',{@WithCuo,'PsQsNyq'});
+   ooo = mitem(oo,'Bode Plots',{@WithSpm,'PsQsBode'});
+   ooo = mitem(oo,'Nyquist Plots',{@WithSpm,'PsQsNyq'});
 
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('P(s)'),{@WithCuo,'PsQs',1,0});
-   ooo = mitem(oo,sprintf('Q(s)'),{@WithCuo,'PsQs',2,0});
+   ooo = mitem(oo,sprintf('P(s)'),{@WithSpm,'PsQs',1,0});
+   ooo = mitem(oo,sprintf('Q(s)'),{@WithSpm,'PsQs',2,0});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('F0(s)'),{@WithCuo,'PsQs',3,0});
-   ooo = mitem(oo,sprintf('L0(s) = P(s)/Q(s)'),{@WithCuo,'PsQs',0,0});
+   ooo = mitem(oo,sprintf('F0(s)'),{@WithSpm,'PsQs',3,0});
+   ooo = mitem(oo,sprintf('L0(s) = P(s)/Q(s)'),{@WithSpm,'PsQs',0,0});
 end
 function oo = CriticalLoop(o)          % Critical Loop Menu            
    oo = mitem(o,'Critical Loop');
@@ -347,6 +347,32 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    cls(o);                             % clear screen
  
    oo = current(o);                    % get current object
+   gamma = eval(['@',mfilename]);
+   oo = gamma(oo);                     % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
+end
+function oo = WithSpm(o)               % 'With Current SPM Object'     
+%
+% WITHSPM Same as WithCuo but don't invoke callback if not SPM object
+%         but plot(o,'About')
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+ 
+   oo = current(o);                    % get current object
+   if ~type(oo,{'spm'})
+      plot(oo,'About');
+      return;
+   end
+   
+      % SPM object: invoke callback
+      
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 

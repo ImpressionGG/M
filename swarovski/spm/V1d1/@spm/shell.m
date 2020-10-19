@@ -740,6 +740,7 @@ end
 function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');
    ooo = Trf(oo);                      % add Transfer Function menu
+   ooo = Fqr(oo);                      % add Frequency Response menu
    ooo = Precision(oo);                % add Precision Menu
    ooo = Normalize(oo);                % add Normalize menu   
    ooo = Cancel(oo);                   % add Cancel sub menu
@@ -751,6 +752,13 @@ function oo = Trf(o)                   % Transfer Function Menu
    oo = mitem(o,'Transfer Functions',{},'trf.type');
    choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
               {'Modal Type','modal'}},{});
+end
+function oo = Fqr(o)                   % Frequency Response Menu       
+   setting(o,{'select.fqr'},'standard');
+   
+   oo = mitem(o,'Frequency Response',{},'select.fqr');
+   choice(oo,{{'Standard','standard'},{'Expression','expression'}},...
+              {@CacheReset});
 end
 function oo = Precision(o)             % Variable Presicion Menu       
    setting(o,{'select.digits'},[]);

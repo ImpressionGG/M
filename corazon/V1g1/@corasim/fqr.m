@@ -1,4 +1,4 @@
-function [Gjw,om] = fqr(o,om,i,j)
+function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response            
 %
 % FQR  Frequency response of transfer function.
 %
@@ -24,6 +24,21 @@ function [Gjw,om] = fqr(o,om,i,j)
 %          oo = system(o,A,B,C,D)      % let oo be a modal form
 %          Fjw = rsp(oo,om,i,j)        % frequency response of Gij(j*om)
 %
+%      Expression based FQR calculation:
+%
+%         P = data(P,'fqr',{'/' {'modal' o 3 1} F0});
+%         Q = data(Q,'fqr',{'/' {'modal' o 3 3} F0});
+%         L0 = data(L0,'fqr',{'/',P,Q})
+%         Gjw = fqr(L0,om)
+%
+%      Supported operators for expression based FQR operation
+%
+%         'modal'            FQR of modal system representation
+%         '+'                sum
+%         '-'                difference
+%         '*'                product
+%         '/'                division
+%
 %      Options:
 %         input              input index (default 1)
 %         output             output index (default 1)
@@ -38,6 +53,17 @@ function [Gjw,om] = fqr(o,om,i,j)
       points = opt(o,{'omega.points',1000});
       om = logspace(log10(oml),log10(omh),points);
    end
+   
+      % first check whether frequency response is expression based.
+      % if so this overrules all standard methods
+      
+   expr = data(o,'fqr');
+   if ~isempty(expr)
+      Gjw = Process(o,om,expr);
+      return
+   end
+   
+      % continue with standard methods, depending on type
 
    switch o.type
       case {'strf','qtrf'}
@@ -177,6 +203,43 @@ function Gjw = Modal(o,om,i,j)         % Frequency Rsp. of a Modal Form
       Fijk = [jw*Bv(k,j) - a0(k)*Bz(k,j)] ./ [jw.*jw + a1(k)*jw + a0(k)];
       Gijk = Cz(i,k)./jw .* [Fijk + Bz(k,j)] + Cv(i,k) * Fijk;
       Gjw = Gjw + Gijk;
+   end
+end
+
+%==========================================================================
+% Process Expression
+%==========================================================================
+
+function Gjw = Process(o,om,expr)      % Process Expression            
+   op = expr{1};
+   if o.is(op,{'+','-','*','/'})
+      Gjw1 = Eval(o,om,expr{2});
+      Gjw2 = Eval(o,om,expr{3});
+   end
+   
+   switch op
+      case '+'
+         Gjw = Gjw1 + Gjw2;
+      case '-'
+         Gjw = Gjw1 - Gjw2;
+      case '*'
+         Gjw = Gjw1 .* Gjw2;
+      case '/'
+         Gjw = Gjw1 ./ Gjw2;
+      case 'modal'
+         oo = expr{2};  i = expr{3};  j = expr{4};
+         Gjw = Modal(oo,om,i,j);
+      otherwise
+         error('unknown operation');
+   end
+end
+function Gjw = Eval(o,om,oo)           % Evaluate Expression
+   if iscell(oo)
+      Gjw = Process(o,om,oo);
+   elseif isa(oo,'corasim')
+      Gjw = fqr(oo,om);
+   else
+      error('no idea how to evaluate');
    end
 end
 

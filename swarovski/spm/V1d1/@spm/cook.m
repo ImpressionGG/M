@@ -75,7 +75,7 @@ function varargout = cook(o,sym)
    
    for (i=1:length(idx)-1)
       sym = symbols(idx(i)+1:idx(i+1)-1);
-      oo = Cook(o,sym);
+      [o,oo] = Cook(o,sym);
       
          % inherit and unwrap options
          
@@ -91,7 +91,7 @@ end
 % Cook
 %==========================================================================
 
-function oo = Cook(o,sym)              % Cook-up Anyhing               
+function [o,oo] = Cook(o,sym)          % Cook-up Anyhing               
    if length(sym) >= 2
       i = sym(2) - '0';                % prepare row index (just in case)
    end
@@ -137,6 +137,7 @@ function oo = Cook(o,sym)              % Cook-up Anyhing
          oo = cache(o,'consd.L');
          
       case {'P','Q','F0','L0','K0','S0','T0'}
+         o = cache(o,o,'principal');   % cold refresh of principal segment
          oo = cache(o,['principal.',sym]);
 
       case 'Lmu'
