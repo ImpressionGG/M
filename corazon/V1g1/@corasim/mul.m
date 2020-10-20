@@ -10,7 +10,11 @@ function z = mul(o,x,y)                % Multiply Polynomials
 %
 %       See also: CORASIM, ADD, SUB, MUL, DIV, TRIM, CAN
 %
-   z = conv(x,y);
+   if isa(x,'sym') && isa(y,'sym')
+      z = conv(o,x,y);
+   else
+      z = conv(x,y);
+   end
    
    idx = find(z~=0);
    if isempty(idx)

@@ -65,9 +65,21 @@ function oo = Add(o1,o2)               % Add Two Objects
       error('bad arg2 type');
    end
    
+      % peek numerator/denominator
+      
    [num1,den1] = peek(o1);
    [num2,den2] = peek(o2);
-   
+ 
+      
+      % Variable precision arithmetics (VPA) required?
+         
+   digs = opt(o1,{'digits',0});
+   if (digs > 0)
+      digits(digs);
+      num1 = vpa(num1);  den1 = vpa(den1);
+      num2 = vpa(num2);  den2 = vpa(den2);
+   end
+  
    num1den2 = mul(o1,num1,den2);
    num2den1 = mul(o1,num2,den1);
    
