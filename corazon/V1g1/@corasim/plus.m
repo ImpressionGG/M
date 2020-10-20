@@ -9,6 +9,12 @@ function oo = plus(o1,o2)
 %             oo = o1 + 7;             % add real number with trf
 %             oo = 5 + o2;             % add trf with real number
 %
+%          Options:
+%
+%             digits         number of digits for variable precision
+%                            arithmetics (symbolic toolbox required)
+%                            (default: 0, no VPA!)
+%
 %          Copyright(c): Bluenetics 2020
 %
 %          See also: CORASIM, PLUS, MINUS, MTIMES, MRDIVIDE
@@ -19,6 +25,9 @@ function oo = plus(o1,o2)
 
    if type(o1,{'modal'}) && type(o2,{'modal'})
       oo = ModalAdd(o1,o2);
+      return
+   elseif type(o1,{'szpk','zzpk','qzpk'}) && type(o2,{'szpk','zzpk','qzpk'})
+      oo = ZpkAdd(o1,o2);
       return
    elseif (type(o1,{'matrix'}) && ~type(o2,{'matrix'}))
       error('implementation');
@@ -99,6 +108,136 @@ function oo = ModalAdd(o1,o2)          % Add Two Objects
    D = D1+D2;
    
    oo = modal(o1,a0,a1,B,C,D);
+end
+
+%==========================================================================
+% ZPK Add
+%==========================================================================
+
+function oo = ZpkAdd(o1,o2)            % Add Two ZPK Objects           
+   if ~isequal(o1.type,o2.type)
+      error('type mismatch');
+   end
+   if ~type(o1,{'szpk','zzpk','qzpk'})
+      error('bad arg1 type');
+   end
+   if ~type(o2,{'szpk','zzpk','qzpk'})
+      error('bad arg2 type');
+   end
+
+      % start with initial out arg oo
+      
+   oo = o1;  oo.data.zeros = [];  oo.data.poles = [];  oo.data.K = 0;
+   oo.par.name = '';
+
+   data1 = o1.data;  data2 = o2.data;
+   K1 = data1.K;
+   K2 = data2.K;
+   
+   z12 = [data1.zeros; data2.poles];
+   z21 = [data2.zeros; data1.poles];
+   p = [data1.poles; data2.poles];
+   
+      % cancelling
+      
+   [p,z12,z21] = Cancel(oo,p,z12,z21);
+   
+   [z,K] = Zeros(oo,z12,z21); % numerator roots
+      
+   oo.data.zeros = z;
+   oo.data.poles = p;
+   oo.data.K = K;
+ 
+   function [z,K] = Zeros(o,z12,z21)       % Numerator Roots & K           
+      digs = opt(o,{'digits',0});
+      
+         % Variable precision arithmetics (VPA) required?
+         
+      if (0 && digs > 0)
+         digits(digs);
+         z12 = vpa(z12);  z21 = vpa(z21);
+      end
+      
+      poly12 = polynom(oo,z12);
+      poly21 = polynom(oo,z21);
+      
+      num1den2 = K1 * poly12;
+      num2den1 = K2 * poly21;
+      
+      num = Sum(num1den2,num2den1);
+      
+      if ~all(isfinite(num))
+         'action!';
+      end
+
+      z = roots(num);
+      K = num(1);
+      
+        % convert back from VPA to double
+        
+      z = double(z);
+      K = double(K);
+   end
+   function z = Sum(x,y)               % Sum of Two Polynomials        
+      nx = length(x);  ny = length(y);  n = max(nx,ny);
+      z = [zeros(1,n-nx),x] + [zeros(1,n-ny),y]; 
+      z = Trim(z);
+   end
+   function p = Trim(p)                % Trim Polynomial               
+      idx = find(p~=0);
+      if isempty(idx)
+         p = 0;
+      else
+         p = p(idx(1):end);
+      end
+   end
+   function [r1,r2,r3] = Cancel(o,r1,r2,r3)  % Root Cancelation        
+      caneps = opt(o,{'eps',eps});
+      
+      n1 = length(r1);  n2 = length(r2);  n3 = length(r3);
+      if (n1 <= n2 && n1 <= n3)
+         r = r1;
+      elseif (n2 <= n1 && n2 <= n3)
+         r = r2;
+      else
+         r = r3;
+      end
+      
+      for (i = 1:length(r))
+         ri = r(i);
+         
+         d1 = abs(ri-r1);  d(1) = min(d1);
+         d2 = abs(ri-r2);  d(2) = min(d2);
+         d3 = abs(ri-r3);  d(3) = min(d3);
+
+            % cancel ?
+            
+         delta = max(d) / o.iif(ri==0,1,abs(ri));   % relative distance
+         if (delta < caneps)
+            Trace(o,ri,delta);         % trace cancellation
+            idx1 = find(d1 == d(1));
+            idx2 = find(d2 == d(2));
+            idx3 = find(d3 == d(3));
+         
+            r1(idx1(1)) = [];
+            r2(idx2(1)) = [];
+            r3(idx3(1)) = [];
+         end
+      end
+   end
+   function Trace(o,ri,delta)          % Trace Cancellation            
+      if (control(o,'verbose') > 0)
+         if (imag(ri) > 0)
+            fprintf('   cancel %g + %gi (delta: %g)\n',...
+                    real(ri),imag(ri),delta);
+         elseif (imag(ri) < 0)
+            fprintf('   cancel %g - %gi (delta: %g)\n',...
+                    real(ri),-imag(ri),delta);
+         else
+            fprintf('   cancel %g (delta: %g)\n',real(ri),delta);
+         end
+      end
+   end
 end
 
 %==========================================================================

@@ -22,6 +22,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           'trf'                           % free system TRFs
 %           'consd'                         % constrained system TRFs
 %           'principal'                     % principal transfer functions
+%           'inverse'                       % inverse system
 %           'loop'                          % loop transfer function
 %           'process'                       % closed loop process 
 %
@@ -500,7 +501,13 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    m = size(M,2);
 
    if HasModalForm(o)
-      [P,Q] = ModalPQ(o);  
+      trftype = opt(o,{'trf.type','szpk'})
+      if isequal(trftype,'szpk');
+%        [P,Q] = ModalZpkPQ(o); 
+         [P,Q] = ModalTrfPQ(o); 
+      else
+         [P,Q] = ModalTrfPQ(o); 
+      end
    else
       [P,Q] = NormalPQ(o);
    end
@@ -557,7 +564,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       ok = isequal(A11,Z) && isequal(A12,I) && ...
               isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
    end
-   function [P,Q] = ModalPQ(o)         % P(s)/Q(s) For Modal Forms     
+   function [P,Q] = ModalTrfPQ(o)      % P(s)/Q(s) For Modal Forms     
       psi = [ones(n,1) a1(:) a0(:)];
 
       for (i=1:m)
@@ -578,6 +585,11 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
             Gij = set(Gij,'name',o.iif(j==1,'P(s)','Q(s)'));
             
             for (k=1:n)
+               if (n >= 50)
+                  txt = sprintf('%d of %d: calculating G%d%d',k,n,i,j);
+                  progress(o,txt,k/n*100);
+               end
+               
                Gk = trf(Gij,wij(k),psi(k,:));
                Gij = Gij + Gk;
             end
@@ -599,6 +611,59 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
                Q = Gij;                % Q(s) = G33(s)
             end
          end
+         progress(o);                  % progress complete
+      end
+   end
+   function [P,Q] = ModalZpkPQ(o)      % P(s)/Q(s) For Modal Forms     
+      psi = [ones(n,1) a1(:) a0(:)];
+
+      for (i=1:m)
+         for (j=1:i)
+               % calculate Gij
+
+            if ~((i==3 && j==1) || (i==3 && j==3))
+               continue
+            end
+            
+            mi = M(:,i)';  mj = M(:,j);
+            wij = (mi(:).*mj(:))';        % weight vector
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+
+%           Gij = trf(corasim,0);         % init Gij
+            Gij = zpk(corasim,[],[],0);   % init Gij
+            Gij = CancelG(o,Gij);         % set cancel epsilon
+            Gij = set(Gij,'name',o.iif(j==1,'P(s)','Q(s)'));
+            
+            for (k=1:n)
+               if (n >= 50)
+                  txt = sprintf('%d of %d: calculating G%d%d',k,n,i,j);
+                  progress(o,txt,k/n*100);
+               end
+               poles = roots(psi(k,:));
+%              Gk = trf(Gij,wij(k),psi(k,:));
+               Gk = zpk(Gij,[],poles,wij(k));
+               Gij = Gij + Gk;
+            end
+
+            %if isequal(opt(o,{'trf.type','strf'}),'szpk')
+            %   Gij = zpk(Gij);            % convert to ZPK
+            %end
+            
+            if control(o,'verbose') > 0
+               fprintf('%s',get(Gij,'name'),i,j);
+               display(Gij);
+            end
+
+               % assign to either P(s) or Q(s)
+
+            if (j==1)
+               P = Gij;                % P(s) = G31(s)
+            else
+               Q = Gij;                % Q(s) = G33(s)
+            end
+         end
+         progress(o);                  % progress complete
       end
    end
    function [P,Q] = NormalPQ(o)        % P(s)/Q(s) Normal Calculation  
@@ -1135,8 +1200,9 @@ end
 %==========================================================================
 
 function Gs = CancelG(o,Gs)            % Set Cancel Epsilon for G(s)   
+   digs = opt(o,{'select.digits',0});
    eps = opt(o,'cancel.G.eps');
-   Gs = opt(Gs,'control.verbose',control(o,'verbose'));
+   Gs = opt(Gs,'control.verbose',control(o,'verbose'),'digits',digs);
 
    if ~isempty(eps)
       if isa(Gs,'corinth')

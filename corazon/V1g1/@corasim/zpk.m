@@ -53,7 +53,6 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
                oo = zpk(o,num,den);
                oo.data.T = o.data.T;
             end
-            z = oo;                    % rename out arg
          else                          % nargout >= 2
             if type(o,{'szpk','zzpk','qzpk'})
                z = o.data.zeros;
@@ -65,36 +64,44 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
                [z,p,k] = Zpk(o,num,den);
                T = o.data.T;
             end
+            return
          end
          
       case 2
          den = 1;
          [z,p,k] = Zpk(o,num,den);
+         T = 0;
          
-         if (nargout <= 1)
-            oo = Create(o,z,p,k,0);
-            z = oo;                    % rename out arg
+         if (nargout > 1)
+            return
          end
+         
+         oo = Create(o,z,p,k,T);
       case 3
          [z,p,k] = Zpk(o,num,den);
-         if (nargout <= 1)
-            oo = Create(o,z,p,k,0);
-            z = oo;                    % rename out arg
+         T = 0;
+
+         if (nargout > 1)
+            return
          end
+
+         oo = Create(o,z,p,k,T);
          
       case 4
          z = num;  p = den;
          oo = Create(o,z,p,k,0);
-         z = oo;                       % rename out arg
          
       case 5
          z = num;  p = den;
          oo = Create(o,z,p,k,T);
-         z = oo;                       % rename out arg
          
       otherwise
          error('up to 5 input args expected');
    end
+   
+      % copy digits option to outarg
+
+   z = opt(oo,'digits',opt(o,'digits'));
 end
 
 %==========================================================================

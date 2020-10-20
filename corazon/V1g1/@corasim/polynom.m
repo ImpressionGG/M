@@ -23,7 +23,7 @@ function c = polynom(o,x)
 %
 %          Copyright(c): Bluenetics 2020
 %
-%          See also CORINTH, TRF
+%          See also CORASIM, PLUS
 %
    [m,n] = size(x);
    if m == n                           % square matrix?

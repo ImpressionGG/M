@@ -751,7 +751,7 @@ function oo = Trf(o)                   % Transfer Function Menu
    
    oo = mitem(o,'Transfer Functions',{},'trf.type');
    choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
-              {'Modal Type','modal'}},{});
+              {'Modal Type','modal'}},{@CacheReset});
 end
 function oo = Fqr(o)                   % Frequency Response Menu       
    setting(o,{'select.fqr'},'standard');

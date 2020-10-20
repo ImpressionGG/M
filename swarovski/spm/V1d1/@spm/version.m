@@ -151,6 +151,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - Analyse>Checks>Eigenvalues menu
 % - check availability of symbolic toolbox
 % - add expression based FQR to principal TRFs
+% - trial with vpa for precise calculation of P(s)/Q(s)
+%
 %
 % Known bugs & wishlist
 % =========================
