@@ -15,7 +15,7 @@ function oo = ntc(o,varargin)       % Ntc Studies
    [gamma,oo] = manage(o,varargin,@Menu,...
                        @WithCuo,@WithSho,@WithBsk,@New,@Simu,...
                        @Plot,@Stream,@Scatter,...
-                       @Measurement,@Datasheet);
+                       @Measurement,@Implementation,@Datasheet);
    oo = gamma(oo);
 end              
 
@@ -91,7 +91,7 @@ function oo = Menu(o)                  % Setup Rolldown Menu
    o = menu(o,'Begin');
    oo = menu(o,'File');
    oo = menu(o,'Edit');
-   oo = menu(o,'View');
+   oo = View(o);
    oo = Ntc(o);                        % add Ntc menu items
    oo = menu(o,'Info');
    oo = menu(o,'Figure');
@@ -110,30 +110,19 @@ function o = Init(o)                   % Init Object
 end
 
 %==========================================================================
-% Plot Menu Plugins
+% View Menu
 %==========================================================================
 
-function oo = Plot(o)                  % Plot Menu Setup               
+function oo = View(o)                  % View Menu Setup               
 %
 % PLOT   Add some Plot menu items
 %
-   oo = mseek(o,{'#','Plot'});         % find Select rolldown menu
-   if isempty(oo)
-      return
-   end
-   visible(oo,0);
-end
-
-%==========================================================================
-% Analyse Menu Plugins
-%==========================================================================
-
-function oo = Analyse(o)               % Analyse Menu Plugin's         
-   oo = mseek(o,{'#','Analyse'});      % find rolldown menu
-   if isempty(oo)
-      return
-   end
-   visible(oo,0);
+   setting(o,{'view.approx'},0);       % single approximation
+   oo = menu(o,'View');                % standard View menu
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Approximation',{},'view.approx');
+   choice(ooo,{{'Single',0},{'Split',1}},{});
+   
 end
 
 %==========================================================================
@@ -146,9 +135,11 @@ function oo = Ntc(o)                   % Ntc Menu
 %
    oo = mhead(o,'Ntc');                % add Ntc rolldown menu header
    ooo = mitem(oo,'Measurement',{@WithCuo,'Measurement'});
+   ooo = mitem(oo,'Implementation',{@WithCuo,'Implementation'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Data Sheet / Order 2',{@WithCuo,'Datasheet'},'2');
    ooo = mitem(oo,'Data Sheet / Order 3',{@WithCuo,'Datasheet'},'3');
+   ooo = mitem(oo,'Data Sheet / Order 4',{@WithCuo,'Datasheet'},'4');
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Data Sheet / Order 1/2',{@WithCuo,'Datasheet'},'1/2');
    ooo = mitem(oo,'Data Sheet / Order 1/3',{@WithCuo,'Datasheet'},'1/3');
@@ -170,6 +161,79 @@ function o = Measurement(o)            % Measurement of NTC
       subplot(o);
    end
 end
+function o = Implementation(o)         % NTC Conversion Implementation 
+   
+      % from NCU15XH103F60RC datasheet we read ...
+      
+   T0 = Klv(25);                       % reference temperature 25°C
+   Tds = Klv([  50   80   85  100]);   % datasheet temperatures [°C]
+   Bds = [3380,3428,3434,3455];        % datasheet B-values
+   
+      % we can calculate resistor values and voltage percentage
+      % at datasheet points
+      
+   R0 = 10000;
+   Rds = R0 * exp(Bds.*(1./Tds-1/T0));
+   Pds = 100*[Rds ./ (Rds+R0)];            % percent datasheet
+   
+      % calculate polynomial approximation of B
+      
+   b = polyfit(Tds,Bds,2);             % 2nd order approximation
+   
+      % calculate temperature for given resistor range
+ 
+   deg = 25:100;
+   
+   T = Klv(deg);
+   B = polyval(b,Klv(deg));
+   
+      % R(T) is the best we can know about NTC resistance dependent on T
+      
+   R = R0 * exp(B.*(1./T-1/T0));
+   
+      % voltage ratio
+      
+   percent = 100*[R ./ (R+R0)];
+   
+      % split up percentage range
+      
+   idx = 1:length(percent);
+
+   idx1 = find(percent<30);
+   idx2 = find(percent>=30);
+
+      % final conversion polynomial - fit with milli degree Celsius
+      
+   a = polyfit(percent(idx),deg(idx)*1000,3);
+   mdeg = polyval(a,percent);
+      
+   Display(a);
+   PlotP(o,111);
+   
+   function PlotP(o,sub)               % Plot Percentage               
+      subplot(o,sub);
+      
+      plot(o,percent,deg,'bc');
+      hold on
+      plot(o,Pds,Deg(Tds),'Kp');
+      plot(o,percent,mdeg/1000,'c');
+      if opt(o,'view.approx')
+         plot(o,percent(idx1),mdeg1/1000,'yyyr');
+         plot(o,percent(idx2),mdeg2/1000,'y');
+      end
+      
+      for (i=1:length(a))
+         txt = sprintf('a%g: %g',length(a)-i,a(i));
+         hdl = text(30,90-i*5,txt);
+         set(hdl,'color',o.color(o.iif(dark(o),'w','k')));
+      end
+      
+      title('Conversion of Voltage Ratio to Temperature');
+      xlabel('U/Uref [%]');
+      ylabel('T [°C]');
+      subplot(o);
+   end
+end
 function o = Datasheet(o)              % Data Sheet Study              
 %
 % DATASHEET  NTC resistor (NCU15XH103F60RC) is in series with 10kOhm
@@ -181,13 +245,19 @@ function o = Datasheet(o)              % Data Sheet Study
 %            or
 %               R = R0 * exp(B*[1/T - 1/T0])
 %
-   Tnull = -273.15;                    % absolute zero temperature
    
       % from NCU15XH103F60RC datasheet we read ...
       
    T0 = Klv(25);                       % reference temperature 25°C
    Tds = Klv([  50   80   85  100]);   % datasheet temperatures [°C]
    Bds = [3380,3428,3434,3455];        % datasheet B-values
+   
+      % we can calculate resistor values and voltage percentage
+      % at datasheet points
+      
+   R0 = 10000;
+   Rds = R0 * exp(Bds.*(1./Tds-1/T0));
+   Pds = 100*[Rds ./ (Rds+R0)];            % percent datasheet
    
       % calculate polynomial approximation of B
       
@@ -196,36 +266,66 @@ function o = Datasheet(o)              % Data Sheet Study
       % calculate temperature for given resistor range
  
    deg = 25:100;
-   idx = round(length(deg)/3):length(deg);
-   idx = 1:length(deg);
    
    T = Klv(deg);
    B = polyval(b,Klv(deg));
    
-   R0 = 10000;
+      % R(T) is the best we can know about NTC resistance dependent on T
+      
    R = R0 * exp(B.*(1./T-1/T0));
    
       % voltage ratio
       
    percent = 100*[R ./ (R+R0)];
    
+      % split up percentage range
+      
+   idx = 1:length(percent);
+
+   idx1 = find(percent<30);
+   idx2 = find(percent>=30);
+
       % final conversion polynomial - fit with milli degree Celsius
       
    mode = arg(o,1);
    switch mode
       case '2'
          a = polyfit(percent(idx),deg(idx)*1000,2);
+         a1 = polyfit(percent(idx1),deg(idx1)*1000,2);
+         a2 = polyfit(percent(idx2),deg(idx2)*1000,2);
          mdeg = polyval(a,percent);
+         mdeg1 = polyval(a1,percent(idx1));
+         mdeg2 = polyval(a2,percent(idx2));
       case '3'
          a = polyfit(percent(idx),deg(idx)*1000,3);
+         a1 = polyfit(percent(idx1),deg(idx1)*1000,3);
+         a2 = polyfit(percent(idx2),deg(idx2)*1000,3);
          mdeg = polyval(a,percent);
+         mdeg1 = polyval(a1,percent(idx1));
+         mdeg2 = polyval(a2,percent(idx2));
+      case '4'
+         a = polyfit(percent(idx),deg(idx)*1000,4);
+         a1 = polyfit(percent(idx1),deg(idx1)*1000,4);
+         a2 = polyfit(percent(idx2),deg(idx2)*1000,4);
+         mdeg = polyval(a,percent);
+         mdeg1 = polyval(a1,percent(idx1));
+         mdeg2 = polyval(a2,percent(idx2));
       case '1/2'
          a = polyfit(percent(idx),1./(deg(idx)*1000),2);
+         a1 = polyfit(percent(idx1),1./(deg(idx1)*1000),2);
+         a2 = polyfit(percent(idx2),1./(deg(idx2)*1000),2);
          mdeg = 1./polyval(a,percent);
+         mdeg1 = 1./polyval(a1,percent(idx1));
+         mdeg2 = 1./polyval(a2,percent(idx2));
       case '1/3'
          a = polyfit(percent(idx),1./(deg(idx)*1000),3);
+         a1 = polyfit(percent(idx1),1./(deg(idx1)*1000),3);
+         a2 = polyfit(percent(idx2),1./(deg(idx2)*1000),3);
          mdeg = 1./polyval(a,percent);
+         mdeg1 = 1./polyval(a1,percent(idx1));
+         mdeg2 = 1./polyval(a2,percent(idx2));
    end
+   Display(a);
    
    PlotB(o,2211);                      % plot B-values
    PlotR(o,2221);                      % plot resistance
@@ -248,6 +348,9 @@ function o = Datasheet(o)              % Data Sheet Study
       subplot(o,sub);
       
       plot(o,deg,R,'g');
+      hold on;
+      plot(o,Deg(Tds),Rds,'Kp');
+      
       title('resistance over temperature');
       xlabel('T [°C]');
       ylabel('R [Ohm]');
@@ -256,31 +359,53 @@ function o = Datasheet(o)              % Data Sheet Study
    function PlotP(o,sub)               % Plot Percentage               
       subplot(o,sub);
       
-      plot(o,percent,deg,'b');
+      plot(o,percent,deg,'bc');
       hold on
-      plot(o,percent,mdeg/1000,'bc');
+      plot(o,Pds,Deg(Tds),'Kp');
+      plot(o,percent,mdeg/1000,'c');
+      if opt(o,'view.approx')
+         plot(o,percent(idx1),mdeg1/1000,'yyyr');
+         plot(o,percent(idx2),mdeg2/1000,'y');
+      end
       
       title('Voltage Ratio');
-      xlabel('U/Uref');
+      xlabel('U/Uref [%]');
       ylabel('T [°C]');
       subplot(o);
    end
-   function PlotI(o,sub)               % Plot inv(T)               
+   function PlotI(o,sub)               % Plot inv(T)                   
       subplot(o,sub);
       
       plot(o,percent,1./deg,'b');
       hold on
       plot(o,percent,1./(mdeg/1000),'bc');
-      
+      plot(o,Pds,1./Deg(Tds),'Kp');
+       
       title('Voltage Ratio');
-      xlabel('U/Uref');
+      xlabel('U/Uref [%]');
       ylabel('1/T [°C]');
       subplot(o);
    end
-   function Tdeg = Deg(Tklv)           % Convert to Centi Degrees      
-      Tdeg = Tklv + Tnull;
-   end
-   function Tklv = Klv(Tdeg)           % Convert to Kelvin             
-      Tklv = Tdeg - Tnull;
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function T0 = Tnull                    % absolute zero temperature     
+   T0 = -273.15;                       % absolute zero temperature
+end
+function Tdeg = Deg(Tklv)              % Convert to Centi Degrees      
+   Tdeg = Tklv + Tnull;
+end
+function Tklv = Klv(Tdeg)              % Convert to Kelvin             
+   Tklv = Tdeg - Tnull;
+end
+function Display(a)                    % Display Conversion Polynomial 
+   fprintf('Conversion Polynomial\n');
+   n = length(a) - 1;
+   for (i=1:length(a))
+      fprintf('   a%g: %g\n',n-i+1,a(i));
    end
 end
+

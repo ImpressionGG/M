@@ -123,10 +123,10 @@ function o = text(o,varargin)
    
 % Plot text if text provided to be plotted
    
-   while some(txt)
+   while ~isempty(txt)
       newline = 0;
       idx = min(find(txt == 10));
-      if some(idx)
+      if ~isempty(idx)
          chunk = txt(1:idx-1); 
          txt = txt(idx+1:end); 
          newline = 1;
@@ -215,7 +215,7 @@ function o = Resolve(o,position)
          o = opt(o,'position',[0 0],...
                           'halign','left','valign','top');
       otherwise
-         error('bad short cut for posdition used!');
+         error('bad short cut for position used!');
    end
    return
 end
@@ -282,8 +282,9 @@ function [txt,size] = Paragraph(o,txt,size)
    
       % replace '\n' by setstr(10)
       
-   while some(txt)
-      idx = either(min(find(txt == '\')),0);
+%  while some(txt)
+   while ~isempty(txt)
+      idx = o.either(min(find(txt == '\')),0);
       if (idx > 0 && length(txt) >= idx+1)
          if (txt(idx+1) == 'n')             % newline ('\n') detected
             txt(idx) = setstr(10);          % line feed character
@@ -307,6 +308,7 @@ function opti = Draw(o,opti,txt,size)
 %
 % DRAW     Draw text chunk
 %
+   uscore = util(o,'uscore');
    if isempty(txt)
       return
    end
@@ -320,7 +322,7 @@ function opti = Draw(o,opti,txt,size)
       % will be used or not!
       
    if isempty(opti.append)             % leave behaviour to opti.handle
-      if some(opti.handle)
+      if ~isempty(opti.handle)
          opti.line = [opti.line,txt]; 
       else
          opti.line = txt;
@@ -338,7 +340,7 @@ function opti = Draw(o,opti,txt,size)
    y = ylim(2) - diff(ylim)*opti.position(2)/100;
 
    hdl = opti.handle;
-   line = underscore(o,opti.line);
+   line = uscore(opti.line);
    
       % first we need to check whether our handle is valid
       
@@ -350,7 +352,7 @@ function opti = Draw(o,opti,txt,size)
    
       % now we know we have a valid handle
       
-   if some(hdl)
+   if ~isempty(hdl)
       set(hdl,'string',line);
    else
       hdl = text(x,y,line);
@@ -365,7 +367,7 @@ function opti = Draw(o,opti,txt,size)
 
    col = opti.color;
    if (~isempty(col) && (isa(col,'double') || isa(col,'char')))
-      col = color(col);
+      col = o.color(col);
       set(hdl,'Color',col);
    end
 
@@ -438,7 +440,7 @@ function o = Options(o,default)
       default.line = '';
       default.halign = 'left';
       default.valign = 'top';
-      default.color = 'k';
+      default.color = 'K';
       default.size = 4;
       default.position = [0 0];
       default.spacing = 1.5;
