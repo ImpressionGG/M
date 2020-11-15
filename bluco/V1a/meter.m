@@ -115,14 +115,14 @@ end
 %==========================================================================
 
 function oo = Select(o)                % Select Menu                   
-   setting(o,{'meter.periods'},3);
+   setting(o,{'meter.periods'},10);
    setting(o,{'meter.Ts'},0.000551);
    setting(o,{'meter.P0'},100);
    setting(o,{'meter.algo'},1);
    
    oo = mhead(o,'Select');
    ooo = mitem(oo,'Integration Algorithm',{},'meter.algo');
-   choice(ooo,{{'1: Trapezoidal',1},{'2: Simple',2}},{});
+   choice(ooo,{{'Trapezoidal',1},{'Simple',2}},{});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Number of Periods',{},'meter.periods');
@@ -231,7 +231,7 @@ function o = Algorithm(o)              % Metering Algorithm
    PlotEU(o,3222);
    PlotEP(o,3232);
    
-   Heading(o,algo);
+   Heading(o,'Algorithm',algo);
    
    function IntegrationStep(t,u,i)     % Perform Integration Step      
       T = t - t_;                      % time delta
@@ -369,7 +369,9 @@ function o = Algorithm(o)              % Metering Algorithm
    end
 end
 function o = Implementation(o)         % Metering Implementation       
-   SHIFT10 = 2^10;                     % normalizing constant
+   SHIFTU = 2^11;                      % current normalization constant
+   SHIFTI = 2^5;                       % voltage normalization constant
+
    N = opt(o,'meter.periods');         % number of periods to simulate
    algo = opt(o,'meter.algo');         % algorithm selection
    
@@ -387,7 +389,7 @@ function o = Implementation(o)         % Metering Implementation
       % convert to mA and mV
       
    ImA = int32(ik*1000);
-   U_V = int32(uk);
+   UmV = int32(uk*1000);
    
       % run algorithm
       
@@ -411,8 +413,8 @@ function o = Implementation(o)         % Metering Implementation
          % measure t,u,i
          
       [t,toff] = GridTimeUs(o,tk(k));  
-      u = U_V(k);                      % u = uk(k);  
-      i = ImA(k);                      % ik(k);
+      u = UmV(k) / SHIFTU;             % u = uk(k) >> 11;  
+      i = ImA(k) / SHIFTI;             % i = ik(k) >> 5;
       
          % check for zero cross
          
@@ -420,11 +422,8 @@ function o = Implementation(o)         % Metering Implementation
          t_ = t_ - GridPeriodUs(o);    % make negative
          dt = t - t_;                  % calculate time difference
          
-         ku = double(u - u_)/double(dt);
-         ki = double(i - i_)/double(dt);
-
-         u0(end+1) = int32(u - ku*double(t));
-         i0(end+1) = int32(i - ki*double(t));
+         u0(end+1) = u - ((u-u_)*t) / dt;
+         i0(end+1) = i - ((i-i_)*t) / dt;
          t0(end+1) = toff;
          
             % complete integration
@@ -453,7 +452,7 @@ function o = Implementation(o)         % Metering Implementation
    PlotEU(o,3222);
    PlotEP(o,3232);
 
-   Heading(o,algo);
+   Heading(o,'Implementation',algo);
 
    function IntegrationStep(t,u,i)     % Perform Integration Step      
       T = t - t_;                      % time delta
@@ -466,13 +465,13 @@ function o = Implementation(o)         % Metering Implementation
          
       switch algo
          case 1
-            dI2T = (i2_ + i*i_ + i2) / SHIFT10;
-            dU2T = (u2_ + u*u_ + u2) / SHIFT10;
-            dUIT = (ui_ + uxi  + ui) / SHIFT10;
+            dI2 = (i2_ + i*i_ + i2);
+            dU2 = (u2_ + u*u_ + u2);
+            dUI = (ui_ + uxi  + ui);
          case 2
-            dI2T = (3*i2) / SHIFT10;
-            dU2T = (3*u2) / SHIFT10;
-            dUIT = (3*ui) / SHIFT10;
+            dI2 = (3*i2);
+            dU2 = (3*u2);
+            dUI = (3*ui);
          otherwise
             error('bad algo');
       end
@@ -480,9 +479,9 @@ function o = Implementation(o)         % Metering Implementation
          % sum-up period ands integrals I2T,U2T,UIT ...
          
       Tp = Tp + T;                     % sum-up period
-      I2T = I2T + dI2T*T;              % sum-up i2t integral
-      U2T = U2T + dU2T*T;              % sum-up u2t integral
-      UIT = UIT + dUIT*T;              % sum-up power integral
+      I2T = I2T + (dI2*T);             % sum-up i2t integral
+      U2T = U2T + (dU2*T);             % sum-up u2t integral
+      UIT = UIT + (dUI*T);             % sum-up power integral
 
          % refresh history
          
@@ -492,18 +491,18 @@ function o = Implementation(o)         % Metering Implementation
    function Finalize(o)                % Finalize Integration          
       Tgrid(end+1) = Tp;               % record grid period
 
-      Irms2 = (I2T/(3*Tp)) * SHIFT10;
-      Urms2 = (U2T/(3*Tp)) * SHIFT10;
-      PmW   = (UIT/(6*Tp)) * SHIFT10;
+      Irms2 = double(I2T/(3*Tp)) * (SHIFTI*SHIFTI);
+      Urms2 = double(U2T/(3*Tp)) * (SHIFTU*SHIFTU);
+      PmW   = double(UIT/(6*Tp)) * (SHIFTU*SHIFTI);
 
-      Irms(end+1) = sqrt(double(Irms2))/1000;  % record RMS current
-      Urms(end+1) = sqrt(double(Urms2));       % record RMS voltage
-      Peff(end+1) = PmW/1000;                  % record effective power
+      Irms(end+1) = sqrt(Irms2)/1000;  % record RMS current
+      Urms(end+1) = sqrt(Urms2)/1000;  % record RMS voltage
+      Peff(end+1) = PmW/1000000;       % record effective power
 
          % reinitialize integral quantities
             
       Tp = 0;  I2T = 0;  U2T = 0;  UIT = 0;
-    end
+   end
    function Display(o)                 % Display Integraton Results    
       Z0 = Impedance(o);
       Urms0 = GridRmsVoltage(o);
@@ -656,7 +655,7 @@ function i = Current(o,t)              % Get Current
    u = GridVoltage(o,t);
    i = u/Z0;
 end
-function Heading(o,algo)               % Plot Figure Heading           
+function Heading(o,msg,algo)               % Plot Figure Heading           
    switch algo
       case 1
          prefix = 'Trapezoidal';
@@ -665,6 +664,6 @@ function Heading(o,algo)               % Plot Figure Heading
       otherwise
          prefix = '???';
    end
-   heading(o,[prefix,' Metering Implementation']);
+   heading(o,[prefix,' Metering ',msg]);
 end
 
