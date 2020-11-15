@@ -90,7 +90,7 @@ function oo = Menu(o)                  % Setup Rolldown Menu
    
    o = menu(o,'Begin');
    oo = menu(o,'File');
-   oo = menu(o,'Edit');
+%  oo = menu(o,'Edit');
    oo = menu(o,'View');
    oo = Select(o);
    oo = Meter(o);                      % add Meter menu items
@@ -114,13 +114,17 @@ end
 % Select Menu
 %==========================================================================
 
-function oo = Select(o)
+function oo = Select(o)                % Select Menu                   
    setting(o,{'meter.periods'},3);
    setting(o,{'meter.Ts'},0.000551);
    setting(o,{'meter.P0'},100);
    setting(o,{'meter.algo'},1);
    
    oo = mhead(o,'Select');
+   ooo = mitem(oo,'Integration Algorithm',{},'meter.algo');
+   choice(ooo,{{'1: Trapezoidal',1},{'2: Simple',2}},{});
+
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Number of Periods',{},'meter.periods');
    choice(ooo,[1:5,10:10:100],{});
    
@@ -130,9 +134,6 @@ function oo = Select(o)
            
    ooo = mitem(oo,'Load',{},'meter.P0');
    choice(ooo,{{'100 W',100},{'200 W',200}},{});
-
-   ooo = mitem(oo,'Integration Algorithm',{},'meter.algo');
-   choice(ooo,{{'1: Quality',1},{'2: Simple',2}},{});
 end
 
 %==========================================================================
@@ -230,7 +231,7 @@ function o = Algorithm(o)              % Metering Algorithm
    PlotEU(o,3222);
    PlotEP(o,3232);
    
-   heading(o,'Metering Algorithm');
+   Heading(o,algo);
    
    function IntegrationStep(t,u,i)     % Perform Integration Step      
       T = t - t_;                      % time delta
@@ -325,7 +326,8 @@ function o = Algorithm(o)              % Metering Algorithm
       
       plot(o,idx,e*100,'r', idx,e*100,'Ko');
 
-      title(sprintf('RMS Current Calculation Error (Ts = %g ms)',Ts*1000));
+      err = o.rd(max(abs(e*100)),2);
+      title(sprintf('RMS Current Error: %g %% (Ts = %g ms)',err,Ts*1000));
       xlabel('Period Index');
       ylabel('e_I [%]');
       subplot(o);                      % subplot complete
@@ -340,7 +342,8 @@ function o = Algorithm(o)              % Metering Algorithm
       
       plot(o,idx,e*100,'bc', idx,e*100,'Ko');
 
-      title(sprintf('RMS Voltage Calculation Error (Ts = %g ms)',Ts*1000));
+      err = o.rd(max(abs(e*100)),2);
+      title(sprintf('RMS Voltage Error: %g %% (Ts = %g ms)',err,Ts*1000));
       xlabel('Period Index');
       ylabel('e_U [%]');
       subplot(o);                      % subplot complete
@@ -358,7 +361,8 @@ function o = Algorithm(o)              % Metering Algorithm
       
       plot(o,idx,e*100,'g', idx,e*100,'Ko');
 
-      title(sprintf('Effective Power Calculation Error (Ts = %g ms)',Ts*1000));
+      err = o.rd(max(abs(e*100)),2);
+      title(sprintf('Effective Power Error: %g %% (Ts = %g ms)',err,Ts*1000));
       xlabel('Period Index');
       ylabel('e_P [%]');
       subplot(o);                      % subplot complete
@@ -379,11 +383,17 @@ function o = Implementation(o)         % Metering Implementation
    uk = GridVoltage(o,tk);
    ik = Current(o,tk);
    
+      % convert to mA and mV
+      
+   ImA = int32(ik*1000);
+   U_V = int32(uk);
+   
       % run algorithm
       
    t_ = GridTime(o,tk(1));  u_ = uk(1);  i_ = ik(1);
    t0 = [];  u0 = [];  i0 = [];
    
+      % convert to 
       % initializing
 
        % init variables to be recorded
@@ -399,34 +409,27 @@ function o = Implementation(o)         % Metering Implementation
       
          % measure t,u,i
          
-      [t,toff] = GridTime(o,tk(k));  
-      u = uk(k);  i = ik(k);
+      [t,toff] = GridTimeUs(o,tk(k));  
+      u = U_V(k);                      % u = uk(k);  
+      i = ImA(k);                      % ik(k);
       
          % check for zero cross
          
       if (t < t_)
-         t_ = t_ - GridPeriod(o);      % make negative
+         t_ = t_ - GridPeriodUs(o);    % make negative
          dt = t - t_;                  % calculate time difference
          
-         ku = (u - u_)/dt;
-         ki = (i - i_)/dt;
+         ku = double(u - u_)/double(dt);
+         ki = double(i - i_)/double(dt);
 
-         u0(end+1) = u - ku*t;
-         i0(end+1) = i - ki*t;
+         u0(end+1) = int32(u - ku*double(t));
+         i0(end+1) = int32(i - ki*double(t));
          t0(end+1) = toff;
          
             % complete integration
             
          IntegrationStep(0,u0(end),i0(end));
-         
-         Tgrid(end+1) = Tp;              % record grid period
-         Irms(end+1) = sqrt(I2T/(3*Tp)); % record RMS current
-         Urms(end+1) = sqrt(U2T/(3*Tp)); % record RMS voltage
-         Peff(end+1) = UIT/(6*Tp);       % record effective power
-         
-            % reinitialize integral quantities
-            
-         Tp = 0;  I2T = 0;  U2T = 0;  UIT = 0;
+         Finalize(o);
       end
       
          % normal integration step
@@ -449,7 +452,7 @@ function o = Implementation(o)         % Metering Implementation
    PlotEU(o,3222);
    PlotEP(o,3232);
 
-   heading(o,'Metering Implementation');
+   Heading(o,algo);
 
    function IntegrationStep(t,u,i)     % Perform Integration Step      
       T = t - t_;                      % time delta
@@ -462,15 +465,16 @@ function o = Implementation(o)         % Metering Implementation
          
       Tp = Tp + T;                     % sum-up period
       
+      T = int64(T);
       switch algo
          case 1
-            I2T = I2T + (i2_ + i*i_ + i2)*T;     % sum-up i2t integral
-            U2T = U2T + (u2_ + u*u_ + u2)*T;     % sum-up u2t integral
-            UIT = UIT + (ui_ + uxi + ui)*T;      % sum-up power integral
+            I2T = I2T + int64(i2_+i*i_+i2)*T;    % sum-up i2t integral
+            U2T = U2T + int64(u2_+u*u_+u2)*T;    % sum-up u2t integral
+            UIT = UIT + int64(ui_+uxi+ui)*T;     % sum-up power integral
          case 2
-            I2T = I2T + 3*i2*T;                  % sum-up i2t integral
-            U2T = U2T + 3*u2*T;                  % sum-up u2t integral
-            UIT = UIT + 3*ui*T;                  % sum-up power integral
+            I2T = I2T + int64(3*i2)*T;           % sum-up i2t integral
+            U2T = U2T + int64(3*u2)*T;           % sum-up u2t integral
+            UIT = UIT + int64(3*ui)*T;           % sum-up power integral
          otherwise
             error('bad algo');
       end
@@ -479,6 +483,21 @@ function o = Implementation(o)         % Metering Implementation
       t_ = t;  u_ = u;  i_ = i;
       ui_ = ui;  u2_ = u2;  i2_ = i2;
    end
+   function Finalize(o)                % Finalize Integration          
+      Tgrid(end+1) = Tp;               % record grid period
+
+      Irms2 = double(I2T)/double(3*Tp);
+      Urms2 = double(U2T)/double(3*Tp);
+      PmW   = double(UIT)/double(6*Tp);
+
+      Irms(end+1) = sqrt(Irms2)/1000;  % record RMS current
+      Urms(end+1) = sqrt(Urms2);       % record RMS voltage
+      Peff(end+1) = PmW/1000;          % record effective power
+
+         % reinitialize integral quantities
+            
+      Tp = 0;  I2T = 0;  U2T = 0;  UIT = 0;
+    end
    function Display(o)                 % Display Integraton Results    
       Z0 = Impedance(o);
       Urms0 = GridRmsVoltage(o);
@@ -544,7 +563,8 @@ function o = Implementation(o)         % Metering Implementation
       
       plot(o,idx,e*100,'r', idx,e*100,'Ko');
 
-      title(sprintf('RMS Current Calculation Error (Ts = %g ms)',Ts*1000));
+      err = o.rd(max(abs(e*100)),2);
+      title(sprintf('RMS Current Error: %g %% (Ts = %g ms)',err,Ts*1000));
       xlabel('Period Index');
       ylabel('e_I [%]');
       subplot(o);                      % subplot complete
@@ -559,7 +579,8 @@ function o = Implementation(o)         % Metering Implementation
       
       plot(o,idx,e*100,'bc', idx,e*100,'Ko');
 
-      title(sprintf('RMS Voltage Calculation Error (Ts = %g ms)',Ts*1000));
+      err = o.rd(max(abs(e*100)),2);
+      title(sprintf('RMS Voltage Error: %g %% (Ts = %g ms)',err,Ts*1000));
       xlabel('Period Index');
       ylabel('e_U [%]');
       subplot(o);                      % subplot complete
@@ -577,7 +598,8 @@ function o = Implementation(o)         % Metering Implementation
       
       plot(o,idx,e*100,'g', idx,e*100,'Ko');
 
-      title(sprintf('Effective Power Calculation Error (Ts = %g ms)',Ts*1000));
+      err = o.rd(max(abs(e*100)),2);
+      title(sprintf('Effective Power Error: %g %% (Ts = %g ms)',err,Ts*1000));
       xlabel('Period Index');
       ylabel('e_P [%]');
       subplot(o);                      % subplot complete
@@ -588,9 +610,13 @@ end
 % Helper
 %==========================================================================
 
-function T = GridPeriod(o)             % Get Grid period               
+function T = GridPeriod(o)             % Get Grid Period               
    om = 2*pi*50;                       % circular frequency
    T = 2*pi/om;
+end
+function Tus = GridPeriodUs(o)         % Get Microsecond Grid Period   
+   T = GridPeriod(o);                  % grid period in seconds
+   Tus = int32(T*1e6);
 end
 function [t,toff] = GridTime(o,t)      % Get Grid Time                 
    T = GridPeriod(o);
@@ -601,6 +627,10 @@ function [t,toff] = GridTime(o,t)      % Get Grid Time
    while (t >= T)
       t = t-T;  toff = toff + T;
    end
+end
+function [tus,toff] = GridTimeUs(o,t)  % Get Mirosecond Grid Time      
+   [t,toff] = GridTime(o,t);
+   tus = int32(t*1e6);
 end
 function Urms = GridRmsVoltage(o)      % Get RMS Grid Voltage          
    Urms = 230;
@@ -620,5 +650,15 @@ function i = Current(o,t)              % Get Current
    u = GridVoltage(o,t);
    i = u/Z0;
 end
-
+function Heading(o,algo)               % Plot Figure Heading           
+   switch algo
+      case 1
+         prefix = 'Trapezoidal';
+      case 2
+         prefix = 'Simple';
+      otherwise
+         prefix = '???';
+   end
+   heading(o,[prefix,' Metering Implementation']);
+end
 
