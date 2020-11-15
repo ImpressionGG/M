@@ -133,7 +133,7 @@ function oo = Select(o)                % Select Menu
               {'0.551 ms',0.000551},{'0.11 ms',0.00011}},{});
            
    ooo = mitem(oo,'Load',{},'meter.P0');
-   choice(ooo,{{'100 W',100},{'200 W',200}},{});
+   choice(ooo,{{'100 W',100},{'200 W',200},{'300 W',300},{'400 W',400}},{});
 end
 
 %==========================================================================
@@ -369,6 +369,7 @@ function o = Algorithm(o)              % Metering Algorithm
    end
 end
 function o = Implementation(o)         % Metering Implementation       
+   SHIFT10 = 2^10;                     % normalizing constant
    N = opt(o,'meter.periods');         % number of periods to simulate
    algo = opt(o,'meter.algo');         % algorithm selection
    
@@ -460,24 +461,29 @@ function o = Implementation(o)         % Metering Implementation
       i2 = i*i;                        % squared current term
       u2 = u*u;                        % squared voltage term
       uxi = u*i_ + u_*i;               % cross power term
-      
-         % sum-up Tp, R and W
+                     
+         % depending on algorithm calculate integrands
          
-      Tp = Tp + T;                     % sum-up period
-      
-      T = int64(T);
       switch algo
          case 1
-            I2T = I2T + int64(i2_+i*i_+i2)*T;    % sum-up i2t integral
-            U2T = U2T + int64(u2_+u*u_+u2)*T;    % sum-up u2t integral
-            UIT = UIT + int64(ui_+uxi+ui)*T;     % sum-up power integral
+            dI2T = (i2_ + i*i_ + i2) / SHIFT10;
+            dU2T = (u2_ + u*u_ + u2) / SHIFT10;
+            dUIT = (ui_ + uxi  + ui) / SHIFT10;
          case 2
-            I2T = I2T + int64(3*i2)*T;           % sum-up i2t integral
-            U2T = U2T + int64(3*u2)*T;           % sum-up u2t integral
-            UIT = UIT + int64(3*ui)*T;           % sum-up power integral
+            dI2T = (3*i2) / SHIFT10;
+            dU2T = (3*u2) / SHIFT10;
+            dUIT = (3*ui) / SHIFT10;
          otherwise
             error('bad algo');
       end
+      
+         % sum-up period ands integrals I2T,U2T,UIT ...
+         
+      Tp = Tp + T;                     % sum-up period
+      I2T = I2T + dI2T*T;              % sum-up i2t integral
+      U2T = U2T + dU2T*T;              % sum-up u2t integral
+      UIT = UIT + dUIT*T;              % sum-up power integral
+
          % refresh history
          
       t_ = t;  u_ = u;  i_ = i;
@@ -486,13 +492,13 @@ function o = Implementation(o)         % Metering Implementation
    function Finalize(o)                % Finalize Integration          
       Tgrid(end+1) = Tp;               % record grid period
 
-      Irms2 = double(I2T)/double(3*Tp);
-      Urms2 = double(U2T)/double(3*Tp);
-      PmW   = double(UIT)/double(6*Tp);
+      Irms2 = (I2T/(3*Tp)) * SHIFT10;
+      Urms2 = (U2T/(3*Tp)) * SHIFT10;
+      PmW   = (UIT/(6*Tp)) * SHIFT10;
 
-      Irms(end+1) = sqrt(Irms2)/1000;  % record RMS current
-      Urms(end+1) = sqrt(Urms2);       % record RMS voltage
-      Peff(end+1) = PmW/1000;          % record effective power
+      Irms(end+1) = sqrt(double(Irms2))/1000;  % record RMS current
+      Urms(end+1) = sqrt(double(Urms2));       % record RMS voltage
+      Peff(end+1) = PmW/1000;                  % record effective power
 
          % reinitialize integral quantities
             
