@@ -28,6 +28,7 @@ function use(tag,version)
 %           use spm-v1c    % SPM V1c release @ 12Oct20
 %
    if (nargin < 2)
+      version.bluco = 'V1a';
       version.carabao = 'V1l';
       version.corazon = 'V1g1';
       version.corinth = 'V2a1';
@@ -67,6 +68,11 @@ function use(tag,version)
          addpath([mhome,'/willy/antenna/',version.antenna]);
          fprintf(['   Antenna Toolbox ',version.antenna,'\n']);   
 
+      case 'bluco'
+         use corazon
+         addpath([mhome,'/bluco/',version.bluco]);
+         fprintf(['   Bluco Studies ',version.antenna,' (kalman,ntc)\n']);   
+         
       case 'carabao'
          addpath([mhome,'/carabao/',version.carabao]);
          addpath([mhome,'/study']);

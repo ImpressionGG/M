@@ -15,7 +15,8 @@ function oo = ntc(o,varargin)       % Ntc Studies
    [gamma,oo] = manage(o,varargin,@Menu,...
                        @WithCuo,@WithSho,@WithBsk,@New,@Simu,...
                        @Plot,@Stream,@Scatter,...
-                       @Measurement,@Implementation,@Datasheet);
+                       @Measurement,@Implementation4,@Implementation2x2,...
+                       @Datasheet);
    oo = gamma(oo);
 end              
 
@@ -135,7 +136,8 @@ function oo = Ntc(o)                   % Ntc Menu
 %
    oo = mhead(o,'Ntc');                % add Ntc rolldown menu header
    ooo = mitem(oo,'Measurement',{@WithCuo,'Measurement'});
-   ooo = mitem(oo,'Implementation',{@WithCuo,'Implementation'});
+   ooo = mitem(oo,'Order-4 Implementation',{@WithCuo,'Implementation4'});
+   ooo = mitem(oo,'Order-2x2 Implementation',{@WithCuo,'Implementation2x2'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Data Sheet / Order 2',{@WithCuo,'Datasheet'},'2');
    ooo = mitem(oo,'Data Sheet / Order 3',{@WithCuo,'Datasheet'},'3');
@@ -161,7 +163,7 @@ function o = Measurement(o)            % Measurement of NTC
       subplot(o);
    end
 end
-function o = Implementation(o)         % NTC Conversion Implementation 
+function o = Implementation4(o)        % NTC Conversion Implementation 
    
       % from NCU15XH103F60RC datasheet we read ...
       
@@ -204,10 +206,27 @@ function o = Implementation(o)         % NTC Conversion Implementation
 
       % final conversion polynomial - fit with milli degree Celsius
       
-   a = polyfit(percent(idx),deg(idx)*1000,3);
-   mdeg = polyval(a,percent);
-      
+   order = 4;
+   a = polyfit(percent(idx),deg(idx)*1000,order);
+   if (order < 4)
+      a = [0 a];
+   end
+   
+   N = 14;
+   a4 = a(1);  A4 = Ipar(a4);
+   a3 = a(2);
+   a2 = a(3);
+   a1 = a(4);
+   a0 = a(5);
    Display(a);
+   
+%  mdeg = polyval(a,percent);
+   p = percent;                        % shorthand
+   P = percent*1000;                   % milli percent
+   %term1 = a4*p;
+   %Term1 = Rshift(A4*P,2*N);
+   mdeg = (((a4.*p + a3).*p + a2).*p  + a1).*p + a0;
+      
    PlotP(o,111);
    
    function PlotP(o,sub)               % Plot Percentage               
@@ -217,10 +236,6 @@ function o = Implementation(o)         % NTC Conversion Implementation
       hold on
       plot(o,Pds,Deg(Tds),'Kp');
       plot(o,percent,mdeg/1000,'c');
-      if opt(o,'view.approx')
-         plot(o,percent(idx1),mdeg1/1000,'yyyr');
-         plot(o,percent(idx2),mdeg2/1000,'y');
-      end
       
       for (i=1:length(a))
          txt = sprintf('a%g: %g',length(a)-i,a(i));
@@ -230,6 +245,115 @@ function o = Implementation(o)         % NTC Conversion Implementation
       
       title('Conversion of Voltage Ratio to Temperature');
       xlabel('U/Uref [%]');
+      ylabel('T [°C]');
+      subplot(o);
+   end
+   function y = Lshift(x,n)
+      y = uint64(uint64(x) * 2^n);
+   end
+   function y = Rshift(x,n)
+      y = uint64(uint64(x) / 2^n);
+   end
+   function p = Ipar(a)
+      base = 2^N;
+      p = uint64(a*base);
+   end
+end
+function o = Implementation2x2(o)      % NTC Conversion Implementation 
+%
+%   2x2 Implementation
+%
+%       int32_t a11 = -1211 
+%       int32_t a10 = 389645 
+%       int32_t a21 = -262 
+%       int32_t a20 = 130342
+%       int32_t N0   = 1309
+%
+%       int32_t p = ((int32_t)1000*Vntc) / Vdd;
+%       int32_t y1 = ((p + a11)*p + a10) >> 8;
+%       int32_t y2 = (p + a21)*p + a20;
+%       int32_t mdeg = (y1 * y2) / N0;
+%
+      % from NCU15XH103F60RC datasheet we read ...
+      
+   T0 = Klv(25);                       % reference temperature 25°C
+   Tds = Klv([  50   80   85  100]);   % datasheet temperatures [°C]
+   Bds = [3380,3428,3434,3455];        % datasheet B-values
+   
+      % we can calculate resistor values and voltage percentage
+      % at datasheet points
+      
+   R0 = 10000;
+   Rds = R0 * exp(Bds.*(1./Tds-1/T0));
+   Pds = 100*[Rds ./ (Rds+R0)];            % percent datasheet
+   
+      % calculate polynomial approximation of B
+      
+   b = polyfit(Tds,Bds,2);             % 2nd order approximation
+   
+      % calculate temperature for given resistor range
+ 
+   deg = 25:100;
+   
+   T = Klv(deg);
+   B = polyval(b,Klv(deg));
+   
+      % R(T) is the best we can know about NTC resistance dependent on T
+      
+   R = R0 * exp(B.*(1./T-1/T0));
+   
+      % voltage ratio
+      
+   permille = 1000*[R ./ (R+R0)];
+
+      % final conversion polynomial - fit with milli degree Celsius
+      
+   order = 4;
+   a = polyfit(permille,deg*1000,order);
+   
+       % calculate roots
+       
+   r = roots(a);
+   r1 = r(1:2);
+   r2 = r(3:4);
+   
+       % calculate splitted polynomials
+       
+   p1 = int32(poly(r1));
+   p2 = int32(poly(r2));
+
+   a11 = p1(2);  a10 = p1(3);
+   a21 = p2(2);  a20 = p2(3);
+   N0 = int32(1/a(1)/256);             % normalizing constant
+   
+      
+   p = int32(permille);                % shorthand
+   y1 = ((p + a11).*p + a10) / 256;    % right shift >>8
+   y2 = (p + a21).*p + a20;
+   y = y1 .* y2;
+   mdeg = y / N0;                      % normalize
+   
+   
+   PlotP(o,111);
+   
+   function PlotP(o,sub)               % Plot Percentage               
+      subplot(o,sub);
+      
+      plot(o,permille,deg,'bc');
+      hold on
+      plot(o,Pds*10,Deg(Tds),'Kp');
+      plot(o,permille,double(mdeg)/1000,'g');
+      
+      hdl(1) = text(300,85,sprintf('a11: %g',a11));
+      hdl(2) = text(300,80,sprintf('a10: %g',a10));
+      hdl(3) = text(300,75,sprintf('a21: %g',a21));
+      hdl(4) = text(300,70,sprintf('a20: %g',a20));
+      hdl(5) = text(300,65,sprintf('N0:  %g',N0));
+      
+      set(hdl,'color',o.iif(dark(o),'w','k'));
+      
+      title('Conversion of Voltage Ratio to Temperature');
+      xlabel('U/Uref [1/1000]');
       ylabel('T [°C]');
       subplot(o);
    end
