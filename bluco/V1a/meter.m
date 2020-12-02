@@ -117,7 +117,7 @@ end
 function oo = Select(o)                % Select Menu                   
    setting(o,{'meter.periods'},10);
    setting(o,{'meter.Ts'},0.000551);
-   setting(o,{'meter.P0'},100);
+   setting(o,{'meter.P0'},600);
    setting(o,{'meter.algo'},1);
    
    oo = mhead(o,'Select');
@@ -133,7 +133,8 @@ function oo = Select(o)                % Select Menu
               {'0.551 ms',0.000551},{'0.11 ms',0.00011}},{});
            
    ooo = mitem(oo,'Load',{},'meter.P0');
-   choice(ooo,{{'100 W',100},{'200 W',200},{'300 W',300},{'400 W',400}},{});
+   choice(ooo,{{'100 W',100},{'200 W',200},{'300 W',300},...
+               {'400 W',400},{'500 W',500},{'600 W',600}},{});
 end
 
 %==========================================================================
@@ -369,9 +370,10 @@ function o = Algorithm(o)              % Metering Algorithm
    end
 end
 function o = Implementation(o)         % Metering Implementation       
-   SHIFTU = 2^11;                      % current normalization constant
-   SHIFTI = 2^5;                       % voltage normalization constant
-
+   SHIFTI = 2^0;                       % current normalization constant
+   SHIFTU = 2^6;                       % voltage normalization constant
+   SHIFTT = 2^11;                      % time normalization
+   
    N = opt(o,'meter.periods');         % number of periods to simulate
    algo = opt(o,'meter.algo');         % algorithm selection
    
@@ -465,13 +467,13 @@ function o = Implementation(o)         % Metering Implementation
          
       switch algo
          case 1
-            dI2 = (i2_ + i*i_ + i2);
-            dU2 = (u2_ + u*u_ + u2);
-            dUI = (ui_ + uxi  + ui);
+            dI2 = (i2_ + i*i_ + i2) / SHIFTT;
+            dU2 = (u2_ + u*u_ + u2) / SHIFTT;
+            dUI = (ui_ + uxi  + ui) / SHIFTT;
          case 2
-            dI2 = (3*i2);
-            dU2 = (3*u2);
-            dUI = (3*ui);
+            dI2 = (3*i2) / SHIFTT;
+            dU2 = (3*u2) / SHIFTT;
+            dUI = (3*ui) / SHIFTT;
          otherwise
             error('bad algo');
       end
@@ -491,9 +493,9 @@ function o = Implementation(o)         % Metering Implementation
    function Finalize(o)                % Finalize Integration          
       Tgrid(end+1) = Tp;               % record grid period
 
-      Irms2 = double(I2T/(3*Tp)) * (SHIFTI*SHIFTI);
-      Urms2 = double(U2T/(3*Tp)) * (SHIFTU*SHIFTU);
-      PmW   = double(UIT/(6*Tp)) * (SHIFTU*SHIFTI);
+      Irms2 = double(I2T/(3*Tp)) * (SHIFTI*SHIFTI*SHIFTT);
+      Urms2 = double(U2T/(3*Tp)) * (SHIFTU*SHIFTU*SHIFTT);
+      PmW   = double(UIT/(6*Tp)) * (SHIFTU*SHIFTI*SHIFTT);
 
       Irms(end+1) = sqrt(Irms2)/1000;  % record RMS current
       Urms(end+1) = sqrt(Urms2)/1000;  % record RMS voltage
