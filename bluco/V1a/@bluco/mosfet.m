@@ -9,7 +9,8 @@ function oo = mosfet(o,varargin)     % Do Some Studies
 %    See also: BLUCO, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                      @New,@OnOffTime,@OnTime,@OffTime,@CissRdson,@QgCiss);
+                      @New,@OnOffTime,@OnTime,@OffTime,@CissRdson,...
+                      @QgCiss,@RdsonTpcb,@Spectrum);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -27,6 +28,17 @@ function oo = Menu(o)
    oo = mitem(o,'Tradeoff');
    ooo = mitem(oo,'Ciss versus Rdson',{@WithCuo,'CissRdson'},[]);
    ooo = mitem(oo,'Qg versus Ciss',{@WithCuo,'QgCiss'},[]);
+   oo = mitem(o,'Rdson');
+   ooo = mitem(oo,'Rdson = f(Tpcb)',{@WithCuo,'RdsonTpcb'},[]);
+
+   oo = mitem(o,'Spectrum');
+   ooo = mitem(oo,'5 us',{@WithCuo,'Spectrum'},[5e-6]);
+   ooo = mitem(oo,'10 us',{@WithCuo,'Spectrum'},[10e-6]);
+   ooo = mitem(oo,'20 us',{@WithCuo,'Spectrum'},[20e-6]);
+   ooo = mitem(oo,'50 us',{@WithCuo,'Spectrum'},[50e-6]);
+   ooo = mitem(oo,'100 us',{@WithCuo,'Spectrum'},[100e-6]);
+   ooo = mitem(oo,'200 us',{@WithCuo,'Spectrum'},[200e-6]);
+   ooo = mitem(oo,'500 us',{@WithCuo,'Spectrum'},[500e-6]);
 end
 
 %==========================================================================
@@ -111,13 +123,13 @@ function oo = New(o)
           oo.data.Ton = [125 142 189];
           oo.data.Tpcb = [30 62 80];
           oo.data.Rdson = 0.62;
-          oo.data.Ciss = 730e-9;
+          oo.data.Ciss = 730e-12;
           oo.data.Qg = 18e-9;
           oo.data.Vds = 650;
           oo.data.Id = 10;
           oo.data.price = 0.473;
           oo.data.quantity = 5e3;
-                
+                          
       case 2
           oo.par.title = 'IPD70R360P7S';
           oo.par.rating = '300mR/16.4nC';
@@ -128,7 +140,7 @@ function oo = New(o)
           oo.data.Ton = [40 58 69];
           oo.data.Tpcb = [42 66 71];
           oo.data.Rdson = 0.57;
-          oo.data.Ciss = 517e-9;
+          oo.data.Ciss = 517e-12;
           oo.data.Qg = 16.4e-9;
           oo.data.Vds = 700;
           oo.data.Id = 12.5;
@@ -146,7 +158,7 @@ function oo = New(o)
           oo.data.Ton = [53 68 59 63];
           oo.data.Tpcb = [42 59 57 80];
           oo.data.Rdson = 0.53;
-          oo.data.Ciss = 575e-9;
+          oo.data.Ciss = 575e-12;
           oo.data.Qg = 16.7e-9;
           oo.data.Vds = 600;
           oo.data.Id = 12;
@@ -163,7 +175,7 @@ function oo = New(o)
           oo.data.Ton = [120 93];
           oo.data.Tpcb = [80 65];
           oo.data.Rdson = 0.67;
-          oo.data.Ciss = 509e-9;
+          oo.data.Ciss = 509e-12;
           oo.data.Qg = 13e-9;
           oo.data.Vds = 600;
           oo.data.Id = 10;
@@ -180,7 +192,7 @@ function oo = New(o)
           oo.data.Ton = [85 58];
           oo.data.Tpcb = [80 58];
           oo.data.Rdson = 0.99;
-          oo.data.Ciss = 570e-9;
+          oo.data.Ciss = 570e-12;
           oo.data.Qg = 20e-9;
           oo.data.Vds = 800;
           oo.data.Id = 8;
@@ -196,13 +208,19 @@ function oo = New(o)
           oo.data.Toff = [28 27];
           oo.data.Ton = [144 120];
           oo.data.Tpcb = [80 67];
-          oo.data.Rdson = 0.62;
-          oo.data.Ciss = 1081e-9;
+          oo.data.Rdson = 0.31;
+          oo.data.Ciss = 1081e-12;
           oo.data.Qg = 25e-9;
           oo.data.Vds = 600;
           oo.data.Id = 11;
           oo.data.price = 0.53;
           oo.data.quantity = 10e3;
+
+          oo.data.f_Rdson_Tpcb.Pload = [152 200 250 300 325 352 375]; 
+          oo.data.f_Rdson_Tpcb.Rdson = [0.3 0.3 0.31 0.315 0.33 0.347 0.357]; 
+          oo.data.f_Rdson_Tpcb.Tpcb  = [ 54  55  60   65    72   81    86]; 
+          oo.data.f_Rdson_Tpcb.duty =  [ 1    1   1    1     1    1     1]; 
+          oo.data.f_Rdson_Tpcb.Ploss = [0.29 0.49 0.8 1.13 1.38 1.73  1.99]; 
    end
   
       % polynomial approximation of Ton/Toff
@@ -360,23 +378,23 @@ function o = CissRdson(o)
       subplot(o,sub);
       
       for (i=1:length(Rdson))
-         plot(o,Rdson(i),Ciss(i)*1e9,[col{i},'po']);    
+         plot(o,Rdson(i),Ciss(i)*1e12,[col{i},'po']);    
          hold on;
-         plot(o,[0, Rdson(i) Rdson(i)],[Ciss(i),Ciss(i),0]*1e9,col{i});
+         plot(o,[0, Rdson(i) Rdson(i)],[Ciss(i),Ciss(i),0]*1e12,col{i});
       end
       
       for (i=100:100:700)
-         Tchar = i*1e-9;
+         Tchar = i*1e-12;
          R_dson = 0.01:0.01:1;
          C_iss = Tchar ./ R_dson;
-         plot(o,R_dson,C_iss*1e9,'kw1');
+         plot(o,R_dson,C_iss*1e12,'kw1');
          hold on;
       end
       
       set(gca,'xlim',[0 1],'ylim',[0 1200]);
       title('Dependency Ciss = f(Rdson)');
       xlabel('Rdson [Ohm]');
-      ylabel('Ciss [nF]');
+      ylabel('Ciss [pF]');
       subplot(o);                      % done
    end
    function PlotTchar(o,sub)
@@ -384,13 +402,13 @@ function o = CissRdson(o)
       
       Tchar = Rdson .* Ciss;
       for (i=1:length(Tchar))
-         plot(o,i,Tchar(i)*1e9,[col{i},'op|']);
+         plot(o,i,Tchar(i)*1e12,[col{i},'op|']);
          hold on;
       end
       
       title(sprintf('Characteristic Time Tchar := Rdson*Ciss'));
-      xlabel('Rdson [Ohm]');
-      ylabel('Tchar [ns]');
+      xlabel('MOSFET [#]');
+      ylabel('Tchar [ps]');
       subplot(o);                      % done
    end
 end
@@ -410,9 +428,9 @@ function o = QgCiss(o)
       subplot(o,sub);
       
       for (i=1:length(Qg))
-         plot(o,Qg(i)*1e9,Ciss(i)*1e9,[col{i},'op']);
+         plot(o,Qg(i)*1e9,Ciss(i)*1e12,[col{i},'op']);
          hold on;
-         plot(o,[0, Qg(i) Qg(i)]*1e9,[Ciss(i),Ciss(i),0]*1e9,col{i});
+         plot(o,[0, Qg(i) Qg(i)]*1e9,[Ciss(i),Ciss(i),0]*1e12,col{i});
       end
       
       fit = polyfit([0 Qg],[0 Ciss],1);
@@ -422,8 +440,115 @@ function o = QgCiss(o)
       
       title(sprintf('Dependency Ciss = K*Qg (K = %g)',o.rd(fit(1),1)));
       xlabel('Qg [nC]');
-      ylabel('Ciss [nF]');
+      ylabel('Ciss [pF]');
       subplot(o);                      % done
+   end
+end
+function o = RdsonTpcb(o)
+   oo = mosfet(o,'New',6);
+   
+   PlotRdsonTpcb(oo,111);
+   heading(o,[oo.par.title,' (Bluco-813)']);
+   
+   function PlotRdsonTpcb(o,sub)
+      subplot(o,sub);
+      
+      f = o.data.f_Rdson_Tpcb;
+      Rdson = f.Rdson;
+      Tpcb = f.Tpcb;
+      
+      fit = polyfit(Tpcb,Rdson,2);
+      
+      plot(o,Tpcb,Rdson,'Kop');
+      hold on;
+      
+      T_pcb = 40:90;
+      R_dson = polyval(fit,T_pcb);
+      Rdson80 = polyval(fit,80);
+      plot(o,T_pcb,R_dson,'m');
+      
+      title(sprintf('Rdson = f(Tpcb) - Rdson(80) = %g Ohm',o.rd(Rdson80,3)));
+      ylabel('Rdson [Ohm]');
+      xlabel('Tpcb [grdC]');
+      
+      subplot(o);
+   end
+end
+function o = Spectrum(o)
+   T = arg(o,1)/4.4;
+   
+   t= (0:0.05:5000)*1e-6;
+   t0 = mean(t);
+
+   u1 =  1 ./ (1 + exp(+(t-t0)/T));
+   i1 =  1 - 1 ./ (1 + exp(+(t-t0)/T));
+   p1 = u1 .* i1;
+
+   i2 =  min([ones(size(t));exp(+(t-t0)/(T*2))]);
+   u2 =  1 - i2;
+   p2 = u2 .* i2;
+   
+      % FFT
+  
+   [f1,Y1] = fft(o,t,p1);
+   [f2,Y2] = fft(o,t,p2);
+   
+   
+   PlotP1(o,2211);
+   PlotP2(o,2221);
+   PlotFft(o,122);
+   
+   function PlotP1(o,sub)
+      subplot(o,sub);
+      o = opt(o,'xscale',1e6);
+
+      idx1 = max(find(u1>=0.9*max(u1)));
+      idx2 = min(find(u1<=0.1*max(u1)));
+      dt = t(idx2) - t(idx1);
+      
+      plot(o,t,p1,'g');
+      hold on
+      
+      plot(o,t,u1,'bc');
+      plot(o,t,i1,'r');
+      
+      title(sprintf('Ton/off: %g us',o.rd(1e6*dt,2)));
+      xlabel('time [us]');
+      subplot(o);
+   end
+   function PlotP2(o,sub)
+      subplot(o,sub);
+      o = opt(o,'xscale',1e6);
+
+      idx1 = max(find(u2>=0.9*max(u2)));
+      idx2 = min(find(u2<=0.1*max(u2)));
+      dt = t(idx2) - t(idx1);
+      
+      plot(o,t,u2,'bc');
+      hold on
+      
+      plot(o,t,i2,'r');
+      plot(o,t,p2,'ryyy');
+      
+      title(sprintf('Ton/off: %g us',o.rd(1e6*dt,2)));
+      xlabel('time [us]');
+      subplot(o);
+   end
+   function PlotFft(o,sub)
+      subplot(o,sub);
+      
+      dB1 = 10*log10(Y1);
+      dB2 = 10*log10(Y2);
+
+      dBmax = max([dB1,dB2]);
+      
+      plot(o,log10(f1),dB1,'g');
+      hold on
+      plot(o,log10(f2),dB2,'ryyy');
+      
+      title(sprintf('FFT: max: %g dB',o.rd(dBmax,1)));
+      xlabel('frequency [MHz]');
+      subplot(o);
    end
 end
 
@@ -451,8 +576,8 @@ function Legend(o,sub,dy)
 
       y = y - dy;
       hdl = text(2,y,...
-         sprintf('Q_{G}: %g nC, C_{ISS}: %g nF, R_{DSON}: %g Ohm',...
-         oo.data.Qg*1e9,oo.data.Ciss*1e9,oo.data.Rdson));
+         sprintf('Q_{G}: %g nC, C_{ISS}: %g pF, R_{DSON}: %g Ohm',...
+         oo.data.Qg*1e9,oo.data.Ciss*1e12,oo.data.Rdson));
       set(hdl,'color',col);
 
       axis off
