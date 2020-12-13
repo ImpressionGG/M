@@ -12,7 +12,7 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: BLUCO, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @Study1,@Study2,@Study3,@Study4,@Study5,...
+                        @Study1,@Study2,@Study3,@Study4,@Hilbert,...
                         @Study6,@Study7,@Study8,@Study9,@Study10);
    oo = gamma(o);                   % invoke local function
 end
@@ -27,7 +27,7 @@ function oo = Menu(o)
    oo = mitem(o,'Filtered',{@WithCuo,'Study3'},[]);
    oo = mitem(o,'Noise',{@WithCuo,'Study4'},[]);
    oo = mitem(o,'-');
-   oo = mitem(o,'Study5',{@WithCuo,'Study5'},[]);
+   oo = mitem(o,'Hilbert Transform',{@WithCuo,'Hilbert'},[]);
    oo = mitem(o,'Study6',{@WithCuo,'Study6'},[]);
    oo = mitem(o,'Study7',{@WithCuo,'Study7'},[]);
    oo = mitem(o,'Study8',{@WithCuo,'Study8'},[]);
@@ -163,8 +163,38 @@ function o = Study4(o)                 % Study 4: Noise
    title('Noise Signal Y');
    xlabel('t');
 end
-function o = Study5(o)                 % Study 5
-   message(o,'Study 5');
+function o = Hilbert(o)                % Hilbert Transform
+   n = 21;
+   y = rand(n,1);
+   
+      % take FFT
+      
+   f = fft(y);
+   fi = 1i*f;                          % complex multiplication by i
+   
+      % indices of positive and negative frequencies
+      
+   pos = 2:floor(n/2) + mod(n,2);
+   neg = ceil(n/2) + 1 + ~mod(n,2):n;
+   
+   f(pos) = f(pos) - 1i*fi(pos);
+   f(neg) = f(neg) + 1i*fi(neg);
+   
+      % take inverse FFT
+      
+   h = ifft(f);
+   
+      % plot
+      
+   subplot(o,211);
+   plot(o,1:n,y,'r');
+   title('Original signal');
+   
+   subplot(o,212);
+   plot(o,1:n,abs(h),'g');
+   hold on
+   plot(o,1:n,abs(hilbert(o,y)),'go');
+   title('Magnitude of Hilbert transform');
 end
 function o = Study6(o)                 % Study 6
    message(o,'Study 6');

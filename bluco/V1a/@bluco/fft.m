@@ -23,7 +23,7 @@ function [f,Y] = fft(o,t,y)
 %
 %           f = 1/T * [0:(L/2)] / L;
 %
-%        See also: CUTE, THDR
+%        See also: BLUCO
 %
     f = [];  Y = [];
     
