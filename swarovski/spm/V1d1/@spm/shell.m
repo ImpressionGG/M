@@ -579,7 +579,7 @@ function oo = Select(o)                % Select Menu
 
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Organize');   
-   ooo = menu(oo,'Basket');            % add Basket menu
+   ooo = Basket(oo);                   % add Basket menu
 
    ooo = mitem(oo,'-');
    ooo = Friction(oo);                 % Friction menu
@@ -602,6 +602,41 @@ function oo = Channel(o)               % Transfer Channel Menu
               {'G31(s): 1 -> 3',[3 1]},{'G32(s): 2 -> 3',[3 2]},...
               {'G33(s): 3 -> 3',[3 3]}},{});
    
+end
+function oo = Basket(o)                % Basket Menu                      
+   [pivots,piv] = Pivots(o);
+   setting(o,{'basket.pivot'},piv);
+
+      % build-up Basket menu
+      
+   oo = mhead(o,'Basket');
+   ooo = mitem(oo,'Pivot [°]',{},'basket.pivot');
+   choice(ooo,pivots,{});
+   
+   function [pivots,piv] = Pivots(o);  % collect pivots
+      pivots = [];
+      o = pull(o);
+      for (i=1:length(o.data))
+         oi = o.data{i};
+         if type(oi,{'spm'})
+            pivot = get(oi,'pivot');
+            if (~isempty(pivot) && isa(pivot,'double') && length(pivot)==1)
+               if isempty(find(pivots==pivot))
+                  pivots(end+1) = pivot;
+               end
+            end
+         end
+      end
+      pivots = sort(pivots);
+      
+      if ~isempty(find(pivots==85))
+         piv = 85;
+      elseif ~isempty(pivots)
+         piv = pivots(end);
+      else
+         piv = [];
+      end
+   end
 end
 function oo = Friction(o)              % Friction Menu                 
    setting(o,{'process.mu'},0.1);      % Coulomb friction parameter

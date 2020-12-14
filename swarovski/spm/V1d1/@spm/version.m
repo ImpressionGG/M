@@ -153,6 +153,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - check availability of symbolic toolbox
 % - add expression based FQR to principal TRFs
 % - trial with vpa for precise calculation of P(s)/Q(s)
+% - add Select/Basket/Pivot menu
 %
 %
 % Known bugs & wishlist
