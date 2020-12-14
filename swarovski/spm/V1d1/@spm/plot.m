@@ -684,14 +684,12 @@ function o = TrfBode(o)                % Bode Plot
       Gij = list{i};
       col = colors{1+rem(i-1,length(colors))};
 
-      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
       o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
       
       diagram(o,'Bode','',Gij,2111); 
-      hold on
       o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
       diagram(o,'Bode','',Gij,2121);   
-      hold on
    end
    
       % plot legend if more than 1 plots
@@ -705,7 +703,7 @@ function o = TrfBode(o)                % Bode Plot
       
    heading(o,head);
 end
-function o = TrfMagni(o)               % Magnitude Plot                
+function o = OldTrfMagni(o)               % Magnitude Plot                
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -716,6 +714,33 @@ function o = TrfMagni(o)               % Magnitude Plot
    o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
    diagram(o,'Bode','',Gij,1111);      
    heading(o);
+end
+function o = TrfMagni(o)               % Magnitude Plot
+   if ~type(o,{'spm','shell'})
+      plot(o,'About');
+      return
+   end
+   
+   colors = {'g','gy','gk','gb','gww','gkk','gbb','gbw','gbk'};
+   
+   [list,objs,head] = GijSelect(o);
+   for (i=1:length(list))
+      Gij = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+      diagram(o,'Bode','',Gij,1111);
+   end
+   
+      % plot legend if more than 1 plots
+      
+   if (length(list) > 1)
+      Legend(o,1111,objs);
+   end
+   
+      % plot heading if not shell object
+
+   heading(o,head);
 end
 function o = TrfNyq(o)                 % Nyquist Plot                  
    if ~type(o,{'spm'})

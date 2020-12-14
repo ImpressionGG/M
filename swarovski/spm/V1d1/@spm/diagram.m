@@ -332,6 +332,7 @@ function o = Bode(o)                   % Bode Diagram
    else
       o = NewBode(o);
    end
+   hold on;
 end
 function o = GoodBode(o)               % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors

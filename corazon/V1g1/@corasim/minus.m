@@ -36,7 +36,7 @@ end
 
 function oo = Sub(o1,o2)               % Subtract Two Objects          
    if ~isequal(o1.type,o2.type)
-      error('type mismatch');
+%     error('type mismatch');
    end
    
    if type(o1,{'szpk','zzpk','qzpk'})
