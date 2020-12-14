@@ -1,9 +1,11 @@
-function heading(o,txt)
+function txt = heading(o,txt)
 %
 % HEADING   Overloaded heading method for SPM objects
 %
-%              heading(o)          % auto adds object id
-%              heading(o,txt)
+%              heading(o)          % plot heading (auto adds object id)
+%              heading(o,txt)      % plot heading with custom text 
+%
+%              txt = headng(o)     % get heading text without plotting
 %
 %           Copyright(c): Bluenetics 2020
 %
@@ -17,10 +19,13 @@ function heading(o,txt)
       if ~isempty(oid);
          txt = [txt,' (',oid,')'];
       end
-      heading(corazon(o),txt);
-   elseif (nargin == 2)
-      heading(corazon(o),txt);
-   else
-      error('1 or 2 input args expected');
    end
-      
+
+   if (nargout == 0)   
+      if (nargin == 1 || nargin == 2)
+         heading(corazon(o),txt);
+      else
+         error('1 or 2 input args expected');
+      end
+   end
+end

@@ -33,6 +33,8 @@ end
 
 function oo = Menu(o)                  % Setup Plot Menu               
    switch type(current(o))
+      case 'shell'
+         oo = MenuShell(o);
       case 'spm'
          oo = SpmMenu(o);
       case 'pkg'
@@ -41,7 +43,14 @@ function oo = Menu(o)                  % Setup Plot Menu
          oo = mitem(o,'About',{@WithCuo,'About'});
    end
 end
-function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
+function oo = MenuShell(o)             % Setup Plot Menu for SHELL Type
+   oo = mitem(o,'About',{@WithCuo,'About'});
+   oo = mitem(o,'-');
+   oo = mitem(o,'Transfer Function');
+   ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
+   ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
+end
+function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type
 %
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
@@ -53,7 +62,6 @@ function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type
    oo = ModeShapes(o);
    oo = TransferFunction(o);           % Transfer Function menu
    
-   oo = mitem(o,'-');
    oo = mitem(o,'-');
    oo = TransferMatrix(o);             % G(s)
    oo = ConstrainMatrix(o);            % H(s)
@@ -76,6 +84,7 @@ function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type
    oo = mitem(o,'-');
    oo = mitem(o,'Stability Margin',{@WithCuo,'Stability'});
 end
+
 
 function oo = ModeShapes(o)            % Mode Shapes Menu              
    oo = mitem(o,'Mode Shapes');   
@@ -642,8 +651,10 @@ function o = TrfRloc(o)                % Pole/Zero Plot
       return
    end
    
-   Gij = TrfSelect(o);   
-   diagram(o,'Rloc','',Gij,1111);      
+   list = GijSelect(o);   
+   Gij = list{1};                   
+   
+   diagram(o,'Rloc','',Gij,1111);
    heading(o);
 end
 function o = TrfStep(o)                % Step Response Plot            
@@ -652,7 +663,8 @@ function o = TrfStep(o)                % Step Response Plot
       return
    end
    
-   Gij = TrfSelect(o);
+   list = GijSelect(o);   
+   Gij = list{1};                   
    diagram(o,'Step','',Gij,2111);
    
    o = opt(o,'simu.tmax',1);
@@ -660,17 +672,38 @@ function o = TrfStep(o)                % Step Response Plot
    heading(o);
 end
 function o = TrfBode(o)                % Bode Plot                     
-   if ~type(o,{'spm'})
+   if ~type(o,{'spm','shell'})
       plot(o,'About');
       return
    end
    
-   Gij = TrfSelect(o);
-   o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
-   diagram(o,'Bode','',Gij,2111);      
-   o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
-   diagram(o,'Bode','',Gij,2112);      
-   heading(o);
+   colors = {'g','gy','gk','gb','gww','gkk','gbb','gbw','gbk'};
+   
+   [list,objs,head] = GijSelect(o);
+   for (i=1:length(list))
+      Gij = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+      o = opt(o,'color',col);
+      
+      diagram(o,'Bode','',Gij,2111); 
+      hold on
+      o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
+      diagram(o,'Bode','',Gij,2121);   
+      hold on
+   end
+   
+      % plot legend if more than 1 plots
+      
+   if (length(list) > 1)
+      Legend(o,2111,objs);
+      Legend(o,2121,objs);
+   end
+   
+      % plot heading if not shell object
+      
+   heading(o,head);
 end
 function o = TrfMagni(o)               % Magnitude Plot                
    if ~type(o,{'spm'})
@@ -678,7 +711,8 @@ function o = TrfMagni(o)               % Magnitude Plot
       return
    end
    
-   Gij = TrfSelect(o);
+   list = GijSelect(o);   
+   Gij = list{1};                   
    o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
    diagram(o,'Bode','',Gij,1111);      
    heading(o);
@@ -689,7 +723,8 @@ function o = TrfNyq(o)                 % Nyquist Plot
       return
    end
    
-   Gij = TrfSelect(o);
+   list = GijSelect(o);   
+   Gij = list{1};                   
    diagram(o,'Nyq','',Gij,1111);      
    heading(o);
 end
@@ -722,12 +757,40 @@ function o = TrfWeight(o)              % Plot Modal Weights
    end
 end
 
-function Gij = TrfSelect(o)            % Select Transfer Function      
-   idx = opt(o,{'select.channel',[1 1]});
-   i = idx(1);  j = idx(2);
+function [list,objs,head] = GijSelect(o) % Select Transfer Function    
+   list = {};                          % empty by default
+   objs = {};
+   head = heading(o);                  % default heading
    
-   G = cook(o,'G');
-   Gij = peek(G,i,j);
+   if type(o,{'spm'})
+      idx = opt(o,{'select.channel',[1 1]});
+      i = idx(1);  j = idx(2);
+
+      G = cook(o,'G');
+      Gij = peek(G,i,j);
+      list = {Gij};
+      objs = {o};
+   elseif type(o,{'shell'})
+      pivot = opt(o,'basket.pivot');
+      if isempty(pivot)
+         return
+      end
+      
+      o = pull(o);                     % refresh shell object
+      for (k=1:length(o.data))
+         ok = o.data{k};
+         if (type(ok,{'spm'}) && isequal(get(ok,'pivot'),pivot))
+            idx = opt(ok,{'select.channel',[1 1]});
+            i = idx(1);  j = idx(2);
+
+            G = cook(ok,'G');
+            Gij = peek(G,i,j);
+            list{end+1} = Gij;
+            objs{end+1} = ok;
+         end
+      end
+      head = sprintf('Pivot: %g°',pivot);
+   end
 end
 
 %==========================================================================
@@ -2062,4 +2125,13 @@ function w0 = NominalWeight(o,W)       % Return Nominal Weight
    else
       error('bad arg');
    end
+end   
+function Legend(o,sub,objects)         % Plot Legend                   
+   subplot(o,sub);
+   list = {''};                        % ignore 1st, as some dots plotted 
+   for (i=1:length(objects))
+      list{end+1} = get(objects{i},{'package',''});
+   end
+   hdl = legend(list);
+   set(hdl,'color','w');
 end

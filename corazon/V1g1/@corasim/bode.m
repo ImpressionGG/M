@@ -58,7 +58,7 @@ function o = Bode(o)                   % Bode Plot
       hold off;
    end
    
-   heading(o);
+%  heading(o);
 end
 
 %==========================================================================
