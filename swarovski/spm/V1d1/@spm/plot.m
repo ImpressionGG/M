@@ -804,6 +804,7 @@ function [list,objs,head] = GijSelect(o) % Select Transfer Function
       o = pull(o);                     % refresh shell object
       for (k=1:length(o.data))
          ok = o.data{k};
+         ok = inherit(ok,o);
          if (type(ok,{'spm'}) && isequal(get(ok,'pivot'),pivot))
             idx = opt(ok,{'select.channel',[1 1]});
             i = idx(1);  j = idx(2);

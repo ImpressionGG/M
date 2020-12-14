@@ -113,7 +113,8 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = var(oo,sym);
 
       case 'G'
-         oo = cache(o,'trf.G');
+         oo = cache(o,o,'trf');        % hard refresh trf cache 
+         oo = cache(oo,'trf.G');
          
       case 'Gpsi'
          oo = cache(o,'trf.Gpsi');

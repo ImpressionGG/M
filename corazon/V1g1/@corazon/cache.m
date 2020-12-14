@@ -476,7 +476,8 @@ function Hard(o,oo)                    % Hard Store Object to Shell
 %
 % HARD   Hard store updated object to shell (hard operation)
 %
-   if ~type(current(o),{'shell'})
+%  if ~type(current(o),{'shell'})
+   if ~type(oo,{'shell'})
       o = pull(o);                     % fetch shell object
       id = objid(oo);
       for (i=1:length(o.data))

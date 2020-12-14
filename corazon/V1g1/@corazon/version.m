@@ -510,6 +510,7 @@ function VersionV1G
 % =========================
 %
 % - Support of MATLAB symbolic toolbox
+% - bug fixed: hard refresh of cache (also if current obj is shell obj)
 %
 %
 % Change Log V1g1:
