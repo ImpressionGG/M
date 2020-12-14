@@ -154,6 +154,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add expression based FQR to principal TRFs
 % - trial with vpa for precise calculation of P(s)/Q(s)
 % - add Select/Basket/Pivot menu
+% - introduce Plot/Transfer_Function/Bode_Plot menu item for shell object
 %
 %
 % Known bugs & wishlist
