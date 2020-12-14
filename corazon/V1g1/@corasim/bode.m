@@ -3,6 +3,7 @@ function oo = bode(o,col)              % Corasim Bode Plot
 % BODE   Bode plot of a CORASIM object
 %
 %           bode(o)                    % plot bode diagram
+%           bode(o,'g')                % plot bode diagram in green color
 %
 %        Options:
 %
@@ -24,6 +25,10 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %        See also: CORINTH, FQR, NYQ, STEP
 %
    oo = Inherit(o);
+   if (nargin >= 2 && ischar(col))
+      oo = opt(oo,'color',col);
+   end
+
    oo = Bode(oo);
 end
 
@@ -297,9 +302,15 @@ function o = Inherit(o)                % inherit options from shell
    if isempty(figure(o))
       so = pull(o);
       if ~isempty(so)
+         col = opt(o,'color');
+         
          o = inherit(o,so);
          o = with(o,'bode');
          o = opt(o,'oscale',opt(o,{'brew.T0',1}));
+         
+         if ~isempty(col)
+            o = opt(o,'color',col);
+         end
       end
    end
 end

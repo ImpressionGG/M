@@ -210,6 +210,7 @@ end
 
 function o = Margin(o)                 % Stability Margin              
    stable(o);
+   heading(o);
 end
 function o = Rloc(o)                   % Root Locus                    
    o = with(o,'rloc');
