@@ -160,6 +160,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - hard refresh of cache in cook when accessing G 
 % - hard refresh of cache in cook when accessing Lmu
 % - default value for Gs-cancel epsilon: 1e-2
+% - bug fixed: cook does not expand options using WITH
+% - sensitive changes regarding oscale option in cook and bode methods
 %
 %
 % Known bugs & wishlist

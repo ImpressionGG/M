@@ -81,7 +81,10 @@ function varargout = cook(o,sym)
          
       if isa(oo,'corazon')
          oo = inherit(oo,o);
-         oo = with(oo,{'bode','simu','rloc','nyq'});
+%        oo = with(oo,{'bode','simu','rloc','nyq'});
+         if isempty(opt(oo,'oscale'))
+            oo = opt(oo,'oscale',opt(oo,{'brew.T0',1}));
+         end
       end
       varargout{i} = oo;
    end
@@ -122,7 +125,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
       case {'G11','G12','G13', 'G21','G22','G23', 'G31','G32','G33'}
          G = cache(o,'trf.G');
          oo = peek(G,i,j);
-         
+
          % constrained transfer matrix
          
       case 'H'

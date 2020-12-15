@@ -11,8 +11,10 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %           color            color propetty (default: 'r')
 %           omega.low        omega range, low limit (default: 0.1)
 %           omega.low        omega range, high limit (default: 100000)
-%           magnitude.low    omega range, low limit (default: -80)
+%
+%           magnitude.low    magnitude range, low limit (default: -80)
 %           magnitude.high   magnitude range, high limit (default: 80)
+%
 %           phase.low        phase range, low limit (default: -270)
 %           phase.high       phase range, high limit (default: 90)
 %
@@ -22,7 +24,7 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %
 %        Copyright(c): Bluenetics 2020
 %
-%        See also: CORINTH, FQR, NYQ, STEP
+%        See also: CORASIM, FQR, MAGNI, PHASE, NYQ, STEP
 %
    oo = Inherit(o);
    if (nargin >= 2 && ischar(col))
@@ -30,6 +32,7 @@ function oo = bode(o,col)              % Corasim Bode Plot
    end
 
    oo = Bode(oo);
+   dark(oo);                           % handle dark mode
 end
 
 %==========================================================================
@@ -58,6 +61,10 @@ function o = Bode(o)                   % Bode Plot
       hold off;
    end
    
+         % set axis ownership
+      
+   shelf(o,gca,'owner','bode');        % set axis ownership
+
 %  heading(o);
 end
 
@@ -162,6 +169,11 @@ end
 %==========================================================================
 
 function o = Auto(o)                   % Automatic Axes Limits         
+%
+% AUTO   Autoscaling of magnitude plot if no magnitude limits are provided.
+%        No action if either option magnitude.low or magnitude.high is
+%        provided
+%
    if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
       oscale = opt(o,{'oscale',1});
       
@@ -229,6 +241,8 @@ function o = Axes(o)                   % Plot Bode Axes
       set(hax,'ylim',ylim);
       set(hax,'zlim',zlim);
    end
+   
+      % phase ticks to plot ?
 
    if opt(o,{'phase.enable',true})
       PhaseTicks(o);
@@ -244,7 +258,7 @@ function o = Axes(o)                   % Plot Bode Axes
       hold on;
       grid(o);
 
-      shelf(o,gca,'owner','bode');     % set axis ownership
+%     shelf(o,gca,'owner','bode');     % set axis ownership
    
       if diff(magni) < 150
          dy = 20;
@@ -298,7 +312,7 @@ function o = Axes(o)                   % Plot Bode Axes
       end
    end
 end
-function o = Inherit(o)                % inherit options from shell    
+function o = OldInherit(o)                % inherit options from shell    
    if isempty(figure(o))
       so = pull(o);
       if ~isempty(so)
@@ -312,5 +326,60 @@ function o = Inherit(o)                % inherit options from shell
             o = opt(o,'color',col);
          end
       end
+   end
+end
+function o = Inherit(o)                % inherit options from shell    
+   so = [];
+   if isempty(figure(o))
+      so = pull(o);
+   end
+      
+      % save all options that have been explicitely provided
+
+   color = opt(o,'color');
+   oscale = opt(o,'oscale');
+   omega = opt(o,'omega');
+   magnitude = opt(o,'magnitude');
+   phase = opt(o,'phase');
+
+      % if there is a shell object from which we can inherit
+
+   if ~isempty(so)
+      o = inherit(o,so);
+      o = with(o,'bode');
+%     o = opt(o,'oscale',opt(o,{'brew.T0',1}));
+   end
+   
+      % expand bode options if not yet provided
+      
+   if isempty(opt(o,'oscale'))
+      o = opt(o,'oscale',opt(o,'bode.oscale'));
+   end
+   if isempty(opt(o,'omega'))
+      o = opt(o,'omega',opt(o,'bode.omega'));
+   end
+   if isempty(opt(o,'magnitude'))
+      o = opt(o,'magnitude',opt(o,'bode.magnitude'));
+   end
+   if isempty(opt(o,'phase'))
+      o = opt(o,'phase',opt(o,'bode.phase'));
+   end
+      
+      % restore all options that have previously been provided
+         
+   if ~isempty(color)
+      o = opt(o,'color',color);
+   end
+   if ~isempty(oscale)
+      o = opt(o,'oscale',oscale);
+   end
+   if ~isempty(omega)
+      o = opt(o,'omega',omega);
+   end
+   if ~isempty(magnitude)
+      o = opt(o,'magnitude',magnitude);
+   end
+   if ~isempty(phase)
+      o = opt(o,'phase',phase);
    end
 end
