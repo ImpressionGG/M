@@ -1,9 +1,9 @@
-function K = stable(o,Lmu)             % Critical K for Stability
+function [K,f] = stable(o,Lmu)         % Critical Stability Gain/Frequency
 %
-% STABLE   Calculate critical K for closed loop stability
+% STABLE   Calculate critical gain & frequency for closed loop stability
 %
 %             Lmu = cook(o,'Lmu');
-%             K = stable(o,Lmu);       % calc critical K value
+%             [K,f] = stable(o,Lmu);   % calc critical K value & omega
 %
 %             stable(o,Lmu)            % plot K range for stability
 %             stable(o)                % cook L0 from object 
@@ -25,20 +25,20 @@ function K = stable(o,Lmu)             % Critical K for Stability
   else
      K0 = Stable(oo,Lmu);
      if isinf(K0) || (K0 == 0)
-        K = K0;
+        K = K0;  om = inf;
      else
         oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
         oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
         K = Stable(oo,Lmu);
      end
-  end
+   end
 end
 
 %==========================================================================
 % Helper
 %==========================================================================
 
-function K = Stable(o,L0)
+function [K,f] = Stable(o,L0)
    low = opt(o,{'magnitude.low',-300});
    high = opt(o,{'magnitude.high',100});
    delta = opt(o,{'magnitude.delta',20});
@@ -68,7 +68,21 @@ function K = Stable(o,L0)
       K = mag(idx);
    end
       
-      % that's it if output args are provided
+     % calc critical frequency om0
+
+   if (nargout ~= 1)
+      [Ljw,omega] = fqr(L0);            % frequency response Lmu(jw)
+      Sjw = 1 ./ (1 + K*Ljw);           % sensitivity S0(jw)
+
+      magSjw = abs(Sjw);                % sensitivity magnitude
+      idx = find(magSjw==max(magSjw));  % maximation index
+
+      oscale = opt(o,{'brew.T0',1});
+      om = omega(idx(1)) / oscale;      % critical omega
+      f = om/2/pi;
+   end
+     
+        % that's it if output args are provided
       
    if (nargout > 0)
       return
@@ -118,7 +132,8 @@ function K = Stable(o,L0)
       % labeling
       
    more = More(o);
-   title(sprintf('Stability Margin: %g%s',o.rd(margin,2),more));
+   title(sprintf('Stability Margin: %g @ omega:%g%s',...
+         o.rd(margin,2),2*pi*f,more));
    xlabel('K-factor');   
    ylabel('~1 + max(Re\{poles\}) [dB]');
    

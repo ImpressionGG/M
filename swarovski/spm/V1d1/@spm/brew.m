@@ -524,7 +524,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    
       % calc critical K and closed loop TRF
       
-   K0 = stable(o,L0);
+   [K0,f0] = stable(o,L0);             % critical gain & frequency
    L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
    if ~isinf(K0)
       S0 = 1/(1+K0*L0);                % closed loop sensitivity
@@ -549,11 +549,13 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    oo = cache(oo,'principal.Q',Q);
    oo = cache(oo,'principal.L0',L0);
 
-   oo = cache(oo,'principal.K0',K0);
+   oo = cache(oo,'principal.K0',K0);   % critical gain
+   oo = cache(oo,'principal.f0',f0);   % critical frequency
+
    oo = cache(oo,'principal.S0',S0);
    oo = cache(oo,'principal.T0',T0);
-
-   % unconditional hard refresh of cache
+   
+      % unconditional hard refresh of cache
    
    cache(oo,oo);                       % hard refresh cache
    progress(o);                        % progress complete

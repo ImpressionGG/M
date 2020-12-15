@@ -162,6 +162,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - default value for Gs-cancel epsilon: 1e-2
 % - bug fixed: cook does not expand options using WITH
 % - sensitive changes regarding oscale option in cook and bode methods
+% - calculate critical frequency
 %
 %
 % Known bugs & wishlist

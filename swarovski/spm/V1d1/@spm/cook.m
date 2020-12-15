@@ -37,7 +37,10 @@ function varargout = cook(o,sym)
 %          [P,Q] = cook(o,'P,Q')            % principal TRF's P(s),Q(s)
 %          F0 = cook(o,'F0')                % normalizing TRF
 %          L0 = cook(o,'L0')                % Open loop L0(s) := P(s)/Q(s)
+%
 %          K0 = cook(o,'K0')                % critical gain (mu)
+%          f0 = cook(o,'f0');               % critical frequency
+%
 %          S0 = cook(o,'S0')                % closed loop Sensitivity @ K0
 %          T0 = cook(o,'T0')                % total closed loop TRF @ K0 
 %          
@@ -141,7 +144,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,o,'consd');      % hard refresh consd cache 
          oo = cache(oo,'consd.L');
          
-      case {'P','Q','F0','L0','K0','S0','T0'}
+      case {'P','Q','F0','L0','K0','f0','S0','T0'}
          o = cache(o,o,'principal');   % cold refresh of principal segment
          oo = cache(o,['principal.',sym]);
 

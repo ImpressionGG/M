@@ -1236,7 +1236,9 @@ function o = Critical(o)               % Critical TRFs
       case 'K0'
          subplot(o,111);
          stable(o,K0*L0);
-         title(sprintf('Critical Gain: %g',o.rd(K0,4)));
+         f0 = cook(o,'f0');
+         om0 = round(2*pi*f0);
+         title(sprintf('Critical Gain: %g @ omega: %g 1/s',o.rd(K0,4),om0));
       case 'S0'
          diagram(o,'Bode','',S0,2111);
          diagram(o,'Step','',S0,2121);
