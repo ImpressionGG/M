@@ -34,7 +34,7 @@ end
 function oo = Menu(o)                  % Setup Plot Menu               
    switch type(current(o))
       case 'shell'
-         oo = MenuShell(o);
+         oo = ShellMenu(o);
       case 'spm'
          oo = SpmMenu(o);
       case 'pkg'
@@ -43,14 +43,14 @@ function oo = Menu(o)                  % Setup Plot Menu
          oo = mitem(o,'About',{@WithCuo,'About'});
    end
 end
-function oo = MenuShell(o)             % Setup Plot Menu for SHELL Type
+function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'-');
    oo = mitem(o,'Transfer Function');
    ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
    ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
 end
-function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type
+function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
 %
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks

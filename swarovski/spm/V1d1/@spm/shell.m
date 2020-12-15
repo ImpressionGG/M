@@ -611,7 +611,9 @@ function oo = Basket(o)                % Basket Menu
       
    oo = mhead(o,'Basket');
    ooo = mitem(oo,'Pivot [°]',{},'basket.pivot');
-   choice(ooo,pivots,{});
+   if ~isempty(pivots)
+      choice(ooo,pivots,{});
+   end
    
    function [pivots,piv] = Pivots(o);  % collect pivots
       pivots = [];

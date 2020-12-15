@@ -135,14 +135,16 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          % open loop transfer matrix
          
       case 'L'
-         oo = cache(o,'consd.L');
+         oo = cache(o,o,'consd');      % hard refresh consd cache 
+         oo = cache(oo,'consd.L');
          
       case {'P','Q','F0','L0','K0','S0','T0'}
          o = cache(o,o,'principal');   % cold refresh of principal segment
          oo = cache(o,['principal.',sym]);
 
       case 'Lmu'
-         oo = cache(o,'loop.Lmu');
+         oo = cache(o,o,'loop');       % hard refresh loop cache 
+         oo = cache(oo,'loop.Lmu');
          
       case {'L1','L2'}
          L = cache(o,'consd.L');

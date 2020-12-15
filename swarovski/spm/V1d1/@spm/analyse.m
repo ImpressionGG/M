@@ -28,6 +28,22 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Analyse Menu            
+   switch type(current(o))
+      case 'shell'
+         oo = ShellMenu(o);
+      case 'spm'
+         oo = SpmMenu(o);
+%     case 'pkg'
+%        oo = PkgMenu(o);
+      otherwise
+         oo = mitem(o,'About',{@WithCuo,'About'});
+   end
+end
+function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
+   oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyquist'});
+end
+function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = OpenLoopMenu(o);               % add Open Loop menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
@@ -160,7 +176,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    cls(o);                             % clear screen
  
    oo = current(o);                    % get current object
-   if ~type(oo,{'spm'})
+   if ~type(oo,{'spm','shell'})
       plot(oo,'About');
       return
    end
@@ -233,15 +249,57 @@ end
 function oo = Nyquist(o)               % Nyquist Stability Analysis    
    o = with(o,{'style','bode','nyq'});
    mu = opt(o,{'process.mu',0.1});
+   colors = {'bcc','b','c','bw','cd'};
    
-   Lmu = cook(o,'Lmu');
+%  Lmu = cook(o,'Lmu');
+   [list,objs,head] = LmuSelect(o);
+   for (i=1:length(list))
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
       
-   diagram(o,'Bode','',Lmu,2211);
-   diagram(o,'Stability','',Lmu,2221);
-   oo = diagram(o,'Nyq','',Lmu,1212);
+      Lmu = list{i};
+      diagram(o,'Bode','',Lmu,2211);
+      diagram(o,'Stability','',Lmu,2221);
+      oo = diagram(o,'Nyq','',Lmu,1212);
+   end
+   
+      % plot legend if more than 1 plots
+      
+   if (length(list) > 1)
+      Legend(o,2211,objs);
+   end
    
    Verbose(o,Lmu);   
-   heading(o);
+   heading(o,head);
+end
+
+function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
+   list = {};                          % empty by default
+   objs = {};
+   head = heading(o);                  % default heading
+   
+   if type(o,{'spm'})
+      Lmu = cook(o,'Lmu');
+      list = {Lmu};
+      objs = {o};
+   elseif type(o,{'shell'})
+      pivot = opt(o,'basket.pivot');
+      if isempty(pivot)
+         return
+      end
+      
+      o = pull(o);                     % refresh shell object
+      for (k=1:length(o.data))
+         ok = o.data{k};
+         ok = inherit(ok,o);
+         if (type(ok,{'spm'}) && isequal(get(ok,'pivot'),pivot))
+            Lmu = cook(ok,'Lmu');
+            list{end+1} = Lmu;
+            objs{end+1} = ok;
+         end
+      end
+      head = sprintf('Pivot: %g°',pivot);
+   end
 end
 
 %==========================================================================
@@ -769,5 +827,14 @@ function Verbose(o,G)                  % Verbose Tracing of TFF
       G = opt(G,'detail',true);
       display(G);
    end
+end
+function Legend(o,sub,objects)         % Plot Legend                   
+   subplot(o,sub);
+   list = {''};                        % ignore 1st, as some dots plotted 
+   for (i=1:length(objects))
+      list{end+1} = get(objects{i},{'package',''});
+   end
+   hdl = legend(list);
+   set(hdl,'color','w');
 end
 
