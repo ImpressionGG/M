@@ -158,7 +158,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - introduce Plot/Transfer_Function/Magnitude_Plot menu item for shell 
 %   object
 % - hard refresh of cache in cook when accessing G 
-% - hard refresh of cache in cook when accessing Lmu 
+% - hard refresh of cache in cook when accessing Lmu
+% - default value for Gs-cancel epsilon: 1e-2
 %
 %
 % Known bugs & wishlist
