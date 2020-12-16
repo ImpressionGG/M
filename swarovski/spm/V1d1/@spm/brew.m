@@ -276,6 +276,7 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
    n = length(a0);
    m = size(M,2);
    G = matrix(corasim);
+   psi = [1+0*a1(:) a1(:) a0(:)];
    W = [];
    
       % depending on modal form ...
@@ -289,6 +290,7 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
    progress(o);                        % complete!
    oo = cache(oo,'trf.G',G);           % store in cache
    oo = cache(oo,'trf.W',W);           % store in cache
+   oo = cache(oo,'trf.psi',psi);       % store in cache
        
    if control(o,'verbose') > 0
       fprintf('Double Transfer Matrix\n');
@@ -300,8 +302,6 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
               isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
    end
    function Modal(o)                   % Gij(s) For Modal Forms        
-      psi = [ones(n,1) a1(:) a0(:)];
-
       for (i=1:m)
          for (j=1:i)
             run = (j-1)*n+i; mm = n*(n+1)/2;
@@ -392,6 +392,7 @@ function oo = TrfModal(o)              % Modal Tranfer Matrix
       
    W = [];                             % init W
    G = matrix(corasim);                % init G
+   psi = [1+0*a1(:) a1(:) a0(:)];
    Modal(o);                           % calculate W and G in modal form
    Store(o);                           % store to cache
         
@@ -449,6 +450,7 @@ function oo = TrfModal(o)              % Modal Tranfer Matrix
 
       oo = cache(oo,'trf.G',G);           % store in cache
       oo = cache(oo,'trf.W',W);           % store in cache
+      oo = cache(oo,'trf.psi',psi);       % store in cache
 
          % store all transfer matrix elements into cache
 
@@ -501,7 +503,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    m = size(M,2);
 
    if HasModalForm(o)
-      trftype = opt(o,{'trf.type','szpk'})
+      trftype = opt(o,{'trf.type','szpk'});
       if isequal(trftype,'szpk');
 %        [P,Q] = ModalZpkPQ(o); 
          [P,Q] = ModalTrfPQ(o); 

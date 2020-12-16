@@ -27,6 +27,7 @@ function varargout = cook(o,sym)
 %          G = cook(o,'G')                  % free sys transfer matrix G(s)
 %          Gpsi = cook(o,'Gpsi')            % characteristic transfer fcts.
 %          W = cook(o,'W')                  % weight matrix for G(s)
+%          psi = cook(o,'psi');             % characteristic polynomials
 %
 %          [G11,G12,G13] = cook(o,'G11,G12,G13')   % free system trf
 %          [G21,G22,G23] = cook(o,'G21,G22,G23')   % free system trf
@@ -178,7 +179,12 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = peek(Ta,j,1);
 
       case 'W'
+         o = cache(o,o,'trf');         % cold refresh of trf segment
          oo = cache(o,'trf.W');
+
+      case 'psi'
+         o = cache(o,o,'trf');         % cold refresh of trf segment
+         oo = cache(o,'trf.psi');
 
       otherwise
          error('unsupported symbol');
