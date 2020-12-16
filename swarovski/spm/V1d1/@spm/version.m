@@ -164,6 +164,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - sensitive changes regarding oscale option in cook and bode methods
 % - calculate critical frequency
 % - draw critical frequency in several bode plots
+% - new menu item: Plot>Principal_Transfer_Functions>L0(s)=G31(s)/G33(s)
 %
 %
 % Known bugs & wishlist

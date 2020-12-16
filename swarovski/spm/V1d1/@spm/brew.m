@@ -304,8 +304,8 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
 
       for (i=1:m)
          for (j=1:i)
-            run = (j-1)*n+i; m = n*(n+1)/2;
-            msg = sprintf('%g of %g: brewing G(%g,%g)',run,m,i,j);
+            run = (j-1)*n+i; mm = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,mm,i,j);
             progress(o,msg,(run-1)/m*100);
 
                % calculate Gij

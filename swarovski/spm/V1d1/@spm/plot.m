@@ -20,6 +20,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
                    @PsQsOverview,@PsQsNormalizing,@Critical,@T0S0,...
+                   @G31G33L0,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @Stability,...
@@ -49,6 +50,8 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'Transfer Function');
    ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
    ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
+   oo = mitem(o,'Principal Transfer Functions');
+   ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithCuo,'G31G33L0'});
 end
 function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
 %
@@ -201,11 +204,12 @@ function oo = Principal(o)             % Pricipal Menu
    ooo = mitem(oo,'Nyquist Plots',{@WithSpm,'PsQsNyq'});
 
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('P(s)'),{@WithSpm,'PsQs',1,0});
-   ooo = mitem(oo,sprintf('Q(s)'),{@WithSpm,'PsQs',2,0});
+   ooo = mitem(oo,'P(s)',{@WithSpm,'PsQs',1,0});
+   ooo = mitem(oo,'Q(s)',{@WithSpm,'PsQs',2,0});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('F0(s)'),{@WithSpm,'PsQs',3,0});
-   ooo = mitem(oo,sprintf('L0(s) = P(s)/Q(s)'),{@WithSpm,'PsQs',0,0});
+   ooo = mitem(oo,'F0(s)',{@WithSpm,'PsQs',3,0});
+   ooo = mitem(oo,'L0(s) = P(s)/Q(s)',{@WithSpm,'PsQs',0,0});
+   ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithSpm,'G31G33L0'});
 end
 function oo = CriticalLoop(o)          % Critical Loop Menu            
    oo = mitem(o,'Critical Loop');
@@ -699,11 +703,16 @@ function o = TrfBode(o)                % Bode Plot
       Legend(o,2121,objs);
    end
    
+      % plot critical frequencies
+      
+   CriticalFrequency(o,objs,211);
+   CriticalFrequency(o,objs,212);
+   
       % plot heading if not shell object
       
    heading(o,head);
 end
-function o = OldTrfMagni(o)               % Magnitude Plot                
+function o = OldTrfMagni(o)            % Magnitude Plot                
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -715,7 +724,7 @@ function o = OldTrfMagni(o)               % Magnitude Plot
    diagram(o,'Bode','',Gij,1111);      
    heading(o);
 end
-function o = TrfMagni(o)               % Magnitude Plot
+function o = TrfMagni(o)               % Magnitude Plot                
    if ~type(o,{'spm','shell'})
       plot(o,'About');
       return
@@ -738,6 +747,10 @@ function o = TrfMagni(o)               % Magnitude Plot
       Legend(o,1111,objs);
    end
    
+      % plot critical frequencies
+      
+   CriticalFrequency(o,objs,111);
+
       % plot heading if not shell object
 
    heading(o,head);
@@ -787,10 +800,10 @@ function [list,objs,head] = GijSelect(o) % Select Transfer Function
    objs = {};
    head = heading(o);                  % default heading
    
-   if type(o,{'spm'})
-      idx = opt(o,{'select.channel',[1 1]});
-      i = idx(1);  j = idx(2);
+   idx = opt(o,{'select.channel',[1 1]});
+   i = idx(1);  j = idx(2);
 
+   if type(o,{'spm'})
       G = cook(o,'G');
       Gij = peek(G,i,j);
       list = {Gij};
@@ -806,9 +819,6 @@ function [list,objs,head] = GijSelect(o) % Select Transfer Function
          ok = o.data{k};
          ok = inherit(ok,o);
          if (type(ok,{'spm'}) && isequal(get(ok,'pivot'),pivot))
-            idx = opt(ok,{'select.channel',[1 1]});
-            i = idx(1);  j = idx(2);
-
             G = cook(ok,'G');
             Gij = peek(G,i,j);
             list{end+1} = Gij;
@@ -816,6 +826,45 @@ function [list,objs,head] = GijSelect(o) % Select Transfer Function
          end
       end
       head = sprintf('Pivot: %g°',pivot);
+   end
+end
+function [list,objs,head] = L0Select(o)% Select Transfer Function    
+   list = {};                          % empty by default
+   objs = {};
+   head = heading(o);                  % default heading
+   
+   if type(o,{'spm'})
+      L0 = cook(o,'L0');
+      list = {L0};
+      objs = {o};
+   elseif type(o,{'shell'})
+      pivot = opt(o,'basket.pivot');
+      if isempty(pivot)
+         return
+      end
+      
+      o = pull(o);                     % refresh shell object
+      for (k=1:length(o.data))
+         ok = o.data{k};
+         ok = inherit(ok,o);
+         if (type(ok,{'spm'}) && isequal(get(ok,'pivot'),pivot))
+            L0 = cook(ok,'L0');
+            list{end+1} = L0;
+            objs{end+1} = ok;
+         end
+      end
+      head = sprintf('Pivot: %g°',pivot);
+   end
+end
+function CriticalFrequency(o,objs,sub) % Plot Critical Frequencies     
+   subplot(o,sub);
+   ylim = get(gca,'ylim');
+   hold on;
+   
+   for (i=1:length(objs))
+      oo = objs{i};
+      f0 = cook(oo,'f0');
+      semilogx(2*pi*f0*[1 1],ylim,'r-.');
    end
 end
 
@@ -1166,6 +1215,70 @@ function o = PsQsNormalizing(o)        % P(s)/Q(s) Bode Plot Overview
    xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
    
    heading(o);
+end
+function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)        
+   if ~type(o,{'spm','shell'})
+      plot(o,'About');
+      return
+   end
+   
+   colors = {'g','gy','gk','gb','gww','gkk','gbb','gbw','gbk'};
+   
+      % magnitude of G31(s)
+      
+   o = opt(o,'select.channel',[3 1]);  % select G31(s)
+   [list,objs,head] = GijSelect(o);
+   for (i=1:length(list))
+      Gij = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+      diagram(o,'Bode','',Gij,3111);
+   end
+   
+      % magnitude of G33(s)
+      
+   o = opt(o,'select.channel',[3 3]);  % select G31(s)
+   [list,objs,head] = GijSelect(o);
+   for (i=1:length(list))
+      Gij = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+      diagram(o,'Bode','',Gij,3121);
+   end
+   
+      % magnitude of L0(s)
+      
+   colors = {'yyyyyr','yyyr','y','yk','yyr'};
+   
+   [list,objs,head] = L0Select(o);
+   for (i=1:length(list))
+      L0 = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+      diagram(o,'Bode','',L0,3131);
+   end
+   
+      % plot legend if more than 1 plots
+      
+   if (length(list) > 1)
+      Legend(o,3111,objs);
+      Legend(o,3121,objs);
+      Legend(o,3131,objs);
+   end
+   
+      % plot critical frequencies
+      
+   CriticalFrequency(o,objs,3111);
+   CriticalFrequency(o,objs,3121);
+   CriticalFrequency(o,objs,3131);
+   xlabel('omega [1/s]');
+   
+      % plot heading if not shell object
+
+   heading(o,head);
 end
 function o = PsQs(o)                   % Principal Transfer Function   
    o = with(o,'simu');
