@@ -1223,6 +1223,11 @@ function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)
       return
    end
    
+      % increase performance by cache pre-refreshing 
+      
+   o = cache(o,o,'trf');               % hard refresh of trf segment
+   o = cache(o,o,'principal');         % hard refresh of trf segment
+   
    colors = {'g','gy','gk','gb','gww','gkk','gbb','gbw','gbk'};
    
       % magnitude of G31(s)

@@ -375,10 +375,21 @@ Om0=omega*oscale;
       L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
       
       dB = 20*log10(abs(L0jw0));
+      
 hold on;
 semilogx(omega,dB,'r');
 
-      
+phi3 = psion(L0,psi,3);         % modal frequency response
+G31jw = w31T*phi3; 
+dB31=20*log10(abs(G31jw));
+w31=w31T(1:5)
+fprintf('dB(|G31(j3)|) = %g\n',dB31);
+G33jw = w33T*phi3;
+dB33=20*log10(abs(G33jw));
+psi5=psi(1:5,:)
+w33=w33T(1:5)
+fprintf('dB(|G33(j3)|) = %g\n',dB33);
+fprintf('dB(|L0(j3)|) = %g\n',dB31-dB33);   
    end
 end
 

@@ -166,6 +166,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - draw critical frequency in several bode plots
 % - new menu item: Plot>Principal_Transfer_Functions>L0(s)=G31(s)/G33(s)
 % - first steps Analyse/Sensitivity
+% - internal tracing to detect mismatches => numericaöl limits
 %
 %
 % Known bugs & wishlist

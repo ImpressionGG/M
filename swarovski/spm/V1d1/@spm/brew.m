@@ -324,7 +324,20 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
                Gk = trf(G,wij(k),psi(k,:));
                Gij = Gij + Gk;
             end
-
+if (i==3 && j==1)
+   G31jw = fqr(Gij,3);
+   dB31=20*log10(abs(G31jw));
+   w31=wij(1:5)
+   fprintf('dB(|G31(j3)|) = %g\n',dB31);
+end
+if (i==3 && j==3)
+   G33jw = fqr(Gij,3);
+   dB33=20*log10(abs(G33jw));
+   w33=wij(1:5)
+   psi5=psi(1:5,:)
+   fprintf('dB(|G33(j3)|) = %g\n',dB33);
+   fprintf('dB(|L0(j3)|) = %g\n',dB31-dB33);
+end
             if control(o,'verbose') > 0
                fprintf('G%g%g(s):\n',i,j)
                display(Gij);

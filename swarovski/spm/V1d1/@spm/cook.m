@@ -124,15 +124,18 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(oo,'trf.G');
          
       case 'Gpsi'
+         oo = cache(o,o,'trf');        % hard refresh trf cache 
          oo = cache(o,'trf.Gpsi');
 
       case {'G11','G12','G13', 'G21','G22','G23', 'G31','G32','G33'}
+         oo = cache(o,o,'trf');        % hard refresh trf cache 
          G = cache(o,'trf.G');
          oo = peek(G,i,j);
 
          % constrained transfer matrix
          
       case 'H'
+         oo = cache(o,o,'consd');      % hard refresh consd cache 
          oo = cache(o,'consd.H');
          
       case {'H11','H12','H13', 'H21','H22','H23', 'H31','H32','H33'}
@@ -146,7 +149,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(oo,'consd.L');
          
       case {'P','Q','F0','L0','K0','f0','S0','T0'}
-         o = cache(o,o,'principal');   % cold refresh of principal segment
+         o = cache(o,o,'principal');   % hard refresh of principal segment
          oo = cache(o,['principal.',sym]);
 
       case 'Lmu'
@@ -179,11 +182,11 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = peek(Ta,j,1);
 
       case 'W'
-         o = cache(o,o,'trf');         % cold refresh of trf segment
+         o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.W');
 
       case 'psi'
-         o = cache(o,o,'trf');         % cold refresh of trf segment
+         o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
 
       otherwise
