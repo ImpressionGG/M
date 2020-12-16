@@ -17,7 +17,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@Nyquist,@OpenLoop,@Calc,...
-                      @Contribution,...
+                      @Contribution,@NumericCheck,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @EigenvalueCheck);
@@ -97,6 +97,7 @@ end
 function oo = Sensitivity(o)           % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Modal Contribution',{@WithCuo,'Contribution'});
+   ooo = mitem(oo,'Numerical Check',{@WithCuo,'NumericCheck'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu
    oo = mitem(o,'Force');
@@ -334,12 +335,12 @@ function o = Contribution(o)           % Modal Contribution
    dB = 20*log10(abs(Ljw));
    
    o = opt(o,'critical',1);
-   diagram(o,'Bode','',L0,1111);
+   diagram(o,'Bode','',L0,211);
    semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
    
    title(sprintf('om0: %g',om0));
    
-   dB = Calculate(o);
+   BuildingBlocks(o);
    heading(o);
    
    function dB = Calculate(o)
@@ -376,20 +377,129 @@ Om0=omega*oscale;
       
       dB = 20*log10(abs(L0jw0));
       
-hold on;
-semilogx(omega,dB,'r');
+%hold on;
+%semilogx(omega,dB,'r'); 
+   end
+   function BuildingBlocks(o)
+   %
+   % Calculation to perform is:
+   %
+   %    L0(jw0) = G31(jw0)/G33(jw0)
+   %
+   % with psii(s) := s^2 + a1_i*s + a0_i*s
+   %
+   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
+   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
+   %
+   % let
+   %
+   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
+   %
+   % then
+   %
+   %                w31' * phi(jw0)
+   %    L0(jw0) = -------------------
+   %                w33' * phi(jw0)
+   %
+      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
+      w31T = W{3,1};
+      w33T = W{3,3};
+      m = length(w31T);
+      dB0 = zeros(1,m);
+      
+%     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
+      [Ljw,om]=fqr(L0); 
+%     Om0=omega*oscale;
 
-phi3 = psion(L0,psi,3);         % modal frequency response
-G31jw = w31T*phi3; 
-dB31=20*log10(abs(G31jw));
-w31=w31T(1:5)
-fprintf('dB(|G31(j3)|) = %g\n',dB31);
-G33jw = w33T*phi3;
-dB33=20*log10(abs(G33jw));
-psi5=psi(1:5,:)
-w33=w33T(1:5)
-fprintf('dB(|G33(j3)|) = %g\n',dB33);
-fprintf('dB(|L0(j3)|) = %g\n',dB31-dB33);   
+      phi = psion(L0,psi,om*oscale);        % modal frequency response
+      phi0 = psion(L0,psi,Om0);             % modal frequency response
+
+      L0jw = (w31T*phi) ./ (w33T*phi);      % L0(jw)
+      L0jw0 = (w31T*phi0) ./ (w33T*phi0);   % L0(jw0)
+      
+      hold on;
+      for (k=1:length(w31T))
+         w31kT = w31T;  w31kT(k) = 0.5*w31kT(k);  
+         w33kT = w33T;  w33kT(k) = 2*w33kT(k);  
+         
+         L0jwk = (w31kT*phi) ./ (w33kT*phi); 
+         ratio = ((w31kT*phi0) ./ (w33kT*phi0)) ./ L0jw0; 
+         
+         
+         dB = 20*log10(abs(L0jwk));
+         dB0(k) = 20*log10(abs(ratio));
+
+         subplot(o,211);
+         hdl = semilogx(om,dB,'r');
+         
+         subplot(o,212);
+         plot(o,1:m,dB0,'ro|');
+         subplot(o);
+
+         delete(hdl);
+      end
+   end
+end
+function o = NumericCheck(o)           % Numerical Check               
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return;
+   end
+      
+   [L0,f0] = cook(o,'L0,f0');
+   
+   oscale = opt(L0,{'oscale',1});
+   om0 = 2*pi*f0;
+   Om0 = om0*oscale;                   % scaled omega
+   
+   Ljw = fqr(L0,Om0);
+   dB = 20*log10(abs(Ljw));
+   
+   o = opt(o,'critical',1);
+   diagram(o,'Bode','',L0,1111);
+   semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
+   
+   title(sprintf('om0: %g',om0));
+   
+   dB = Calculate(o);
+   heading(o);
+   
+   function dB = Calculate(o)
+   %
+   % Calculation to perform is:
+   %
+   %    L0(jw0) = G31(jw0)/G33(jw0)
+   %
+   % with psii(s) := s^2 + a1_i*s + a0_i*s
+   %
+   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
+   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
+   %
+   % let
+   %
+   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
+   %
+   % then
+   %
+   %                w31' * phi(jw0)
+   %    L0(jw0) = -------------------
+   %                w33' * phi(jw0)
+   %
+      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
+      w31T = W{3,1};
+      w33T = W{3,3};
+      
+%     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
+      [Ljw,omega]=fqr(L0); 
+      Om0=omega*oscale;
+
+      phi = psion(L0,psi,Om0);         % modal frequency response
+      L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
+      
+      dB = 20*log10(abs(L0jw0));
+      
+      hold on;
+      semilogx(omega,dB,'r'); 
    end
 end
 

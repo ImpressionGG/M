@@ -167,6 +167,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - new menu item: Plot>Principal_Transfer_Functions>L0(s)=G31(s)/G33(s)
 % - first steps Analyse/Sensitivity
 % - internal tracing to detect mismatches => numericaöl limits
+% - first progress in sensitivity analysis
 %
 %
 % Known bugs & wishlist
