@@ -165,6 +165,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - calculate critical frequency
 % - draw critical frequency in several bode plots
 % - new menu item: Plot>Principal_Transfer_Functions>L0(s)=G31(s)/G33(s)
+% - first steps Analyse/Sensitivity
 %
 %
 % Known bugs & wishlist

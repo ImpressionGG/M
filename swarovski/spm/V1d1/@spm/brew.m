@@ -319,8 +319,9 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
             Gij = CancelG(o,Gij);         % set cancel epsilon
             
             for (k=1:n)
-   %           Gk = trf(O,mi(k)*mj(k),psi(k,:));
-               Gk = system(G,{wij(k),psi(k,:)});
+%              Gk = trf(O,mi(k)*mj(k),psi(k,:));
+%              Gk = system(G,{wij(k),psi(k,:)});
+               Gk = trf(G,wij(k),psi(k,:));
                Gij = Gij + Gk;
             end
 

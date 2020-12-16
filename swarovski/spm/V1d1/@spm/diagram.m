@@ -375,7 +375,8 @@ function o = NewBode(o)                % Bode Diagram
       f0 = cook(o,'f0');
       ylim = get(gca,'ylim');
       hold on;
-      semilogx(2*pi*f0*[1 1],ylim,'r-.');
+      hdl = semilogx(2*pi*f0*[1 1],ylim,'r-.');
+      set(hdl,'linewidth',1);
    end
    
    title([sym,': Bode Diagram']);

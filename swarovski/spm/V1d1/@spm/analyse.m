@@ -17,6 +17,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@Nyquist,@OpenLoop,@Calc,...
+                      @Contribution,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @EigenvalueCheck);
@@ -48,8 +49,8 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
    ooo = mitem(oo,'-'); 
-   oo = Stability(o);                  % add stability menu
-
+   oo = Stability(o);                  % add Stability menu
+   oo = Sensitivity(o);                % add Sensitivity menu
    ooo = mitem(oo,'-'); 
    oo = Force(o);                      % add Force menu
    oo = Acceleration(o);               % add Acceleration menu
@@ -84,16 +85,20 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
 end
-function oo = Stability(o)             % Closed Loop Stability         
+function oo = Stability(o)             % Closed Loop Stability Menu    
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'Margin'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyquist'});
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
-   ooo = mitem(oo,'-');
-%   ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
+%  ooo = mitem(oo,'-');
+%  ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
 end
-function oo = Force(o)                 % Closed Loop Force Menu        
+function oo = Sensitivity(o)           % Sensitivity Menu              
+   oo = mitem(o,'Sensitivity');
+   ooo = mitem(oo,'Modal Contribution',{@WithCuo,'Contribution'});
+end
+function oo = Force(o)                 % Closed Loop Force Menu
    oo = mitem(o,'Force');
    sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';  
 
@@ -306,6 +311,74 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
          end
       end
       head = sprintf('Pivot: %g°',pivot);
+   end
+end
+
+%==========================================================================
+% Sensitivity
+%==========================================================================
+
+function o = Contribution(o)           % Modal Contribution            
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return;
+   end
+      
+   [L0,f0] = cook(o,'L0,f0');
+   
+   oscale = opt(L0,{'oscale',1});
+   om0 = 2*pi*f0;
+   Om0 = om0*oscale;                   % scaled omega
+   
+   Ljw = fqr(L0,Om0);
+   dB = 20*log10(abs(Ljw));
+   
+   o = opt(o,'critical',1);
+   diagram(o,'Bode','',L0,1111);
+   semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
+   
+   title(sprintf('om0: %g',om0));
+   
+   dB = Calculate(o);
+   heading(o);
+   
+   function dB = Calculate(o)
+   %
+   % Calculation to perform is:
+   %
+   %    L0(jw0) = G31(jw0)/G33(jw0)
+   %
+   % with psii(s) := s^2 + a1_i*s + a0_i*s
+   %
+   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
+   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
+   %
+   % let
+   %
+   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
+   %
+   % then
+   %
+   %                w31' * phi(jw0)
+   %    L0(jw0) = -------------------
+   %                w33' * phi(jw0)
+   %
+      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
+      w31T = W{3,1};
+      w33T = W{3,3};
+      
+%L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
+[Ljw,omega]=fqr(L0); 
+Om0=omega*oscale;
+
+      phi = psion(L0,psi,Om0);         % modal frequency response
+      L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
+      
+      dB = 20*log10(abs(L0jw0));
+hold on;
+semilogx(omega,dB,'r');
+
+      
    end
 end
 

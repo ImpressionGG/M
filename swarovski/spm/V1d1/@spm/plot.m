@@ -864,7 +864,8 @@ function CriticalFrequency(o,objs,sub) % Plot Critical Frequencies
    for (i=1:length(objs))
       oo = objs{i};
       f0 = cook(oo,'f0');
-      semilogx(2*pi*f0*[1 1],ylim,'r-.');
+      hdl = semilogx(2*pi*f0*[1 1],ylim,'r-.');
+      set(hdl,'linewidth',1);
    end
 end
 
