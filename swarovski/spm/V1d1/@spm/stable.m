@@ -23,13 +23,13 @@ function [K,f] = stable(o,Lmu)         % Critical Stability Gain/Frequency
   if (nargout == 0)
      Stable(oo,Lmu);                     % plot
   else
-     K0 = Stable(oo,Lmu);
+     [K0,f] = Stable(oo,Lmu);
      if isinf(K0) || (K0 == 0)
-        K = K0;  om = inf;
+        K = K0;  f = inf;
      else
         oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
         oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
-        K = Stable(oo,Lmu);
+        [K,f] = Stable(oo,Lmu);
      end
    end
 end

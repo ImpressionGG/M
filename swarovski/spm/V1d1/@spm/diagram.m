@@ -21,6 +21,9 @@ function oo = diagram(o,varargin)
 %              diagram(o,'Numeric','G11',G11,sub)     % numeric quality
 %              diagram(o,'Calc','L1',L1,sub)          % calculation diagram
 %
+%           Options:
+%              critical:     plot critical frequency in bode plot
+%
 %           Copyright(c): Bluenetics 2020
 %
 %           See also: SPM, PLOT
@@ -355,6 +358,7 @@ function o = GoodBode(o)               % Bode Diagram
 end
 function o = NewBode(o)                % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors
+   critical = opt(o,{'critical',0});   % plot critical frequency ?
    
    sub = o.either(arg(o,3),[1 1 1]);
    G = arg(o,2);
@@ -366,6 +370,13 @@ function o = NewBode(o)                % Bode Diagram
    
    subplot(o,sub);  
    bode(G);
+   
+   if (critical)
+      f0 = cook(o,'f0');
+      ylim = get(gca,'ylim');
+      hold on;
+      semilogx(2*pi*f0*[1 1],ylim,'r-.');
+   end
    
    title([sym,': Bode Diagram']);
    subplot(o);                         % subplot done!

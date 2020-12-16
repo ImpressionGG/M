@@ -248,17 +248,24 @@ function o = Rloc(o)                   % Root Locus
 end
 function oo = Nyquist(o)               % Nyquist Stability Analysis    
    o = with(o,{'style','bode','nyq'});
+
    mu = opt(o,{'process.mu',0.1});
    colors = {'bcc','b','c','bw','cd'};
    
-%  Lmu = cook(o,'Lmu');
    [list,objs,head] = LmuSelect(o);
    for (i=1:length(list))
       col = colors{1+rem(i-1,length(colors))};
       o = opt(o,'color',col);
-      
+
+      oo = inherit(objs{i},o);
+      oo = opt(oo,'color',col);        % for bode plot
+      if (i==length(list))
+         oo = opt(oo,'critical',1);    % for bode plot
+      end
+
       Lmu = list{i};
-      diagram(o,'Bode','',Lmu,2211);
+      diagram(oo,'Bode','',Lmu,2211);
+      xlabel('omega [1/s]');
       diagram(o,'Stability','',Lmu,2221);
       oo = diagram(o,'Nyq','',Lmu,1212);
    end

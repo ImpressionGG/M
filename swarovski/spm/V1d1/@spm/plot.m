@@ -1138,24 +1138,32 @@ end
 
 function o = PsQsOverview(o)           % P(s)/Q(s) Bode Plot Overview  
    [P,Q,L0] = cook(o,'P,Q,L0');
+   o = opt(o,'critical',1);            % plot critical frequency line
+   om0 = round(cook(o,'f0')*2*pi);
    
    diagram(o,'Bode','',P,3211);
    diagram(o,'Bode','',Q,3221);
-   diagram(o,'Bode','',L0,3231);
+   diagram(o,'Bode','',L0,3231);   
+   xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
+   
    diagram(o,'Nyq','',L0,122);
    
    heading(o);
 end
 function o = PsQsNormalizing(o)        % P(s)/Q(s) Bode Plot Overview  
    [G31,G33,F0,P,Q,L0] = cook(o,'G31,G33,F0,P,Q,L0');
+   o = opt(o,'critical',1);            % plot critical frequency line
+   om0 = round(cook(o,'f0')*2*pi);
    
    diagram(o,'Bode','',G31,3211);
    diagram(o,'Bode','',G33,3221);
    diagram(o,'Bode','',F0,3231);
+   xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
 
    diagram(o,'Bode','',P,3212);
    diagram(o,'Bode','',Q,3222);
    diagram(o,'Bode','',L0,3232);
+   xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
    
    heading(o);
 end
@@ -1230,6 +1238,8 @@ function o = PsQsNyq(o)                % P(s)/Q(s) Bode Plot Overview
 end
 function o = Critical(o)               % Critical TRFs                 
    [L0,K0,S0,T0] = cook(o,'L0,K0,S0,T0');
+   o = opt(o,'critical',1);            % plot critical frequency line
+   om0 = round(cook(o,'f0')*2*pi);
    mode = arg(o,1);
    
    switch mode
@@ -1241,15 +1251,19 @@ function o = Critical(o)               % Critical TRFs
          title(sprintf('Critical Gain: %g @ omega: %g 1/s',o.rd(K0,4),om0));
       case 'S0'
          diagram(o,'Bode','',S0,2111);
+         xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
          diagram(o,'Step','',S0,2121);
       case 'T0'
          diagram(o,'Bode','',T0,2111);
+         xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
          diagram(o,'Step','',T0,2121);
    end
    
    heading(o);
 end
 function o = T0S0(o)                   % T0(s), S0(s)                  
+   o = opt(o,'critical',1);            % plot critical frequency line
+   om0 = round(cook(o,'f0')*2*pi);
    sym = arg(o,1);
    G = cook(o,sym);
 
@@ -1257,6 +1271,7 @@ function o = T0S0(o)                   % T0(s), S0(s)
    diagram(o,'Step','',G,3221);
    diagram(o,'Rloc','',G,3222);
    diagram(o,'Bode','',G,3231);
+   xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
    diagram(o,'Nyq', '',G,3232);
     
    heading(o);
