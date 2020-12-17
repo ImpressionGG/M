@@ -171,6 +171,10 @@ function oo = Create(o,z,p,K,T)        % Create ZPK Object
    oo.data.poles = p;
    oo.data.K = K;
    oo.data.T = T;
+   
+      % copy verbose option
+      
+   oo = control(oo,'verbose',control(o,'verbose'));
 end
 function [num,den] = Trim(o,num,den)
 %

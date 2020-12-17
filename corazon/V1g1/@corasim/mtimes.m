@@ -118,7 +118,7 @@ end
 
 function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other  
    if ~isa(o1,'corasim')
-      o1 = Cast(o1);
+      o1 = Cast(o1,o2);
       if ~type(o1,{'strf','ztrf','qtrf'})
          error('bad operand type');
       end
@@ -129,7 +129,7 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
       end
    end
    if ~isa(o2,'corasim')
-      o2 = Cast(o2);
+      o2 = Cast(o2,o1);
       if ~type(o2,{'strf','ztrf','qtrf'})
          error('bad operand type');
       end
@@ -142,7 +142,14 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
     
    assert(isa(o1,'corasim') && isa(o2,'corasim'));
    
-   function oo = Cast(o)               % Cast to Corasim               
+   function oo = Cast(o,obj)           % Cast to Corasim               
+   %
+   % CAST  Cast numerical item o to a corasim object, occasionally copy
+   %       verbose option from arg2
+   %
+   %          oo = Cast(o);            % simple casting
+   %          oo = cast(o,obj);        % verbose option provided by obj
+   %
       if isa(o,'corasim')
          oo = o;
       elseif isa(o,'double')
@@ -151,6 +158,9 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
             error('double operand must be scalar or row vector');
          end
          oo = system(corasim,{num,den});
+         if (nargin >= 2 && isa(obj,'corazon'))
+            oo = control(oo,'verbose',control(obj,'verbose'));
+         end
       else
          error('cannot cast operand to CORASIM object');
       end

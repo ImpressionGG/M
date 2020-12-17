@@ -499,6 +499,7 @@ function VersionV1F
 % - corasim/lf pimped to allow zpk typed linear factors
 % - corasim/fqr: add expression based FQR
 % - method corasim/psion added, omega-scale corasim/fqr, corasim/bode
+% - fix some verbose copy isues in corasim arithmetics
 %
 %
 % Known Bugs / Wishlist

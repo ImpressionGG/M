@@ -21,6 +21,10 @@ function oo = mrdivide(o1,o2)
       else
          o1 = trf(corasim,o1);
       end
+      
+      if isa(o2,'corasim')
+         o1 = control(o1,'verbose',control(o2,'verbose'));
+      end
    end
    
    if isa(o2,'double')
@@ -30,6 +34,10 @@ function oo = mrdivide(o1,o2)
          o2 = zpk(o1,[],[],o2);
       else
          o2 = trf(o1,o2);
+      end
+      
+      if isa(o1,'corasim')
+         o2 = control(o2,'verbose',control(o1,'verbose'));
       end
    end
    

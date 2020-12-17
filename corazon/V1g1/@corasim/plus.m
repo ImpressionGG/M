@@ -274,7 +274,7 @@ end
 
 function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other  
    if ~isa(o1,'corasim')
-      o1 = Cast(o1);
+      o1 = Cast(o1,o2);
       if type(o2,{'szpk','zzpk','qzpk'})
          o2 = trf(o2);                 % cast to trf
       end
@@ -285,7 +285,7 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
       o1.data.T = o2.data.T;
    end
    if ~isa(o2,'corasim')
-      o2 = Cast(o2);
+      o2 = Cast(o2,o1);
       if type(o1,{'szpk','zzpk','qzpk'})
          o1 = trf(o1);                 % cast to trf
       end
@@ -298,7 +298,7 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
     
    assert(isa(o1,'corasim') && isa(o2,'corasim'));
    
-   function oo = Cast(o)               % Cast to Corasim               
+   function oo = Cast(o,obj)           % Cast to Corasim               
       if isa(o,'corasim')
          if type(o,{'szpk','zzpk','qzpk'})
             oo = trf(o);               % cast
@@ -311,6 +311,9 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
             error('double operand must be scalar or row vector');
          end
          oo = system(corasim,{num,den});
+         if (nargin >= 2 && isa(obj,'corazon'))
+            oo = control(oo,'verbose',control(obj,'verbose'));
+         end
       else
          error('cannot cast operand to CORASIM object');
       end

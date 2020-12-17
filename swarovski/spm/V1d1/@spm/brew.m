@@ -571,7 +571,9 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    end
    function [P,Q] = ModalTrfPQ(o)      % P(s)/Q(s) For Modal Forms     
       psi = [ones(n,1) a1(:) a0(:)];
-
+      
+         % create corasim object O with copied verbose option
+         
       for (i=1:m)
          for (j=1:i)
                % calculate Gij
@@ -588,6 +590,10 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
             Gij = trf(corasim,0);         % init Gij
             Gij = CancelG(o,Gij);         % set cancel epsilon
             Gij = set(Gij,'name',o.iif(j==1,'P(s)','Q(s)'));
+            
+               % also store modal representation in data
+               
+            Gij.data.psiw = [psi,wij(:)];
             
             for (k=1:n)
                if (n >= 50)
