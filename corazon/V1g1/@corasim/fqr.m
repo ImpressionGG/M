@@ -1,14 +1,15 @@
 function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response            
 %
-% FQR  Frequency response of transfer function.
+% FQR  Frequency response of transfer function to given omega, where pro-
+%      vided omega arg is scaled with 'oscale' fgactor (option, default 1)
 %
 %		    Gjw = fqr(G,omega)
 %		    Gjw = fqr(G,omega,i,j)
 %
 %      Auto omega:
 %
-%		    [Gjw,omega] = fqr(G)
-%		    [Gjw,omega] = fqr(G,[],i,j)
+%		    [Gjw,omega] = fqr(G)         % also return (unscaled) omega range
+%		    [Gjw,omega] = fqr(G,[],i,j)  % indexed TRF matrix FQR
 %
 %	    Calculation of complex frequency response of a transfer function 
 %      G(s) = num(s(/den(s) (omega may be a vector argument).
@@ -42,6 +43,7 @@ function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response
 %      Options:
 %         input              input index (default 1)
 %         output             output index (default 1)
+%         oscale             omega scaling factor (default 1)
 %
 %      Copyright(c): Bluenetics 2020
 %
@@ -54,32 +56,35 @@ function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response
       om = logspace(log10(oml),log10(omh),points);
    end
    
+      % scale omega 
+      
+   Om = om * opt(o,{'oscale',1});
+   
       % first check whether frequency response is expression based.
       % if so this overrules all standard methods
       
    expr = data(o,'fqr');
    if ~isempty(expr)
-      Gjw = Process(o,om,expr);
+      Gjw = Process(o,Om,expr);
       return
    end
    
       % continue with standard methods, depending on type
 
+   jw = 1i*Om;                         % use scaled omega !!!
    switch o.type
       case {'strf','qtrf'}
          [num,den] = peek(o);
-         jw = sqrt(-1)*om;
          Gjw = polyval(num,jw) ./ polyval(den,jw);
          
       case {'ztrf','dss'}
          [num,den] = peek(o);
          T = data(o,'T');
-         expjw = exp(sqrt(-1)*om*T);
+         expjw = exp(jw*T);
          Gjw = polyval(num,expjw) ./ polyval(den,expjw);
 
       case {'szpk','qzpk'}
          [num,den] = peek(o);
-         jw = sqrt(-1)*om;
          Gjw = polyval(num,jw) ./ polyval(den,jw);
 
       case 'css'
@@ -92,22 +97,17 @@ function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response
          
          oo = Partition(o);
          if ismodal(oo)
-            Gjw = Modal(o,om,i,j);
+            Gjw = Modal(o,Om,i,j);
          else
             [num,den] = peek(o,i,j);
-            jw = sqrt(-1)*om;
             Gjw = polyval(num,jw) ./ polyval(den,jw);
          end
          
       case {'modal'}
          i = opt(o,{'output',1});
          j = opt(o,{'input',1});
-         Gjw = Modal(o,om,i,j);        % frequency response of modal Gij(s)
+         Gjw = Modal(o,Om,i,j);        % frequency response of modal Gij(s)
          
-         %[num,den] = peek(o);
-         %jw = sqrt(-1)*om;
-         %Gjw = polyval(num,jw) ./ polyval(den,jw);
-
       otherwise
          error('bad type');
    end

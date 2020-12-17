@@ -498,6 +498,7 @@ function VersionV1F
 % - some adaptions in arithmetic basic routines regarding ZPK objects
 % - corasim/lf pimped to allow zpk typed linear factors
 % - corasim/fqr: add expression based FQR
+% - method corasim/psion added, omega-scale corasim/fqr, corasim/bode
 %
 %
 % Known Bugs / Wishlist

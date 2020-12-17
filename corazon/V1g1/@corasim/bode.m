@@ -7,7 +7,7 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %
 %        Options:
 %
-%           oscale           omega scaling factor => fqr(G,om*oscale)
+%           oscale           omega scaling factor
 %           color            color propetty (default: 'r')
 %           omega.low        omega range, low limit (default: 0.1)
 %           omega.low        omega range, high limit (default: 100000)
@@ -74,7 +74,7 @@ end
 
 function o = Magnitude(o)              % Plot Magnitude                
    points = opt(o,{'omega.points',1000});   
-   oscale = opt(o,{'oscale',1});       % frequency scaling factor
+%  oscale = opt(o,{'oscale',1});       % frequency scaling factor
    
    xlim = get(gca,'Xlim');
    ylim = get(gca,'Ylim');
@@ -83,7 +83,8 @@ function o = Magnitude(o)              % Plot Magnitude
    olim = log10(xlim);
    
    om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om*oscale);
+%  Gjw = fqr(o,om*oscale);
+   Gjw = fqr(o,om);
    dB = 20*log10(abs(Gjw));
    
       % plot magnitude
@@ -100,6 +101,7 @@ function o = Magnitude(o)              % Plot Magnitude
    Instabilities(o)                    % draw instabilities
    
    function Instabilities(o)
+      oscale = opt(o,{'oscale',1});    % frequency scaling factor
       [z,p,k] = zpk(o);                % get pole zeros
       
       idx = find(real(p)>= 0);
@@ -109,7 +111,8 @@ function o = Magnitude(o)              % Plot Magnitude
          
          if (imag(sk) ~= 0)            % complex pole
             om = sqrt(abs(sk))/oscale;
-            Gjw = fqr(o,om*oscale);
+%           Gjw = fqr(o,om*oscale);
+            Gjw = fqr(o,om);
             dB = 20*log10(abs(Gjw));
    
                % plot magnitude
@@ -123,7 +126,7 @@ function o = Magnitude(o)              % Plot Magnitude
 end
 function o = Phase(o)                  % Plot Phase                    
    points = opt(o,{'omega.points',1000});
-   oscale = opt(o,{'oscale',1});       % frequency scaling factor
+%  oscale = opt(o,{'oscale',1});       % frequency scaling factor
    
    xlim = get(gca,'Xlim');
    ylim = get(gca,'Ylim');
@@ -132,7 +135,8 @@ function o = Phase(o)                  % Plot Phase
    olim = log10(xlim);
    
    om = logspace(log10(xlim(1)), log10(xlim(2)), points);
-   Gjw = fqr(o,om*oscale);
+%  Gjw = fqr(o,om*oscale);
+   Gjw = fqr(o,om);
    phase = atan2(imag(Gjw),real(Gjw)) * 180/pi;
    
       % prepare phase
@@ -175,10 +179,11 @@ function o = Auto(o)                   % Automatic Axes Limits
 %        provided
 %
    if isempty(opt(o,'magnitude.low')) && isempty(opt(o,'magnitude.high')) 
-      oscale = opt(o,{'oscale',1});
+%     oscale = opt(o,{'oscale',1});
       
       [Gjw,om] = fqr(o);
-      Gjw = fqr(o,om*oscale);
+%     Gjw = fqr(o,om*oscale);
+      Gjw = fqr(o,om);
       
       high = Ceil(20*log10(max(abs(Gjw))));
       low = Floor(20*log10(min(abs(Gjw))));
@@ -312,22 +317,7 @@ function o = Axes(o)                   % Plot Bode Axes
       end
    end
 end
-function o = OldInherit(o)                % inherit options from shell    
-   if isempty(figure(o))
-      so = pull(o);
-      if ~isempty(so)
-         col = opt(o,'color');
-         
-         o = inherit(o,so);
-         o = with(o,'bode');
-         o = opt(o,'oscale',opt(o,{'brew.T0',1}));
-         
-         if ~isempty(col)
-            o = opt(o,'color',col);
-         end
-      end
-   end
-end
+
 function o = Inherit(o)                % inherit options from shell    
    so = [];
    if isempty(figure(o))

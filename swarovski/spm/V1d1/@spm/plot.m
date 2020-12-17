@@ -16,7 +16,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @WithSpm,@Overview,@About,@Image,@Real,@Imag,@Complex,...
                    @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
                    @TrfNyq,@TrfWeight,... 
-                   @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsFqr,...
+                   @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsNumeric,...
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
                    @PsQsOverview,@PsQsNormalizing,@Critical,@T0S0,...
@@ -114,16 +114,16 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [l,~] = size(C);
    
    oo = mhead(o,'Free Transfer Matrix');
-   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'GsRloc'});
-   ooo = mitem(oo,'Step Responses',{@WithCuo,'GsStep'});
+   ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'GsRloc'});
+   ooo = mitem(oo,'Step Responses',{@WithSpm,'GsStep'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Bode Plots',{@WithCuo,'GsBode'});
-   ooo = mitem(oo,'Modal Weights',{@WithCuo,'GsWeight'});
+   ooo = mitem(oo,'Bode Plots',{@WithSpm,'GsBode'});
+   ooo = mitem(oo,'Modal Weights',{@WithSpm,'GsWeight'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Frequency Response',{@WithCuo,'GsFqr'});
+   ooo = mitem(oo,'Numeric Check',{@WithSpm,'GsNumeric'});
 
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Gs',0,0});
+   ooo = mitem(oo,sprintf('G(s)'),{@WithSpm,'Gs',0,0});
    %ooo = Rational(oo);                % Rational submenu
    
    ooo = mitem(oo,'-');
@@ -1034,7 +1034,7 @@ function o = GsWeight(o)               % G(s) Weight Overview
       end
    end
 end
-function o = GsFqr(o)                  % G(s) Frequency Response Error 
+function o = GsNumeric(o)              % G(s) Numeric FQR Check        
    G = cook(o,'G');                    % G(s)
    [m,n] = size(G);
    

@@ -545,7 +545,8 @@ function o = Numeric(o)                % Numeric Quality
    
          % first plot strf in yellow
          
-      Gjw1 = fqr(o1,om*oscale);
+%     Gjw1 = fqr(o1,om*oscale);
+      Gjw1 = fqr(o1,om);
       mag1 = abs(Gjw1);
       dB1 = 20*log10(mag1);
       hdl = semilogx(om,dB1);
@@ -554,7 +555,8 @@ function o = Numeric(o)                % Numeric Quality
       
          % then plot modal form in green
          
-      Gjw0 = fqr(o,om*oscale);
+%     Gjw0 = fqr(o,om*oscale);
+      Gjw0 = fqr(o,om);
       mag0 = abs(Gjw0);
       dB0 = 20*log10(mag0);
       hdl = semilogx(om,dB0);
