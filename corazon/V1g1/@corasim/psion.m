@@ -1,4 +1,4 @@
-function phi = psion(o,psi,omega)     % Modal frequency response
+function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
 %
 % PSION Get modal frequency response for modal coefficient matrix 
 %       psi = [1 a1(1) a0(1); 1 a1(2) a0(2); ... ; 1 a1(n) a0(n)]
@@ -17,9 +17,10 @@ function phi = psion(o,psi,omega)     % Modal frequency response
 %       calculated to a give representation [psi,W], where psi (an m x 3
 %       matrix )contains the modal parameters (psi = [one a1 a0]) and W
 %       is an lxm matrix containing the modal weights. The result is a fre-
-%       quency response matrix Gjw (l x n matrix) with n = length(omega) 
+%       quency response matrix Gjw (l x n matrix) with n = length(omega).
+%       Optionally also calculate dB value as second output arg
 %       
-%          Gjw = psion(o,psi,omega,W)   % TRF (TRM) frequency response
+%          [Gjw,dB] = psion(o,psi,omega,W) % TRF (TRM) frequency response
 %
 %       Important remark: any omega (arg3) is multiplied by omega scaling 
 %       factor (option 'oscale'), which is by default 1.
@@ -92,4 +93,27 @@ function phi = psion(o,psi,omega)     % Modal frequency response
    for (i=1:m)
       phi(i,1:n) = 1 ./ polyval(psi(i,:),jw);
    end
+   
+      % for 3 input args we are done by returning phi
+      
+   if (nargin == 3)
+      oo = phi;                       % return phi
+      return
+   end
+   
+      % for 4 input args we have to continue calculation of the TRF
+      % frequency response
+      
+   if (nargin == 4)
+      Gjw = W*phi;
+      oo = Gjw;
+      if (nargout >= 2)
+         dB = 20*log10(abs(Gjw));      % optionally return magnitude in dB
+      end
+      return
+   end
+   
+      % running beyond this point is a bug
+      
+   assert(0);
 end

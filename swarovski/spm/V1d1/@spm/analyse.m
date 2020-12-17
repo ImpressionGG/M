@@ -13,7 +13,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                      @WithSpm,@Trf,@TfOverview,...
+                      @WithSpm,@Numeric,@Trf,@TfOverview,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@Nyquist,@OpenLoop,@Calc,...
@@ -46,6 +46,9 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyquist'});
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
+   oo = NumericMenu(o);                % add Numeric menu
+
+   ooo = mitem(oo,'-'); 
    oo = OpenLoopMenu(o);               % add Open Loop menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
@@ -66,6 +69,11 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
    
    oo = Precision(o);
+end
+
+function oo = NumericMenu(o)           % Numeric Menu                  
+   oo = mitem(o,'Numeric');
+   ooo = mitem(oo,'Numeric Quality of G(s)',{@WithSpm,'Numeric'});
 end
 function oo = OpenLoopMenu(o)          % Open Loop Menu                
    oo = mitem(o,'Open Loop');
@@ -105,7 +113,7 @@ function oo = Sensitivity(o)           % Sensitivity Menu
    ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
    ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
 end
-function oo = Force(o)                 % Closed Loop Force Menu
+function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
    sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';  
 
@@ -261,6 +269,24 @@ end
 
 function o = Err(o)                    % Error Handler                 
    error('bad mode');
+end
+
+%==========================================================================
+% Numeric Quality
+%==========================================================================
+
+function o = Numeric(o)                % G(s) Numeric FQR Quality Check
+   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
+   [m,n] = size(G);
+
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         wij = W{i,j};
+         diagram(o,'Numeric',{psi,wij},Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
 end
 
 %==========================================================================

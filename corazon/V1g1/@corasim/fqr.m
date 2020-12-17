@@ -1,10 +1,10 @@
-function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response            
+function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response            
 %
 % FQR  Frequency response of transfer function to given omega, where pro-
 %      vided omega arg is scaled with 'oscale' fgactor (option, default 1)
 %
-%		    Gjw = fqr(G,omega)
-%		    Gjw = fqr(G,omega,i,j)
+%		    [Gjw,~,dB] = fqr(G,omega)
+%		    [Gjw,~,dB] = fqr(G,omega,i,j)
 %
 %      Auto omega:
 %
@@ -66,6 +66,9 @@ function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response
    expr = data(o,'fqr');
    if ~isempty(expr)
       Gjw = Process(o,Om,expr);
+      if (nargout >= 3)
+         dB = 20*log10(abs(Gjw));
+      end
       return
    end
    
@@ -110,6 +113,12 @@ function [Gjw,om] = fqr(o,om,i,j)      % Frequency Response
          
       otherwise
          error('bad type');
+   end
+   
+      % calculate |G(jw)| in dB if requested as out arg 3
+      
+   if (nargout >= 3)
+      dB = 20*log10(abs(Gjw));
    end
 end
 

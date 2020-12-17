@@ -515,7 +515,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       [P,Q] = NormalPQ(o);
    end
 
-   [P,Q,F0] = Normalize(oo,P,Q)        % calc normalized P(s)/Q(s)
+   [P,Q,F0] = Normalize(oo,P,Q);       % calc normalized P(s)/Q(s)
    
    F0 = set(F0,'name','F0(s)');        % normalizing transfer function
    P = set(P,'name','P(s)');           % normalized P(s)

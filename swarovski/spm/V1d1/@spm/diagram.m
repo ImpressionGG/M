@@ -506,12 +506,16 @@ function o = Numeric(o)                % Numeric Quality
 %
    o = Scaling(o);                     % manage scaling factors
    
-   sym = arg(o,1);
+   psi_W = arg(o,1);                   % modal representation of TRF
+   psi = psi_W{1};
+   wij = psi_W{2};
+   
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
 
    G = inherit(G,o);                   % inherit options
-   G = set(G,'name',sym);              % set name of transfer function
+%  G = set(G,'name',sym);              % set name of transfer function
+   name = get(G,{'name',''});
    
    if isempty(opt(G,'color'))
       G = opt(G,'color','r');
@@ -520,12 +524,12 @@ function o = Numeric(o)                % Numeric Quality
    subplot(o,sub);
    
    Show(G);
-   title([sym,': Frequency Response Error']);
+   title([name,': Frequency Response Error']);
    ylabel('Relative Error [dB]');
 
    subplot(o);                         % subplot done!
    
-   function Show(o)                    % Show Numeric Quality          
+   function Show(o)                    % Show Numeric Quality 
       o = Auto(o);                     % auto axis limits
       o = Axes(o);                     % plot axes
 
@@ -546,22 +550,27 @@ function o = Numeric(o)                % Numeric Quality
          % first plot strf in yellow
          
 %     Gjw1 = fqr(o1,om*oscale);
-      Gjw1 = fqr(o1,om);
+      [Gjw1,~,dB1] = fqr(o1,om);
       mag1 = abs(Gjw1);
-      dB1 = 20*log10(mag1);
       hdl = semilogx(om,dB1);
       set(hdl,'Color','y')
       hold on;
       
-         % then plot modal form in green
+         % then plot modal form in red
          
 %     Gjw0 = fqr(o,om*oscale);
-      Gjw0 = fqr(o,om);
+      [Gjw0,~,dB0] = fqr(o,om);
       mag0 = abs(Gjw0);
-      dB0 = 20*log10(mag0);
       hdl = semilogx(om,dB0);
-      set(hdl,'Color','g')
+      set(hdl,'Color','r')
       
+         % finally plot psion FQR in green
+
+      [Gjw2,dB2] = psion(o,psi,om,wij);
+      mag2 = abs(Gjw2);
+      hdl = semilogx(om,dB2);
+      set(hdl,'Color','g')
+         
          % finally plot error in magenta
          
       err = (mag1-mag0) ./ mag0;
@@ -571,7 +580,19 @@ function o = Numeric(o)                % Numeric Quality
       else
          hdl = semilogx(om,dBerr); 
       end
-      set(hdl,'Color','m','LineWidth',1)
+      set(hdl,'Color',o.color('m'),'LineWidth',1)
+      
+         % same with psion error
+         
+      err = (mag2-mag0) ./ mag0;
+      dBerr = 20*log10(abs(err));
+      if all(err==0)
+         hdl = semilogx(om,-399+0*err); 
+      else
+         hdl = semilogx(om,dBerr); 
+      end
+      set(hdl,'Color',o.color('rm'),'LineWidth',1)
+      
       
       set(gca,'Ylim',[-inf inf]);
       
@@ -682,7 +703,7 @@ function o = Numeric(o)                % Numeric Quality
          if ~isempty(so)
             o = inherit(o,so);
             o = with(o,'bode');
-            o = opt(o,'oscale',opt(o,{'brew.T0',1}));
+            o = opt(o,'oscale',oscale(o));
          end
       end
    end

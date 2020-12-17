@@ -15,8 +15,8 @@ function oo = plot(o,varargin)         % SPM Plot Method
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                    @WithSpm,@Overview,@About,@Image,@Real,@Imag,@Complex,...
                    @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
-                   @TrfNyq,@TrfWeight,... 
-                   @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,@GsNumeric,...
+                   @TrfNyq,@TrfWeight,@TrfNumeric,... 
+                   @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,...
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
                    @PsQsOverview,@PsQsNormalizing,@Critical,@T0S0,...
@@ -88,7 +88,6 @@ function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type
    oo = mitem(o,'Stability Margin',{@WithCuo,'Stability'});
 end
 
-
 function oo = ModeShapes(o)            % Mode Shapes Menu              
    oo = mitem(o,'Mode Shapes');   
    ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
@@ -106,6 +105,8 @@ function oo = TransferFunction(o)      % Transfer Function Menu
    ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
    ooo = mitem(oo,'Nyquist Plot',{@WithCuo,'TrfNyq'});   
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'TrfWeight'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Numeric Quality',{@WithSpm,'TrfNumeric'});
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -119,8 +120,6 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Bode Plots',{@WithSpm,'GsBode'});
    ooo = mitem(oo,'Modal Weights',{@WithSpm,'GsWeight'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Numeric Check',{@WithSpm,'GsNumeric'});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,sprintf('G(s)'),{@WithSpm,'Gs',0,0});
@@ -206,8 +205,8 @@ function oo = Principal(o)             % Pricipal Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'P(s)',{@WithSpm,'PsQs',1,0});
    ooo = mitem(oo,'Q(s)',{@WithSpm,'PsQs',2,0});
-   ooo = mitem(oo,'-');
    ooo = mitem(oo,'F0(s)',{@WithSpm,'PsQs',3,0});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'L0(s) = P(s)/Q(s)',{@WithSpm,'PsQs',0,0});
    ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithSpm,'G31G33L0'});
 end
@@ -638,7 +637,7 @@ function o = TrfDisp(o)                % Display Transfer Function
    G = cook(o,'G');
    Gij = peek(G,i,j);
    
-   sym = sprintf('G%g%g(s)',i,j);
+%  sym = sprintf('G%g%g(s)',i,j);
    Gij = set(Gij,'name',sym);  
 
    Gij = opt(Gij,'detail',true);
@@ -794,6 +793,22 @@ function o = TrfWeight(o)              % Plot Modal Weights
       end
    end
 end
+function o = TrfNumeric(o)             % Numeric FQR Check             
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   idx = opt(o,{'select.channel',[1 1]});
+   i = idx(1);  j = idx(2);
+
+   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
+
+   Gij = peek(G,i,j);
+   wij = W{i,j};
+   diagram(o,'Numeric',{psi,wij},Gij,111);
+   heading(o);
+end
 
 function [list,objs,head] = GijSelect(o) % Select Transfer Function    
    list = {};                          % empty by default
@@ -828,7 +843,7 @@ function [list,objs,head] = GijSelect(o) % Select Transfer Function
       head = sprintf('Pivot: %g°',pivot);
    end
 end
-function [list,objs,head] = L0Select(o)% Select Transfer Function    
+function [list,objs,head] = L0Select(o)% Select Transfer Function      
    list = {};                          % empty by default
    objs = {};
    head = heading(o);                  % default heading
@@ -1034,15 +1049,16 @@ function o = GsWeight(o)               % G(s) Weight Overview
       end
    end
 end
-function o = GsNumeric(o)              % G(s) Numeric FQR Check        
-   G = cook(o,'G');                    % G(s)
+function o = OldGsNumeric(o)           % G(s) Numeric FQR Check        
+   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
    [m,n] = size(G);
-   
+
    for (i=1:m)
       for (j=1:n)
          Gij = peek(G,i,j);
-         sym = [get(Gij,{'name','?'}),'(s)'];
-         diagram(o,'Numeric',sym,Gij,[m,n,i,j]);
+         wij = W{i,j};
+%        sym = [get(Gij,{'name','?'}),'(s)'];
+         diagram(o,'Numeric',{psi,wij},Gij,[m,n,i,j]);
       end
    end
    heading(o);
