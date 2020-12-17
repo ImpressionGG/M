@@ -42,10 +42,10 @@ end
 
 function o = Nyquist(o)                % Nyquist Plot                  
    points = opt(o,{'omega.points',10000});      
-   oscale = opt(o,{'oscale',1});       % omega scaling factor
+%  oscale = opt(o,{'oscale',1});       % omega scaling factor
    
    [~,om] = fqr(o);                    % get omega vector
-   Gjw = fqr(o,om*oscale);
+   Gjw = fqr(o,om);
    
       % plot magnitude
       
@@ -188,7 +188,7 @@ function o = Inherit(o)                % inherit options from shell
       if ~isempty(so)
          o = inherit(o,so);
          o = with(o,'nyq');
-         o = opt(o,'oscale',opt(o,{'brew.T0',1}));
+         o = opt(o,'oscale',oscale(o));
       end
    end
 end

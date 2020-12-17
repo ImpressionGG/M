@@ -390,121 +390,140 @@ function o = SensitivityW(o)           % Weight Sensitivity
 %    - build dL := L0(jw)-Lk(jw)
 %    - Sensitivity S := |dL(jw)| / |L0(jw)|
 %
-   [L0,f0] = cook(o,'L0,f0');
+   s = [];  modes = [];                % initialize 
+   watch = false;                      % don't watch (try to set true!)
+
+   col = o.iif(dark(o),'w.','k.');
+   [L0,f0,W,psi,Lmu] = cook(o,'L0,f0,W,psi,Lmu');
    
-   oscale = opt(L0,{'oscale',1});
-   n = 50;
-   k = 1.02;
-   om0 = logspace(log10(2*pi*f0)/k,log10(2*pi*f0)*k,n);
-   Om0 = om0*oscale;                   % scaled omega
+   [om0,w0] = Omega(o);                % omega range and center frequency
+   [~,~,dB0] = fqr(L0,om0);
    
-   Ljw = fqr(L0,Om0);
-   dB = 20*log10(abs(Ljw));
-   
+      % get phi(om) next to om0
+      
+   phi0 = psion(L0,psi,om0);           % use L0 to provide oscale option!
+
    o = opt(o,'critical',1);
-   diagram(o,'Bode','',L0,211);
-   semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
+   diagram(o,'Bode','',L0,3211);
+   semilogx(om0,dB0,o.iif(dark(o),'w.','k.'));
+   title(sprintf('om0: %g 1/s (f: %g Hz)',w0,w0/2/pi));
    
-   title(sprintf('om0: %g',om0));
-   
-   BuildingBlocks(o);
-   heading(o);
-   
-   function dB = Calculate(o)
-   %
-   % Calculation to perform is:
-   %
-   %    L0(jw0) = G31(jw0)/G33(jw0)
-   %
-   % with psii(s) := s^2 + a1_i*s + a0_i*s
-   %
-   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
-   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
-   %
-   % let
-   %
-   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
-   %
-   % then
-   %
-   %                w31' * phi(jw0)
-   %    L0(jw0) = -------------------
-   %                w33' * phi(jw0)
-   %
-      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
-      w31T = W{3,1};
-      w33T = W{3,3};
+      % sensitivity study
       
-%L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
-[Ljw,omega]=fqr(L0); 
-Om0=omega*oscale;
+   m = size(psi,1);                    % number of modes
+   [~,om] = fqr(with(L0,'bode'));      % get full omega range
+   
+      % get full range phi(om)
+      
+   phi = psion(L0,psi,om);             % use L0 to provide oscale option!
 
-      phi = psion(L0,psi,om0);         % modal frequency response
-      L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
-      
-      dB = 20*log10(abs(L0jw0));
-      
-%hold on;
-%semilogx(omega,dB,'r'); 
+      % plot psion calculated frequency response
+
+   L0jw = [W{3,1}*phi] ./ [W{3,3}*phi];
+   L0jw0 = [W{3,1}*phi0] ./ [W{3,3}*phi0];
+
+   PlotL0(o,3221);
+   PlotV(o,3221);                      % plot variation
+   PlotS(o,3231);
+   
+   [~,idx] = sort(-s);                 % sort from largest to smallest
+   for (k=1:5)
+      PlotL0(o,[5,3,k,3]);
+      PlotE(o,[5,3,k,3],idx(k));
+      diagram(o,'Nyq','',Lmu,[5,6,k,4]);
    end
-   function BuildingBlocks(o)
-   %
-   % Calculation to perform is:
-   %
-   %    L0(jw0) = G31(jw0)/G33(jw0)
-   %
-   % with psii(s) := s^2 + a1_i*s + a0_i*s
-   %
-   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
-   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
-   %
-   % let
-   %
-   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
-   %
-   % then
-   %
-   %                w31' * phi(jw0)
-   %    L0(jw0) = -------------------
-   %                w33' * phi(jw0)
-   %
-      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
-      w31T = W{3,1};
-      w33T = W{3,3};
-      m = length(w31T);
-      dB0 = zeros(1,m);
-      
-%     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
-      [Ljw,om]=fqr(L0); 
-%     Om0=omega*oscale;
-
-      phi = psion(L0,psi,om);        % modal frequency response
-      phi0 = psion(L0,psi,om0);             % modal frequency response
-
-      L0jw = (w31T*phi) ./ (w33T*phi);      % L0(jw)
-      L0jw0 = (w31T*phi0) ./ (w33T*phi0);   % L0(jw0)
-      
+   
+   function PlotL0(o,sub)              % Plot L0 (Psion Based)         
+      subplot(o,sub);
+      hdl = semilogx(om,20*log10(abs(L0jw)),'b');
+      o.color(hdl,'ryyyyy');
+      set(hdl,'linewidth',1);
+      semilogx(om0,20*log10(abs(L0jw0)),col);
       hold on;
-      for (k=1:length(w31T))
-         w31kT = w31T;  w31kT(k) = 0.5*w31kT(k);  
-         w33kT = w33T;  w33kT(k) = 2*w33kT(k);  
-         
-         L0jwk = (w31kT*phi) ./ (w33kT*phi); 
-         ratio = ((w31kT*phi0) ./ (w33kT*phi0)) ./ L0jw0; 
-         
-         
-         dB = 20*log10(abs(L0jwk));
-         dB0(k) = 20*log10(abs(ratio));
+      subplot(o);
+   end
+   function PlotS(o,sub)               % Plot Sensitivity              
+      subplot(o,sub);
+      plot(o,1:m,s,[col,'|'], 1:m,s,'ro');
+      title('Weight Sensitivity');
+      title('Weight Sensitivity @ Mode Number');
+      xlabel('omega [1/s]');
+      subplot(o);
+   end
+   function PlotV(o,sub)               % plot Variation                
+      subplot(o,sub);
+      for (i=1:m)
+         w31 = W{3,1};  w31(i) = 0;
+         w33 = W{3,3};  w33(i) = 0;
 
-         subplot(o,211);
-         hdl = semilogx(om,dB,'r');
-         
-         subplot(o,212);
-         plot(o,1:m,dB0,'ro|');
-         subplot(o);
+         Gjw = [w31*phi] ./ [w33*phi];    % full omega range
+         Gjw0 = [w31*phi0] ./ [w33*phi0]; % omega range next to om0
 
-         delete(hdl);
+            % sensitivity function
+
+         Sjw0 = (Gjw0./L0jw0) - 1;
+         S(i) = max(20*log10(abs(Sjw0))); % store max dB value of sensitivity
+         mode = sqrt(psi(i,3))/oscale(o); % mode omega
+         modes(i) = mode;
+
+         if (watch)
+            hdl0 = semilogx(om0,20*log10(abs(Gjw0)),'r.');
+            hdl1 = semilogx(om,20*log10(abs(Gjw)),'r');
+            hdl2 = semilogx(om,20*log10(abs(Gjw./L0jw)),'c');
+            hdl3 = semilogx(om0,20*log10(abs(Sjw0)),col);
+            hdl4 = semilogx([mode mode],get(gca,'ylim'),'c');
+            title(sprintf('mode #%g',i));
+            idle(o);
+            delete([hdl0 hdl1,hdl2,hdl3,hdl4]);
+         end
+         
+         if (rem(i-1,10) == 0)
+            progress(o,'analysing sensitivity',(i-1)/m*100);
+         end
       end
+      progress(o);
+      
+      S0 = max(S) - 20;
+      s = S - S0;                    % delta sensitivity [dB]
+      
+      idx = find(s >= -20);
+      plot(o,modes(idx),s(idx),[col,'|'], modes(idx),s(idx),'ro');
+      for (k=1:length(idx))
+         hdl = text(modes(idx(k)),s(idx(k)),sprintf('#%g',idx(k)));
+         set(hdl,'horizontal','center','vertical','top');
+         set(hdl,'color',o.iif(dark(o),1,0)*[1 1 1]);
+      end
+
+      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
+      set(h,'linewidth',1);
+      title('Weight Sensitivity @ Frequency');
+      subplot(o);
+   end
+   function PlotE(o,sub,i)             % plot Example                  
+      subplot(o,sub);
+      w31 = W{3,1};  w31(i) = 0;
+      w33 = W{3,3};  w33(i) = 0;
+
+      Gjw = [w31*phi] ./ [w33*phi];    % full omega range
+      Gjw0 = [w31*phi0] ./ [w33*phi0]; % omega range next to om0
+
+         % sensitivity function
+
+      Sjw0 = 1 - (Gjw0./L0jw0);
+      mode = modes(i);                 % mode omega
+
+      hdl = semilogx(om,20*log10(abs(Gjw)),'r');
+      hold on
+      hdl = semilogx(om,20*log10(abs(Gjw./L0jw)),'c');
+      set(hdl,'linewidth',1);
+      title(sprintf('Mode #%g, Omega: %g 1/s (%g Hz), Sensitivity: %g dB',...
+                i,o.rd(modes(i),0),o.rd(modes(i)/2/pi,0),o.rd(s(i),1)));
+
+      subplot(o);
+      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
+      set(h,'linewidth',1);
+      h = semilogx([modes(i),modes(i)],get(gca,'ylim'),'c-.');
+      set(h,'linewidth',1);
    end
 end
 
@@ -525,9 +544,8 @@ function o = Contribution(o)           % Modal Contribution
    
    oscale = opt(L0,{'oscale',1});
    om0 = 2*pi*f0;
-   Om0 = om0*oscale;                   % scaled omega
    
-   Ljw = fqr(L0,Om0);
+   Ljw = fqr(L0,om0);
    dB = 20*log10(abs(Ljw));
    
    o = opt(o,'critical',1);
@@ -536,7 +554,7 @@ function o = Contribution(o)           % Modal Contribution
    
    title(sprintf('om0: %g',om0));
    
-   BuildingBlocks(o);
+   Vary(o);
    heading(o);
    
    function dB = Calculate(o)
@@ -576,7 +594,7 @@ Om0=omega*oscale;
 %hold on;
 %semilogx(omega,dB,'r'); 
    end
-   function BuildingBlocks(o)
+   function Vary(o)
    %
    % Calculation to perform is:
    %
@@ -597,24 +615,22 @@ Om0=omega*oscale;
    %    L0(jw0) = -------------------
    %                w33' * phi(jw0)
    %
-      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
+      [W,psi] = cook(o,'W,psi');            % weights and modal parameters
       w31T = W{3,1};
       w33T = W{3,3};
       m = length(w31T);
       dB0 = zeros(1,m);
       
-%     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
       [Ljw,om]=fqr(L0); 
-%     Om0=omega*oscale;
 
-      phi = psion(L0,psi,om);        % modal frequency response
+      phi = psion(L0,psi,om);               % modal frequency response
       phi0 = psion(L0,psi,om0);             % modal frequency response
 
       L0jw = (w31T*phi) ./ (w33T*phi);      % L0(jw)
       L0jw0 = (w31T*phi0) ./ (w33T*phi0);   % L0(jw0)
       
       hold on;
-      for (k=1:length(w31T))
+      for (k=1:m)
          w31kT = w31T;  w31kT(k) = 0.5*w31kT(k);  
          w33kT = w33T;  w33kT(k) = 2*w33kT(k);  
          
@@ -629,7 +645,8 @@ Om0=omega*oscale;
          hdl = semilogx(om,dB,'r');
          
          subplot(o,212);
-         plot(o,1:m,dB0,'ro|');
+         plot(o,1:k,dB0(1:k),'ro|');
+         set(gca,'xlim',[0 m]);
          subplot(o);
 
          delete(hdl);
@@ -1233,5 +1250,30 @@ function Legend(o,sub,objects)         % Plot Legend
    end
    hdl = legend(list);
    set(hdl,'color','w');
+end
+function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
+%
+% OMEGA  Omega range near f0
+%       
+%           om = Omega(o,f0,1.05,50)   % om = f0/1.02,..,f0*1.02, 50 points
+%           om = Omega(o,f0)           % same as above
+%           om = Omega(o)              % cook f0
+%         
+%           [om,om0] = Omega(o)        % also return center frequency
+%
+   if (nargin < 4)
+      n = 50;
+   end
+   if (nargin < 3)
+      k = 1.05;
+   end
+   k1 = 1/k;  k2 = k;
+   
+   if (nargin < 2)
+      [f0,L0] = cook(o,'f0,L0');
+   end
+   
+   om0 = 2*pi*f0;
+   om = logspace(log10(om0*k1),log10(om0*k2),n);
 end
 

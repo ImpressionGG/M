@@ -90,8 +90,9 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
    m = size(psi,1);                    % number of modes   
    n = length(jw);
    
+   phi = zeros(m,n);
    for (i=1:m)
-      phi(i,1:n) = 1 ./ polyval(psi(i,:),jw);
+      phi(i,:) = 1 ./ polyval(psi(i,:),jw);
    end
    
       % for 3 input args we are done by returning phi

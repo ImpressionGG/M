@@ -333,8 +333,14 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
             if isequal(opt(o,{'trf.type','strf'}),'szpk')
                Gij = zpk(Gij);            % convert to ZPK
             end
-            
+
+               % set name, store modal parameters in data and set 
+               % green color option (indicating free system TRF)
+               
             Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+            Gij.data.psiw = [psi,wij(:)];
+            Gij = opt(Gij,'color','g');
+
             G = poke(G,Gij,i,j);          % lower half diagonal element
             if (i ~= j)
                G = poke(G,Gij,j,i);       % upper half diagonal element
@@ -572,8 +578,6 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    function [P,Q] = ModalTrfPQ(o)      % P(s)/Q(s) For Modal Forms     
       psi = [ones(n,1) a1(:) a0(:)];
       
-         % create corasim object O with copied verbose option
-         
       for (i=1:m)
          for (j=1:i)
                % calculate Gij
