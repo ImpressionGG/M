@@ -8,6 +8,9 @@ function phi = psion(o,psi,omega)     % Modal frequency response
 %
 %          phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
 %           
+%       Important remark: any omega (arg3) is multiplied by omega scaling 
+%       factor (option 'oscale'), which is by default 1.
+%
 %       Example:
 %
 %          L0(jw0) = G31(jw0)/G33(jw0)
@@ -27,8 +30,12 @@ function phi = psion(o,psi,omega)     % Modal frequency response
 %          L0(jw0) = -------------------
 %                      w33' * phi(jw0)
 %
+%       Options:
+%          oscale:           omega scaling factor (default 1)
+%
 %       See also: CORASIM
 %
+   omega = omega*opt(o,{'oscale',1});  % scale omega
    jw = 1i*omega(:).';                 % imaginary circular frequency
 
    m = size(psi,1);                    % number of modes   

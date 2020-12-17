@@ -13,11 +13,12 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                      @Trf,@TfOverview,...
+                      @WithSpm,@Trf,@TfOverview,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@Nyquist,@OpenLoop,@Calc,...
                       @Contribution,@NumericCheck,...
+                      @SensitivityW,@SensitivityF,@SensitivityD,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @EigenvalueCheck);
@@ -51,6 +52,7 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    ooo = mitem(oo,'-'); 
    oo = Stability(o);                  % add Stability menu
    oo = Sensitivity(o);                % add Sensitivity menu
+   
    ooo = mitem(oo,'-'); 
    oo = Force(o);                      % add Force menu
    oo = Acceleration(o);               % add Acceleration menu
@@ -96,8 +98,12 @@ function oo = Stability(o)             % Closed Loop Stability Menu
 end
 function oo = Sensitivity(o)           % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
-   ooo = mitem(oo,'Modal Contribution',{@WithCuo,'Contribution'});
-   ooo = mitem(oo,'Numerical Check',{@WithCuo,'NumericCheck'});
+   ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
+   ooo = mitem(oo,'Frequency Sensitivity',{@WithSpm,'SensitivityF'});
+   ooo = mitem(oo,'Damping Sensitivit',{@WithSpm,'SensitivityD'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
+   ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu
    oo = mitem(o,'Force');
@@ -204,7 +210,38 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithBsk(o)               % 'With Basket' Callback        
+function oo = WithSpm(o)               % 'With Current Spm Callback
+%
+% WITHSPM Same as WithCuo but checking if current object is an spm object,
+%         otherwise calling plot(o,'About')
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+ 
+   oo = current(o);                    % get current object
+   if ~type(oo,{'spm'})
+      plot(oo,'About');
+      return
+   end
+   
+      % refresh caches
+      
+%  [oo,bag,rfr] = cache(oo,oo,'trf');  % transfer function cache segment
+%  [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
+%  [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
+   
+   gamma = eval(['@',mfilename]);
+   oo = gamma(oo);                     % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   else
+      dark(oo);                        % do dark mode actions
+   end
+end
+function oo = WithBsk(o)               % 'With Basket' Callback
 %
 % WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
 %          current object pulling and forwarding to executing local func-
@@ -319,7 +356,140 @@ end
 % Sensitivity
 %==========================================================================
 
+function o = SensitivityW(o)           % Weight Sensitivity            
+%
+% Idea:
+%    - let L0(jw) be the nominal frequency response
+%    - vary w(k) such that L0(jw) -> Lk(jw)
+%    - build dL := L0(jw)-Lk(jw)
+%    - Sensitivity S := |dL(jw)| / |L0(jw)|
+%
+   [L0,f0] = cook(o,'L0,f0');
+   
+   oscale = opt(L0,{'oscale',1});
+   n = 50;
+   k = 1.02;
+   om0 = logspace(log10(2*pi*f0)/k,log10(2*pi*f0)*k,n);
+   Om0 = om0*oscale;                   % scaled omega
+   
+   Ljw = fqr(L0,Om0);
+   dB = 20*log10(abs(Ljw));
+   
+   o = opt(o,'critical',1);
+   diagram(o,'Bode','',L0,211);
+   semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
+   
+   title(sprintf('om0: %g',om0));
+   
+   BuildingBlocks(o);
+   heading(o);
+   
+   function dB = Calculate(o)
+   %
+   % Calculation to perform is:
+   %
+   %    L0(jw0) = G31(jw0)/G33(jw0)
+   %
+   % with psii(s) := s^2 + a1_i*s + a0_i*s
+   %
+   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
+   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
+   %
+   % let
+   %
+   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
+   %
+   % then
+   %
+   %                w31' * phi(jw0)
+   %    L0(jw0) = -------------------
+   %                w33' * phi(jw0)
+   %
+      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
+      w31T = W{3,1};
+      w33T = W{3,3};
+      
+%L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
+[Ljw,omega]=fqr(L0); 
+Om0=omega*oscale;
+
+      phi = psion(L0,psi,om0);         % modal frequency response
+      L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
+      
+      dB = 20*log10(abs(L0jw0));
+      
+%hold on;
+%semilogx(omega,dB,'r'); 
+   end
+   function BuildingBlocks(o)
+   %
+   % Calculation to perform is:
+   %
+   %    L0(jw0) = G31(jw0)/G33(jw0)
+   %
+   % with psii(s) := s^2 + a1_i*s + a0_i*s
+   %
+   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
+   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
+   %
+   % let
+   %
+   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
+   %
+   % then
+   %
+   %                w31' * phi(jw0)
+   %    L0(jw0) = -------------------
+   %                w33' * phi(jw0)
+   %
+      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
+      w31T = W{3,1};
+      w33T = W{3,3};
+      m = length(w31T);
+      dB0 = zeros(1,m);
+      
+%     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
+      [Ljw,om]=fqr(L0); 
+%     Om0=omega*oscale;
+
+      phi = psion(L0,psi,om);        % modal frequency response
+      phi0 = psion(L0,psi,om0);             % modal frequency response
+
+      L0jw = (w31T*phi) ./ (w33T*phi);      % L0(jw)
+      L0jw0 = (w31T*phi0) ./ (w33T*phi0);   % L0(jw0)
+      
+      hold on;
+      for (k=1:length(w31T))
+         w31kT = w31T;  w31kT(k) = 0.5*w31kT(k);  
+         w33kT = w33T;  w33kT(k) = 2*w33kT(k);  
+         
+         L0jwk = (w31kT*phi) ./ (w33kT*phi); 
+         ratio = ((w31kT*phi0) ./ (w33kT*phi0)) ./ L0jw0; 
+         
+         
+         dB = 20*log10(abs(L0jwk));
+         dB0(k) = 20*log10(abs(ratio));
+
+         subplot(o,211);
+         hdl = semilogx(om,dB,'r');
+         
+         subplot(o,212);
+         plot(o,1:m,dB0,'ro|');
+         subplot(o);
+
+         delete(hdl);
+      end
+   end
+end
+
 function o = Contribution(o)           % Modal Contribution            
+%
+% Idea: 
+%    - let L0(jw) be the nominal frequency response
+%    - vary w(k) such that L0(jw) -> Lk(jw)
+%    - build dL := L0(jw)-Lk(jw)
+%    - Sensitivity S := |dL(jw)| / |L0(jw)|
+
    if ~type(o,{'spm'})
       plot(o,'About');
       return;
@@ -372,7 +542,7 @@ function o = Contribution(o)           % Modal Contribution
 [Ljw,omega]=fqr(L0); 
 Om0=omega*oscale;
 
-      phi = psion(L0,psi,Om0);         % modal frequency response
+      phi = psion(L0,psi,om0);         % modal frequency response
       L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
       
       dB = 20*log10(abs(L0jw0));
@@ -411,8 +581,8 @@ Om0=omega*oscale;
       [Ljw,om]=fqr(L0); 
 %     Om0=omega*oscale;
 
-      phi = psion(L0,psi,om*oscale);        % modal frequency response
-      phi0 = psion(L0,psi,Om0);             % modal frequency response
+      phi = psion(L0,psi,om);        % modal frequency response
+      phi0 = psion(L0,psi,om0);             % modal frequency response
 
       L0jw = (w31T*phi) ./ (w33T*phi);      % L0(jw)
       L0jw0 = (w31T*phi0) ./ (w33T*phi0);   % L0(jw0)
@@ -493,7 +663,7 @@ function o = NumericCheck(o)           % Numerical Check
       [Ljw,omega]=fqr(L0); 
       Om0=omega*oscale;
 
-      phi = psion(L0,psi,Om0);         % modal frequency response
+      phi = psion(L0,psi,omega);       % modal frequency response
       L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
       
       dB = 20*log10(abs(L0jw0));

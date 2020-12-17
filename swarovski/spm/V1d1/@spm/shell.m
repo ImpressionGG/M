@@ -35,6 +35,7 @@ function o = Init(o)                   % Init Object
    o = dynamic(o,true);                % setup as a dynamic shell
    o = launch(o,mfilename);            % setup launch function
    o = control(o,{'dark'},1);          % run in dark mode
+   o = control(o,{'verbose'},0);       % no verbose talking
 
    o = opt(o,{'style.bullets'},0);     % provide bullets default
    o = opt(o,{'view.grid'},1);         % grid on by default

@@ -87,7 +87,7 @@ function varargout = cook(o,sym)
          oo = inherit(oo,o);
 %        oo = with(oo,{'bode','simu','rloc','nyq'});
          if isempty(opt(oo,'oscale'))
-            oo = opt(oo,'oscale',opt(oo,{'brew.T0',1}));
+            oo = opt(oo,'oscale',oscale(o));
          end
       end
       varargout{i} = oo;

@@ -168,6 +168,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - first steps Analyse/Sensitivity
 % - internal tracing to detect mismatches => numericaöl limits
 % - first progress in sensitivity analysis
+% - add method oscale
 %
 %
 % Known bugs & wishlist
