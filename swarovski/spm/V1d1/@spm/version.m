@@ -171,6 +171,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add method oscale
 % - analyse: numeric quality check
 % - weight sensitivity analysis implemented
+% - heading added to weight sensitivity analysis
 %
 %
 % Known bugs & wishlist

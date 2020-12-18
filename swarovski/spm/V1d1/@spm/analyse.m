@@ -433,6 +433,8 @@ function o = SensitivityW(o)           % Weight Sensitivity
       diagram(o,'Nyq','',Lmu,[5,6,k,4]);
    end
    
+   heading(o);
+   
    function PlotL0(o,sub)              % Plot L0 (Psion Based)         
       subplot(o,sub);
       hdl = semilogx(om,20*log10(abs(L0jw)),'b');
