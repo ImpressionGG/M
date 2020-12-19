@@ -73,7 +73,7 @@ function oo = PsiW(o,psi,W,D)          % Create Psi-W Representation
    if (n ~= 3)
       error('psi must have exactly 3 columns');
    end
-   if (size(W,1 ~= 1))
+   if (size(W,1) ~= 1)
       error('W must be a row vector');
    end
    if (length(W) ~= m)

@@ -12,7 +12,7 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: CORASIM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @SystemInvert);
+                        @SystemInvert,@FqrTest);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -22,6 +22,7 @@ end
 
 function oo = Menu(o)                                                     
    oo = mitem(o,'System Inversion',{@WithCuo,'SystemInvert'},[]);
+   Numeric(o);                         % add Numeric menu
 end
 
 %==========================================================================
@@ -130,6 +131,68 @@ function o = SystemInvert(o)           % System Inversion Study
       subplot(o,sub);
       G = with(G,{'bode','style'});
       bode(G);
+      subplot(o);
+   end
+end
+
+%==========================================================================
+% Numeric Quality
+%==========================================================================
+
+function oo = Numeric(o)               % Numeric Menu
+   setting(o,{'numeric.damping'},1e-7);
+
+   oo = mitem(o,'Numeric Quality');
+   ooo = mitem(oo,'Damping',{},'numeric.damping');
+   choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8],{});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Frequency Response Test',{@WithSho,'FqrTest'});
+end
+function o = FqrTest(o)                % Frequency Response Test
+   d = opt(o,{'numeric.damping',0.1});
+   psi = [1 2*d 1; 1 -2*d 1];
+   w = d*[1 1];
+   
+   G = psiw(o,psi,w);
+   F = trf(o,d,[1 2*d 1]) + trf(o,d,[1 -2*d 1]);
+
+   olim = [1/(1+d),1+d];
+   omega.low = olim(1);
+   omega.high = olim(2);
+   omega.points = 100000;
+
+   G = opt(G,'omega',omega);
+   F = opt(F,'omega',omega);
+   
+   [~,om,dB] = fqr(G);
+   
+   
+   PlotBode(o,211);
+   PlotDeviation(o,212);
+   
+   function PlotBode(o,sub)
+      subplot(o,sub);
+
+      magni(F,'g');
+      hold on;
+      magni(G,'r');
+
+      idx = find(dB==min(dB));
+      plot(o,om(idx(1)),dB(idx(1)),'go');
+
+      title(sprintf('Damping: %g, Minimum: %g',d,dB(idx(1))));
+      subplot(o);
+   end
+   function PlotDeviation(o,sub)
+      subplot(o,sub);
+
+      [~,~,GdB] = fqr(G,om);
+      [~,~,FdB] = fqr(F,om);
+      
+      semilogx(om,GdB-FdB,'c');
+      title(sprintf('Deviation'));
+      ylabel('|G(jw)|-|F(jw)| [dB]');
+      xlabel('omega [1/s]');
       subplot(o);
    end
 end
