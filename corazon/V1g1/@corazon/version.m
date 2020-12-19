@@ -501,6 +501,7 @@ function VersionV1F
 % - method corasim/psion added, omega-scale corasim/fqr, corasim/bode
 % - fix some verbose copy isues in corasim arithmetics
 % - introduce psiw type transfer function representations fpr corasim objs
+% - display & bode for psiw type TRFs
 %
 %
 % Known Bugs / Wishlist

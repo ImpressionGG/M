@@ -85,7 +85,7 @@ function txt = display(o)              % Display Corasim Object
             end
          end
             
-      case {'szpk','zzpk','qzpk'}
+      case {'szpk','zzpk','qzpk','psiw'}
          o = trf(o);                   % cast to trf type
          [num,den] = peek(o);
          if (nargout > 0)

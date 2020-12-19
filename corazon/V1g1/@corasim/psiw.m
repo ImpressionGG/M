@@ -61,7 +61,7 @@ function oo = Transform(o)             % Transform to Modal Form
    W = B(2*m:end)' .* C(1:m);
    
    oo = inherit(corasim('psiw'),o);
-   oo = data(oo,'psi,W,D',psi,W,D);
+   oo = data(oo,'psi,W,D,T',psi,W,D,0);
 end
 
 %==========================================================================
@@ -84,6 +84,6 @@ function oo = PsiW(o,psi,W,D)          % Create Psi-W Representation
    end
    
    oo = inherit(corasim('psiw'),o);
-   oo = data(oo,'psi,W,D', psi,W,D);
+   oo = data(oo,'psi,W,D,T', psi,W,D,0);
 end
 

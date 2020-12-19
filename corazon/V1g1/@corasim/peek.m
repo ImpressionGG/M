@@ -46,6 +46,11 @@ function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator
 
       case 'matrix'
          num = o.data.matrix{i,j};
+         
+      case 'psiw'
+         oo = trf(o);
+         [num,den] = data(oo,'num,nen');
+         T = 0;
    end
 end
 

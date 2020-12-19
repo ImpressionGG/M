@@ -111,6 +111,10 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
          j = opt(o,{'input',1});
          Gjw = Modal(o,Om,i,j);        % frequency response of modal Gij(s)
          
+      case {'psiw'}
+         [psi,W,D] = data(o,'psi,W,D');
+         Gjw = psion(o,psi,Om,W) + D;
+      
       otherwise
          error('bad type');
    end
