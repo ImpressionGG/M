@@ -69,12 +69,12 @@ function oo = Scale(o)                 % Add Time Scale Menu Items
    end
 end
 function oo = Bode(o)                  % Bode Settings Menu            
-   setting(o,{'bode.omega.low'},1e-1);
-   setting(o,{'bode.omega.high'},1e5);
-   setting(o,{'bode.magnitude.low'},-80);
-   setting(o,{'bode.magnitude.high'},80);
-   setting(o,{'bode.phase.low'},-270);
-   setting(o,{'bode.phase.high'},90);
+   setting(o,{'bode.omega.low'},[]);
+   setting(o,{'bode.omega.high'},[]);
+   setting(o,{'bode.magnitude.low'},[]);
+   setting(o,{'bode.magnitude.high'},[]);
+   setting(o,{'bode.phase.low'},[]);
+   setting(o,{'bode.phase.high'},[]);
    
    setting(o,{'bode.magnitude.enable'},true);
    setting(o,{'bode.phase.enable'},true);

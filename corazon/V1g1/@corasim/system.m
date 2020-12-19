@@ -119,6 +119,16 @@ function oo = Cast(o)                  % Cast to a State Space System
       A = [0*I,I; -diag(a0), -diag(a1)];
       oo = system(o,A,B,C,D);
       return
+   elseif type(o,{'psiw'})
+      [psi,W,D] = data(o,'psi,W,D');
+      a1 = psi(:,2);
+      a0 = psi(:,3);
+      B = [0*W,sqrt(W)]';
+      C = [sqrt(W),0*W];
+      I = eye(length(a0));
+      A = [0*I,I; -diag(a0), -diag(a1)];
+      oo = system(o,A,B,C,D);
+      return
    end
    
    kind = opt(o,{'sskind','tf2ss'});

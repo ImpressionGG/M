@@ -60,6 +60,14 @@ function [o,du] = tvsdiode(o,number)
           
        case {'M1','DV250K3225'}
           o = DV250K3225(o);
+       case {'CNR05D361','CNR-05D361K'}
+          o = CNR05D361K(o);
+       case {'CNR05D391','CNR-05D391K'}
+          o = CNR05D391K(o);
+       case {'V360ZA05P'}
+          o = V360ZA05P(o);
+       case {'V390ZA05P'}
+          o = V390ZA05P(o);
     end
     
        % Ipp (rated at 1ms pulse) can be increased to Ipp50 for
@@ -246,7 +254,7 @@ end
 %==========================================================================
           
 function o = DV250K3225(o)
-   p.name = 'DV250K3225';             % name of TVS diode
+   p.name = 'DV250K3225';             % name of MOV
    p.kind = 'MOV';
 
    p.Pmax   = 260000;                % [W] max power
@@ -254,6 +262,82 @@ function o = DV250K3225(o)
    p.Vrwm   = 360;                   % [V] reverse working maximum voltage
    p.Ubmin  = 390;                   % [V] breakdown minimum voltage
    p.Ubmax  = 390;                   % [V] breakdown maximum voltage
+   p.Uclamp = 650;                   % [V] max clamping voltage
+   p.Ipp    = 400;                   % [A] peak impulse current
+   p.Td0    = 20e-6;                 % [s] nominal pulse width
+   p.N      = 12;                    % [1] curvature index
+   p.kappa  = 0.41;                  % [1] conversion exponent
+   p.derate = 1.0;                   % [1] Ipp derating at 80°C junction T
+
+   o = set(o,'tvs',p);
+end
+
+function o = CNR05D361K(o)
+   p.name = 'CNR-05D361K';           % name of MOV
+   p.kind = 'MOV';
+
+   p.Pmax   = 248000;                % [W] max power
+   p.Wmax   = 10;                    % [J] max thermal energy
+   p.Vrwm   = 360;                   % [V] reverse working maximum voltage
+   p.Ubmin  = 324;                   % [V] breakdown minimum voltage
+   p.Ubmax  = 396;                   % [V] breakdown maximum voltage
+   p.Uclamp = 620;                   % [V] max clamping voltage
+   p.Ipp    = 400;                   % [A] peak impulse current
+   p.Td0    = 20e-6;                 % [s] nominal pulse width
+   p.N      = 12;                    % [1] curvature index
+   p.kappa  = 0.41;                  % [1] conversion exponent
+   p.derate = 1.0;                   % [1] Ipp derating at 80°C junction T
+
+   o = set(o,'tvs',p);
+end
+
+function o = CNR05D391K(o)
+   p.name = 'CNR-05D391K';           % name of MOV
+   p.kind = 'MOV';
+
+   p.Pmax   = 270000;                % [W] max power
+   p.Wmax   = 12;                    % [J] max thermal energy
+   p.Vrwm   = 360;                   % [V] reverse working maximum voltage
+   p.Ubmin  = 351;                   % [V] breakdown minimum voltage
+   p.Ubmax  = 429;                   % [V] breakdown maximum voltage
+   p.Uclamp = 675;                   % [V] max clamping voltage
+   p.Ipp    = 400;                   % [A] peak impulse current
+   p.Td0    = 20e-6;                 % [s] nominal pulse width
+   p.N      = 12;                    % [1] curvature index
+   p.kappa  = 0.41;                  % [1] conversion exponent
+   p.derate = 1.0;                   % [1] Ipp derating at 80°C junction T
+
+   o = set(o,'tvs',p);
+end
+
+function o = V360ZA05P(o)            % Littlefuse
+   p.name = 'V360ZA05P';             % name of MOV
+   p.kind = 'MOV';
+
+   p.Pmax   = 238000;                % [W] max power
+   p.Wmax   = 9.5;                   % [J] max thermal energy
+   p.Vrwm   = 360;                   % [V] reverse working maximum voltage
+   p.Ubmin  = 324;                   % [V] breakdown minimum voltage
+   p.Ubmax  = 396;                   % [V] breakdown maximum voltage
+   p.Uclamp = 595;                   % [V] max clamping voltage
+   p.Ipp    = 400;                   % [A] peak impulse current
+   p.Td0    = 20e-6;                 % [s] nominal pulse width
+   p.N      = 12;                    % [1] curvature index
+   p.kappa  = 0.41;                  % [1] conversion exponent
+   p.derate = 1.0;                   % [1] Ipp derating at 80°C junction T
+
+   o = set(o,'tvs',p);
+end
+
+function o = V390ZA05P(o)            % Littlefuse
+   p.name = 'V390ZA05P';             % name of MOV
+   p.kind = 'MOV';
+
+   p.Pmax   = 238000;                % [W] max power
+   p.Wmax   = 10;                    % [J] max thermal energy
+   p.Vrwm   = 360;                   % [V] reverse working maximum voltage
+   p.Ubmin  = 351;                   % [V] breakdown minimum voltage
+   p.Ubmax  = 429;                   % [V] breakdown maximum voltage
    p.Uclamp = 650;                   % [V] max clamping voltage
    p.Ipp    = 400;                   % [A] peak impulse current
    p.Td0    = 20e-6;                 % [s] nominal pulse width

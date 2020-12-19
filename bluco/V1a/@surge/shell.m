@@ -18,6 +18,7 @@ function o = Shell(o)                  % Shell Setup
 %  oo = menu(o,'Select');              % add Select menu
 %  oo = Plot(o);                       % add Plot menu
 %  oo = Analysis(o);                   % add Analysis menu
+   oo = Select(o);                     % add Select menu
    oo = Simu(o);                       % add Simu menu
    oo = Study(o);                      % add Study menu
    oo = menu(o,'Gallery');             % add Gallery menu
@@ -105,6 +106,19 @@ end
 
 function oo = View(o)                  % View Menu
    oo = mhead(o,'View',{},[],'visible','off'); % add roll down header item
+end
+
+%==========================================================================
+% Select Menu
+%==========================================================================
+
+function oo = Select(o)                % Select Menu
+   setting(o,{'simu.dt'},2);
+
+   oo = mhead(o,'Select',{},[]);       % add roll down header item
+   ooo = mitem(oo,'Simu');
+   oooo = mitem(ooo,'Simulation Interval [ns]',{},'simu.dt');
+   choice(oooo,[0.1 0.2 0.5 1 2 5 10],{});
 end
 
 %==========================================================================

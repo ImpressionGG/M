@@ -23,10 +23,13 @@ function oo = trf(o,num,den,T)
 %         See also: CORASIM, SYSTEM, PEEK, ZPK, GAIN
 %
    if (nargin == 1)
-      if isequal(o.type,'shell')
+      if type(o,{'shell'})
          oo = system(o,{1,1});
       elseif type(o,{'szpk','zzpk','qzpk'})
          oo = Zp2Tf(o);
+      elseif type(o,{'psiw'})
+         oo = system(o);                         % cast psiw to system
+         oo = trim(oo);                          % cast system to trf
       else
          oo = trim(o);                           % cast to trf
       end

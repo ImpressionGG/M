@@ -50,6 +50,8 @@ function [a0,a1,M,N,omega,zeta] = modal(o,num,den,varargin)
       oo = Transform(o);
       a0 = oo;                         % rename out arg
       return                           % and bye!
+   elseif (nargin == 1 && type(o,{'modal'}))
+      oo = o;
    elseif (nargin == 6 && nargout <= 1)
       a0 = num;  a1 = den;             % rename input args
       B = varargin{1};                 % rename input arg

@@ -500,6 +500,7 @@ function VersionV1F
 % - corasim/fqr: add expression based FQR
 % - method corasim/psion added, omega-scale corasim/fqr, corasim/bode
 % - fix some verbose copy isues in corasim arithmetics
+% - introduce psiw type transfer function representations fpr corasim objs
 %
 %
 % Known Bugs / Wishlist
