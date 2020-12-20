@@ -12,7 +12,8 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: CORASIM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @SystemInvert,@FqrTest1,@FqrTest2,@PsiwVpaTest);
+                        @SystemInvert,@FqrTest1,@FqrTest2,@FqrTest3,...
+                        @PsiwVpaTest);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -151,6 +152,7 @@ function oo = Numeric(o)               % Numeric Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Frequency Response Test 1',{@WithSho,'FqrTest1'});
    ooo = mitem(oo,'Frequency Response Test 2',{@WithSho,'FqrTest2'});
+   ooo = mitem(oo,'Frequency Response Test 3',{@WithSho,'FqrTest3'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Variable Precision Test',{@WithSho,'PsiwVpaTest'});
 end
@@ -181,12 +183,62 @@ function o = FqrTest2(o)               % Frequency Response Test 2
    d = opt(o,{'numeric.damping',0.1});
    win = opt(o,{'numeric.window',1});
 
-   psi = [1 2*d (1-d);  1 2*d 1;  1 -2*d 1;  1 -2*d (1+d)];
-   w = d*[-1 1 1 -1];
-   
-   G = psiw(o,psi,w);
-   F = trf(o,d,[1 2*d 1]) + trf(o,d,[1 -2*d 1]);
+   psi = [1 2*d (1+d);  1 2*d 1/(1+d)];
+   w = d*[1 -1];   
 
+   G = psiw(o,psi,w);
+
+   F = trf(o,d,[1 2*d (1+d)]) - trf(o,d,[1 2*d 1/(1+d)]);
+
+   olim = [1/(1+d*win),1+d*win];
+   omega.low = olim(1);
+   omega.high = olim(2);
+   omega.points = 20000;
+
+   G = opt(G,'omega',omega);
+   F = opt(F,'omega',omega);
+
+   FqrMatch(o,F,G);
+
+   heading(o,sprintf('Damping: %g',d));
+   subplot(o,211);
+end
+function o = FqrTest3(o)               % Frequency Response Test 2
+%
+%           w11         w12
+%  G1 = ---------- + ---------- = g11(s) + g12(s) = g11 + g12
+%        psi11(s)     psi12(s)
+%
+%           w21         w22
+%  G2 = ---------- + ---------- = g21(s) + g22(s) = g21 + g22
+%        psi21(s)     psi22(s)
+%
+%  G = G1*G2 = (g11+g12)*(g21+g22) = g11*g21 + g11*g21 + g12*g21 + g12*g22
+%
+%               A         B
+%  g11*g21 = ------- + --------  => w11*w12 = A*psi21(s) + B(psi11(s)
+%            psi11(s)  psi21(s)
+%
+%  w11*w22 = A*(1 + a11*s + a10*s^2) + B*(1 + a21*s + a20*s^2)
+%
+   d = opt(o,{'numeric.damping',0.1});
+   win = opt(o,{'numeric.window',1});
+
+   psi1 = [1 2*d 1; 1 -2*d 1];
+   w1 = 2*d*[1 1];
+   G1 = psiw(o,psi1,w1);
+   
+   psi2 = [1 2*d (1+d);  1 2*d 1/(1+d)];
+   w2 = d*[1 -1];   
+   G2 = psiw(o,psi2,w2);
+
+   F1 = trf(o,2*d,[1 2*d 1]) + trf(o,2*d,[1 -2*d 1]);
+   F2 = trf(o,d,[1 2*d (1+d)]) + trf(o,-d,[1 2*d 1/(1+d)]);
+   F = F1*F2;
+   
+   G = modal(F);
+   G = F;
+   
    olim = [1/(1+d*win),1+d*win];
    omega.low = olim(1);
    omega.high = olim(2);
@@ -223,6 +275,7 @@ function o = PsiwVpaTest(o)            % VpaPsiW Variable Precision Test
 end
 function FqrMatch(o,F,G)               % Analyse Frequ. Responnse Match
    om = orange(F);
+
    [~,~,GdB] = fqr(G,om);
    [~,~,FdB] = fqr(F,om);
    

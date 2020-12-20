@@ -100,7 +100,7 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
    
       % calculate psion response
       
-   phi = 1 ./ (ones(m,n) + psi(:,2)*jw + psi(:,3)*(jw.*jw));
+   phi = 1 ./ (ones(m,1)*(jw.*jw) + psi(:,2)*jw + psi(:,3)*ones(1,n));
    
       % for 3 input args we are done by returning phi
       
@@ -116,7 +116,9 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
       Gjw = W*phi;
       if (nargout >= 2)
          dB = 20*log10(abs(Gjw));      % optionally return magnitude in dB
-         dB = double(dB);
+         if (digits > 0)
+            dB = double(dB);
+         end
       end
       oo = double(Gjw);
       return

@@ -503,6 +503,7 @@ function VersionV1F
 % - introduce psiw type transfer function representations fpr corasim objs
 % - display & bode for psiw type TRFs
 % - corasim/orange implemented
+% - bad bug fix: calculation of FQR in psion was wrong!
 %
 %
 % Known Bugs / Wishlist
