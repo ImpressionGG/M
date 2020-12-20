@@ -12,7 +12,7 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: CORASIM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @SystemInvert,@FqrTest);
+                        @SystemInvert,@FqrTest1,@FqrTest2,@PsiwVpaTest);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -20,7 +20,7 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)                                                     
+function oo = Menu(o)                                                  
    oo = mitem(o,'System Inversion',{@WithCuo,'SystemInvert'},[]);
    Numeric(o);                         % add Numeric menu
 end
@@ -139,33 +139,94 @@ end
 % Numeric Quality
 %==========================================================================
 
-function oo = Numeric(o)               % Numeric Menu
+function oo = Numeric(o)               % Numeric Menu                  
    setting(o,{'numeric.damping'},1e-7);
+   setting(o,{'numeric.window'},1);
 
    oo = mitem(o,'Numeric Quality');
    ooo = mitem(oo,'Damping',{},'numeric.damping');
-   choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8],{});
+   choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8 1e-9 1e-10 1e-11],{});
+   ooo = mitem(oo,'Window',{},'numeric.window');
+   choice(ooo,[1 2 5 1e1 1e2 1e3, 1e4, 1e5, 1e6],{});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Frequency Response Test',{@WithSho,'FqrTest'});
+   ooo = mitem(oo,'Frequency Response Test 1',{@WithSho,'FqrTest1'});
+   ooo = mitem(oo,'Frequency Response Test 2',{@WithSho,'FqrTest2'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Variable Precision Test',{@WithSho,'PsiwVpaTest'});
 end
-function o = FqrTest(o)                % Frequency Response Test
+function o = FqrTest1(o)               % Frequency Response Test 1     
    d = opt(o,{'numeric.damping',0.1});
+   win = opt(o,{'numeric.window',1});
+
    psi = [1 2*d 1; 1 -2*d 1];
-   w = d*[1 1];
+   w = 2*d*[1 1];
+   
+   G = psiw(o,psi,w);
+   F = trf(o,2*d,[1 2*d 1]) + trf(o,2*d,[1 -2*d 1]);
+
+   olim = [1/(1+d*win),1+d*win];
+   omega.low = olim(1);
+   omega.high = olim(2);
+   omega.points = 20000;
+
+   G = opt(G,'omega',omega);
+   F = opt(F,'omega',omega);
+
+   FqrMatch(o,F,G);
+
+   heading(o,sprintf('Damping: %g',d));
+   subplot(o,211);
+end
+function o = FqrTest2(o)               % Frequency Response Test 2     
+   d = opt(o,{'numeric.damping',0.1});
+   win = opt(o,{'numeric.window',1});
+
+   psi = [1 2*d (1-d);  1 2*d 1;  1 -2*d 1;  1 -2*d (1+d)];
+   w = d*[-1 1 1 -1];
    
    G = psiw(o,psi,w);
    F = trf(o,d,[1 2*d 1]) + trf(o,d,[1 -2*d 1]);
 
-   olim = [1/(1+d),1+d];
+   olim = [1/(1+d*win),1+d*win];
    omega.low = olim(1);
    omega.high = olim(2);
-   omega.points = 100000;
+   omega.points = 20000;
 
    G = opt(G,'omega',omega);
    F = opt(F,'omega',omega);
+
+   FqrMatch(o,F,G);
+
+   heading(o,sprintf('Damping: %g',d));
+   subplot(o,211);
+end
+function o = PsiwVpaTest(o)            % VpaPsiW Variable Precision Test
+   d = opt(o,{'numeric.damping',0.1});
+   psi = [1 2*d 1; 1 -2*d 1];
+   w = d*[1 1];
    
-   [~,om,dB] = fqr(G);
+   G = psiw(opt(o,'digits',50),psi,w);
+   F = psiw(opt(o,'digits',0),psi,w);
+
+   olim = [1/(1+d*win),1+d*win];
+   omega.low = olim(1);
+   omega.high = olim(2);
+   omega.points = 20000;
+
+   G = opt(G,'omega',omega);
+   F = opt(F,'omega',omega);
+
+   FqrMatch(o,F,G);
+
+   heading(o,sprintf('Damping: %g',d));
+   subplot(o,211);
+end
+function FqrMatch(o,F,G)               % Analyse Frequ. Responnse Match
+   om = orange(F);
+   [~,~,GdB] = fqr(G,om);
+   [~,~,FdB] = fqr(F,om);
    
+   idx = find(GdB==min(GdB));
    
    PlotBode(o,211);
    PlotDeviation(o,212);
@@ -173,21 +234,16 @@ function o = FqrTest(o)                % Frequency Response Test
    function PlotBode(o,sub)
       subplot(o,sub);
 
-      magni(F,'g');
+      magni(F,'g4');
       hold on;
-      magni(G,'r');
+      magni(G,'r2');
+      plot(o,om(idx(1)),GdB(idx(1)),'go');
 
-      idx = find(dB==min(dB));
-      plot(o,om(idx(1)),dB(idx(1)),'go');
-
-      title(sprintf('Damping: %g, Minimum: %g',d,dB(idx(1))));
+      title(sprintf('Minimum: %g',GdB(idx(1))));
       subplot(o);
    end
    function PlotDeviation(o,sub)
       subplot(o,sub);
-
-      [~,~,GdB] = fqr(G,om);
-      [~,~,FdB] = fqr(F,om);
       
       semilogx(om,GdB-FdB,'c');
       title(sprintf('Deviation'));

@@ -81,6 +81,7 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
 %
 %       Options:
 %          oscale:           omega scaling factor (default 1)
+%          digits:           variable precision digit number (default: 0)
 %
 %       See also: CORASIM, FQR
 %
@@ -89,16 +90,22 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
 
    m = size(psi,1);                    % number of modes   
    n = length(jw);
-   
-   phi = zeros(m,n);
-   for (i=1:m)
-      phi(i,:) = 1 ./ polyval(psi(i,:),jw);
+
+      % use variable precision arithmetics if option digits > 0
+      
+   digits = opt(o,{'digits',0});
+   if (digits > 0)
+      psi = vpa(psi,digits);
    end
+   
+      % calculate psion response
+      
+   phi = 1 ./ (ones(m,n) + psi(:,2)*jw + psi(:,3)*(jw.*jw));
    
       % for 3 input args we are done by returning phi
       
    if (nargin == 3)
-      oo = phi;                       % return phi
+      oo = double(phi);                % return phi
       return
    end
    
@@ -107,10 +114,11 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
       
    if (nargin == 4)
       Gjw = W*phi;
-      oo = Gjw;
       if (nargout >= 2)
          dB = 20*log10(abs(Gjw));      % optionally return magnitude in dB
+         dB = double(dB);
       end
+      oo = double(Gjw);
       return
    end
    
