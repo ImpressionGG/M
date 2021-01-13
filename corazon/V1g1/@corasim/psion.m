@@ -96,9 +96,11 @@ function [oo,dB] = psion(o,psi,omega,W)     % Modal frequency response
    digits = opt(o,{'digits',0});
    if (digits > 0)
       psi = vpa(psi,digits);
+      jw = vpa(jw,digits);
    end
    
-      % calculate psion response
+      % calculate psion response:
+      % phi(jw) = 1 / (jw*jw + a1*jw + a0)
       
    phi = 1 ./ (ones(m,1)*(jw.*jw) + psi(:,2)*jw + psi(:,3)*ones(1,n));
    

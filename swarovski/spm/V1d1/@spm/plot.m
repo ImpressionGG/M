@@ -1240,11 +1240,14 @@ function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)
    end
    
       % increase performance by cache pre-refreshing 
-      
+try    
    o = cache(o,o,'trf');               % hard refresh of trf segment
    o = cache(o,o,'principal');         % hard refresh of trf segment
-   
-   colors = {'g','gy','gk','gb','gww','gkk','gbb','gbw','gbk'};
+catch
+   fprintf('plot/G31G33L0(): exception catched\n');
+end
+
+   colors = {'g','gbb','gy','gk','gb','gww','gkk','gbw','gbk'};
    
       % magnitude of G31(s)
       
@@ -1272,7 +1275,7 @@ function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)
    
       % magnitude of L0(s)
       
-   colors = {'yyyyyr','yyyr','y','yk','yyr'};
+   colors = {'yyyyyr','yk','yyyr','y','yyr'};
    
    [list,objs,head] = L0Select(o);
    for (i=1:length(list))

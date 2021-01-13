@@ -28,7 +28,6 @@ function use(tag,version)
 %           use spm-v1c    % SPM V1c release @ 12Oct20
 %
    if (nargin < 2)
-      version.bluco = 'V1a';
       version.carabao = 'V1l';
       version.corazon = 'V1g1';
       version.corinth = 'V2a1';
@@ -38,6 +37,8 @@ function use(tag,version)
       version.cute = 'V1b';
       version.trf = 'V2a';
       
+      version.bluco = 'V1a';
+      version.train = 'V1a';
       version.spm = 'V1d1';
       
       version.pll = 'V1a';
@@ -71,7 +72,7 @@ function use(tag,version)
       case 'bluco'
          use corazon
          addpath([mhome,'/bluco/',version.bluco]);
-         fprintf(['   Bluco Studies ',version.antenna,' (kalman,ntc)\n']);   
+         fprintf(['   Bluco Studies ',version.bluco,' (kalman,ntc)\n']);   
          
       case 'carabao'
          addpath([mhome,'/carabao/',version.carabao]);
@@ -136,6 +137,11 @@ function use(tag,version)
          use corazon
          addpath([mhome,'/swarovski/spm/',version.spm]);
          fprintf(['   using SPM toolbox ',version.spm,'\n']);            
+         
+      case 'train'
+         use corazon
+         addpath([mhome,'/train/',version.train]);
+         fprintf(['   Model Train (ecos,...)',version.train,'\n']);   
          
       case 'uled'
          use corazon

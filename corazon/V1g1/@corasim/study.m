@@ -12,8 +12,8 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: CORASIM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @SystemInvert,@FqrTest1,@FqrTest2,@FqrTest3,...
-                        @PsiwVpaTest);
+                        @SystemInvert,@FqrTest0,@FqrTest1,@FqrTest2,...
+                        @FqrTest3,@PsiwVpaTest);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -141,31 +141,100 @@ end
 %==========================================================================
 
 function oo = Numeric(o)               % Numeric Menu                  
-   setting(o,{'numeric.damping'},1e-7);
+   setting(o,{'numeric.damping'},1e-6);
    setting(o,{'numeric.window'},1);
+   setting(o,{'numeric.digits'},0);
 
    oo = mitem(o,'Numeric Quality');
    ooo = mitem(oo,'Damping',{},'numeric.damping');
    choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8 1e-9 1e-10 1e-11],{});
    ooo = mitem(oo,'Window',{},'numeric.window');
    choice(ooo,[1 2 5 1e1 1e2 1e3, 1e4, 1e5, 1e6],{});
+   ooo = mitem(oo,'Digits',{},'numeric.digits');
+   choice(ooo,[0 2 4 6 8 10 12 14 16 50 100 200 500 1000],{});
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Frequency Response Test 0',{@WithSho,'FqrTest0'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Frequency Response Test 1',{@WithSho,'FqrTest1'});
    ooo = mitem(oo,'Frequency Response Test 2',{@WithSho,'FqrTest2'});
-   ooo = mitem(oo,'Frequency Response Test 3',{@WithSho,'FqrTest3'});
+%  ooo = mitem(oo,'Frequency Response Test 3',{@WithSho,'FqrTest3'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Variable Precision Test',{@WithSho,'PsiwVpaTest'});
 end
-function o = FqrTest1(o)               % Frequency Response Test 1     
+
+function o = FqrTest0(o)               % Frequency Response Test 0
+%
+% define F1(s) = 2d / (s^2 + 2ds + 1)
+%        F2(s) = 2d / (s^2 - 2ds + 1)
+% compare
+%        |[F1+F2](jw)| against |F1(jw)+F2(jw)|
+%
+   d = opt(o,{'numeric.damping',0.1});
+   win = opt(o,{'numeric.window',1});
+   
+   F1 = trf(o,2*d,[1 +2*d 1]);
+   F2 = trf(o,2*d,[1 -2*d 1]);
+   F = F1 + F2;
+   
+   olim = [1/(1+d*win),1+d*win];
+   omega.low = olim(1);
+   omega.high = olim(2);
+   omega.points = 20000;
+
+   F1 = opt(F1,'omega',omega);
+   F2 = opt(F2,'omega',omega);
+   F = opt(F,'omega',omega);
+
+   om = orange(F);
+
+   [F1jw,~,F1dB] = fqr(F1,om);
+   [F2jw,~,F2dB] = fqr(F2,om);
+   FdB = 20*log10(abs(F1jw+F2jw));
+   
+   [~,~,dB] = fqr(F,om);
+   idx = find(dB==min(dB));
+   
+   
+   PlotBode(o,211);
+   PlotDeviation(o,212);
+   
+   function PlotBode(o,sub)
+      subplot(o,sub);
+
+      magni(F,'g4');
+      hold on;
+      
+      hdl = semilogx(om,FdB,'r');
+      set(hdl,'linewidth',2);
+      
+      plot(o,om(idx(1)),dB(idx(1)),'go');
+
+      title(sprintf('Minimum: %g',dB(idx(1))));
+      subplot(o);
+   end
+   function PlotDeviation(o,sub)
+      subplot(o,sub);
+      
+      semilogx(om,dB-FdB,'c');
+      title(sprintf('Deviation'));
+      ylabel('|F(jw)|-|F1(jw)+F2(jw)| [dB]');
+      xlabel('omega [1/s]');
+      subplot(o);
+   end
+   heading(o,sprintf('Damping: %g',d));
+   subplot(o,211);
+end
+function o = FqrTest1(o)               % Frequency Response Test 1
    d = opt(o,{'numeric.damping',0.1});
    win = opt(o,{'numeric.window',1});
 
    psi = [1 2*d 1; 1 -2*d 1];
-   w = 2*d*[1 1];
-   
+   w = 2*d*[1 1];   
    G = psiw(o,psi,w);
+   
    F = trf(o,2*d,[1 2*d 1]) + trf(o,2*d,[1 -2*d 1]);
-
+   
    olim = [1/(1+d*win),1+d*win];
    omega.low = olim(1);
    omega.high = olim(2);
@@ -179,17 +248,16 @@ function o = FqrTest1(o)               % Frequency Response Test 1
    heading(o,sprintf('Damping: %g',d));
    subplot(o,211);
 end
-function o = FqrTest2(o)               % Frequency Response Test 2     
+function o = FqrTest2(o)               % Frequency Response Test 2
    d = opt(o,{'numeric.damping',0.1});
    win = opt(o,{'numeric.window',1});
 
    psi = [1 2*d (1+d);  1 2*d 1/(1+d)];
-   w = d*[1 -1];   
-
+   w = d*[1 1];   
    G = psiw(o,psi,w);
 
-   F = trf(o,d,[1 2*d (1+d)]) - trf(o,d,[1 2*d 1/(1+d)]);
-
+   F = trf(o,d,[1 2*d (1+d)]) + trf(o,d,[1 2*d 1/(1+d)]);
+   
    olim = [1/(1+d*win),1+d*win];
    omega.low = olim(1);
    omega.high = olim(2);
@@ -203,7 +271,7 @@ function o = FqrTest2(o)               % Frequency Response Test 2
    heading(o,sprintf('Damping: %g',d));
    subplot(o,211);
 end
-function o = FqrTest3(o)               % Frequency Response Test 2
+function o = FqrTest3(o)               % Frequency Response Test 3     
 %
 %           w11         w12
 %  G1 = ---------- + ---------- = g11(s) + g12(s) = g11 + g12
@@ -252,7 +320,7 @@ function o = FqrTest3(o)               % Frequency Response Test 2
    heading(o,sprintf('Damping: %g',d));
    subplot(o,211);
 end
-function o = PsiwVpaTest(o)            % VpaPsiW Variable Precision Test
+function o = PsiwVpaTest(o)            % VpaPsiW Var. Precision Test   
    d = opt(o,{'numeric.damping',0.1});
    psi = [1 2*d 1; 1 -2*d 1];
    w = d*[1 1];
@@ -273,7 +341,13 @@ function o = PsiwVpaTest(o)            % VpaPsiW Variable Precision Test
    heading(o,sprintf('Damping: %g',d));
    subplot(o,211);
 end
+
 function FqrMatch(o,F,G)               % Analyse Frequ. Responnse Match
+   digits = opt(o,{'numeric.digits',0});
+   if (digits > 0)
+      F = opt(G,'digits',digits);
+   end
+
    om = orange(F);
 
    [~,~,GdB] = fqr(G,om);
