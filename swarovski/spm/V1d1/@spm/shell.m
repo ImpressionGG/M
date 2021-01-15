@@ -174,7 +174,8 @@ function oo = PackageInfo(o)           % Provide Package Info File
       % open a dialog for parameter editing
       
    oo = opt(oo,'caption',['Package Object: ',package]);
-   oo = menu(oo,'Dialog');             % dialog for editing key parameters
+   oo = ReadInfo(oo,[path,'/info.txt']);
+   oo = Dialog(oo);                    % dialog for editing key parameters
    
    if isempty(oo)
       return
@@ -908,4 +909,99 @@ function oo = Info(o)                  % Info Menu
    ooooo = mitem(oooo,'Edit Release Notes','edit spm/version');
 
    plugin(o,'spm/shell/Info');         % plug point
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function oo = Dialog(o)                % Edit Key Parameters           
+%
+% Dialog  A dialog box is opened to edit key parameters
+%         With opt(o,'caption') the default caption of the dialog box
+%         can be redefined.
+%
+   either = @corazito.either;          % short hand
+   is = @corazito.is;                  % short hand
+   trim = @corazito.trim;              % short hand
+   
+   caption = opt(o,{'caption','Edit Key Parameters'});
+   title = either(get(o,'title'),'');
+   comment = either(get(o,'comment'),{});
+   if ischar(comment)
+      comment = {comment};
+   end
+   date = either(get(o,'date'),'');
+   time = either(get(o,'time'),'');
+   project = either(get(o,'project'),'');
+   variation = either(get(o,'variation'),'pivot');
+   image = either(get(o,'image'),'image.png');
+   version = either(get(o,'version'),'');
+   creator = either(get(o,'creator'),'');
+%
+% We have to convert comments into a text block
+%
+   text = '';
+   for (i=1:length(comment))
+      line = comment{i};
+      if is(line)
+         text(i,1:length(line)) = line;
+      end
+   end
+%
+% Now prepare for the input dialog
+%
+   prompts = {'Title','Comment','Date','Time',...
+              'Project','Variation','Image','Version','Creator'};
+   values = {title,text,date,time,project,variation,image,version,creator};
+   dims = ones(length(values),1)*[1 50];  dims(2,1) = 3;
+   
+   values = inputdlg(prompts,caption,dims,values);   
+   if isempty(values)
+      oo = [];
+      return                           % user pressed CANCEL
+   end
+   
+   title = either(values{1},title);
+   text = values{2};
+   comment = {};
+   for (i=1:size(text,1))
+      comment{i,1} = trim(text(i,:),+1);   % right trim
+   end
+   oo = set(o,'title,comment',title,comment);
+   
+   date = values{3};  time = values{4};
+   oo = set(oo,'date',date,'time',time);
+   
+   project = values{5};  variation = values{6};
+   image = values{7};  version = values{8};  creator = values{9};
+   oo = set(oo,'project',project,'version',version,'creator',creator);
+   oo = set(oo,'variation',variation,'image',image);
+end
+function oo = ReadInfo(o,path)         % Read Info into Comment        
+   fid = fopen(path);
+   if isequal(fid,-1)
+      return                           % file not found / cannot open file
+   end
+   
+   comment = get(o,{'comment',{}});
+   while (1)
+      line = fgetl(fid);
+      if ~isequal(line,-1)
+         idx = find(line==':');
+         if ~isempty(idx)
+            idx = idx(1)+1;
+            while (length(line)>=idx+1 && line(idx)==' ' && line(idx+1)==' ')
+               line(idx) = [];
+            end
+         end
+         
+         comment{end+1} = line;
+      else
+         break
+      end
+   end
+   
+   fclose(fid);
+   oo = set(o,'comment',comment);
 end

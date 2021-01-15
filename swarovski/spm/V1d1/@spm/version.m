@@ -172,6 +172,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - analyse: numeric quality check
 % - weight sensitivity analysis implemented
 % - heading added to weight sensitivity analysis
+% - creating package info @ reading info file / provide parameter defaults
 %
 %
 % Known bugs & wishlist
