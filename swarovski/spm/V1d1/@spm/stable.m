@@ -77,8 +77,9 @@ function [K,f] = Stable(o,L0)
       magSjw = abs(Sjw);                % sensitivity magnitude
       idx = find(magSjw==max(magSjw));  % maximation index
 
-      oscale = opt(o,{'brew.T0',1});
-      om = omega(idx(1)) / oscale;      % critical omega
+%     scale = oscale(o);
+%     om = omega(idx(1)) / scale;       % critical omega
+      om = omega(idx(1));               % critical omega
       f = om/2/pi;
    end
      
@@ -132,8 +133,8 @@ function [K,f] = Stable(o,L0)
       % labeling
       
    more = More(o);
-   title(sprintf('Stability Margin: %g @ omega:%g%s',...
-         o.rd(margin,2),2*pi*f,more));
+   title(sprintf('Stability Margin: %g @ f: %g Hz, omega: %g/s%s',...
+         o.rd(margin,2),o.rd(f,1),2*pi*f,more));
    xlabel('K-factor');   
    ylabel('~1 + max(Re\{poles\}) [dB]');
    

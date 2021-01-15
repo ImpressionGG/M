@@ -173,6 +173,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - weight sensitivity analysis implemented
 % - heading added to weight sensitivity analysis
 % - creating package info @ reading info file / provide parameter defaults
+% - Plot>Critical_Loop -> new plot menu items
 %
 %
 % Known bugs & wishlist

@@ -213,11 +213,16 @@ end
 function oo = CriticalLoop(o)          % Critical Loop Menu            
    oo = mitem(o,'Critical Loop');
    ooo = mitem(oo,'Critical Gain',{@WithCuo,'Critical','K0'});
-   ooo = mitem(oo,'Closed Loop T0(s)',{@WithCuo,'Critical','T0'});   
-   ooo = mitem(oo,'Sensitivity S0(s)',{@WithCuo,'Critical','S0'});
+   ooo = mitem(oo,'Open Loop Lc(s)');
+   oooo = mitem(ooo,'Bode Plot',{@WithCuo,'Critical','LcBode'});
+   oooo = mitem(ooo,'Magnitude Plot',{@WithCuo,'Critical','LcMagni'});
+   oooo = mitem(ooo,'Nyquist Plot',{@WithCuo,'Critical','LcNyq'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('T0(s)'),{@WithCuo,'T0S0','T0'});
-   ooo = mitem(oo,sprintf('S0(s)'),{@WithCuo,'T0S0','S0'});
+   ooo = mitem(oo,'Closed Loop Tc(s)',{@WithCuo,'Critical','T0'});   
+   ooo = mitem(oo,'Sensitivity Sc(s)',{@WithCuo,'Critical','S0'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('Tc(s)'),{@WithCuo,'T0S0','T0'});
+   ooo = mitem(oo,sprintf('Sc(s)'),{@WithCuo,'T0S0','S0'});
 end
 function oo = OpenLoopSystem(o)        % Open Loop System Menu         
    oo = mhead(o,'L(s): Open Loop');
@@ -1375,18 +1380,49 @@ function o = PsQsNyq(o)                % P(s)/Q(s) Bode Plot Overview
    heading(o);
 end
 function o = Critical(o)               % Critical TRFs                 
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
    [L0,K0,S0,T0] = cook(o,'L0,K0,S0,T0');
    o = opt(o,'critical',1);            % plot critical frequency line
    om0 = round(cook(o,'f0')*2*pi);
    mode = arg(o,1);
-   
+
+   f0 = cook(o,'f0');
+   om0 = round(2*pi*f0);
+    
    switch mode
       case 'K0'
          subplot(o,111);
          stable(o,K0*L0);
-         f0 = cook(o,'f0');
-         om0 = round(2*pi*f0);
-         title(sprintf('Critical Gain: %g @ omega: %g 1/s',o.rd(K0,4),om0));
+         title(sprintf('Critical Gain: %g @ omega: %g 1/s, f: %g Hz',...
+               o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
+            
+      case 'LcBode'
+         Lc = K0*L0;
+         o = opt(o,'color','c1');
+         o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+         diagram(o,'Bode','',Lc,2111);
+         o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
+         diagram(o,'Bode','',Lc,2121);
+
+      case 'LcMagni'
+         Lc = K0*L0;
+         o = opt(o,'color','c1');
+         o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+         diagram(o,'Bode','',Lc,111);
+         title(sprintf('Critical Open Loop Lc(jw) - Gain: %g @ omega: %g 1/s, f: %g Hz',...
+               o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
+         
+      case 'LcNyq'
+         Lc = K0*L0;
+         o = opt(o,'color','c1');
+         o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+         diagram(o,'Nyq','',Lc,111);
+         title(sprintf('Critical Open Loop Lc(jw) - Gain: %g @ omega: %g 1/s, f: %g Hz',...
+               o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
       case 'S0'
          diagram(o,'Bode','',S0,2111);
          xlabel(sprintf('omega [1/s]   (omega_0: %g/s)',om0));
