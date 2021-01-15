@@ -20,7 +20,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
                    @PsQsOverview,@PsQsNormalizing,@Critical,@T0S0,...
-                   @G31G33L0,...
+                   @G31G33L0,@L0Shell,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @Stability,...
@@ -51,6 +51,7 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
    ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
    oo = mitem(o,'Principal Transfer Functions');
+   ooo = mitem(oo,'L0(s)',{@WithCuo,'L0Shell'});
    ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithCuo,'G31G33L0'});
 end
 function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
@@ -1238,6 +1239,65 @@ function o = PsQsNormalizing(o)        % P(s)/Q(s) Bode Plot Overview
    
    heading(o);
 end
+function o = L0Shell(o)                % L0(s) @ Shell Object                  
+   if ~type(o,{'spm','shell'})
+      plot(o,'About');
+      return
+   end
+   
+      % increase performance by cache pre-refreshing 
+try    
+   o = cache(o,o,'trf');               % hard refresh of trf segment
+   o = cache(o,o,'principal');         % hard refresh of trf segment
+catch
+   fprintf('plot/L0Shell(): exception catched\n');
+end
+
+     % magnitude of L0(s)
+      
+   colors = {'yyyyyr','yk','yyyr','y','yyr'};
+   
+   [list,objs,head] = L0Select(o);
+   for (i=1:length(list))
+      L0 = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+      diagram(o,'Bode','',L0,2211);
+   end
+   
+   for (i=1:length(list))
+      L0 = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
+      diagram(o,'Bode','',L0,2221);
+   end
+   
+      % plot legend if more than 1 plots
+      
+   if (length(list) > 1)
+      Legend(o,2211,objs);
+      Legend(o,2221,objs);
+   end
+      
+      % plot critical frequencies
+      
+   CriticalFrequency(o,objs,2211);
+   CriticalFrequency(o,objs,2221);
+   xlabel('omega [1/s]');
+   
+   for (i=1:length(list))
+      L0 = list{i};
+      col = colors{1+rem(i-1,length(colors))};
+      o = opt(o,'color',col);
+      diagram(o,'Nyq','',L0,1212);
+   end
+   
+      % plot heading if not shell object
+      
+   heading(o,head);
+end
 function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)        
    if ~type(o,{'spm','shell'})
       plot(o,'About');
@@ -1395,13 +1455,28 @@ function o = Critical(o)               % Critical TRFs
     
    switch mode
       case 'K0'
-         subplot(o,111);
+         Lc = set(K0*L0,'name','Lc(s)');
+         o = opt(o,'color','c1');
+         o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+         diagram(o,'Bode','',Lc,2211);
+         
+         o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
+         diagram(o,'Bode','',Lc,2221);
+         xlabel('omega [1/s]'); 
+         subplot(o,2212);
          stable(o,K0*L0);
          title(sprintf('Critical Gain: %g @ omega: %g 1/s, f: %g Hz',...
                o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
-            
+
+         Lc = set(K0*L0,'name','Lc(s)');
+         o = opt(o,'color','c1');
+         o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
+         diagram(o,'Nyq','',Lc,2222);
+         title(sprintf('Critical Open Loop Lc(jw) - Gain: %g @ omega: %g 1/s, f: %g Hz',...
+               o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
+
       case 'LcBode'
-         Lc = K0*L0;
+         Lc = set(K0*L0,'name','Lc(s)');
          o = opt(o,'color','c1');
          o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
          diagram(o,'Bode','',Lc,2111);
@@ -1409,7 +1484,7 @@ function o = Critical(o)               % Critical TRFs
          diagram(o,'Bode','',Lc,2121);
 
       case 'LcMagni'
-         Lc = K0*L0;
+         Lc = set(K0*L0,'name','Lc(s)');
          o = opt(o,'color','c1');
          o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
          diagram(o,'Bode','',Lc,111);
@@ -1417,7 +1492,7 @@ function o = Critical(o)               % Critical TRFs
                o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
          
       case 'LcNyq'
-         Lc = K0*L0;
+         Lc = set(K0*L0,'name','Lc(s)');
          o = opt(o,'color','c1');
          o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
          diagram(o,'Nyq','',Lc,111);

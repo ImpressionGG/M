@@ -139,6 +139,13 @@ function o = Phase(o)                  % Plot Phase
    Gjw = fqr(o,om);
    phase = atan2(imag(Gjw),real(Gjw)) * 180/pi;
    
+      % map positive phases into negative
+      
+   idx = find(phase >= 0);
+   if ~isempty(idx)
+      phase(idx) = phase(idx)-360;
+   end
+   
       % prepare phase
       
    p = ylim(1) + diff(ylim)/diff(zlim) * (phase-zlim(1));
@@ -157,7 +164,8 @@ function o = Phase(o)                  % Plot Phase
    
       % plot phase
       
-   hdl = semilogx(om,p,'r--');
+%  hdl = semilogx(om,p,'r--');
+   hdl = semilogx(om,p,'r');
    col = opt(o,{'color','r--'});
    [col,lw,typ] = o.color(col);
    lw = [];
@@ -306,14 +314,25 @@ function o = Axes(o)                   % Plot Bode Axes
       dy = ylim(2)-ylim(1);  y0 = ylim(1);
       dz = zlim(2)-zlim(1);  z0 = zlim(1);
 
-      for (i=1:length(ytick))
-         y = ytick(i);
-         z = z0 + (y-y0) * dz/dy;
-         label = sprintf('   %g',o.rd(z,1));
-         hdl = text(xlim(2),y,label);
-         
-         o.color(hdl,o.iif(dark(o),'w','k'));
-         shelf(o,hdl,'owner','bode');
+      if (opt(o,{'magnitude.enable',1}) && opt(o,{'phase.enable',1})) 
+         for (i=1:length(ytick))
+            y = ytick(i);
+            z = z0 + (y-y0) * dz/dy;
+            label = sprintf('   %g',o.rd(z,1));
+            hdl = text(xlim(2),y,label);
+
+            o.color(hdl,o.iif(dark(o),'w','k'));
+            shelf(o,hdl,'owner','bode');
+         end
+      elseif (~opt(o,{'magnitude.enable',1}) && opt(o,{'phase.enable',1}))
+         set(gca,'ylim',zlim);
+         ytick = [];
+         for (k=-4500:45:4500)
+            if (k >= zlim(1) && k <= zlim(2))
+               ytick(end+1) = k;
+            end
+         end
+         set(gca,'ytick',ytick);
       end
    end
 end

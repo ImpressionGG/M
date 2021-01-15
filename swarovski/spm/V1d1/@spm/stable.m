@@ -71,6 +71,7 @@ function [K,f] = Stable(o,L0)
      % calc critical frequency om0
 
    if (nargout ~= 1)
+      L0 = opt(L0,'oscale',oscale(o));
       [Ljw,omega] = fqr(L0);            % frequency response Lmu(jw)
       Sjw = 1 ./ (1 + K*Ljw);           % sensitivity S0(jw)
 

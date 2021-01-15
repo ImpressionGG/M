@@ -451,8 +451,8 @@ function oo = Bode(o)                  % Bode Settings Menu
    setting(o,{'bode.omega.high'},1e7);
    setting(o,{'bode.magnitude.low'},[]);
    setting(o,{'bode.magnitude.high'},[]);
-   setting(o,{'bode.phase.low'},-270);
-   setting(o,{'bode.phase.high'},90);
+   setting(o,{'bode.phase.low'},-360);
+   setting(o,{'bode.phase.high'},0);
    
    setting(o,{'bode.magnitude.enable'},true);
    setting(o,{'bode.phase.enable'},false);
