@@ -39,7 +39,7 @@ function use(tag,version)
       
       version.bluco = 'V1a';
       version.train = 'V1a';
-      version.spm = 'V1d';
+      version.spm = 'V1e1';
       
       version.pll = 'V1a';
       version.kalman = 'V1a';
