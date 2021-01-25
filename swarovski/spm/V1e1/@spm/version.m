@@ -183,6 +183,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add process.contact option
 % - add spm/eig method
 % - multi contact stability analysis
+% - trial to read D matrix
 %
 % Known bugs & wishlist
 % =========================

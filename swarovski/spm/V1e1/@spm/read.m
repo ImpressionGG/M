@@ -140,6 +140,7 @@ function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File
    B = ReadMatrix(fid,'B');
    C = ReadMatrix(fid,'C');
    D = zeros(size(C,1),size(B,2));
+   %D = ReadMatrix(fid,'D');
    
    fclose(fid);
    
