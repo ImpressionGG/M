@@ -529,20 +529,3 @@ function VersionV1G
 % - none so far
 %
 end
-
-function VersionV1GH                                                    
-%
-% Release Notes Corazon/V1H
-% =========================
-%
-% - Improve CORASIM class
-%
-%
-% Change Log V1h1:
-%
-% - starting corazon beta V1h1
-%
-%
-% Known Bugs / Wishlist
-% - none so far
-%
