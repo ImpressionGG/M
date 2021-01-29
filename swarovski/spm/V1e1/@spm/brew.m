@@ -213,6 +213,33 @@ function oo = System(o)                % System Matrices
    oo = Normalize(oo);                 % normalize system
    [A,B,C] = var(oo,'A,B,C');
 
+      % get indices of 1-2-3 components
+      
+   M = size(B,2)/3;  N = size(C,1)/3;
+   if (M ~= round(M) || N ~= round(N))
+      error('input/output number must be multiple of 3');
+   end
+   if (M ~= N)
+      error('same number of inputs and outputs expected');
+   end
+   
+   idx1 = 1+(0:N-1);
+   idx2 = 2+(0:N-1);
+   idx3 = 3+(0:N-1);
+   
+      % swap columns of B and rows of C if swap parameter is set
+      % in this case we have: 1 := y, 2 := -x
+      
+   swapped = get(oo,{'swapped',0});
+   if swapped
+      B_1 = B(:,idx1);  B_2 = B(:,idx2);  
+      C_1 = C(idx1,:);  C_2 = C(idx2,:);
+      B(:,idx1) = B_2;  B(:,idx2) = -B_1;
+      C(idx1,:) = C_2;  C(idx2,:) = -C_1;
+   end
+   
+      % continue regular calculations
+      
    n = floor(length(A)/2);
    i1 = 1:n;  i2 = n+1:2*n;
    
@@ -267,11 +294,18 @@ end
 function oo = Trf(o)                   % Double Transfer Matrix        
    progress(o,'Brewing Double Transfer Matrix ...');
    
-   switch opt(o,{'trf.type','strf'})
+   trftype = opt(o,{'trf.type','strf'});
+   ctbox = opt(o,{'select.controltoolbox',0});
+   
+   switch trftype
       case 'modal'
          oo = TrfModal(o);
       case {'strf','szpk'}
-         oo = TrfDouble(o);
+         if (isequal(trftype,'szpk') && ctbox)
+            oo = TrfCtbox(o);
+         else
+            oo = TrfDouble(o);
+         end
       otherwise
          error('bad selection');
    end
@@ -412,6 +446,95 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
             end
          end
       end
+   end
+end
+function oo = TrfCtbox(o)              % Control Toolbox Transfer Matrix        
+   oo = brew(o,'System');              % brew system matrices
+   
+      % get a1,a0 and M
+      
+   [A,B,C,D,A11,A12,A21,A22,B2,C1] = var(oo,'A,B,C,D,A11,A12,A21,A22,B2,C1');
+   a0 = -diag(A21);
+   a1 = -diag(A22);
+   I = eye(length(a0));  Z = zeros(length(a0));
+   
+   if ~isequal(B2,C1')
+      error('B2 does not match C1');
+   end
+   M = B2;
+   
+      % now since we have a1,a0 and M we can start calculating the transfer
+      % matrix
+   
+   n = length(a0);
+   m = size(M,2);
+   G = matrix(corasim);
+   psi = [1+0*a1(:) a1(:) a0(:)];
+   W = [];
+   
+      % depending on modal form ...
+     
+   Modal(o);
+         
+   progress(o);                        % complete!
+   oo = cache(oo,'trf.G',G);           % store in cache
+   oo = cache(oo,'trf.W',W);           % store in cache
+   oo = cache(oo,'trf.psi',psi);       % store in cache
+       
+   if control(o,'verbose') > 0
+      fprintf('Double Transfer Matrix\n');
+      display(G);
+   end
+   
+   function Modal(o)                   % Gij(s) For Modal Forms        
+      sys = ss(A,B,C,D);
+      Gs = zpk(sys);
+      [z,p,k] = zpkdata(Gs);
+      
+      for (i=1:m)
+         for (j=1:i)
+            run = (j-1)*n+i; mm = n*(n+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,mm,i,j);
+            progress(o,msg,(run-1)/m*100);
+
+               % calculate Gij
+
+            mi = M(:,i)';  mj = M(:,j);
+            wij = (mi(:).*mj(:))';        % weight vector
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+
+            Gij = zpk(G,z{i,j},p{i,j},k(i,j));
+            Gij = CancelG(o,Gij);         % set cancel epsilon
+            
+            if control(o,'verbose') > 0
+               fprintf('G%g%g(s):\n',i,j)
+               display(Gij);
+            end
+
+               % set name, store modal parameters in data and set 
+               % green color option (indicating free system TRF)
+               
+            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+            Gij.data.psiw = [psi,wij(:)];
+            Gij = opt(Gij,'color','g');
+
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+      
+         % characteristic transfer functions
+         
+      Gpsi = set(matrix(corasim),'name','Gpsi[s]');
+      for (k=1:size(psi,1))
+         Gk = trf(Gpsi,1,psi(k,:));
+         Gk = set(Gk,'name',sprintf('G_%g(s)',k));
+         Gpsi = poke(Gpsi,Gk,k,1);
+      end
+      oo = cache(oo,'trf.Gpsi',Gpsi);  
    end
 end
 function oo = TrfModal(o)              % Modal Tranfer Matrix          

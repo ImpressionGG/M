@@ -828,12 +828,16 @@ function oo = Fqr(o)                   % Frequency Response Menu
 end
 function oo = Precision(o)             % Variable Presicion Menu       
    setting(o,{'select.digits'},[]);
+   setting(o,{'select.controltoolbox'},0);
    
    oo = mitem(o,'Precision');
    ooo = mitem(oo,'VPA Digits',{},'select.digits');
    choice(ooo,{{'Off',[]},{},{'VPA 32',32},{'VPA 100',100},...
                {'VPA 200',200},{'VPA 500',500},{'VPA 1000',1000}},...
                {@DigitCb});
+   ooo = mitem(oo,'Use Control Toolbox',{},'select.controltoolbox');
+   check(ooo,{@ControlCb});
+   
    function o = DigitCb(o)
       digs = setting(o,'select.digits');
       if isempty(digs)
@@ -846,6 +850,21 @@ function oo = Precision(o)             % Variable Presicion Menu
             choice(o,'select.digits',[]);
             message(o,'Selection rejected!',...
                       {'Seems that Symbolic Toolbox is not supported!'});
+         end
+      end
+   end
+   function o = ControlCb(o)
+      ctbox = setting(o,'select.controltoolbox');
+      if (ctbox == 0)
+         CacheReset(o);
+      else
+         try
+            sys = ss(1,1,1,1);
+            CacheReset(o);
+         catch
+            check(o,'select.controltoolbox',0);
+            message(o,'Selection rejected!',...
+                      {'Seems that Control Toolbox is not supported!'});
          end
       end
    end

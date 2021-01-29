@@ -10,7 +10,8 @@ function oo = study(o,varargin)        % Do Some Studies
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @Step,@Ramp,...
-                       @PhiDouble,@PhiRational,@TrfmDouble,@TrfmRational,...
+                       @PhiDouble,@PhiRational,...
+                       @TrfmDouble,@TrfmRational,@TrfmInversion,...
                        @Quick,@Modal1,@Modal2,@Modal3,...
                        @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
@@ -29,6 +30,7 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'Transfer Matrix');
    ooo = mitem(oo,'Double',{@WithCuo,'TrfmDouble'});
    ooo = mitem(oo,'Rational',{@WithCuo,'TrfmRational'});   
+   ooo = mitem(oo,'Inversion',{@WithCuo,'TrfmInversion'});   
 
    oo = mitem(oo,'-');
    oo = mitem(o,'Step Response');
@@ -231,6 +233,29 @@ function o = TrfmRational(o)           % Rational Transfer Matrix
       comment{i} = str(i,:);
    end
    message(o,'Transfer Function G(1,1)',comment);
+end
+function o = TrfmInversion(o)          % Inversion Based Transfer Matrix        
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+      % calculate G31(s)
+      
+   [A,B,C,C_3,B_1,CP,DP,N0,M0] = cook(o,'A,B,C,C_3,B_1,CP,DP,N0,M0');
+   poles = eig(A);
+   
+      % invert system for calculation of zeros
+
+   Ai = A - B_1*inv(DP)*CP;
+   zeros = eig(Ai);
+   
+      % use control toolbox
+   
+   S = ss(A,B_1,C_3,0);
+   G = zpk(S);
+   [z,p,k] = zpkdata(G);
+   z = z{1};  p = p{1};   
 end
 
 %==========================================================================

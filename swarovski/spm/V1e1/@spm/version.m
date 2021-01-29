@@ -186,6 +186,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - trial to read D matrix
 % - read swapped parameter into package info and upgrade spm objects
 % - upgrade bug fixed
+% - consult control toolbox for zpk conversion
 %
 % Known bugs & wishlist
 % =========================
