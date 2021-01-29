@@ -128,7 +128,7 @@ function G = tffnew(num,den,char,Ts,arg5)
          if ( nargin == 2 )
             G = tffnew(numden(1,:),numden(2,:),den);         
          elseif ( nargin == 3 )
-            if isdouble(num) && iscell(den) && iscell(char)
+            if isa(num,'double') && iscell(den) && iscell(char)
                G = tfffac(num,den,char);
             else
                G = tffnew(numden(1,:),numden(2,:),den,char);         

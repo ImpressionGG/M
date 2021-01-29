@@ -42,28 +42,51 @@ end
 function oo = ReadSpmSpm(o)            % Read Driver for SPM Data      
    path = arg(o,1);                    % get path arg
    lines = snif(o,path,1);
-   
+   oo = [];                            % init empty by default
+         
+   if ~isempty(strfind(lines{1},'State-Space'))
+      
       % SPM1 format is characterized by a header line
       % containing the string 'State-Space'
-      
-   if ~isempty(strfind(lines{1},'State-Space'))
+
       oo = ReadSpm1Spm(o);
-      return
-   end
-   
+       
+   elseif ~isempty(strfind(lines{1},'BEGIN ANSOFT HEADER'))
+      
       % SPM2 format is characterized by a header line
       % containing the string 'BEGIN ANSOFT HEADER'
       
-   if ~isempty(strfind(lines{1},'BEGIN ANSOFT HEADER'))
       oo = ReadSpm2Spm(o);
-      return
    end
    
       % otherwise no idea how to import file
+
+   if isempty(oo)
+      message(o,'No idea how to import file!',{['Path: ',path]});
+      return
+   end
+   
+      % upgrade object if possible
       
-   message(o,'No idea how to import file!',...
-             {['Path: ',path]});
-   oo = [];
+   package = get(oo,{'package',''});
+   if ~isempty(package)
+      so = pull(o);                    % pull shell object
+      po = [];                         % init empty package object
+      for (i=1:length(so.data))
+         oi = so.data{i};
+         if (type(oi,{'pkg'}) && isequal(get(oi,'package'),package))
+            po = oi;                   % found package object
+            break;
+         end
+      end
+      
+      if ~isempty(po)
+         swapped = get(po,'swapped');
+         if ~isempty(swapped)
+            oo = set(oo,'swapped',swapped);
+         end
+      end
+   end
 end
 function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File   
    talk = (control(o,'verbose') >= 3);

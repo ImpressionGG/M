@@ -776,11 +776,11 @@ function oo = Motion(o)                % Add Motion Menu Items
    ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
         choice(ooo,[0.02 0.01 0.005],{});
 end
-function oo = Contact(o)               % Add Contact Menu Items
+function oo = Contact(o)               % Add Contact Menu Items        
    setting(o,{'process.contact'},0);   % single contact
    
    oo = mitem(o,'Contact',{},'process.contact');
-   choice(oo,{{'Single',0},{'Multi',1}},{});
+   choice(oo,{{'Center',0},{'Multi',inf}},{});
 end
 function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');
@@ -990,6 +990,7 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
    if isequal(fid,-1)
       return                           % file not found / cannot open file
    end
+   swapped = 0;                        % init by default
    
    comment = get(o,{'comment',{}});
    while (1)
@@ -1004,6 +1005,15 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
          end
          
          comment{end+1} = line;
+         
+            % search for key 'swapped:' and if found set 'swapped'
+            % parameter
+            
+         key = 'swapped:';             % key to search
+         idx = strfind(line,key);
+         if ~isempty(idx)
+            swapped = sscanf(line(idx+length(key):end),'%f');
+         end
       else
          break
       end
@@ -1011,4 +1021,7 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
    
    fclose(fid);
    oo = set(o,'comment',comment);
+   if (swapped)
+      oo = set(oo,'swapped',1);
+   end
 end
