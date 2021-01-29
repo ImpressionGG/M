@@ -185,6 +185,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - multi contact stability analysis
 % - trial to read D matrix
 % - read swapped parameter into package info and upgrade spm objects
+% - upgrade bug fixed
 %
 % Known bugs & wishlist
 % =========================

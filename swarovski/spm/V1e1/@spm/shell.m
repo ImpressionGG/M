@@ -91,6 +91,26 @@ function oo = Import(o)                % Import Menu Items
       collect(o,{},table);             % only default table
 
       list = collect(o);               % collect files in directory
+      
+         % upgrade object if possible
+
+      if (~isempty(list) && type(list{end},{'pkg'}))
+         po = list{end};
+         swapped = get(po,'swapped');
+         if ~isempty(swapped)
+            for (j=1:length(list)-1)   
+               oo = list{j};
+               if type(oo,{'spm'})
+                  package = get(oo,{'package',''});
+                  if isequal(package,get(po,'package'))
+                     oo = set(oo,'swapped',swapped);
+                  end
+               end
+               list{j} = oo;
+            end
+         end
+      end
+      
       paste(o,list);
       
       plot(current(o),'About');
