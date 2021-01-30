@@ -86,8 +86,8 @@ function txt = display(o)              % Display Corasim Object
          end
             
       case {'szpk','zzpk','qzpk','psiw'}
-         o = trf(o);                   % cast to trf type
-         [num,den] = peek(o);
+         oo = trf(o);                  % cast to trf type
+         [num,den] = peek(oo);
          if (nargout > 0)
             try
                txt = Ratio(o);
@@ -497,7 +497,12 @@ function list = PoleZero(o,num,den)         % Display Poles & Zeros
       list = {sprintf('Gain: %g',V)};
    end
 
-   [r_num,r_den,K] = zpk(o,num,den);
+   if type(o,{'szpk'})
+      [r_num,r_den,K] = zpk(o);
+   else
+      [r_num,r_den,K] = zpk(o,num,den);
+   end
+   
    deg_num = length(r_num);
    deg_den = length(r_den);
    spc = setstr(' '+zeros(1,200));

@@ -20,14 +20,16 @@ function [V,lambda] = gain(o)
       o = trf(o);                      % convert to transfer function
    end
    
-   if ~type(o,{'strf','qtrf'})
+   if type(o,{'strf','qtrf'})
+      [V,lambda] = TrfGain(o);
+   elseif type(o,{'szpk'})
+      [V,lambda] = ZpkGain(o);
+   else
       error('only types strf, qtrf, css and modal are supported');
    end
-   
-   [V,lambda] = Gain(o);
 end
 
-function [V,lambda] = Gain(o)          % Calculation of Gain and Lambda
+function [V,lambda] = TrfGain(o)       % Calculation of Gain and Lambda
    assert(type(o,{'strf','qtrf'}));
    
    o = trim(o);
@@ -66,4 +68,23 @@ function [V,lambda] = Gain(o)          % Calculation of Gain and Lambda
    end
    
    V = num(end)/den(end);
+end
+function [V,lambda] = ZpkGain(o)       % Calculation of Gain and Lambda
+   assert(type(o,{'szpk'}));
+   
+   [z,p,k] = zpk(o);
+   lambda = 0;
+   idx = find(z==0);
+   lambda = lambda - length(idx);
+   if ~isempty(idx)
+      z(idx) = [];
+   end
+   
+   idx = find(p==0);
+   lambda = lambda + length(idx);
+   if ~isempty(idx)
+      p(idx) = [];
+   end
+   
+   V = k*prod(-z)/prod(-p);
 end
