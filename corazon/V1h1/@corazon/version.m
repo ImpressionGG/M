@@ -525,6 +525,7 @@ function VersionV1G
 % - corasim/mrdivide to preserve type if one operand is a double
 % - corasim/gain adapted for zpk representations
 % - corasim/fqr adaption for zpk representations
+% - SPM toolbox running with smaller cancel epsilon
 %
 %
 % Known Bugs / Wishlist

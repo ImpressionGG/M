@@ -481,7 +481,7 @@ function oo = TrfCtbox(o)              % Control Toolbox Transfer Matrix
    oo = cache(oo,'trf.W',W);           % store in cache
    oo = cache(oo,'trf.psi',psi);       % store in cache
        
-   if control(o,'verbose') > 0
+   if (control(o,'verbose') >= 2)
       fprintf('Double Transfer Matrix\n');
       display(G);
    end
@@ -507,7 +507,7 @@ function oo = TrfCtbox(o)              % Control Toolbox Transfer Matrix
             Gij = zpk(G,z{i,j},p{i,j},k(i,j));
             Gij = CancelG(o,Gij);         % set cancel epsilon
             
-            if control(o,'verbose') > 0
+            if control(o,'verbose') >= 2
                fprintf('G%g%g(s):\n',i,j)
                display(Gij);
             end
@@ -662,7 +662,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       trftype = opt(o,{'trf.type','szpk'});
       if isequal(trftype,'szpk');
 %        [P,Q] = ModalZpkPQ(o); 
-         [P,Q] = ModalTrfPQ(o); 
+         [P,Q] = ZpkPQ(o); 
+%        [P,Q] = ModalTrfPQ(o); 
       else
          [P,Q] = ModalTrfPQ(o); 
       end
@@ -694,6 +695,9 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
    if ~isinf(K0)
       S0 = 1/(1+K0*L0);                % closed loop sensitivity
+      if type(L0,{'szpk'})
+         S0 = zpk(S0);
+      end
       T0 = S0*K0*L0;                   % total TRF
    else                                % use K0 = 1 instead
       S0 = 1/(1+L0);                   % closed loop sensitivity
@@ -786,6 +790,11 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
          progress(o);                  % progress complete
       end
    end
+   function [P,Q] = ZpkPQ(o)           % P(s)/Q(s) For Zpk Forms     
+      [G31,G33] = cook(o,'G31,G33');
+      P = set(G31,'name','P(s)');
+      Q = set(G33,'name','Q(s)');
+   end
    function [P,Q] = ModalZpkPQ(o)      % P(s)/Q(s) For Modal Forms     
       psi = [ones(n,1) a1(:) a0(:)];
 
@@ -871,7 +880,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       end
    end
    function [P,Q,F0] = Normalize(o,P,Q)% Normalize P(s) and Q(s)       
-      V0 = fqr(Q,0);                      % gain of P
+%     V0 = fqr(Q,0);                   % gain of Q
+      V0 = gain(Q);                    % gain of Q
 
          % calculate normalizing factor F0(s)
 
@@ -894,7 +904,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    %
    % CALCL0    Calculate L0(s) = P(s)/Q(s)
    %
-      P = CancelG(o,P);                   % set cancel epsilon
+      P = CancelL(o,P);                   % set cancel epsilon
+%     P = CancelG(o,P);                   % set cancel epsilon
       Q = CancelL(o,Q);                   % set cancel epsilon
 
       L0 = P/Q;
@@ -1051,6 +1062,7 @@ function oo = Inverse(o)               % Brew Inverse Cache Segment
 %      find a state space representation (5a,5b,5c) for the principal
 %      transfer function (4) which is invertible.
 %     
+   assert(0);
 end
 
 %==========================================================================

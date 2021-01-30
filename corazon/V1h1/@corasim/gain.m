@@ -87,4 +87,7 @@ function [V,lambda] = ZpkGain(o)       % Calculation of Gain and Lambda
    end
    
    V = k*prod(-z)/prod(-p);
+   if (abs(imag(V)/real(V)) < eps)
+      V = real(V);
+   end
 end
