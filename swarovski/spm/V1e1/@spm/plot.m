@@ -20,7 +20,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @Hs,@Consr,@HsRloc,@HsStep,@HsBode,@PsQs,...
                    @PsQsRloc,@PsQsStep,@PsQsBode,@PsQsNyq,@PsQsBodeNyq,...
                    @PsQsOverview,@PsQsNormalizing,@Critical,@T0S0,...
-                   @G31G33L0,@L0Shell,...
+                   @G31G33L0,@L0Shell,@MagniPhase,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
                    @Stability,...
@@ -115,7 +115,7 @@ function oo = TransferMatrix(o)        % Transfer Matrix Menu
    [~,m] = size(B);
    [l,~] = size(C);
    
-   oo = mhead(o,'Free Transfer Matrix');
+   oo = mhead(o,'Free System');
    ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'GsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithSpm,'GsStep'});
    ooo = mitem(oo,'-');
@@ -156,7 +156,7 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
    [~,m] = size(B);
    [l,~] = size(C);
    
-   oo = mhead(o,'Constrained Tansfer Matrix');
+   oo = mhead(o,'Constrained System');
    ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'HsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
    ooo = mitem(oo,'-');
@@ -193,23 +193,38 @@ function oo = ConstrainMatrix(o)       % Transfer Matrix Menu
 end
 function oo = Principal(o)             % Pricipal Menu                 
    oo = current(o);
-   oo = mhead(o,'Principal Transfer Functions');
+   oo = mhead(o,'Principal System');
    ooo = mitem(oo,'Overview',{@WithSpm,'PsQsOverview'});
    ooo = mitem(oo,'Normalizing',{@WithSpm,'PsQsNormalizing'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'PsQsRloc'});
    ooo = mitem(oo,'Step Responses',{@WithSpm,'PsQsStep'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Bode Plots',{@WithSpm,'PsQsBode'});
+   ooo = mitem(oo,'Magnitude Plots',{@WithSpm,'PsQsBode'});
    ooo = mitem(oo,'Nyquist Plots',{@WithSpm,'PsQsNyq'});
 
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'P(s)',{@WithSpm,'PsQs',1,0});
-   ooo = mitem(oo,'Q(s)',{@WithSpm,'PsQs',2,0});
-   ooo = mitem(oo,'F0(s)',{@WithSpm,'PsQs',3,0});
+   ooo = mitem(oo,'P(s)');
+   oooo = mitem(ooo,'Overview',{@WithSpm,'PsQs',1,0});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Bode Plot',{@WithSpm,'MagniPhase','P'});
+   
+   ooo = mitem(oo,'Q(s)');
+   oooo = mitem(ooo,'Overview',{@WithSpm,'PsQs',2,0});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Bode Plot',{@WithSpm,'MagniPhase','Q'});
+
+   ooo = mitem(oo,'F0(s)');
+   oooo = mitem(ooo,'Overview',{@WithSpm,'PsQs',3,0});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Bode Plot',{@WithSpm,'MagniPhase','F0'});
+   
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'L0(s) = P(s)/Q(s)',{@WithSpm,'PsQs',0,0});
-   ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithSpm,'G31G33L0'});
+   ooo = mitem(oo,'L0(s)');
+   oooo = mitem(ooo,'L0(s) = P(s)/Q(s)',{@WithSpm,'PsQs',0,0});
+   oooo = mitem(ooo,'L0(s) = G31(s)/G33(s)',{@WithSpm,'G31G33L0'});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Bode Plot',{@WithSpm,'MagniPhase','L0'});
 end
 function oo = CriticalLoop(o)          % Critical Loop Menu            
    oo = mitem(o,'Critical Loop');
@@ -605,24 +620,52 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
       oo = opt(o,'variation.omega',1);
       oo = opt(oo,'variation.zeta',1);
       oo = Eigen(oo);                  % nominal system eigenvalues
-      [real,imag] = var(oo,'real,imag');   
-      plot(o,real,imag,'Ko');
+      [re,im] = var(oo,'real,imag');   
+      plot(o,re,im,'Ko');
       hold on
-      plot(o,real,imag,'K.');
+      plot(o,re,im,'K.');
    end
    
    oo = Eigen(o);                      % calc eigenvalues
-   [real,imag] = var(oo,'real,imag');
+   [lambda,re,im] = var(oo,'lambda,real,imag');
 
-   plot(o,real,imag,'Ko');
+   plot(o,re,im,'Ko');
    hold on;
-   plot(o,real,imag,'rp');
-   plot(o,real,imag,'rh');
-   plot(o,real,imag,'r.');
+   plot(o,re,im,'rp');
+   plot(o,re,im,'rh');
+   plot(o,re,im,'r.');
 
    title('Eigenvalues in Complex Plane');
    xlabel('real part');  ylabel('imaginary part');
 
+   [~,idx] = sort(abs(lambda));
+   lambda = lambda(idx);
+   
+      % for an eigen value pair we have:
+      % (s-s1)*(s+s1) = (s-re+i*im)*(s-re-i*im) = (s-re)^2 + im^2
+      % (s-s1)*(s+s1) = s^2 -2*re*s + (re^2+im^2) = s^2 + 2*zeta*om*s +om^2
+      % => om = sqrt(re^2+im^2) = abs(s1) = abs(s2)
+      % => zeta = -re/om
+      
+   for (i=1:length(lambda)/2)
+      s = lambda(2*i);
+      om = abs(s);
+      f = om/2/pi;
+      zeta = -real(s)/om;
+      percent = zeta*100;
+      
+      if (i < 10)
+         num = '  #';
+      elseif (i < 100)
+         num = ' #';
+      else
+         num = '#';
+      end
+      
+      fprintf('   %s%g: f = %g Hz, omega = %g 1/s, zeta = %g  (%g%%)\n',...
+              num,i,  f,om, zeta,o.rd(percent,2));
+   end
+   
 %  set(gca,'DataAspectRatio',[1 1 1]);
    heading(o);
 end
@@ -1525,7 +1568,40 @@ function o = T0S0(o)                   % T0(s), S0(s)
     
    heading(o);
 end
-
+function o = MagniPhase(o)             % Magnitude/Phase Plot               
+   sym = arg(o,1);
+   G = cook(o,sym);
+   
+   diagram(o,'Magni','',G,211);
+   diagram(o,'Phase','',G,212);
+   
+   CriticalFrequency(o,{o},211);
+   CriticalFrequency(o,{o},212);
+   
+   heading(o);
+end
+function o = PsBode(o)                 % L0(s) Bode Plot               
+   L0 = cook(o,'L0');
+   
+   diagram(o,'Magni','',L0,211);
+   diagram(o,'Phase','',L0,212);
+   
+   CriticalFrequency(o,{o},211);
+   CriticalFrequency(o,{o},212);
+   
+   heading(o);
+end
+function o = L0Bode(o)                 % L0(s) Bode Plot               
+   L0 = cook(o,'L0');
+   
+   diagram(o,'Magni','',L0,211);
+   diagram(o,'Phase','',L0,212);
+   
+   CriticalFrequency(o,{o},211);
+   CriticalFrequency(o,{o},212);
+   
+   heading(o);
+end
 %==========================================================================
 % Plot Open Loop Transfer Matrix L(s)
 %==========================================================================
@@ -2326,15 +2402,15 @@ function oo = Eigen(o)                 % Calc System Eigenvalues
    oo = brew(o,'Variation');           % apply system variation
    A = data(oo,'A');
    
-   ev = eig(A);                        % eigenvalues (EV)
-   i = 1:length(ev);                   % EV index 
-   x = real(ev);                       % real value
-   y = imag(ev);                       % imag value
-   [~,idx] = sort(abs(imag(ev)));
+   s = eig(A);                         % eigenvalues (EV)
+   i = 1:length(s);                    % EV index 
+   x = real(s);                        % real value
+   y = imag(s);                        % imag value
+   [~,idx] = sort(abs(imag(s)));
    
       % store calculated stuff in var space
       
-   oo = var(oo,'index,real,imag',i,x(idx),y(idx));
+   oo = var(oo,'lambda,index,real,imag',s,i,x(idx),y(idx));
 end
 function title = Title(o)              % Get Object Title              
    title = get(o,{'title',[class(o),' object']});

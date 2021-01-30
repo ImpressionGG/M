@@ -187,6 +187,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - read swapped parameter into package info and upgrade spm objects
 % - upgrade bug fixed
 % - consult control toolbox for zpk conversion
+% - bode plot for L0(s)
 %
 % Known bugs & wishlist
 % =========================

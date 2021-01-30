@@ -17,6 +17,8 @@ function oo = diagram(o,varargin)
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
 %              diagram(o,'Stability','L1',L1,sub)     % stability analysis
 %              diagram(o,'Bode','G11',G11,sub)        % bode diagram
+%              diagram(o,'Magni','G11',G11,sub)       % magnitude diagram
+%              diagram(o,'Phase','G11',G11,sub)       % phase diagram
 %              diagram(o,'Nyq','G11',G11,sub)         % Nyquist diagram
 %              diagram(o,'Numeric','G11',G11,sub)     % numeric quality
 %              diagram(o,'Calc','L1',L1,sub)          % calculation diagram
@@ -30,7 +32,8 @@ function oo = diagram(o,varargin)
 %
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
                        @Mode,@Orbit,@Trf,@Weight,@Numeric,@Stability,...
-                       @Step,@Vstep,@Astep,@Fstep,@Bode,@Nyq,@Rloc,@Calc);
+                       @Step,@Vstep,@Astep,@Fstep,@Bode,@Magni,@Phase,...
+                       @Nyq,@Rloc,@Calc);
    oo = gamma(oo);
 end
 
@@ -337,7 +340,23 @@ function o = Bode(o)                   % Bode Diagram
    end
    hold on;
 end
-function o = GoodBode(o)               % Bode Diagram                  
+function o = Magni(o)                  % Magnitude Diagram               
+   o = opt(o,'magnitude.enable',1,'phase.enable',0);
+   o = Bode(o);
+
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
+   title([sym,': Magnitude Plot']);
+end
+function o = Phase(o)                  % Phase Diagram                  
+   o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
+   o = Bode(o);
+
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
+   title([sym,': Phase Plot']);
+end
+function o = GoodBode(o)               % Bode Diagram
    o = Scaling(o);                     % manage scaling factors
    
    sub = o.either(arg(o,3),[1 1 1]);
