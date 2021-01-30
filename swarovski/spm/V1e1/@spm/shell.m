@@ -468,7 +468,7 @@ function oo = Scale(o)                 % Scale Sub-Menu
 end
 function oo = Bode(o)                  % Bode Settings Menu            
    setting(o,{'bode.omega.low'},1e2);
-   setting(o,{'bode.omega.high'},1e7);
+   setting(o,{'bode.omega.high'},1e6);
    setting(o,{'bode.magnitude.low'},[]);
    setting(o,{'bode.magnitude.high'},[]);
    setting(o,{'bode.phase.low'},-360);
@@ -797,10 +797,17 @@ function oo = Motion(o)                % Add Motion Menu Items
         choice(ooo,[0.02 0.01 0.005],{});
 end
 function oo = Contact(o)               % Add Contact Menu Items        
-   setting(o,{'process.contact'},0);   % single contact
+   setting(o,{'process.contact'},inf); % multi contact
    
    oo = mitem(o,'Contact',{},'process.contact');
    choice(oo,{{'Center',0},{'Multi',inf}},{});
+end
+function oo = Ignore(o)                % Add Ignore Menu Items         
+   setting(o,{'ignore.swapped'},0);
+   
+   oo = mitem(o,'Ignore');
+   ooo = mitem(oo,'Swapped',{},'ignore.swapped');
+   check(ooo,{@CacheReset});
 end
 function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');
@@ -811,6 +818,7 @@ function oo = Internal(o)              % Internal Menu
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Filter(oo);                   % add Filter sub menu
    ooo = Contact(oo);                  % add Contact sub menu
+   ooo = Ignore(oo);                   % add ignore sub menu
 end
 function oo = Trf(o)                   % Transfer Function Menu        
    setting(o,{'trf.type'},'szpk');
@@ -906,6 +914,7 @@ function oo = CacheReset(o)            % Reset All Caches
    
 %  control(o,'refresh',callback);      % restore refresh callback
    refresh(o);
+   oo = o;
 end
 
 %==========================================================================

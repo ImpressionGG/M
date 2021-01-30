@@ -34,6 +34,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - loading and analysis of packages
 % - cook method to access all important interna data
 % - trial to implement VPA for TRF add
+% - proper defaults
 %
 % Features SPM/V1D
 % ================

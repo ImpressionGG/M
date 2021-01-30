@@ -231,7 +231,8 @@ function oo = System(o)                % System Matrices
       % in this case we have: 1 := y, 2 := -x
       
    swapped = get(oo,{'swapped',0});
-   if swapped
+   ignore = opt(oo,{'ignore.swapped',0});
+   if (swapped && ~ignore)
       B_1 = B(:,idx1);  B_2 = B(:,idx2);  
       C_1 = C(idx1,:);  C_2 = C(idx2,:);
       B(:,idx1) = B_2;  B(:,idx2) = -B_1;
