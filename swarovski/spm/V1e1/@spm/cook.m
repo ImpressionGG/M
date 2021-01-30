@@ -17,6 +17,9 @@ function varargout = cook(o,sym)
 %          [C1,C2]   = cook(o,'C1,C2');     % partial matrices
 %
 %       Input/Output Matrices of Multivariable Systems
+%       note: 
+%          [A,B_1,C_3]: representation of G31(s) transfer matrix
+%          [A,B_3,C_3]: representation of G33(s) transfer matrix
 %
 %          [B_1,B_2,B_3] = cook(o,'B_1,B_2,B_3');
 %          [C_1,C_2,C_3] = cook(o,'C_1,C_2,C_3');

@@ -111,9 +111,9 @@ function oo = TransferFunction(o)      % Transfer Function Menu
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
-   [B,C] = data(oo,'B,C');
-   [~,m] = size(B);
-   [l,~] = size(C);
+   [B2,C1] = cook(oo,'B2,C1');
+   [~,m] = size(B2);
+   [l,~] = size(C1);
    
    oo = mhead(o,'Free System');
    ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'GsRloc'});

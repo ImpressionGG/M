@@ -17,7 +17,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %           oo = brew(o,'Nyq')         % brew nyquist stuff
 %
-%        The following cache segments are here by managed:
+%        The following cache segments are managed by brew:
 %
 %           'trf'                           % free system TRFs
 %           'consd'                         % constrained system TRFs
@@ -223,9 +223,9 @@ function oo = System(o)                % System Matrices
       error('same number of inputs and outputs expected');
    end
    
-   idx1 = 1+(0:N-1);
-   idx2 = 2+(0:N-1);
-   idx3 = 3+(0:N-1);
+   idx1 = 1+3*(0:N-1);
+   idx2 = 2+3*(0:N-1);
+   idx3 = 3+3*(0:N-1);
    
       % swap columns of B and rows of C if swap parameter is set
       % in this case we have: 1 := y, 2 := -x
@@ -238,6 +238,19 @@ function oo = System(o)                % System Matrices
       C(idx1,:) = C_2;  C(idx2,:) = -C_1;
    end
    
+      % calculate center indices
+      % N = 1: cidx = 1:3
+      % N = 2: cidx = 1:3
+      % N = 3: cidx = 4:6  => 3*floor((N-1)/2) + (1:3)
+      % N = 4: cidx = 4:6
+      % N = 5: cidx = 7:9
+      
+   if (rem(N,2) ~= 1)
+      error('number of articles on apparatus must be odd');
+   end
+   cdx = 3*floor((N-1)/2) + (1:3);
+   idx0 =  (N+1)/2;                      % center index
+      
       % continue regular calculations
       
    n = floor(length(A)/2);
@@ -246,8 +259,8 @@ function oo = System(o)                % System Matrices
    A11 = A(i1,i1);  A12 = A(i1,i2);
    A21 = A(i2,i1);  A22 = A(i2,i2);
   
-   B1 = B(i1,:);  B2 = B(i2,:);   
-   C1 = C(:,i1);  C2 = C(:,i2);
+   B1 = B(i1,cdx);  B2 = B(i2,cdx);   
+   C1 = C(cdx,i1);  C2 = C(cdx,i2);
   
    if (norm(B2-C1') ~= 0)
       fprintf('*** warning: B2 differs from C1''!\n');
@@ -259,9 +272,16 @@ function oo = System(o)                % System Matrices
       % state space representation of L0(s)
       
    N = floor(size(C,1)/3);
-   idx = 0:3:3*(N-1);
-   B_1 = B(:,idx+1);  B_2 = B(:,idx+2);  B_3 = B(:,idx+3);
-   C_1 = C(idx+1,:);  C_2 = C(idx+2,:);  C_3 = C(idx+3,:);
+   B_1 = B(:,idx1);  B_2 = B(:,idx2);  B_3 = B(:,idx3);
+   C_1 = C(idx1,:);  C_2 = C(idx2,:);  C_3 = C(idx3,:);
+   
+      % collapse B_i and C_j to a sibngle column or single row
+      % if contact option is zero
+      
+   if (opt(o,{'process.contact',0}) == 0)
+      B_1 = B_1(:,idx0);  B_2 = B_2(:,idx0);  B_3 = B_3(:,idx0);
+      C_1 = C_1(idx0,:);  C_2 = C_2(idx0,:);  C_3 = C_3(idx0,:);
+   end
    
    N0 = sqrtm(inv(C_3*A*B_3));
    M0 = sqrtm(-inv(C_3*inv(A)*B_3));
