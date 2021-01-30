@@ -12,7 +12,7 @@ function oo = study(o,varargin)        % Do Some Studies
                        @Step,@Ramp,...
                        @PhiDouble,@PhiRational,...
                        @TrfmDouble,@TrfmRational,@TrfmInversion,...
-                       @Quick,@Modal1,@Modal2,@Modal3,...
+                       @Quick,@Modal1,@Modal2,@Modal3,@Bilinear,...
                        @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
 end
@@ -59,6 +59,10 @@ function oo = Menu(o)                  % Setup Study Menu
    ooo = mitem(oo,'Modal 2',{@Modal2});
    ooo = mitem(oo,'Modal 3',{@Modal3});
  
+   oo = mitem(o,'Bilinear');
+   ooo = mitem(oo,'L0(s) Pole Transformation',{@WithCuo,'Bilinear'},'P');
+   ooo = mitem(oo,'L0(s) Zero Transformation',{@WithCuo,'Bilinear'},'Z');
+   
    oo = mitem(o,'-');
    oo = mitem(o,'Motion');
    ooo = mitem(oo,'Motion Overview',{@WithCuo,'MotionOverview'});
@@ -753,6 +757,39 @@ function o = Modal3(o)                 % Modal Representation 3
 end
 
 %==========================================================================
+% Bilinear Transformation
+%==========================================================================
+
+function o = Bilinear(o)  
+   mode = arg(o,1);
+   L0 = cook(o,'L0');
+   [zeros,poles,k] = zpk(L0);
+   
+   col = {'r','g','m','bc','yyr'};
+   
+   Om0 = [10 20 100 1000];
+   for (i=1:length(Om0))
+      switch mode
+         case 'P'
+            z = (Om0(i)+poles) ./ (Om0(i)-poles);
+         case 'Z'
+            z = (Om0(i)+zeros) ./ (Om0(i)-zeros);
+      end
+      subplot(o,121);
+      plot(o,1:length(z),abs(z),[col{i},'1']);
+      hold on;
+      subplot(o);
+      
+      subplot(o,122);
+      plot(o,real(z),imag(z),[col{i},'p']);
+      hold on
+      plot(o,real(z.^200),imag(z.^200),[col{i},'p']);
+      set(gca,'DataAspectRatio',[1 1 1]);
+      subplot(o);
+   end
+end
+
+%==========================================================================
 % Motion Overview
 %==========================================================================
 
@@ -764,7 +801,7 @@ function o = MotionOverview(o)         % Motion Overview
    oo.par.title = 'Motion Overview';
    motion(oo,'Overview');
 end
-function o = MotionProfile(o)          % Plot Motion Profile
+function o = MotionProfile(o)          % Plot Motion Profile           
    oo = inherit(type(corasim,'motion'),o);
    oo = data(oo,opt(o,'motion'));
    plot(oo);

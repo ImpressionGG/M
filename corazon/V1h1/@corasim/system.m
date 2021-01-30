@@ -255,6 +255,11 @@ function oo = Tf2ss(o)
 %        the Signal Processing Toolbox.  However, this function only handles
 %        single-input single-output systems.
 %
+   if type(o,{'szpk'})
+      oo = Zpk2ss(o);
+      return
+   end
+   
    [num,den] = peek(o);                % peek numerator/denominator
    
       % null system - Both numerator and denominator are empty
@@ -341,3 +346,151 @@ function oo = Tf2ss(o)
          error('bad type');
    end
 end
+
+%==========================================================================
+% ZPK to a State Space System
+%==========================================================================
+
+function oo = Zpk2ss(o)
+%
+% ZPK2SS    Convert ZPK to State Space Representation
+%
+%              oo = Zpk2ss(o)
+%
+%           Theory:
+%
+%                     s2 + b1*s + b0                  s2 + p1*s + p0
+%           G1(s) = ------------------       G2(s) = -----------------
+%                     s2 + a1*s + a0                  s2 + q1*s + q0
+%
+%           x1` = A1*x1 + B1*u          x2` = A2*x2 + B2*z 
+%           z   = C1*x1 + D1*u          y   = C2*x2 + D2*z
+%
+%           x2` = A2*x2 + B2*(C1*x1 + D1*u)
+%            y  = C2*x2 + D2*(C1*x1 + D1*u)
+%
+%        [x1`]   [ A1     0 ]   [x1]   [ B1  ]
+%        [   ] = [          ] * [  ] + [     ] * u
+%        [x2`]   [B2*C1   A2]   [x2]   [B2*D1]
+%
+%                               [x1]
+%        y     = [D2*C1   C2] * [  ] +  D2*D1*u
+%                               [x2]
+%
+%        a) representation of 2/2 system
+%
+%                     s2 + b1*s + b0            (b1-a1)*s + (b0-a0)
+%            G(s) = ------------------  =  1 + ---------------------
+%                     s2 + a1*s + a0             s2 + a1*s + a0
+%
+%        [x1`]   [ 0     1 ]   [x1]   [ 0 ]
+%        [   ] = [         ] * [  ] + [   ] * u
+%        [x2`]   [-a0   -a1]   [x2]   [ 1 ]
+%
+%                              [x1]
+%          y   = [ b0    b1] * [  ] +   1   * u
+%                              [x2]
+%
+%        and for a complex pole/zero pair z,z' and p,p':
+%
+%        (s-z)*(s-z') = s2 - s(z+z') + z*z' => b1 = -z-z', b0 = z*z' 
+%        (s-p)*(s-p') = s2 - s(p+p') + p*p' => a1 = -p-p', a0 = p*p' 
+%
+%        b) representation of 0/2 system
+%
+%                            1
+%            G(s) = ------------------
+%                     s2 + a1*s + a0
+%
+%        [x1`]   [ 0     1 ]   [x1]   [ 0 ]
+%        [   ] = [         ] * [  ] + [   ] * u
+%        [x2`]   [-a0   -a1]   [x2]   [ 1 ]
+%
+%                              [x1]
+%          y   = [ 1     0 ] * [  ] +   0   * u
+%                              [x2]
+   assert(type(o,{'szpk'}));
+   [zeros,poles,K] = zpk(o);
+   
+   m = length(zeros);
+   n = length(poles);
+   
+   if (rem(m,2) ~= 0 || rem(n,2) ~= 0)
+      error('even number of poles/zeros expected');
+   end
+   
+      % sort zeros and poles
+      
+   zeros = Sort(zeros);
+   poles = Sort(poles);
+   
+      % build up system matrices
+   
+   A = [];  B = [];  C  = [];  D = [];
+   
+   if (m > n)
+      error('transfer function not proper, cannot proceed');
+   elseif (n == 0)
+      oo = system(o,A,B,C,K);
+      return
+   end
+   
+   for (i=1:2:n)
+      A1 = A;  B1 = B;  C1 = C;  D1 = D;
+      
+      [a0,a1] = Coeff(poles(i),poles(i+1));
+      
+      if (i < m)              % zeros available
+         [b0,b1] = Coeff(zeros(i),zeros(i+1));
+         b0 = b0-a0;  b1 = b1 - a1;
+         D2 = 1;
+      else
+         b0 = 1;  b1 = 0;
+         D2 = 0;
+      end
+      
+      A2 = [0 1; -a0 -a1]; B2 = [0;1]; C2 = [b0 b1];
+      
+         % compose next bigger system matrices
+         
+      if isempty(A1)
+         A = A2;  B = B2;  C = K*C2;  D = K*D2;
+      else
+         A = [A1 0*B1*C2; B2*C1 A2];
+         B = [B1; B2*D1];
+         C = [D2*C1 C2];
+         D = D2*D1;
+      end
+   end
+   oo = system(o,A,B,C,D);
+   
+   function s = Sort(s)
+      [~,idx] = sort(real(s));   % sort by real part
+      s = s(idx);
+      
+         % within same real part imaginary part must also be sorted
+         
+      dirty = 1;
+      while (dirty)
+         dirty = 0;       % maybe this time do not get dirty
+         for (i=1:length(s)-1)
+            s1 = s(i);  s2 = s(i+1);
+            if (real(s1) == real(s2))
+               if (abs(imag(s1)) > abs(imag(s2)))
+                  s(i) = s2;  s(i+1) = s1;       % swap
+                  dirty = 1;
+               end
+            end
+         end
+      end
+   end
+   function [a0,a1] = Coeff(s1,s2)
+      assert(real(s1)==real(s2));
+      assert(imag(s1)==-imag(s2));
+
+      a1 = -real(s1) - real(s2);
+      a0 = s1*s2;
+      assert(imag(a0)==0);
+   end
+end
+
