@@ -189,6 +189,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - consult control toolbox for zpk conversion
 % - bode plot for L0(s)
 % - can switch between single contact and multi contact
+% - can calculate ZPK without control system toolbox 
 %
 % Known bugs & wishlist
 % =========================

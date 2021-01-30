@@ -879,10 +879,10 @@ function oo = Normalize(o)             % Normalize Menu
                {@CacheReset});
 end
 function oo = Cancel(o)                % Add Cancel Menu Items         
-   setting(o,{'cancel.G.eps'},1e-2);
-   setting(o,{'cancel.H.eps'},1e-3);
-   setting(o,{'cancel.L.eps'},1e-3);
-   setting(o,{'cancel.T.eps'},1e-3);
+   setting(o,{'cancel.G.eps'},1e-7);
+   setting(o,{'cancel.H.eps'},1e-7);
+   setting(o,{'cancel.L.eps'},1e-7);
+   setting(o,{'cancel.T.eps'},1e-7);
    
    oo = mitem(o,'Cancel');
    ooo = mitem(oo,'G(s)',{},'cancel.G.eps');

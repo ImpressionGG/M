@@ -168,17 +168,18 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
 
       case {'G11','G12','G13', 'G21','G22','G23', 'G31','G32','G33'}
          oo = cache(o,o,'trf');        % hard refresh trf cache 
-         G = cache(o,'trf.G');
+         G = cache(oo,'trf.G');
          oo = peek(G,i,j);
 
          % constrained transfer matrix
          
       case 'H'
          oo = cache(o,o,'consd');      % hard refresh consd cache 
-         oo = cache(o,'consd.H');
+         oo = cache(oo,'consd.H');
          
       case {'H11','H12','H13', 'H21','H22','H23', 'H31','H32','H33'}
-         H = cache(o,'consd.H');
+         oo = cache(o,o,'consd');      % hard refresh consd cache 
+         H = cache(oo,'consd.H');
          oo = peek(H,i,j);
          
          % open loop transfer matrix

@@ -48,6 +48,27 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
          if (nargout <= 1)             % cast to ZPK object
             if type(o,{'szpk','zzpk','qzpk'})
                oo = o;                 % nothing left to do
+            elseif type(o,{'css'})
+               [A,B,C,D] = system(o);
+               if (size(B,2) ~= 1 || size(C,1) ~= 1)
+                  error('MIMO systems not supported');
+               end
+               [z,p,k] = Ss2zp(o,A,B,C,D,1);
+               idx = find(isinf(z));
+               
+                   % remove infinite zeros
+                   
+               if ~isempty(idx)
+                  z(idx) = [];
+               end
+               
+                   % compose new zpk object
+                   
+               oo = type(o,'szpk');
+               oo.data.zeros = z;
+               oo.data.poles = p;
+               oo.data.K = k;
+               oo.data.T = 0;
             else
                [num,den] = peek(o);    % first cast to ZPK object
                oo = zpk(o,num,den);
@@ -59,6 +80,8 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
                p = o.data.poles;
                k = o.data.K;
                T = o.data.T;
+            elseif type(o,{'css','dss'})
+               error('multi output not supported for ss representation');
             else
                [num,den] = peek(o);
                [z,p,k] = Zpk(o,num,den);
@@ -105,7 +128,7 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
 end
 
 %==========================================================================
-% Find Zeros, Poles and K-factor
+% Find Zeros, Poles and K-factor from num/den
 %==========================================================================
 
 function [z,p,k] = Zpk(o,num,den)      % Convert Num/Den to Zero/Pole/K            
@@ -154,6 +177,71 @@ function [z,p,k] = Zpk(o,num,den)      % Convert Num/Den to Zero/Pole/K
    end
 end
 
+%==========================================================================
+% Find Zeros, Poles and K-factor from State Space Representation
+%==========================================================================
+
+function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
+%
+%  SS2ZP	State-space to zero-pole conversion.
+%	[Z,P,K] = SS2ZP(A,B,C,D,iu)  calculates the transfer function in
+%	factored form:
+%
+%			     -1           (s-z1)(s-z2)...(s-zn)
+%		H(s) = C(sI-A) B + D =  k ---------------------
+%			                  (s-p1)(s-p2)...(s-pn)
+%	of the system:
+%		.
+%		x = Ax + Bu
+%		y = Cx + Du
+%
+%	from the iu'th input.  Vector P contains the pole locations of the
+%	denominator of the transfer function.  The numerator zeros are
+%	returned in the columns of matrix Z with as many columns as there are
+%	outputs y.  The gains for each numerator transfer function are 
+%	returned in column vector K.
+%
+
+      % remove relevant input
+      
+   b = b(:,iu);
+   d = d(:,iu);
+
+      % Do poles first, they're easy
+      
+   p = eig(a);
+
+      % now try zeros, they're harder
+   
+   [no,ns] = size(c);
+   z = zeros(ns,no) + inf;		% Set whole Z matrix to infinities
+   
+      % loop through outputs, finding zeros
+      
+   for i=1:no
+      s1 = [a b;c(i,:) d(i)];
+      s2 = diag([ones(1,ns) 0]);
+      zv = eig(s1,s2);
+      
+         % now put NS valid zeros into Z. There will always be at least one
+         % NaN or infinity
+         
+      zv = zv((zv ~= nan)&(zv ~= inf));
+      if length(zv) ~= 0
+         z(1:length(zv),i) = zv;
+      end
+   end
+
+      % finish up by finding gains using Markov parameters
+      
+   k = d;  CAn = c;
+   while any(k==0)	% do until all k's are finished
+      markov = CAn*b;
+      i = find(k==0);
+      k(i) = markov(i);
+      CAn = CAn*a;
+   end
+end
 %==========================================================================
 % Helper
 %==========================================================================
