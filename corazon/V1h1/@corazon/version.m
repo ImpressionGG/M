@@ -524,6 +524,7 @@ function VersionV1G
 % - starting corazon beta V1g1
 % - corasim/mrdivide to preserve type if one operand is a double
 % - corasim/gain adapted for zpk representations
+% - corasim/fqr adaption for zpk representations
 %
 %
 % Known Bugs / Wishlist

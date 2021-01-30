@@ -87,8 +87,31 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
          Gjw = polyval(num,expjw) ./ polyval(den,expjw);
 
       case {'szpk','qzpk'}
-         [num,den] = peek(o);
-         Gjw = polyval(num,jw) ./ polyval(den,jw);
+         [z,p,k] = zpk(o);
+         
+            % sort poles and zeros my abs value
+            
+         [~,idx] = sort(abs(z));
+         z = z(idx);
+         
+         [~,idx] = sort(abs(p));
+         p = p(idx);
+         
+         Gjw = k * ones(size(jw));
+         
+         nz = length(z);                % number of zeros
+         np = length(p);                % number of poles
+         
+            % alternate multiplication and division
+            
+         for (i=1:max(nz,np))
+            if (i <= nz)
+               Gjw = Gjw .* (jw - z(i));
+            end
+            if (i <= np)
+               Gjw = Gjw ./ (jw - p(i));
+            end
+         end
 
       case 'css'
          if (nargin < 3)
