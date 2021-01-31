@@ -527,6 +527,7 @@ function VersionV1G
 % - corasim/fqr adaption for zpk representations
 % - SPM toolbox running with smaller cancel epsilon
 % - corasim/system extended to convert from ss to zpk
+% - block permutation for zpk to ss
 %
 %
 % Known Bugs / Wishlist

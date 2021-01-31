@@ -433,6 +433,12 @@ function oo = Zpk2ss(o)
    elseif (n == 0)
       oo = system(o,A,B,C,K);
       return
+   elseif (n >= m+2)          % good for SPM's modal form
+      b0 = 1; b1 = 0;
+      [a0,a1] = Coeff(poles(1),poles(2));
+      poles(1:2) = [];
+      n = length(poles);      % refresh
+      A = [0 1; -a0 -a1];  B = [0;1];  C = [b0 b1];  D = 0;
    end
    
    for (i=1:2:n)
@@ -460,7 +466,20 @@ function oo = Zpk2ss(o)
          B = [B1; B2*D1];
          C = [D2*C1 C2];
          D = D2*D1;
-      end
+         
+            % the following transformation is possible:
+            % z = T\x or x = T*z
+            % with x`= A*x + B*u and y = C*x + D*u
+            % we get: x`= T*z` = A*T*z + B*u and y = C*T*z + D*u
+            % or z` = (T\A*T)*z + (T\B)*u and y = (C*T)*z + D*u
+         
+         T = eye(size(A));
+         N = length(A)/2;
+         idx = [1:N-1, [N+1:2*N-1, N], 2*N];
+         T = T(idx,:);
+         
+         A = T\A*T;  B = T\B;  C = C*T;
+      end      
    end
    oo = system(o,A,B,C,D);
    
