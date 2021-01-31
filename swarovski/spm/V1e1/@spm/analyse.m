@@ -294,7 +294,7 @@ end
 %==========================================================================
 
 function o = Margin(o)                 % Stability Margin              
-   oo = with(o,'process');
+   oo = with(o,{'process','stability'});
    stable(oo);
    heading(o);
 end

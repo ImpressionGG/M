@@ -370,6 +370,7 @@ function oo = View(o)                  % View Menu
    ooo = Nyquist(oo);                  % add Nyquist settings menu
    ooo = Rloc(oo);                     % add Root Locus menu
    ooo = Weight(oo);                   % add Weight diagram settings menu
+   ooo = Critical(oo);                 % add Critical settings menu
    
    plugin(o,'spm/shell/View');         % plug point
 
@@ -586,6 +587,13 @@ function oo = Weight(o)                % Weight Diagram Settings Menu
    ooo = mitem(oo,'Small',{},'weight.small');
    choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6],{});
 end
+function oo = Critical(o)              % Critical Frequency Menu       
+   setting(o,{'view.critical'},1);
+   
+   oo = mitem(o,'Critical');
+   ooo = mitem(oo,'Show',{},'view.critical');
+   choice(ooo,{{'Off',0},{'On',1}},{});
+end
 
 %==========================================================================
 % Select Menu
@@ -604,6 +612,7 @@ function oo = Select(o)                % Select Menu
    ooo = Basket(oo);                   % add Basket menu
 
    ooo = mitem(oo,'-');
+   ooo = Contact(oo);                  % add Contact sub menu
    ooo = Friction(oo);                 % Friction menu
    ooo = Variation(oo);                % Variation menu
    
@@ -757,7 +766,7 @@ end
 function oo = Stability(o)             % Stability Menu
    setting(o,{'stability.algo'},'ss'); % stability algorithm
    setting(o,{'stability.points'},100);% points for diagram
-   setting(o,{'stability.init'},25);   % initial searches
+   setting(o,{'stability.search'},25); % number of search points
    setting(o,{'stability.iter'},25);   % iterations
 
    oo = mitem(o,'Stability');
@@ -818,8 +827,13 @@ end
 function oo = Contact(o)               % Add Contact Menu Items        
    setting(o,{'process.contact'},inf); % multi contact
    
+   list = {{'Center',0},{'Multi',inf},{}};
+   for(i=1:7)
+      list{end+1} = {sprintf('%g',i),i};
+   end
+   
    oo = mitem(o,'Contact',{},'process.contact');
-   choice(oo,{{'Center',0},{'Multi',inf}},{});
+   choice(oo,list,{@CacheReset});
 end
 function oo = Ignore(o)                % Add Ignore Menu Items         
    setting(o,{'ignore.swapped'},0);
@@ -837,9 +851,9 @@ function oo = Internal(o)              % Internal Menu
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Stability(oo);                % add Stability sub menu
    ooo = Filter(oo);                   % add Filter sub menu
-   ooo = Contact(oo);                  % add Contact sub menu
    ooo = Ignore(oo);                   % add ignore sub menu
 end
+
 function oo = Trf(o)                   % Transfer Function Menu        
    setting(o,{'trf.type'},'szpk');
    

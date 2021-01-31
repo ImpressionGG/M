@@ -238,18 +238,33 @@ function oo = System(o)                % System Matrices
       C(idx1,:) = C_2;  C(idx2,:) = -C_1;
    end
    
+   contact = opt(o,{'process.contact',0});
+   if (contact > 0 && contact < inf && contact > N)
+      msg = sprintf('incompatible contact point number: %d',contact);
+      fprintf(['*** ',msg,'\n']);
+      fprintf('*** proceeding with central contact\n');
+      message(o,['Error: ',msg],{'proceeding with central contact'});
+      contact = 0;
+   end
+   
+   if (rem(N,2) ~= 1)
+      error('number of articles on apparatus must be odd');
+   end
+   
       % calculate center indices
       % N = 1: cidx = 1:3
       % N = 2: cidx = 1:3
       % N = 3: cidx = 4:6  => 3*floor((N-1)/2) + (1:3)
       % N = 4: cidx = 4:6
       % N = 5: cidx = 7:9
-      
-   if (rem(N,2) ~= 1)
-      error('number of articles on apparatus must be odd');
-   end
-   cdx = 3*floor((N-1)/2) + (1:3);
-   idx0 =  (N+1)/2;                      % center index
+         
+   if (contact > 0 && contact < inf)
+      idx0 = N;                        % use selected contact point index
+      cdx = (1:3) + (idx0-1)*3;
+   else
+      idx0 =  (N+1)/2;                 % use center contact index by default
+      cdx = 3*floor((N-1)/2) + (1:3);  % contact index
+   end   
       
       % continue regular calculations
       
@@ -1245,7 +1260,10 @@ function oo = Loop(o)                  % Loop Analysis Stuff
       % calc critical K and closed loop TRF
       
    contact = opt(o,{'process.contact',0});
-   if (contact == 0)
+   o = with(o,'stability');
+   algo = opt(o,{'algo','ss'});
+   
+   if (contact < inf && isequal(algo,'trf'))
       [K0,f0] = stable(o,L0);          % critical gain & frequency
    else
       Sys0 = cook(o,'Sys0');

@@ -13,43 +13,45 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
 %             stable(o,sys0,mu)
 %
 %          Options:
+%             algo          algorithm ('ss' or 'trf', 'ss' by default)
 %             contact       single (0) or multi (1) contact
 %
 %          Copyright(c): Bluenetics 2020
 %
 %          See also: SPM, COOK
 %
-  oo = o;
-  %[oo,~,rfr] = cache(oo,oo,'trf');
-  %[oo,~,rfr] = cache(oo,oo,'process');
   contact = opt(o,{'contact',0});
+  algo = opt(o,{'algo','ss'});
   
+  oo = o;                         % for eventual caching extension
   if (nargin == 1)
-     if (contact == 0)    % single contact
+     if isequal(algo,'trf')       % transfer function algorithm
         Lmu = cook(oo,'Lmu');
-     else
+     elseif isequal(algo,'ss')    % state space algorithm
         Sys0 = cook(oo,'Sys0');
         mu = opt(oo,{'process.mu',0.1});
+     else
+        error('bad algo');
      end
         
   elseif (nargin == 2)
-     contact = 0;
+     algo = 'trf';
      Lmu = varargin{1};
   elseif (nargin == 3)
-     contact = 1;
+     algo = 'ss';
      Sys0 = varargin{1};
      mu = varargin{2};
   end
   
   if (nargout == 0)
-     if (contact == 0)
-        Stable(oo,Lmu);                  % plot
+     if isequal(algo,'trf')
+        Stable(oo,Lmu);                % plot
      else
-        Stability(oo,Sys0,mu);            % plot
+        Stability(oo,Sys0,mu);         % plot
      end
   else
-     if (contact == 0)
-        [K0,f] = Stable(oo,Lmu);
+     if isequal(algo,'trf')
+        [K0,f,Ki] = Stable(oo,Lmu);
      else
         [K0,f,Ki] = Stability(oo,Sys0,mu);
      end
@@ -57,9 +59,10 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
      if isinf(K0) || (K0 == 0)
         K = K0;  f = inf;
      else
-        if (contact == 0)
+        if isequal(algo,'trf')
            oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
-           oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
+           %oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
+           oo = opt(oo,'magnitude.high',20*log10(Ki));
            [K,f] = Stable(oo,Lmu);
         else
            oo = opt(oo,'magnitude.low',20*log10(K0));
@@ -74,12 +77,18 @@ end
 % Helper
 %==========================================================================
 
-function [K,f] = Stable(o,L0)
+function [K,f,Ki] = Stable(o,L0)
    low = opt(o,{'magnitude.low',-300});
    high = opt(o,{'magnitude.high',100});
    delta = opt(o,{'magnitude.delta',20});
 
-   mag = logspace(low/20,high/20,1000);
+   if (nargout > 0)
+      points = opt(o,{'search',100});
+   else
+      points = opt(o,{'points',1000});
+   end
+   
+   mag = logspace(low/20,high/20,points);
 
    [num,den] = peek(L0);
 
@@ -98,10 +107,19 @@ function [K,f] = Stable(o,L0)
       % find critical K
       
    K = inf;
+   Ki = max(mag);
+   
    idx = find(re>0);
    if ~isempty(idx)
       idx = max(1,idx(1)-1);
       K = mag(idx);
+      
+      for (j=idx:length(mag))
+         if (real(re(j)) >= 0)
+            Ki = mag(j);
+            break;
+         end
+      end
    end
       
      % calc critical frequency om0
@@ -204,16 +222,17 @@ end
 function [K,f,Ki] = Stability(o,sys,mu)
    [A0,B0,C0,D0] = system(sys);
 
+   if (nargout > 0)
+      points = opt(o,{'search',100});
+   else
+      points = opt(o,{'points',1000});
+   end
+
    low = opt(o,{'magnitude.low',-300});
    high = opt(o,{'magnitude.high',100});
    delta = opt(o,{'magnitude.delta',20});
 
-   contact = opt(o,{'contact',0});
-   if (contact == 0)
-      mag = logspace(low/20,high/20,1000);
-   else
-      mag = logspace(low/20,high/20,100);
-   end
+   mag = logspace(low/20,high/20,points);
    
 %  [num,den] = peek(L0);
 

@@ -731,6 +731,10 @@ function o = TrfBode(o)                % Bode Plot
    
    colors = {'g','gy','gk','gb','gww','gkk','gbb','gbw','gbk'};
    
+   if opt(o,{'view.critical',1});
+      o = cache(o,o,'loop');           % hard refresh loop cache segment
+   end
+   
    [list,objs,head] = GijSelect(o);
    for (i=1:length(list))
       Gij = list{i};
@@ -755,7 +759,7 @@ function o = TrfBode(o)                % Bode Plot
       
    CriticalFrequency(o,objs,211);
    CriticalFrequency(o,objs,212);
-   
+
       % plot heading if not shell object
       
    heading(o,head);
@@ -921,6 +925,11 @@ function [list,objs,head] = L0Select(o)% Select Transfer Function
    end
 end
 function CriticalFrequency(o,objs,sub) % Plot Critical Frequencies     
+   critical = opt(o,{'view.critical',1});
+   if ~critical
+      return                           % don't show critical frequency
+   end
+   
    subplot(o,sub);
    ylim = get(gca,'ylim');
    hold on;
@@ -1347,6 +1356,9 @@ function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)
       return
    end
    
+   if opt(o,{'view.critical',1});
+      o = cache(o,o,'loop');           % hard refresh loop cache segment
+   end
       % increase performance by cache pre-refreshing 
 try    
    o = cache(o,o,'trf');               % hard refresh of trf segment
@@ -1407,6 +1419,7 @@ end
    CriticalFrequency(o,objs,3111);
    CriticalFrequency(o,objs,3121);
    CriticalFrequency(o,objs,3131);
+
    xlabel('omega [1/s]');
    
       % plot heading if not shell object
@@ -1574,6 +1587,10 @@ function o = MagniPhase(o)             % Magnitude/Phase Plot
    
    diagram(o,'Magni','',G,211);
    diagram(o,'Phase','',G,212);
+   
+   if opt(o,{'view.critical',1});
+      o = cache(o,o,'loop');           % hard refresh loop cache segment
+   end
    
    CriticalFrequency(o,{o},211);
    CriticalFrequency(o,{o},212);
@@ -2299,7 +2316,7 @@ function o = Stability(o)              % Plot Stability Margin
    list = olist{1};                    % pick object list
    list(1) = [];                       % delete package object from list
 
-   o = with(o,{'style','process'});
+   o = with(o,{'style','process','stability'});
    n = length(list);
 
    x = Axes(o);                        % get variation range and plot axes
