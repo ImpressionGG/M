@@ -188,13 +188,13 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,o,'consd');      % hard refresh consd cache 
          oo = cache(oo,'consd.L');
          
-      case {'P','Q','F0','L0','K0','f0','S0','T0'}
+      case {'P','Q','F0','L0'}
          o = cache(o,o,'principal');   % hard refresh of principal segment
          oo = cache(o,['principal.',sym]);
 
-      case 'Lmu'
+      case {'Lmu','K0','f0','S0','T0'}
          oo = cache(o,o,'loop');       % hard refresh loop cache 
-         oo = cache(oo,'loop.Lmu');
+         oo = cache(oo,['loop.',sym]);
          
       case {'L1','L2'}
          L = cache(o,'consd.L');

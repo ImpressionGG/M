@@ -11,7 +11,6 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
 %           oo = brew(o,'Principal')   % brew principal transfer functions
-%           oo = brew(o,'Inverse')     % brew inverse system
 %           oo = brew(o,'Loop')        % brew loop analysis stuff
 %           oo = brew(o,'Process')     % brew closed loop transfer fct
 %
@@ -65,7 +64,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                   |         |              |
 %                   v         |              v
 %       +-----------------+   |      +-----------------+
-%       |     inverse     |   |      |     consd       | H(s)
+%       |                     |   |      |     consd       | H(s)
 %       +-----------------+   |      +-----------------+
 %                             |       
 %                             |           friction
@@ -87,7 +86,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@System,...
-                       @Trf,@Principal,@Inverse,...
+                       @Trf,@Principal,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -794,31 +793,6 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       
    L0 = CalcL0(o,P,Q);
    
-      % calc critical K and closed loop TRF
-      
-   contact = opt(o,{'process.contact',0});
-   if (contact == 0)
-      [K0,f0] = stable(o,L0);          % critical gain & frequency
-   else
-      Sys0 = cook(o,'Sys0');
-      o = opt(o,'contact',contact);
-      [K0,f0] = stable(o,Sys0,1);      % critical gain & frequency
-   end
-      
-   L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
-   if ~isinf(K0)
-      S0 = 1/(1+K0*L0);                % closed loop sensitivity
-      if type(L0,{'szpk'})
-         S0 = zpk(S0);
-      end
-      T0 = S0*K0*L0;                   % total TRF
-   else                                % use K0 = 1 instead
-      S0 = 1/(1+L0);                   % closed loop sensitivity
-      T0 = S0*L0;                      % total TRF
-   end
-   
-   S0 = set(S0,'name','S0(s)');
-   T0 = set(T0,'name','T0(s)');
       
       % set expression based FQR, if enabled
       
@@ -831,12 +805,6 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    oo = cache(oo,'principal.P',P);
    oo = cache(oo,'principal.Q',Q);
    oo = cache(oo,'principal.L0',L0);
-
-   oo = cache(oo,'principal.K0',K0);   % critical gain
-   oo = cache(oo,'principal.f0',f0);   % critical frequency
-
-   oo = cache(oo,'principal.S0',S0);
-   oo = cache(oo,'principal.T0',T0);
    
       % unconditional hard refresh of cache
    
@@ -1061,10 +1029,18 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 end
 
 %==========================================================================
+% Stability
+%==========================================================================
+
+function oo = Stability(o)             % Brew Stability Cache Segment  
+
+end
+
+%==========================================================================
 % Inverse System [Ai,Bi,Ci,Di]
 %==========================================================================
 
-function oo = Inverse(o)               % Brew Inverse Cache Segment    
+function oo = OldInverse(o)            % Brew Inverse Cache Segment    
 %
 % INVERSE  Calculate inverse system, i.e., find a state space
 %          representation for inv(Q(s))
@@ -1261,17 +1237,49 @@ end
 function oo = Loop(o)                  % Loop Analysis Stuff           
    progress(o,'Brewing Open Loop Transfer Function ...');
    mu = opt(o,{'process.mu',0.1});     % friction coefficient
-   
-   [oo,bag,rfr] = cache(o,'principal');% refresh principal cache segment
-   
-   L0 = cook(oo,'L0');
-   Lmu = mu * L0;                      % Loop TRF under friction mu
-
-      % store in 'loop' cache segment
       
+   L0 = cook(o,'L0');
+   Lmu = mu * L0;                      % Loop TRF under friction mu
    Lmu = set(Lmu,'name','Lmu(s)');
-   oo = cache(oo,'loop.Lmu',Lmu);
+
+      % calc critical K and closed loop TRF
+      
+   contact = opt(o,{'process.contact',0});
+   if (contact == 0)
+      [K0,f0] = stable(o,L0);          % critical gain & frequency
+   else
+      Sys0 = cook(o,'Sys0');
+      o = opt(o,'contact',contact);
+      [K0,f0] = stable(o,Sys0,1);      % critical gain & frequency
+   end
+      
+   L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
+   if ~isinf(K0)
+      S0 = 1/(1+K0*L0);                % closed loop sensitivity
+      if type(L0,{'szpk'})
+         S0 = zpk(S0);
+      end
+      T0 = S0*K0*L0;                   % total TRF
+   else                                % use K0 = 1 instead
+      S0 = 1/(1+L0);                   % closed loop sensitivity
+      T0 = S0*L0;                      % total TRF
+   end
    
+   S0 = set(S0,'name','S0(s)');
+   T0 = set(T0,'name','T0(s)');
+   
+      % store in cache
+   
+   %[oo,bag,rfr] = cache(o,'loop');     % refresh principal cache segment
+   oo = o;
+   oo = cache(oo,'loop.Lmu',Lmu);
+
+   oo = cache(oo,'loop.K0',K0);        % critical gain
+   oo = cache(oo,'loop.f0',f0);        % critical frequency
+
+   oo = cache(oo,'loop.S0',S0);
+   oo = cache(oo,'loop.T0',T0);
+      
       % unconditional hard refresh of cache
    
    cache(oo,oo);                       % hard refresh cache

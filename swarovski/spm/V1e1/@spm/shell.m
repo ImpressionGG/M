@@ -754,6 +754,25 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
+function oo = Stability(o)             % Stability Menu
+   setting(o,{'stability.algo'},'ss'); % stability algorithm
+   setting(o,{'stability.points'},100);% points for diagram
+   setting(o,{'stability.init'},25);   % initial searches
+   setting(o,{'stability.iter'},25);   % iterations
+
+   oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Algorithm',{},'stability.algo');
+   choice(ooo,{{'Transfer function','trf'},{'State Space','ss'}},{});
+   
+   ooo = mitem(oo,'Points',{},'stability.points');
+   choice(ooo,[25 50 100 200 500 1000 2000],{});
+   
+   ooo = mitem(oo,'Initial Searches',{},'stability.init');
+   choice(ooo,[25 50 100 200 500],{});
+
+   ooo = mitem(oo,'Iterations',{},'stability.iter');
+   choice(ooo,[10 15 20 25 30 35 40 45 50 75 100],{});
+end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off
    setting(o,{'filter.type'},'LowPass2');
@@ -816,6 +835,7 @@ function oo = Internal(o)              % Internal Menu
    ooo = Precision(oo);                % add Precision Menu
    ooo = Normalize(oo);                % add Normalize menu   
    ooo = Cancel(oo);                   % add Cancel sub menu
+   ooo = Stability(oo);                % add Stability sub menu
    ooo = Filter(oo);                   % add Filter sub menu
    ooo = Contact(oo);                  % add Contact sub menu
    ooo = Ignore(oo);                   % add ignore sub menu

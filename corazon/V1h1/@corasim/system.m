@@ -479,6 +479,9 @@ function oo = Zpk2ss(o)
          T = T(idx,:);
          
          A = T\A*T;  B = T\B;  C = C*T;
+         
+            % v1`= -65*x1 - 14*v1
+            % v2' = 1*x1 -29*x2 -4*v2 
       end      
    end
    oo = system(o,A,B,C,D);
