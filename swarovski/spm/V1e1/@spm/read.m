@@ -81,9 +81,9 @@ function oo = ReadSpmSpm(o)            % Read Driver for SPM Data
       end
       
       if ~isempty(po)
-         swapped = get(po,'swapped');
-         if ~isempty(swapped)
-            oo = set(oo,'swapped',swapped);
+         phi = get(po,'phi');
+         if ~isempty(phi)
+            oo = set(oo,'phi',phi);
          end
       end
    end

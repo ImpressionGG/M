@@ -96,14 +96,14 @@ function oo = Import(o)                % Import Menu Items
 
       if (~isempty(list) && type(list{end},{'pkg'}))
          po = list{end};
-         swapped = get(po,'swapped');
-         if ~isempty(swapped)
+         phi = get(po,'phi');
+         if ~isempty(phi)
             for (j=1:length(list)-1)   
                oo = list{j};
                if type(oo,{'spm'})
                   package = get(oo,{'package',''});
                   if isequal(package,get(po,'package'))
-                     oo = set(oo,'swapped',swapped);
+                     oo = set(oo,'phi',phi);
                   end
                end
                list{j} = oo;
@@ -612,6 +612,7 @@ function oo = Select(o)                % Select Menu
    ooo = Basket(oo);                   % add Basket menu
 
    ooo = mitem(oo,'-');
+   ooo = Coordinates(oo);              % add Coordinates sub menu
    ooo = Contact(oo);                  % add Contact sub menu
    ooo = Friction(oo);                 % Friction menu
    ooo = Variation(oo);                % Variation menu
@@ -835,12 +836,12 @@ function oo = Contact(o)               % Add Contact Menu Items
    oo = mitem(o,'Contact',{},'process.contact');
    choice(oo,list,{@CacheReset});
 end
-function oo = Ignore(o)                % Add Ignore Menu Items         
-   setting(o,{'ignore.swapped'},0);
+function oo = Coordinates(o)           % Add Coordinates Menu Items         
+   setting(o,{'process.phi'},0);
    
-   oo = mitem(o,'Ignore');
-   ooo = mitem(oo,'Swapped',{},'ignore.swapped');
-   check(ooo,{@CacheReset});
+   oo = mitem(o,'Coordinates');
+   ooo = mitem(oo,'Coordinate Rotation',{},'process.phi');
+   choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
 end
 function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');
@@ -851,7 +852,6 @@ function oo = Internal(o)              % Internal Menu
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Stability(oo);                % add Stability sub menu
    ooo = Filter(oo);                   % add Filter sub menu
-   ooo = Ignore(oo);                   % add ignore sub menu
 end
 
 function oo = Trf(o)                   % Transfer Function Menu        
@@ -1072,7 +1072,7 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
    if isequal(fid,-1)
       return                           % file not found / cannot open file
    end
-   swapped = 0;                        % init by default
+   phi = 0;                        % init by default
    
    comment = get(o,{'comment',{}});
    while (1)
@@ -1088,13 +1088,14 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
          
          comment{end+1} = line;
          
-            % search for key 'swapped:' and if found set 'swapped'
+            % search for key 'phi:' and if found set 'phi'
             % parameter
             
-         key = 'swapped:';             % key to search
+         key = 'phi:';             % key to search
          idx = strfind(line,key);
          if ~isempty(idx)
-            swapped = sscanf(line(idx+length(key):end),'%f');
+            str = line(idx+length(key):end);
+            phi = eval(str);
          end
       else
          break
@@ -1103,7 +1104,5 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
    
    fclose(fid);
    oo = set(o,'comment',comment);
-   if (swapped)
-      oo = set(oo,'swapped',1);
-   end
+   oo = set(oo,'phi',phi);
 end

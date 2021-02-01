@@ -207,13 +207,48 @@ function oo = Normalize(o)             % Normalize System
       
    oo = var(o,'A,B,C,D,T0,a0,a1',A,B,C,D,T0,a0,a1);
 end
-function oo = System(o)                % System Matrices               
-   oo = Variation(o);                  % apply system variation
-   oo = Normalize(oo);                 % normalize system
-   [A,B,C] = var(oo,'A,B,C');
-
-      % get indices of 1-2-3 components
-      
+function oo = Transform(o)             % coordinate transformation     
+%
+% TRANSFORM Transform coordinates by rotation around 3-axis (=z-axis)
+%             by angle phi_p (process phi) plus phi_o (object specific 
+%             phi depending on how SPM matrices are exported). 2nd input
+%             arg (contact) ist the contact index.
+%
+%                 oo = Transform(o)
+%                 [A,B,C,D] = var(o,'A,B,C,D')
+%
+%             We have:
+%
+%                [F1]   [ cos(phi)  sin(phi)   0]   [Fx]
+%                [F2] = [-sin(phi)  cos(phi)   0] * [Fy]
+%                [F3]   [   0          0       1]   [Fz]
+%
+%             For phi_p = 0 and phi_o = 90 we have phi = 90
+%             and
+%
+%                [F1]   [   0   1   0]   [Fx]   [ Fy]
+%                [F2] = [  -1   0   0] * [Fy] = [-Fx]
+%                [F3]   [   0   0   1]   [Fz]   [ Fz]
+%
+%              Since
+%                 F_123 = T*F_xyz and  y_123 = T*y_xyz
+%
+%                 x`     = A_xyz * x + B_xyz * F_xyz
+%                 y_xyz  = C_xyz * x + D_xyz * F_xyz
+%
+%              we get:
+%
+%                 x´     = A_xyz * x + B_xyz * inv(T)*F_123
+%                 y_123 = T*y_xyz = T*C_xyz * x + T*D_xyz*inv(T) * F_123
+%
+%              Thus we see:
+%                 A_123 = A_xyz
+%                 B_123 = B_xyz * inv(T)
+%                 C_123 = T * C_xyz
+%                 D_123 = T * D_xyz + inv(T)
+%
+   [B,C,D] = var(o,'B,C,D')
+   
    M = size(B,2)/3;  N = size(C,1)/3;
    if (M ~= round(M) || N ~= round(N))
       error('input/output number must be multiple of 3');
@@ -221,23 +256,93 @@ function oo = System(o)                % System Matrices
    if (M ~= N)
       error('same number of inputs and outputs expected');
    end
+
+   assert(M==N);             % are the same
+   
+      % build-up total transformation matrix
+      
+   for (k=1:N)
+      Tk = TransMatrix(o,k);
+      
+      idx = (1:3) + (k-1)*3;
+      T(idx,idx) = Tk;
+   end
+   
+      % transform system matrices (note: A is unchanged)
+      
+   B = B/T;
+   C = T*C;
+   D = T*D/T;
+    
+      % refresh variables
+      
+   oo = var(o,'B,C,D,N',B,C,D,N);
+
+   function T = TransMatrix(o,contact)                                 
+   %
+   % TRANSMATRIX Transform coordinates by rotation around 3-axis (=z-axis)
+   %             by angle phi_p (process phi) plus phi_o (object specific 
+   %             phi depending on how SPM matrices are exported). 2nd input
+   %             arg (contact) ist the contact index.
+   %
+   %                 T = Treansform(o,contact)
+   %
+   %             We have:
+   %
+   %                [F1]   [ cos(phi)  sin(phi)   0]   [Fx]
+   %                [F2] = [-sin(phi)  cos(phi)   0] * [Fy]
+   %                [F3]   [   0          0       1]   [Fz]
+   %
+   %             For phi_p = 0 and phi_o = 90 we have phi = 90
+   %             and
+   %
+   %                [F1]   [   0   1   0]   [Fx]   [ Fy]
+   %                [F2] = [  -1   0   0] * [Fy] = [-Fx]
+   %                [F3]   [   0   0   1]   [Fz]   [ Fz]
+   %
+   %              Since
+   %                 F_123 = T*F_xyz and  y_123 = T*y_xyz
+   %
+   %                 x`     = A_xyz * x + B_xyz * F_xyz
+   %                 y_xyz  = C_xyz * x
+   %
+   %              we get:
+   %
+   %                 x´     = A_xyz * x + B_xyz * inv(T)*F_123
+   %                 y_123 = T*y_xyz = T*C_xyz * x
+   %
+   %              Thus we see:
+   %                 B_123 = B_xyz * inv(T)
+   %                 C_123 = T * C_xyz
+   %  
+      phi_o = get(o,{'phi',0});        % object phi [°]
+      phi_p = opt(o,{'process.phi',0});% process phi [°]
+      rad = (phi_o+phi_p) *pi/180;     % total phi [rad]
+            
+         % in current implementation contact index is not
+         % incorporated in calculations (ignored)
+         
+      T = [
+             cos(rad) sin(rad)  0
+            -sin(rad) cos(rad)  0
+                0        0      1
+          ];
+   end
+end
+function oo = System(o)                % System Matrices               
+   oo = Variation(o);                  % apply system variation
+   oo = Normalize(oo);                 % normalize system
+   oo = Transform(oo);                 % coordinate transformation
+   
+   [A,B,C,N] = var(oo,'A,B,C,N');      % N: number of articles
+
+      % get indices of 1-2-3 components
+      % deal with contact points
    
    idx1 = 1+3*(0:N-1);
    idx2 = 2+3*(0:N-1);
    idx3 = 3+3*(0:N-1);
-   
-      % swap columns of B and rows of C if swap parameter is set
-      % in this case we have: 1 := y, 2 := -x
       
-   swapped = get(oo,{'swapped',0});
-   ignore = opt(oo,{'ignore.swapped',0});
-   if (swapped && ~ignore)
-      B_1 = B(:,idx1);  B_2 = B(:,idx2);  
-      C_1 = C(idx1,:);  C_2 = C(idx2,:);
-      B(:,idx1) = B_2;  B(:,idx2) = -B_1;
-      C(idx1,:) = C_2;  C(idx2,:) = -C_1;
-   end
-   
    contact = opt(o,{'process.contact',0});
    if (contact > 0 && contact < inf && contact > N)
       msg = sprintf('incompatible contact point number: %d',contact);
@@ -290,7 +395,7 @@ function oo = System(o)                % System Matrices
    B_1 = B(:,idx1);  B_2 = B(:,idx2);  B_3 = B(:,idx3);
    C_1 = C(idx1,:);  C_2 = C(idx2,:);  C_3 = C(idx3,:);
    
-      % collapse B_i and C_j to a sibngle column or single row
+      % collapse B_i and C_j to a single column or single row
       % if contact option is zero
       
    if (opt(o,{'process.contact',0}) == 0)

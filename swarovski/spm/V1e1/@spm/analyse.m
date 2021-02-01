@@ -817,7 +817,8 @@ function o = LmuBode(o)                % Bode Plot
    end
    
    Lmu = cook(o,'Lmu');         
-   diagram(o,'Bode','',Lmu,1111);      
+   diagram(o,'Magni','',Lmu,2111);      
+   diagram(o,'Phase','',Lmu,2121);      
    
    heading(o);
 end

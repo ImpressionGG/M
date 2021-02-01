@@ -4,7 +4,7 @@ function vers = version(o,arg)         % SPM Class Version
 %
 %       vs = version(spm);            % get SPM version string
 %
-%    See also: SPM
+%    See also: SPMC
 %
 %--------------------------------------------------------------------------
 %
@@ -194,6 +194,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - internal selection parameters for stability margin calculation
 % - move K0,f0,S0,T0 into loop segment
 % - spm/stable method to work with options
+% - add phi parameter for coordinate transformation
 %
 % Known bugs & wishlist
 % =========================
