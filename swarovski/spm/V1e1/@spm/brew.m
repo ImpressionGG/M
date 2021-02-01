@@ -247,7 +247,7 @@ function oo = Transform(o)             % coordinate transformation
 %                 C_123 = T * C_xyz
 %                 D_123 = T * D_xyz + inv(T)
 %
-   [B,C,D] = var(o,'B,C,D')
+   [B,C,D] = var(o,'B,C,D');
    
    M = size(B,2)/3;  N = size(C,1)/3;
    if (M ~= round(M) || N ~= round(N))
@@ -316,11 +316,12 @@ function oo = Transform(o)             % coordinate transformation
    %                 C_123 = T * C_xyz
    %  
       phi_o = get(o,{'phi',0});        % object phi [°]
+      if (length(phi_o) == 1)
+         phi_o = phi_o * ones(1,N);
+      end
+      
       phi_p = opt(o,{'process.phi',0});% process phi [°]
-      rad = (phi_o+phi_p) *pi/180;     % total phi [rad]
-            
-         % in current implementation contact index is not
-         % incorporated in calculations (ignored)
+      rad = (phi_o(contact)+phi_p) *pi/180;     % total phi [rad]
          
       T = [
              cos(rad) sin(rad)  0

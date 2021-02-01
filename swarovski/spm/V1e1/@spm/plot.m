@@ -938,7 +938,7 @@ function CriticalFrequency(o,objs,sub) % Plot Critical Frequencies
       oo = objs{i};
       f0 = cook(oo,'f0');
       hdl = semilogx(2*pi*f0*[1 1],ylim,'r-.');
-      set(hdl,'linewidth',1);
+      set(hdl,'linewidth',o.iif(i==1,1,2));
    end
 end
 
@@ -1356,13 +1356,13 @@ function o = G31G33L0(o)               % G31(s), G33(s) & L0(s)
       return
    end
    
-   if opt(o,{'view.critical',1});
-      o = cache(o,o,'loop');           % hard refresh loop cache segment
-   end
       % increase performance by cache pre-refreshing 
 try    
    o = cache(o,o,'trf');               % hard refresh of trf segment
    o = cache(o,o,'principal');         % hard refresh of trf segment
+   if opt(o,{'view.critical',1});
+      o = cache(o,o,'loop');           % hard refresh loop cache segment
+   end
 catch
    fprintf('plot/G31G33L0(): exception catched\n');
 end

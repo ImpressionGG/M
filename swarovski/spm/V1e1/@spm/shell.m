@@ -840,7 +840,7 @@ function oo = Coordinates(o)           % Add Coordinates Menu Items
    setting(o,{'process.phi'},0);
    
    oo = mitem(o,'Coordinates');
-   ooo = mitem(oo,'Coordinate Rotation',{},'process.phi');
+   ooo = mitem(oo,'Rotation',{},'process.phi');
    choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
 end
 function oo = Internal(o)              % Internal Menu                 
@@ -1070,6 +1070,7 @@ end
 function oo = ReadInfo(o,path)         % Read Info into Comment        
    fid = fopen(path);
    if isequal(fid,-1)
+      oo = o;
       return                           % file not found / cannot open file
    end
    phi = 0;                        % init by default
