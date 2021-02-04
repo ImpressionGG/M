@@ -32,6 +32,7 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
 %          oo = zpk(o,z,p,K)           % s-type ZPK (continuous)
 %          oo = zpk(o,z,p,K,0)         % sameas above
 %
+%          oo = zpk(o,z,p,K,0)         % s-type ZPK (continuous)
 %          oo = zpk(o,z,p,K,T)         % z-type ZPK (discrete)
 %          oo = zpk(o,z,p,K,-T)        % q-type ZPK (discrete)
 %

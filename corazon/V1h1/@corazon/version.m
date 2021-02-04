@@ -528,6 +528,7 @@ function VersionV1G
 % - SPM toolbox running with smaller cancel epsilon
 % - corasim/system extended to convert from ss to zpk
 % - block permutation for zpk to ss
+% - add corasim/vpa and corasim/check methods
 %
 %
 % Known Bugs / Wishlist

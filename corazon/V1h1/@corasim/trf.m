@@ -1,4 +1,4 @@
-function oo = trf(o,num,den,T)                                         
+function [oo,den,T] = trf(o,num,den,T)                                         
 %
 % TRF     Make transfer function
 %
@@ -9,6 +9,7 @@ function oo = trf(o,num,den,T)
 %            oo = trf(o,num,den)                 % s-transfer function
 %            oo = trf(o,[2 3],[1 5 6])           % s-transfer function
 %
+%            oo = trf(o,num,den,0)               % s-transfer function
 %            oo = trf(o,num,den,T)               % z-transfer function
 %            oo = trf(o,num,den,-T)              % q-transfer function
 %   
@@ -18,11 +19,15 @@ function oo = trf(o,num,den,T)
 %
 %            oo = trf(o)                         % cast to transfer fct
 %
+%            [num,den,T] = trf(o)                % peek num/den/T
+%
 %         Copyright(c): Bluenetics 2020
 %
 %         See also: CORASIM, SYSTEM, PEEK, ZPK, GAIN
 %
-   if (nargin == 1)
+   if (nargout > 1 && nargin == 1)
+      [oo,den,T] = peek(o);                      % forward to peek method
+   elseif (nargin == 1)
       if type(o,{'shell'})
          oo = system(o,{1,1});
       elseif type(o,{'szpk','zzpk','qzpk'})
