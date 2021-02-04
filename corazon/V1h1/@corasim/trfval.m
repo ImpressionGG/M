@@ -1,95 +1,63 @@
-function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response            
+function Gs = trfval(o,s)              % Value of Transfer Function           
 %
-% FQR  Frequency response of transfer function to given omega, where pro-
-%      vided omega arg is scaled with 'oscale' fgactor (option, default 1)
+% TRFVAL  Value of transfer function at given complex argument s
 %
-%		    [Gjw,~,dB] = fqr(G,omega)
-%		    [Gjw,~,dB] = fqr(G,omega,i,j)
+%		       Gs = trfval(G,s)
 %
-%      Auto omega:
+%         Example 1: frequency response
 %
-%		    [Gjw,omega] = fqr(G)         % also return (unscaled) omega range
-%		    [Gjw,omega] = fqr(G,[],i,j)  % indexed TRF matrix FQR
+%            G = trf(corasim,1,[4 2 1])
+%            Gjw = trf(G,0.5*sqrt(-1))    % Gjw = 0 - 1i
 %
-%	    Calculation of complex frequency response of a transfer function 
-%      G(s) = num(s(/den(s) (omega may be a vector argument).
-%	    The calculations depend on the type as follows:
+%         Example 2: transfer function value at zeros
 %
-%		     fqr(Gs,omega):  Gs(j*omega)		      (s-domain)
-%		     fqr(Hz,omega):  Hz(exp(j*omega*Ts))	(z-domain)
-%		     fqr(Gq,Omega):  Gq(j*Omega)		      (q-domain)
-%
-%      Remarks: system representations in modal form are computed in a 
-%      special way to achieve good numerical results for high system orders
-%
-%          oo = system(o,A,B,C,D)      % let oo be a modal form
-%          Fjw = rsp(oo,om,i,j)        % frequency response of Gij(j*om)
-%
-%      Expression based FQR calculation:
-%
-%         P = data(P,'fqr',{'/' {'modal' o 3 1} F0});
-%         Q = data(Q,'fqr',{'/' {'modal' o 3 3} F0});
-%         L0 = data(L0,'fqr',{'/',P,Q})
-%         Gjw = fqr(L0,om)
-%
-%      Supported operators for expression based FQR operation
-%
-%         'modal'            FQR of modal system representation
-%         '+'                sum
-%         '-'                difference
-%         '*'                product
-%         '/'                division
+%            oo = system(corasim,[-2 -4; 1 0],[1;0],[1 1])
+%            err = trfval(oo,-1);         % err = 5.5511e-17
+%            err = trfval(oo,vpa(-1))     % err = 0 for VPA arithmetics
 %
 %      Options:
-%         input              input index (default 1)
-%         output             output index (default 1)
-%         oscale             omega scaling factor (default 1)
+%         oscale             input argument scaling factor (default 1)
 %
-%      Copyright(c): Bluenetics 2020
+%      Copyright(c): Bluenetics 2021
 %
-%      See also: CORASIM, SYSTEM, PEEK, TRIM, BODE, TRFVAL
-%
-   if (nargin <= 1) || isempty(om)
-      oml = opt(o,{'omega.low',1e-5});
-      omh = opt(o,{'omega.high',1e5});
-      points = opt(o,{'omega.points',1000});
-      om = logspace(log10(oml),log10(omh),points);
-   end
-   
-      % scale omega 
+%      See also: CORASIM, SYSTEM, PEEK, TRIM, BODE, FQR
+%   
+      % scale oinput arg
       
-   Om = om * opt(o,{'oscale',1});
-   
-      % first check whether frequency response is expression based.
-      % if so this overrules all standard methods
-      
-   expr = data(o,'fqr');
-   if ~isempty(expr)
-      Gjw = Process(o,Om,expr);
-      if (nargout >= 3)
-         dB = 20*log10(abs(Gjw));
-      end
-      return
-   end
+   S = s * opt(o,{'oscale',1});
    
       % continue with standard methods, depending on type
 
-   jw = 1i*Om;                         % use scaled omega !!!
    switch o.type
-      case {'strf','qtrf'}
-         [num,den] = peek(o);
-         Gjw = polyval(num,jw) ./ polyval(den,jw);
+      case {'css','dss'}
+         [A,B,C,D] = system(o);
+         Gs = 0*S;                     % setup dimension
          
-      case {'ztrf','dss'}
+         if (length(D) > 1)
+            error('multi-I/O systems not supported');
+         end
+         
+             % calculate according to G(s) = C*inv(s*I-A)*B + D
+             
+         I = eye(size(A));
+         for (i=1:prod(size(S)))
+            si = S(i);
+            if isinf(si)
+               Phi = 0*I;
+            else
+               Phi = inv(si*I-A);
+            end
+            Gs(i) = C*Phi*B + D;
+         end
+         
+      case {'strf'}
          [num,den] = peek(o);
-         T = data(o,'T');
-         expjw = exp(jw*T);
-         Gjw = polyval(num,expjw) ./ polyval(den,expjw);
+         Gs = polyval(num,S) ./ polyval(den,S);
 
       case {'szpk','qzpk'}
          [z,p,k] = zpk(o);
          
-            % sort poles and zeros my abs value
+            % sort poles and zeros by abs value
             
          [~,idx] = sort(abs(z));
          z = z(idx);
@@ -97,7 +65,7 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
          [~,idx] = sort(abs(p));
          p = p(idx);
          
-         Gjw = k * ones(size(jw));
+         Gs = k * ones(size(S));
          
          nz = length(z);                % number of zeros
          np = length(p);                % number of poles
@@ -106,46 +74,12 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
             
          for (i=1:max(nz,np))
             if (i <= nz)
-               Gjw = Gjw .* (jw - z(i));
+               Gs = Gs .* (S - z(i));
             end
             if (i <= np)
-               Gjw = Gjw ./ (jw - p(i));
+               Gs = Gs ./ (S - p(i));
             end
          end
-
-      case 'css'
-         if (nargin < 3)
-            i = 1;
-         end
-         if (nargin < 4)
-            j = 1;
-         end
-         
-         oo = Partition(o);
-         if ismodal(oo)
-            Gjw = Modal(o,Om,i,j);
-         else
-            [num,den] = peek(o,i,j);
-            Gjw = polyval(num,jw) ./ polyval(den,jw);
-         end
-         
-      case {'modal'}
-         i = opt(o,{'output',1});
-         j = opt(o,{'input',1});
-         Gjw = Modal(o,Om,i,j);        % frequency response of modal Gij(s)
-         
-      case {'psiw'}
-         [psi,W,D] = data(o,'psi,W,D');
-         Gjw = psion(o,psi,Om,W) + D;
-      
-      otherwise
-         error('bad type');
-   end
-   
-      % calculate |G(jw)| in dB if requested as out arg 3
-      
-   if (nargout >= 3)
-      dB = 20*log10(abs(Gjw));
    end
 end
 

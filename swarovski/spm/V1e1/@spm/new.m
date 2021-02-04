@@ -18,7 +18,8 @@ function oo = new(o,varargin)          % SPM New Method
 %       See also: SPM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Mode2,@Mode3A,@Mode3B,@Mode3C,...
-                       @Academic1,@Academic2,@Schleif,@Motion,@Menu);
+                       @Academic1,@Academic2,@Schleif,@Order,...
+                       @Motion,@Menu);
    oo = gamma(oo);
 end
 
@@ -47,6 +48,22 @@ function oo = Menu(o)                  % New Menu
    ooo = mitem(oo,'Academic Sample #1',{@Create 'Academic1'});
    ooo = mitem(oo,'Academic Sample #2',{@Create 'Academic2'});
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'High Order Sample');
+   oooo = mitem(ooo,'Order 2',{@Create 'Order',2});
+   oooo = mitem(ooo,'Order 3',{@Create 'Order',3});
+   oooo = mitem(ooo,'Order 5',{@Create 'Order',5});
+   oooo = mitem(ooo,'Order 10',{@Create 'Order',10});
+   oooo = mitem(ooo,'Order 20',{@Create 'Order',20});
+   oooo = mitem(ooo,'Order 30',{@Create 'Order',30});
+   oooo = mitem(ooo,'Order 40',{@Create 'Order',40});
+   oooo = mitem(ooo,'Order 50',{@Create 'Order',50});
+   oooo = mitem(ooo,'Order 60',{@Create 'Order',60});
+   oooo = mitem(ooo,'Order 70',{@Create 'Order',70});
+   oooo = mitem(ooo,'Order 80',{@Create 'Order',80});
+   oooo = mitem(ooo,'Order 90',{@Create 'Order',90});
+   oooo = mitem(ooo,'Order 100',{@Create 'Order',100});
+   oooo = mitem(oo,'-');
+
    ooo = mitem(oo,'Schleifsaal Hypothese');
    %oooo = mitem(ooo,'80° @ Coupling 0.5 ',{@Create 'Schleif', 80,0.5});
    %oooo = mitem(ooo,'-');
@@ -298,7 +315,48 @@ function oo = Academic2(o)             % Academic Sample #2
 end
 
 %==========================================================================
-% Academic Object Samples
+% High Order Samples
+%==========================================================================
+
+function oo = Order(o)                 % HIgh Order Sample      
+%
+% ORDER setup an n-mode system
+%
+   n = arg(o,1);
+   
+   zeta = 0.1*ones(n,1);               % damping coefficients
+   if (n == 2)
+      omega = [3000 7000]';            % circular eigen frequencies
+   elseif (n == 3)
+      omega = [3000 7000 15000]';      % circular eigen frequencies
+   else
+      omega = (1:n)'*15000/n;          % circular eigen frequencies
+   end
+
+   a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
+   a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
+   
+%  M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
+   M = (1:n)'*[-5e-10 -7.0 -2.0e-8];
+  
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M'];
+   D = 0*C*B;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = sprintf('%g-Mode Sample',n);
+    
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+
+%==========================================================================
+% Schleifsaal Hypothese
 %==========================================================================
 
 function oo = Schleif(o)               % Schleifsaal Hypothese         

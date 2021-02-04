@@ -81,7 +81,11 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
                k = o.data.K;
                T = o.data.T;
             elseif type(o,{'css','dss'})
-               error('multi output not supported for ss representation');
+               o = zpk(o);             % convert to zpk representation
+               z = o.data.zeros;
+               p = o.data.poles;
+               k = o.data.K;
+               T = o.data.T;
             else
                [num,den] = peek(o);
                [z,p,k] = Zpk(o,num,den);
@@ -204,9 +208,14 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
 
       % remove relevant input
       
-   b = b(:,iu);
-   d = d(:,iu);
+   b = b(:,iu);   % + 0*a(1,1);
+   c = c + 0*a(1,1);
+      
+      % if we calculate with VPA arithmetics we have to make sure
+      % that d is also of type VPA, otherwise k would result in a double
 
+   d = d(:,iu) + 0*a(1,1);      % inherit VPA digits from a
+      
       % Do poles first, they're easy
       
    p = eig(a);
@@ -214,14 +223,14 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
       % now try zeros, they're harder
    
    [no,ns] = size(c);
-   z = zeros(ns,no) + inf;		% Set whole Z matrix to infinities
+   z = zeros(ns,no) + inf + 0*a(1,1);    % Set whole Z matrix to infinities
    
       % loop through outputs, finding zeros
       
    for i=1:no
       s1 = [a b;c(i,:) d(i)];
       s2 = diag([ones(1,ns) 0]);
-      zv = eig(s1,s2);
+      zv = Eig(s1,s2);
       
          % now put NS valid zeros into Z. There will always be at least one
          % NaN or infinity
@@ -246,6 +255,30 @@ end
 % Helper
 %==========================================================================
 
+function s  = Eig(A,B)                 % Solve General Eigenvalue Problem
+%
+% EIG   Solve general eigenvalue problem
+%
+%       see: http://fourier.eng.hmc.edu/e161/lectures/algebra/node7.html
+%
+   if isa(A,'double') && isa(B,'double')
+      s = eig(A,B);                   % use MATLAB builtin method
+      return
+   end
+   
+      % general eigenvalue problem: A*v = s*B*v
+      % set: mu = 1/s => A*v = 1/mu*B*v => A*mu*v = B*v 
+      % in case of det(A) ~= 0: A\B*v = mu*v, 
+      % means mu=1/s are the eigenvalues of A\B
+      
+   if (det(A) == 0)
+      error('cannot calculate generalized eigenvalues for singular A-matrix');
+   end
+   
+   M = A\B;
+   mu = eig(M);
+   s = 1./mu;
+end
 function oo = Create(o,z,p,K,T)        % Create ZPK Object             
    if (T > 0)
       oo = corasim('zzpk');

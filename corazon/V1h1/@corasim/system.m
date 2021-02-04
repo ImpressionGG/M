@@ -36,7 +36,7 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
 %
 %          See also: CORASIM
 %
-   if (nargin == 1) && (nargout == 1)
+   if (nargin == 1) && (nargout <= 1)
       o = Cast(o);
       return
    elseif (nargout > 1)
@@ -89,7 +89,7 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
    if (nargin < 4)
       C = [];  D = [];
    elseif (nargin < 5)
-      D = zeros(size(C,1),size(B,2));
+      D = 0*C*B;
    end
    
    abcdcheck(o,A,B,C,D);

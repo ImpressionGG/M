@@ -764,7 +764,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Stability(o)             % Stability Menu
+function oo = Stability(o)             % Stability Menu                
    setting(o,{'stability.algo'},'ss'); % stability algorithm
    setting(o,{'stability.points'},100);% points for diagram
    setting(o,{'stability.search'},25); % number of search points
@@ -772,7 +772,8 @@ function oo = Stability(o)             % Stability Menu
 
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Algorithm',{},'stability.algo');
-   choice(ooo,{{'Transfer function','trf'},{'State Space','ss'}},{});
+   choice(ooo,{{'Transfer function','trf'},{'State Space','ss'},...
+               {'Mixed Type','mix'}},{});
    
    ooo = mitem(oo,'Points',{},'stability.points');
    choice(ooo,[25 50 100 200 500 1000 2000],{});
@@ -836,7 +837,7 @@ function oo = Contact(o)               % Add Contact Menu Items
    oo = mitem(o,'Contact',{},'process.contact');
    choice(oo,list,{@CacheReset});
 end
-function oo = Coordinates(o)           % Add Coordinates Menu Items         
+function oo = Coordinates(o)           % Add Coordinates Menu Items    
    setting(o,{'process.phi'},0);
    
    oo = mitem(o,'Coordinates');

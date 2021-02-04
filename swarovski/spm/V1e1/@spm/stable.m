@@ -30,6 +30,10 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
      elseif isequal(algo,'ss')    % state space algorithm
         Sys0 = cook(oo,'Sys0');
         mu = opt(oo,{'process.mu',0.1});
+     elseif isequal(algo,'mix')   % mixed type algorithm
+        L0 = cook(oo,'L0');
+        Sys0 = system(L0);
+        mu = opt(oo,{'process.mu',0.1});
      else
         error('bad algo');
      end

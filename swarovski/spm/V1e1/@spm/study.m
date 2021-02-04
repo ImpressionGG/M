@@ -9,7 +9,7 @@ function oo = study(o,varargin)        % Do Some Studies
 %    See also: SPM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                       @Step,@Ramp,...
+                       @Step,@Ramp,@Transform,...
                        @PhiDouble,@PhiRational,...
                        @TrfmDouble,@TrfmRational,@TrfmInversion,...
                        @Quick,@Modal1,@Modal2,@Modal3,@Bilinear,...
@@ -32,6 +32,11 @@ function oo = Menu(o)                  % Setup Study Menu
    ooo = mitem(oo,'Rational',{@WithCuo,'TrfmRational'});   
    ooo = mitem(oo,'Inversion',{@WithCuo,'TrfmInversion'});   
 
+   oo = mitem(o,'Transformation');
+   ooo = mitem(oo,'Eigenvalues',{@WithCuo,'Transform','EV'});
+   ooo = mitem(oo,'ZPK Pole Quality',{@WithCuo,'Transform','ZpkSsPole'});
+   ooo = mitem(oo,'ZPK Zero Quality',{@WithCuo,'Transform','ZpkSsZero'});
+   
    oo = mitem(oo,'-');
    oo = mitem(o,'Step Response');
    ooo = mitem(oo,'Force Step F1',{@WithCuo,'Step'},1);
@@ -238,7 +243,7 @@ function o = TrfmRational(o)           % Rational Transfer Matrix
    end
    message(o,'Transfer Function G(1,1)',comment);
 end
-function o = TrfmInversion(o)          % Inversion Based Transfer Matrix        
+function o = TrfmInversion(o)          % Invers. Based Transfer Matrix 
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -260,6 +265,186 @@ function o = TrfmInversion(o)          % Inversion Based Transfer Matrix
    G = zpk(S);
    [z,p,k] = zpkdata(G);
    z = z{1};  p = p{1};   
+end
+
+%==========================================================================
+% Transformation
+%==========================================================================
+
+function o = Transform(o)
+   oo = current(o);
+   [A,B,C,D,omega] = cook(oo,'A,B,C,D,omega');
+   n = length(A)/2;
+   
+   mode = arg(o,1);
+   switch mode
+      case 'EV'
+         EvQuality(o);
+      case 'ZpkSsPole'
+         ZpkSsPoleQuality(o);
+      case 'ZpkSsZero'
+         ZpkSsZeroQuality(o);
+   end
+         
+   function o = EvQuality(o)
+         % check eigenvalue quality with double arithmetics
+
+      s = eig(A);
+      om = reshape(sort(abs(s)),2,n);
+      err = om(1,:)' - omega;
+
+      txt1 = sprintf('eigenvalue quality of double arithmetics: err = %g',...
+                     norm(err));
+
+         % check eigenvalue quality with VPA arithmetics
+
+      s = eig(vpa(A,32));
+      om = reshape(sort(abs(s)),2,n);
+      err = om(1,:)' - omega;
+
+      txt2 = sprintf('eigenvalue quality of VPA 32 digit arithmetics: err = %g',...
+                     norm(err));
+
+         % check eigenvalue quality with VPA arithmetics
+
+      s = eig(vpa(A,64));
+      om = reshape(sort(abs(s)),2,n);
+      err = om(1,:)' - omega;
+
+      txt3 = sprintf('eigenvalue quality of VPA 64 digit arithmetics: err = %g',...
+                     norm(err));
+
+         % report results
+
+      o = opt(o,'fontsize.comment',12);
+      message(o,'Numeric Quality',{txt1,txt2,txt3});
+
+      heading(cuo);
+   end
+   function o = ZpkSsPoleQuality(o)
+
+      % check pole quality with double arithmetics
+
+      G31 = cook(o,'G31');
+      [z,p,k] = zpk(G31);
+      
+      om = reshape(sort(abs(p)),2,n);
+      err = om(1,:)' - omega;
+
+      txt1 = sprintf('G31 pole quality of double arithmetics: err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt1);
+                  
+         % check pole quality with VPA 32 digit arithmetics
+
+      digits(32);
+      AA = vpa(A);  B1 = vpa(B(:,1));  C3 = vpa(C(3,:));
+      G31 = zpk(system(corasim,AA,B1,C3));
+      [z,p,k] = zpk(G31);
+      
+      om = reshape(sort(abs(p)),2,n);
+      err = om(1,:)' - omega;
+
+      txt2 = sprintf('G31  pole quality of VPA 32 digit arithmetics: err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt2);
+
+         % check pole quality with VPA 64 digit arithmetics
+
+      digits(64);
+      AA = vpa(A);  B1 = vpa(B(:,1));  C3 = vpa(C(3,:));
+      G31 = zpk(system(corasim,AA,B1,C3));
+      [z,p,k] = zpk(G31);
+
+      om = reshape(sort(abs(p)),2,n);
+      err = om(1,:)' - omega;
+
+      txt3 = sprintf('G31 pole quality of VPA 64 digit arithmetics: err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt3);
+
+                  % report results
+
+      o = opt(o,'fontsize.comment',12);
+      message(o,'Numeric Pole Quality of ZpkSs Transformation',{txt1,txt2,txt3});
+
+      digits(32);
+      heading(cuo);
+   end
+   function o = ZpkSsZeroQuality(o)
+                  
+         % check zero quality with double arithmetics
+                  
+      AA = A;  B1 = B(:,1);  C3 = C(3,:);
+      oo = system(corasim,AA,B1,C3);
+      G31 = zpk(oo);
+      [z,p,k] = zpk(G31);
+      
+          % start with a double based zero check
+          
+      err = trfval(oo,z);
+      txt3 = sprintf('G31 zero quality of double arithmetics (double based check): err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt3);
+
+          % repeat check VPA based
+          
+      digits(32);
+      err = trfval(oo,vpa(z));
+   
+      txt4 = sprintf('G31 zero quality of double arithmetics (VPA 32 based check): err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt4);
+                  
+         % check zero quality with VPA 32 arithmetics
+                  
+      digits(32);
+      AA = vpa(A);  B1 = vpa(B(:,1));  C3 = vpa(C(3,:));
+      oo = system(corasim,AA,B1,C3);
+      G31 = zpk(oo);
+      [z,p,k] = zpk(G31);
+      err = trfval(oo,z);
+      err = trfval(oo,vpa(z,64));
+   
+      txt5 = sprintf('G31 zero quality of VPA 32 digit arithmetics: err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt5);
+
+         % check zero quality with VPA 64 arithmetics
+            
+      digits(64);
+      AA = vpa(A);  B1 = vpa(B(:,1));  C3 = vpa(C(3,:));
+      oo = system(corasim,AA,B1,C3);
+      G31 = zpk(oo);
+      [z,p,k] = zpk(G31);
+      err = trfval(oo,z);
+      err = trfval(oo,vpa(z,64));
+   
+      txt6 = sprintf('G31 zero quality of VPA 64 digit arithmetics: err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt6);
+
+      digits(128);
+      AA = vpa(A);  B1 = vpa(B(:,1));  C3 = vpa(C(3,:));
+      oo = system(corasim,AA,B1,C3);
+      G31 = zpk(oo);
+      [z,p,k] = zpk(G31);
+      err = trfval(oo,z);
+      err = trfval(oo,vpa(z,64));
+   
+      txt7 = sprintf('G31 zero quality of VPA 128 digit arithmetics: err = %g',...
+                     norm(err));
+      fprintf('%s\n',txt7);
+
+                  % report results
+
+      o = opt(o,'fontsize.comment',12);
+      message(o,'Numeric Zero Quality of ZpkSs Transformation',...
+                {txt3,' ',txt4,txt5,txt6,txt7});
+
+      digits(32);
+      heading(cuo);
+   end
 end
 
 %==========================================================================
