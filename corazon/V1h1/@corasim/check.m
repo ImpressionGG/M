@@ -57,6 +57,9 @@ function err = check(o,G,mode)
          err = CheckPoles(o,G);
 
       case 'Zeros'
+         if (digs > 0)
+            G = vpa(G,digs);
+         end
          err = CheckZeros(o,G);
 
       case 'EV'
@@ -77,6 +80,10 @@ function err = check(o,G,mode)
          end
 
       case 'All'
+         if (digs > 0)
+            G = vpa(G,digs);
+         end
+         
          errp = CheckPoles(o,G);
          errz = CheckZeros(o,G);
 
@@ -84,10 +91,10 @@ function err = check(o,G,mode)
          nz = length(errz);
          n = max(np,nz);
 
-         np = [np(:),zeros(n-np,1)];
-         nz = [nz(:),zeros(n-nz,1)];
+         errp = [errp(:);  zeros(n-np,1)];
+         errz = [errz(:); zeros(n-nz,1)];
 
-         err = [nz,np];
+         err = [errz,errp];
 
       otherwise
          if (digs > 0)
@@ -140,6 +147,7 @@ function err = Residue(A,s)            % Residues of Char Equation
       one = ones(size(a0))';
       M = (s.*s)*one + s*a1' + ones(size(s))*a0';
       err = min(abs(M));
+      err = [err;err];                 % double, since conjugate complex
 
    else
       I = eye(size(A));
@@ -158,6 +166,5 @@ function err = CheckPoles(o,G)
 end
 function err = CheckZeros(o,G)
    [z,p,k] = zpk(G);
-   [A,B,C,D] = system(o); 
-   err = Residue(A,z);        
+   err = trfval(G,z);
 end

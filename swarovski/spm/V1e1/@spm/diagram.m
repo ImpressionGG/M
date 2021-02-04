@@ -22,6 +22,7 @@ function oo = diagram(o,varargin)
 %              diagram(o,'Nyq','G11',G11,sub)         % Nyquist diagram
 %              diagram(o,'Numeric','G11',G11,sub)     % numeric quality
 %              diagram(o,'Calc','L1',L1,sub)          % calculation diagram
+%              diagram(o,'Quality','G31',G31,sub)     % numeric quality
 %
 %           Options:
 %              critical:     plot critical frequency in bode plot
@@ -33,7 +34,7 @@ function oo = diagram(o,varargin)
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
                        @Mode,@Orbit,@Trf,@Weight,@Numeric,@Stability,...
                        @Step,@Vstep,@Astep,@Fstep,@Bode,@Magni,@Phase,...
-                       @Nyq,@Rloc,@Calc);
+                       @Nyq,@Rloc,@Calc,@Quality);
    oo = gamma(oo);
 end
 
@@ -733,6 +734,65 @@ function o = Numeric(o)                % Numeric Quality
          end
       end
    end
+end
+function o = Quality(o)                % ZPK-Quality                  
+   sub = o.either(arg(o,3),[1 1 1]);
+   G = arg(o,2);
+   sym = o.either(arg(o,1),Sym(G));
+
+   G = inherit(G,o);                   % inherit options
+   G = set(G,'name',sym);              % set name of transfer function
+   G = Color(G);
+   
+   if isempty(opt(G,'color'))
+      G = opt(G,'color','r');
+   end
+   
+   subplot(o,sub);
+   
+   oo = system(o);
+   digs = [0 32 64 128 256 512];
+   for (i = 1:length(digs)) 
+      oo = opt(oo,'digits',digs(i));
+      
+      perr = check(oo,G,'Poles');
+      perr = norm(perr);
+      if (perr == 0)
+         dBp(i) = -2000;
+      else
+         dBp(i) = 20*log10(perr);
+      end
+      plot(o,digs(i),dBp(i),'pr');
+      if (i>1)
+         plot(o,digs(i-1:i),dBp(i-1:i),'r1');
+      end
+         
+      
+      set(gca,'xlim',[0 max(digs)]);
+      set(gca,'xtick',digs);
+      hold on;
+      idle(o);
+      
+      zerr = check(oo,G,'Zeros');
+      zerr = norm(zerr);
+      if (zerr == 0)
+         dBz(i) = -2000;
+      else
+         dBz(i) = 20*log10(norm(zerr));
+      end
+      plot(o,digs(i),dBz(i),'obc');
+      if (i>1)
+         plot(o,digs(i-1:i),dBz(i-1:i),'bc1');
+      end
+      
+      idle(o);
+   end
+
+   set(gca,'ylim',[-2000 0]);
+   xlabel('precision [digits]');
+   ylabel('Z/P-error [dB] (red/blue)');
+   title([sym,': Numeric Zero/Pole/K Quality']);
+   subplot(o);                         % subplot done!
 end
 
 %==========================================================================

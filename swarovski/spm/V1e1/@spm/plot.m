@@ -23,7 +23,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @G31G33L0,@L0Shell,@MagniPhase,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
-                   @Stability,...
+                   @Stability,@ZpkQuality,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -108,6 +108,7 @@ function oo = TransferFunction(o)      % Transfer Function Menu
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'TrfWeight'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Numeric Quality',{@WithSpm,'TrfNumeric'});
+   ooo = mitem(oo,'ZPK Quality',{@WithSpm,'ZpkQuality'});
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -861,6 +862,20 @@ function o = TrfNumeric(o)             % Numeric FQR Check
    wij = W{i,j};
    diagram(o,'Numeric',{psi,wij},Gij,111);
    heading(o);
+end
+function o = ZpkQuality(o)                % Bode Plot                     
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+      
+   [list,objs,head] = GijSelect(o);
+   for (i=1:length(list))
+      Gij = list{i};
+      diagram(o,'Quality','',Gij,1111); 
+   end
+      
+   heading(o,head);
 end
 
 function [list,objs,head] = GijSelect(o) % Select Transfer Function    
