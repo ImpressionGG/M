@@ -197,6 +197,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add phi parameter for coordinate transformation
 % - fine tune and test SPM toolbox - good status :-)))
 % - check zero/pole quality of ss2zpk transformation in a study :-)
+% - add spm/system method
 %
 % Known bugs & wishlist
 % =========================
