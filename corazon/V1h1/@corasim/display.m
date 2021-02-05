@@ -86,7 +86,8 @@ function txt = display(o)              % Display Corasim Object
          end
             
       case {'szpk','zzpk','qzpk','psiw'}
-         oo = trf(o);                  % cast to trf type
+         oo = vpa(o,0);
+         oo = trf(oo);                  % cast to trf type
          [num,den] = peek(oo);
          if (nargout > 0)
             try
@@ -151,8 +152,9 @@ function txt = Ratio(o)                % Display Rational Function
       otherwise
          error('bad type');
    end
-   
-   [on,od] = peek(o);
+
+   oo = vpa(o,0);                      % covert to double
+   [on,od] = peek(oo);
    
       % fetch numerator ans denominator objects
       

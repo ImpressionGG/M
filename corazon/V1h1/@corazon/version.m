@@ -529,6 +529,7 @@ function VersionV1G
 % - corasim/system extended to convert from ss to zpk
 % - block permutation for zpk to ss
 % - add corasim/vpa and corasim/check methods
+% - pimp corasim/display to deal with VPA
 %
 %
 % Known Bugs / Wishlist
