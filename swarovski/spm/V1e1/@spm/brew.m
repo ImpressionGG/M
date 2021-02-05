@@ -631,11 +631,14 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
    end
    
    function Modal(o)                   % Gij(s) For Modal Forms              
+      digs = opt(o,{'precision.G',0});
+      
+      run = 0;
       for (i=1:m)
          for (j=1:i)
-            run = (j-1)*n+i; mm = n*(n+1)/2;
+            run = run+1; mm = m*(m+1)/2;
             msg = sprintf('%g of %g: brewing G(%g,%g)',run,mm,i,j);
-            progress(o,msg,(run-1)/m*100);
+            progress(o,msg,run/mm*100);
 
                % calculate Gij
 
@@ -645,7 +648,15 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
             W{j,i} = wij;                 % symmetric matrix
 
             sys = system(corasim,A,B(:,j),C(i,:),D(i,j));
-            Gij = zpk(sys);
+            if (digs == 0)
+               Gij = zpk(sys);
+            else
+               sys = vpa(sys,digs);
+               old = digits(digs);
+               Gij = zpk(sys);
+               %Gij = vpa(Gij,0);         % convert back to double
+               digits(old);
+            end
             Gij = CancelG(o,Gij);         % set cancel epsilon
             Gij = set(Gij,'brewed','TrfZpk');
             
@@ -1629,7 +1640,7 @@ end
 %==========================================================================
 
 function Gs = CancelG(o,Gs)            % Set Cancel Epsilon for G(s)   
-   digs = opt(o,{'select.digits',0});
+   digs = opt(o,{'precision.G',0});
    eps = opt(o,'cancel.G.eps');
    Gs = opt(Gs,'control.verbose',control(o,'verbose'),'digits',digs);
 

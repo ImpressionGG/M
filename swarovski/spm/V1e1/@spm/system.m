@@ -10,5 +10,6 @@ function oo = system(o)
 %
    [A,B,C,D] = cook(o,'A,B,C,D');
    oo = system(corasim,A,B,C,D);
+   
    oo = inherit(oo,o);
 end

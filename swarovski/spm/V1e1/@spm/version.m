@@ -199,6 +199,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - check zero/pole quality of ss2zpk transformation in a study :-)
 % - add spm/system method
 % - add plot>Quality menu item
+% - Gij ZPK-quality check implemented
 %
 % Known bugs & wishlist
 % =========================

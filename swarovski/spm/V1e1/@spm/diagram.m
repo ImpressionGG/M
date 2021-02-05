@@ -751,48 +751,60 @@ function o = Quality(o)                % ZPK-Quality
    subplot(o,sub);
    
    oo = system(o);
-   digs = [0 32 64 128 256 512];
+   digs = [0 32 64 128 256 512 1024];
+   idx = find(digs <= opt(o,{'precision.check',0}));
+   digs = digs(idx);
+   
+   Err0 = -10000;                      % Log10-representation for zero
+   
    for (i = 1:length(digs)) 
-      oo = opt(oo,'digits',digs(i));
+      oo = opt(oo,'digits',digs(i));  % set precision for checks
       
       perr = check(oo,G,'Poles');
-      perr = norm(perr);
-      if (perr == 0)
-         dBp(i) = -2000;
-      else
-         dBp(i) = 20*log10(perr);
-      end
-      plot(o,digs(i),dBp(i),'pr');
+      dBp(i) = LogErr(perr);        
+      semilogy(digs(i),dBp(i),'pr');
       if (i>1)
-         plot(o,digs(i-1:i),dBp(i-1:i),'r1');
+         hdl = semilogy(digs(i-1:i),dBp(i-1:i),'r');
+         set(hdl,'linewidth',1);
       end
-         
       
       set(gca,'xlim',[0 max(digs)]);
       set(gca,'xtick',digs);
       hold on;
+      subplot(o);
       idle(o);
       
       zerr = check(oo,G,'Zeros');
-      zerr = norm(zerr);
-      if (zerr == 0)
-         dBz(i) = -2000;
-      else
-         dBz(i) = 20*log10(norm(zerr));
-      end
-      plot(o,digs(i),dBz(i),'obc');
+      dBz(i) = LogErr(zerr);
+      hdl = semilogy(digs(i),dBz(i),'oc');
+      set(hdl,'linewidth',1,'color',o.color('cb'));
       if (i>1)
-         plot(o,digs(i-1:i),dBz(i-1:i),'bc1');
+         hdl = semilogy(digs(i-1:i),dBz(i-1:i),'c');
+         set(hdl,'linewidth',1,'color',o.color('cb'));
       end
       
+      subplot(o);
       idle(o);
    end
 
-   set(gca,'ylim',[-2000 0]);
+   semilogy([0 max(digs)],LogErr(1e-15)*[1 1],'w-.');
+   semilogy([0 max(digs)],LogErr(1e-100)*[1 1],'w-.');
+   
+   set(gca,'ylim',[Err0 -10]);
    xlabel('precision [digits]');
-   ylabel('Z/P-error [dB] (red/blue)');
+   ylabel('log10(Z/P-error) (red/blue) [dB]');
    title([sym,': Numeric Zero/Pole/K Quality']);
    subplot(o);                         % subplot done!
+   
+   function lerr = LogErr(errvec)
+      err = norm(errvec);
+      if (err == 0)
+         lerr = Err0;
+      else
+         %dB = 20*log10(err);
+         lerr = log10(err)
+      end
+   end
 end
 
 %==========================================================================

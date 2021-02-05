@@ -1159,7 +1159,8 @@ function o = EigenvalueCheck(o)       % Check Numeric Quality of EVs
    end
 end
 function ok = Vpa(o)                   % use var precision arithmetics?
-   digs = opt(o,'select.digits');
+assert(o);  % might be obsoleted!
+   digs = opt(o,'precision.G');
    if isempty(digs)
       ok = false;
    else

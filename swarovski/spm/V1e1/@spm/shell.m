@@ -870,30 +870,33 @@ function oo = Fqr(o)                   % Frequency Response Menu
               {@CacheReset});
 end
 function oo = Precision(o)             % Variable Presicion Menu       
-   setting(o,{'select.digits'},[]);
+   setting(o,{'precision.G'},0);
+   setting(o,{'precision.check'},0);
    setting(o,{'select.controltoolbox'},0);
    
    oo = mitem(o,'Precision');
-   ooo = mitem(oo,'VPA Digits',{},'select.digits');
-   choice(ooo,{{'Off',[]},{},{'VPA 32',32},{'VPA 100',100},...
-               {'VPA 200',200},{'VPA 500',500},{'VPA 1000',1000}},...
+   ooo = mitem(oo,'G(s)',{},'precision.G');
+   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
+               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
                {@DigitCb});
+   ooo = mitem(oo,'Check',{},'precision.check');
+   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
+               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
+               {@DigitCb});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Use Control Toolbox',{},'select.controltoolbox');
    check(ooo,{@ControlCb});
    
    function o = DigitCb(o)
-      digs = setting(o,'select.digits');
-      if isempty(digs)
-         CacheReset(o);
-      else
-         try
-            digits(digs);
-            CacheReset(o);
-         catch
-            choice(o,'select.digits',[]);
-            message(o,'Selection rejected!',...
-                      {'Seems that Symbolic Toolbox is not supported!'});
-         end
+      CacheReset(o);
+      try
+         old = digits(32);
+         digits(old);                  % and restore immediately
+      catch
+         choice(o,'precision.G',0);
+         choice(o,'precision.check',0);
+         message(o,'Selection rejected!',...
+                   {'Seems that Symbolic Toolbox is not supported!'});
       end
    end
    function o = ControlCb(o)

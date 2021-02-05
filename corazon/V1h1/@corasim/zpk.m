@@ -49,7 +49,7 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
          if (nargout <= 1)             % cast to ZPK object
             if type(o,{'szpk','zzpk','qzpk'})
                oo = o;                 % nothing left to do
-            elseif type(o,{'css'})
+            elseif type(o,{'css','dss'})
                [A,B,C,D] = system(o);
                if (size(B,2) ~= 1 || size(C,1) ~= 1)
                   error('MIMO systems not supported');
@@ -271,12 +271,15 @@ function s  = Eig(A,B)                 % Solve General Eigenvalue Problem
       % set: mu = 1/s => A*v = 1/mu*B*v => A*mu*v = B*v 
       % in case of det(A) ~= 0: A\B*v = mu*v, 
       % means mu=1/s are the eigenvalues of A\B
-      
+   
+fprintf('zpk/Eig(): 1) calc det(A) ...\n');      
    if (det(A) == 0)
       error('cannot calculate generalized eigenvalues for singular A-matrix');
    end
    
+fprintf('zpk/Eig(): 2) calc M = A\\B ...\n');      
    M = A\B;
+fprintf('zpk/Eig(): 3) calc mu = eig(M) ...\n');      
    mu = eig(M);
    s = 1./mu;
 end

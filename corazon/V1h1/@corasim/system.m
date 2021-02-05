@@ -96,7 +96,11 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
    
    o.data = [];
    if (nargin == 6)
-      o = type(o,'dss');
+      if (T == 0)
+         o = type(o,'css');
+      else (T > 0)
+         o = type(o,'dss');
+      end
       o = data(o, 'A,B,C,D,T', A,B,C,D,T);
    else
       T = 0;
