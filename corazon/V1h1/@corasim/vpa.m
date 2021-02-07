@@ -37,7 +37,12 @@ function oo = vpa(o,digits)
             D = vpa(D,digits);
             T = vpa(T,digits);
          end
-         oo = system(o,A,B,C,D,T);
+         oo = o;
+         oo.data.A = A;
+         oo.data.B = B;
+         oo.data.C = C;
+         oo.data.D = D;
+         oo.data.T = T;
          
       case {'strf','ztrf','qtrf'}
          [num,den,T] = trf(o);
@@ -54,8 +59,11 @@ function oo = vpa(o,digits)
             den = vpa(den,digits);  
             T = vpa(T,digits);
          end
-         oo = trf(o,num,den,T);
-      
+         oo = o;
+         oo.data.num = num;
+         oo.data.den = den;
+         oo.data.K = k;
+       
       case {'szpk','zzpk','qzpk'}
          [z,p,k,T] = zpk(o);
          if isnan(digits)              % use digit default
@@ -68,8 +76,23 @@ function oo = vpa(o,digits)
             z = vpa(z,digits);  p = vpa(p,digits);  
             k = vpa(k,digits);  T = vpa(T,digits);
          end
-         oo = zpk(o,z,p,k,T);
+         oo = o;
+         oo.data.zeros = z;
+         oo.data.poles = p;
+         oo.data.K = k;
+         oo.data.T = T;
 
+      case 'matrix'
+         [m,n] = size(o);
+         for (i=1:m)
+            for (j=1:n)
+               Gij = peek(o,i,j);
+               Gij = vpa(Gij,digits);
+               o = poke(o,Gij,i,j);
+            end
+            oo = o;
+         end
+         
       otherwise
          error('type not supported for VPA conversion');
    end

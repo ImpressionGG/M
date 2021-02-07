@@ -200,6 +200,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add spm/system method
 % - add plot>Quality menu item
 % - Gij ZPK-quality check implemented
+% - Precision plot implemented
 %
 % Known bugs & wishlist
 % =========================

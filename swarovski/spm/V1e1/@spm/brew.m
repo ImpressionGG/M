@@ -643,22 +643,33 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
                % calculate Gij
 
             mi = M(:,i)';  mj = M(:,j);
-            wij = (mi(:).*mj(:))';        % weight vector
-            W{i,j} = wij;                 % store as matrix element
-            W{j,i} = wij;                 % symmetric matrix
-
+ 
             sys = system(corasim,A,B(:,j),C(i,:),D(i,j));
             if (digs == 0)
+               wij = (mi(:).*mj(:))';     % weight vector
+               psiw = [psi,wij(:)];
+
                Gij = zpk(sys);
             else
                sys = vpa(sys,digs);
                old = digits(digs);
+               
+               mi = vpa(mi,digs);
+               mj = vpa(mj,digs);
+               psi = vpa(psi,digs);
+               wij = (mi(:).*mj(:))';     % weight vector
+               psiw = [psi,wij(:)];
+               
                Gij = zpk(sys);
-               %Gij = vpa(Gij,0);         % convert back to double
                digits(old);
             end
+ 
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+            
+            Gij.data.digits = digs;
             Gij = CancelG(o,Gij);         % set cancel epsilon
-            Gij = set(Gij,'brewed','TrfZpk');
+            Gij = data(Gij,'brewed','TrfZpk');
             
             if control(o,'verbose') >= 2
                fprintf('G%g%g(s):\n',i,j)
@@ -669,7 +680,7 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
                % green color option (indicating free system TRF)
                
             Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
-            Gij.data.psiw = [psi,wij(:)];
+            Gij.data.psiw = psiw;
             Gij = opt(Gij,'color','g');
 
             G = poke(G,Gij,i,j);          % lower half diagonal element
@@ -678,6 +689,9 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
             end
          end
       end
+      
+      G.data.digits = digs;
+      G = data(G,'brewed','TrfZpk');
       
          % characteristic transfer functions
          
@@ -690,7 +704,7 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
       oo = cache(oo,'trf.Gpsi',Gpsi);  
    end
 end
-function oo = TrfCtbox(o)              % Control Toolbox Transfer Matrix        
+function oo = TrfCtbox(o)              % Control Toolbox Trf. Matrix   
    oo = brew(o,'System');              % brew system matrices
    
       % get a1,a0 and M

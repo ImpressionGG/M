@@ -22,7 +22,7 @@ function oo = diagram(o,varargin)
 %              diagram(o,'Nyq','G11',G11,sub)         % Nyquist diagram
 %              diagram(o,'Numeric','G11',G11,sub)     % numeric quality
 %              diagram(o,'Calc','L1',L1,sub)          % calculation diagram
-%              diagram(o,'Quality','G31',G31,sub)     % numeric quality
+%              diagram(o,'Precision','G31',G31,sub)   % numeric precision
 %
 %           Options:
 %              critical:     plot critical frequency in bode plot
@@ -34,7 +34,7 @@ function oo = diagram(o,varargin)
    [gamma,oo] = manage(o,varargin,@Force,@Elongation,@Acceleration,...
                        @Mode,@Orbit,@Trf,@Weight,@Numeric,@Stability,...
                        @Step,@Vstep,@Astep,@Fstep,@Bode,@Magni,@Phase,...
-                       @Nyq,@Rloc,@Calc,@Quality);
+                       @Nyq,@Rloc,@Calc,@Precision);
    oo = gamma(oo);
 end
 
@@ -735,7 +735,7 @@ function o = Numeric(o)                % Numeric Quality
       end
    end
 end
-function o = Quality(o)                % ZPK-Quality                  
+function o = Precision(o)              % ZPK Precision                                   
    sub = o.either(arg(o,3),[1 1 1]);
    G = arg(o,2);
    sym = o.either(arg(o,1),Sym(G));
@@ -768,7 +768,7 @@ function o = Quality(o)                % ZPK-Quality
          set(hdl,'linewidth',1);
       end
       
-      set(gca,'xlim',[0 max(digs)]);
+      set(gca,'xlim',[0 max([digs,1])]);
       set(gca,'xtick',digs);
       hold on;
       subplot(o);
@@ -793,7 +793,9 @@ function o = Quality(o)                % ZPK-Quality
    set(gca,'ylim',[Err0 -10]);
    xlabel('precision [digits]');
    ylabel('log10(Z/P-error) (red/blue) [dB]');
-   title([sym,': Numeric Zero/Pole/K Quality']);
+   
+   digs = data(G,{'digits',0});
+   title(sprintf([sym,': Zero/Pole/K Quality (Precision: %g digits)'],digs));
    subplot(o);                         % subplot done!
    
    function lerr = LogErr(errvec)

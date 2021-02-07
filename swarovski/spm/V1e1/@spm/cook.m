@@ -161,6 +161,21 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
       case 'G'
          oo = cache(o,o,'trf');        % hard refresh trf cache 
          oo = cache(oo,'trf.G');
+
+            % optionally convert G back from VPA to double representation
+            
+         if ~opt(o,{'precision.Gcook',0})
+            oo = vpa(oo,0);
+            oo.data.digits = -abs(oo.data.digits);
+            [m,n] = size(oo);
+            for (i=1:m)
+               for (j=1:n)
+                  Gij = peek(oo,i,j);
+                  Gij.data.digits = -abs(data(Gij,{'digits',0}));
+                  oo = poke(oo,Gij,i,j);
+               end
+            end
+         end
          
       case 'Gpsi'
          oo = cache(o,o,'trf');        % hard refresh trf cache 
@@ -170,6 +185,13 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,o,'trf');        % hard refresh trf cache 
          G = cache(oo,'trf.G');
          oo = peek(G,i,j);
+
+            % optionally convert G back from VPA to double representation
+            
+         if ~opt(o,{'precision.Gcook',0})
+            oo = vpa(oo,0);
+            oo.data.digits = -abs(data(oo,{'digits',0}));
+         end
 
          % constrained transfer matrix
          

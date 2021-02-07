@@ -870,19 +870,24 @@ function oo = Fqr(o)                   % Frequency Response Menu
               {@CacheReset});
 end
 function oo = Precision(o)             % Variable Presicion Menu       
-   setting(o,{'precision.G'},0);
-   setting(o,{'precision.check'},0);
+   setting(o,{'precision.G'},0);       % VPA digits of G(s) calculation
+   setting(o,{'precision.Gcook'},0);   % G(s) cooking as double   
+   setting(o,{'precision.check'},128);
    setting(o,{'select.controltoolbox'},0);
    
    oo = mitem(o,'Precision');
-   ooo = mitem(oo,'G(s)',{},'precision.G');
+   ooo = mitem(oo,'G(s) Calculation',{},'precision.G');
    choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
                {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
                {@DigitCb});
+   
+   ooo = mitem(oo,'G(s) Cooking',{},'precision.Gcook');
+   choice(ooo,{{'Double',0},{'VPA',1}},{});
+
    ooo = mitem(oo,'Check',{},'precision.check');
    choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
                {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
-               {@DigitCb});
+               {});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Use Control Toolbox',{},'select.controltoolbox');
    check(ooo,{@ControlCb});
@@ -894,7 +899,7 @@ function oo = Precision(o)             % Variable Presicion Menu
          digits(old);                  % and restore immediately
       catch
          choice(o,'precision.G',0);
-         choice(o,'precision.check',0);
+         choice(o,'precision.Gcook',0);
          message(o,'Selection rejected!',...
                    {'Seems that Symbolic Toolbox is not supported!'});
       end

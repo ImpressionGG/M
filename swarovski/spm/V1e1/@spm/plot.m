@@ -23,7 +23,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @G31G33L0,@L0Shell,@MagniPhase,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
-                   @Stability,@ZpkQuality,...
+                   @Stability,@ZpkPrecision,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -108,7 +108,7 @@ function oo = TransferFunction(o)      % Transfer Function Menu
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'TrfWeight'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Numeric Quality',{@WithSpm,'TrfNumeric'});
-   ooo = mitem(oo,'ZPK Quality',{@WithSpm,'ZpkQuality'});
+   ooo = mitem(oo,'ZPK Precision',{@WithSpm,'ZpkPrecision'});
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -863,7 +863,7 @@ function o = TrfNumeric(o)             % Numeric FQR Check
    diagram(o,'Numeric',{psi,wij},Gij,111);
    heading(o);
 end
-function o = ZpkQuality(o)                % Bode Plot                     
+function o = ZpkPrecision(o)           % Zero/Pole Precision           
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -872,7 +872,7 @@ function o = ZpkQuality(o)                % Bode Plot
    [list,objs,head] = GijSelect(o);
    for (i=1:length(list))
       Gij = list{i};
-      diagram(o,'Quality','',Gij,1111); 
+      diagram(o,'Precision','',Gij,1111); 
    end
       
    heading(o,head);
