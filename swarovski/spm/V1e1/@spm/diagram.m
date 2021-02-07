@@ -803,8 +803,7 @@ function o = Precision(o)              % ZPK Precision
       if (err == 0)
          lerr = Err0;
       else
-         %dB = 20*log10(err);
-         lerr = log10(err)
+         lerr = log10(err);
       end
    end
 end

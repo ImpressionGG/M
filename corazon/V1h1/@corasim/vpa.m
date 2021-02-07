@@ -76,6 +76,21 @@ function oo = vpa(o,digits)
             z = vpa(z,digits);  p = vpa(p,digits);  
             k = vpa(k,digits);  T = vpa(T,digits);
          end
+         
+            % zeros and poles in VPA representation might have a
+            % representation in double as infinity, and have to be
+            % eliminated
+            
+         idx = find(isinf(p));
+         if ~isempty(idx)
+            p(idx) = [];
+         end
+         
+         idx = find(isinf(z));
+         if ~isempty(idx)
+            z(idx) = [];
+         end
+         
          oo = o;
          oo.data.zeros = z;
          oo.data.poles = p;

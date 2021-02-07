@@ -530,6 +530,7 @@ function VersionV1G
 % - block permutation for zpk to ss
 % - add corasim/vpa and corasim/check methods
 % - pimp corasim/display to deal with VPA
+% - bug fix in corasim/vpa: eliminate inf in zero poles after double conversion
 %
 %
 % Known Bugs / Wishlist
