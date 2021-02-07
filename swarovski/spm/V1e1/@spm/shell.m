@@ -372,6 +372,9 @@ function oo = View(o)                  % View Menu
    ooo = Weight(oo);                   % add Weight diagram settings menu
    ooo = Critical(oo);                 % add Critical settings menu
    
+   ooo = mitem(o,'-');
+   ooo = Miscellaneous(oo);            % add Miscellaneous menu        
+   
    plugin(o,'spm/shell/View');         % plug point
 
    function o = Cls(o)
@@ -593,6 +596,13 @@ function oo = Critical(o)              % Critical Frequency Menu
    oo = mitem(o,'Critical');
    ooo = mitem(oo,'Show',{},'view.critical');
    choice(ooo,{{'Off',0},{'On',1}},{});
+end
+function oo = Miscellaneous(o)         % Miscellaneous Menu            
+   setting(o,{'view.precision'},1);    % current settings
+   
+   oo = mitem(o,'Miscellaneous');
+   ooo = mitem(oo,'Precision',{},'view.precision');
+   choice(ooo,{{'Current Settings',1},{'Comparison',2}},{});
 end
 
 %==========================================================================

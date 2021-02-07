@@ -869,13 +869,31 @@ function o = ZpkPrecision(o)           % Zero/Pole Precision
       return
    end
       
-   [list,objs,head] = GijSelect(o);
-   for (i=1:length(list))
-      Gij = list{i};
-      diagram(o,'Precision','',Gij,1111); 
-   end
+   mode = opt(o,{'view.precision',1});
+   if (mode == 1)                   % current settings
+      [list,objs,head] = GijSelect(o);
+      for (i=1:length(list))
+         Gij = list{i};
+         diagram(o,'Precision','',Gij,1111);
+      end
+   elseif (mode == 2)               % comparison
+      o = opt(o,'precision.Gcook',1);
+      [list,~,~] = GijSelect(o);
+      for (i=1:length(list))
+         Gij = list{i};
+         diagram(o,'Precision','',Gij,2111);
+      end
       
-   heading(o,head);
+      o = opt(o,'precision.Gcook',0);
+      [list,~,~] = GijSelect(o);
+      for (i=1:length(list))
+         Gij = list{i};
+         diagram(o,'Precision','',Gij,2121);
+      end
+   end
+   
+      
+   heading(o);
 end
 
 function [list,objs,head] = GijSelect(o) % Select Transfer Function    
