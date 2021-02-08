@@ -668,6 +668,7 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
             W{j,i} = wij;                 % symmetric matrix
             
             Gij.data.digits = digs;
+            Gij.data.idx = [i j];
             Gij = CancelG(o,Gij);         % set cancel epsilon
             Gij = data(Gij,'brewed','TrfZpk');
             
@@ -744,8 +745,17 @@ function oo = TrfCtbox(o)              % Control Toolbox Trf. Matrix
    end
    
    function Modal(o)                   % Gij(s) For Modal Forms        
-      sys = ss(A,B,C,D);
-      Gs = zpk(sys);
+      digs = opt(o,{'precision.G',0});
+      if (digs == 0)
+         sys = ss(A,B,C,D);
+         Gs = zpk(sys);                % from control toolbox
+      else
+         sys = ss(vpa(A,digs),vpa(B,digs),vpa(C,digs),vpa(D,digs));
+         old = digits(digs);
+         Gs = zpk(sys);                % from control toolbox
+         digits(old);
+      end
+      
       [z,p,k] = zpkdata(Gs);
       
       for (i=1:m)
@@ -757,13 +767,17 @@ function oo = TrfCtbox(o)              % Control Toolbox Trf. Matrix
                % calculate Gij
 
             mi = M(:,i)';  mj = M(:,j);
-            wij = (mi(:).*mj(:))';        % weight vector
-            W{i,j} = wij;                 % store as matrix element
-            W{j,i} = wij;                 % symmetric matrix
+            wij = (mi(:).*mj(:))';     % weight vector
+            W{i,j} = wij;              % store as matrix element
+            W{j,i} = wij;              % symmetric matrix
 
             Gij = zpk(G,z{i,j},p{i,j},k(i,j));
-            Gij = CancelG(o,Gij);         % set cancel epsilon
-            Gij = set(Gij,'brewed','TrfCtbox');
+            
+            Gij = CancelG(o,Gij);      % set cancel epsilon
+            
+            Gij = data(Gij,'idx',[i j]);
+            Gij = data(Gij,'digits',digs);
+            Gij = data(Gij,'brewed','TrfCtbox');
             
             if control(o,'verbose') >= 2
                fprintf('G%g%g(s):\n',i,j)
@@ -783,6 +797,9 @@ function oo = TrfCtbox(o)              % Control Toolbox Trf. Matrix
             end
          end
       end
+     
+      G = data(G,'brewed','TrfCtbox');
+      G = data(G,'digits',digs);
       
          % characteristic transfer functions
          

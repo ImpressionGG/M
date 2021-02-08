@@ -202,6 +202,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - Gij ZPK-quality check implemented
 % - Precision plot implemented
 % - View>Miscellaneous menu added
+% - pimp check algorithm
 %
 % Known bugs & wishlist
 % =========================

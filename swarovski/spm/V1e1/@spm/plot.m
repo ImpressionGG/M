@@ -23,7 +23,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @G31G33L0,@L0Shell,@MagniPhase,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
-                   @Stability,@ZpkPrecision,...
+                   @Stability,@GijPrecision,@L0Precision,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -108,7 +108,7 @@ function oo = TransferFunction(o)      % Transfer Function Menu
    ooo = mitem(oo,'Modal Weights',{@WithCuo,'TrfWeight'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Numeric Quality',{@WithSpm,'TrfNumeric'});
-   ooo = mitem(oo,'ZPK Precision',{@WithSpm,'ZpkPrecision'});
+   ooo = mitem(oo,'ZPK Precision',{@WithSpm,'GijPrecision'});
 end
 function oo = TransferMatrix(o)        % Transfer Matrix Menu          
    oo = current(o);
@@ -226,6 +226,7 @@ function oo = Principal(o)             % Pricipal Menu
    oooo = mitem(ooo,'L0(s) = G31(s)/G33(s)',{@WithSpm,'G31G33L0'});
    oooo = mitem(ooo,'-');
    oooo = mitem(ooo,'Bode Plot',{@WithSpm,'MagniPhase','L0'});
+   oooo = mitem(ooo,'ZPK Precision',{@WithSpm,'L0Precision'});
 end
 function oo = CriticalLoop(o)          % Critical Loop Menu            
    oo = mitem(o,'Critical Loop');
@@ -863,12 +864,14 @@ function o = TrfNumeric(o)             % Numeric FQR Check
    diagram(o,'Numeric',{psi,wij},Gij,111);
    heading(o);
 end
-function o = ZpkPrecision(o)           % Zero/Pole Precision           
+function o = GijPrecision(o)           % Zero/Pole Precision           
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
       
+   o = cache(o,o,'trf');               % hard refresh trf cache segment
+   
    mode = opt(o,{'view.precision',1});
    if (mode == 1)                   % current settings
       [list,objs,head] = GijSelect(o);
@@ -1650,6 +1653,18 @@ function o = L0Bode(o)                 % L0(s) Bode Plot
    CriticalFrequency(o,{o},211);
    CriticalFrequency(o,{o},212);
    
+   heading(o);
+end
+function o = L0Precision(o)            % Zero/Pole Precision           
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+      
+   o = cache(o,o,'principal');         % hard refresh principal cache segment
+   L0 = cook(o,'L0');
+   diagram(o,'Precision','',L0,1111);
+      
    heading(o);
 end
 

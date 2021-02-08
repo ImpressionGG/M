@@ -750,47 +750,24 @@ function o = Precision(o)              % ZPK Precision
    
    subplot(o,sub);
    
-   oo = system(o);
    digs = [0 32 64 128 256 512 1024];
    idx = find(digs <= opt(o,{'precision.check',0}));
    digs = digs(idx);
    
    Err0 = -10000;                      % Log10-representation for zero
    
-   for (i = 1:length(digs)) 
-      oo = opt(oo,'digits',digs(i));  % set precision for checks
-      
-      perr = check(oo,G,'Poles');
-      dBp(i) = LogErr(perr);        
-      semilogy(digs(i),dBp(i),'pr');
-      if (i>1)
-         hdl = semilogy(digs(i-1:i),dBp(i-1:i),'r');
-         set(hdl,'linewidth',1);
-      end
-      
-      set(gca,'xlim',[0 max([digs,1])]);
-      set(gca,'xtick',digs);
-      hold on;
-      subplot(o);
-      idle(o);
-      
-      zerr = check(oo,G,'Zeros');
-      dBz(i) = LogErr(zerr);
-      hdl = semilogy(digs(i),dBz(i),'oc');
-      set(hdl,'linewidth',1,'color',o.color('cb'));
-      if (i>1)
-         hdl = semilogy(digs(i-1:i),dBz(i-1:i),'c');
-         set(hdl,'linewidth',1,'color',o.color('cb'));
-      end
-      
-      subplot(o);
-      idle(o);
+   if (sym(1) == 'G')
+      PlotGij(o);
+   elseif (sym(1) == 'L')
+      PlotL0(o);
+   else
+      error('not supported');
    end
-
+   
    semilogy([0 max(digs)],LogErr(1e-15)*[1 1],'w-.');
    semilogy([0 max(digs)],LogErr(1e-100)*[1 1],'w-.');
    
-   set(gca,'ylim',[Err0 -10]);
+   set(gca,'ylim',[Err0 -1]);
    xlabel('precision [digits]');
    ylabel('log10(Z/P-error) (red/blue) [dB]');
    
@@ -798,6 +775,71 @@ function o = Precision(o)              % ZPK Precision
    title(sprintf([sym,': Zero/Pole/K Quality (Precision: %g digits)'],digs));
    subplot(o);                         % subplot done!
    
+   function PlotGij(o)
+      oo = system(o);
+      for (i = 1:length(digs)) 
+         oo = opt(oo,'digits',digs(i));  % set precision for checks
+
+         perr = check(oo,G,'Poles');
+         dBp(i) = LogErr(perr);        
+         semilogy(digs(i),dBp(i),'pr');
+         if (i>1)
+            hdl = semilogy(digs(i-1:i),dBp(i-1:i),'r');
+            set(hdl,'linewidth',1);
+         end
+
+         set(gca,'xlim',[0 max([digs,1])]);
+         set(gca,'xtick',digs);
+         hold on;
+         subplot(o);
+         idle(o);
+
+         zerr = check(oo,G,'Zeros');
+         dBz(i) = LogErr(zerr);
+         hdl = semilogy(digs(i),dBz(i),'oc');
+         set(hdl,'linewidth',1,'color',o.color('cb'));
+         if (i>1)
+            hdl = semilogy(digs(i-1:i),dBz(i-1:i),'c');
+            set(hdl,'linewidth',1,'color',o.color('cb'));
+         end
+
+         subplot(o);
+         idle(o);
+      end
+   end
+   function PlotL0(o)
+      oo = system(o);
+      L0 = G;
+      for (i = 1:length(digs)) 
+         oo = opt(oo,'digits',digs(i));  % set precision for checks
+
+         perr = check(oo,G,'Poles');
+         dBp(i) = LogErr(perr);        
+         semilogy(digs(i),dBp(i),'pr');
+         if (i>1)
+            hdl = semilogy(digs(i-1:i),dBp(i-1:i),'r');
+            set(hdl,'linewidth',1);
+         end
+
+         set(gca,'xlim',[0 max([digs,1])]);
+         set(gca,'xtick',digs);
+         hold on;
+         subplot(o);
+         idle(o);
+
+         zerr = check(oo,G,'Zeros');
+         dBz(i) = LogErr(zerr);
+         hdl = semilogy(digs(i),dBz(i),'oc');
+         set(hdl,'linewidth',1,'color',o.color('cb'));
+         if (i>1)
+            hdl = semilogy(digs(i-1:i),dBz(i-1:i),'c');
+            set(hdl,'linewidth',1,'color',o.color('cb'));
+         end
+
+         subplot(o);
+         idle(o);
+      end
+   end
    function lerr = LogErr(errvec)
       err = norm(errvec);
       if (err == 0)

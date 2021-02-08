@@ -59,6 +59,7 @@ function err = check(o,G,mode)
       case 'Zeros'
          if (digs > 0)
             G = vpa(G,digs);
+            o = vpa(o,digs);
          end
          err = CheckZeros(o,G);
 
@@ -162,9 +163,49 @@ end
 function err = CheckPoles(o,G)
    [z,p,k] = zpk(G);
    [A,B,C,D] = system(o); 
-   err = Residue(A,p);        
+   [a0,a1] = Modal(A);
+   n = length(a0);
+
+   if true || isempty(a0)              % no modal form
+      err = Residue(A,p);        
+   else                                % modal form
+      psi = [1+0*a1(:) a1(:) a0(:)];
+      
+      p = p(:);
+      P = [p.*p, p, 1+0*p].';
+      PsiP = psi*P;
+      
+      err = prod(PsiP);
+      err = err(:);
+   end
 end
 function err = CheckZeros(o,G)
    [z,p,k] = zpk(G);
-   err = trfval(G,z);
+   
+   [A,B,C,D,T] = system(o);
+   [a0,a1] = Modal(A);
+   n = length(a0);
+
+   if (size(C,1) > 1 || size(B,2) > 1)
+      idx = data(G,'idx');
+      C = C(idx(1),:);  
+      B = B(:,idx(2));
+      D = D(idx(1),idx(2));
+   end
+      
+   if isempty(a0)                      % no modal form
+      oo = system(o,A,B,C,D,T);
+      err = trfval(oo,z);
+   else                                % modal form
+      psi = [1+0*a1(:) a1(:) a0(:)];
+      w = C(1:n)'.*B(n+1:end);
+      
+      z = z(:);
+      Z = [z.*z, z, 1+0*z].';
+      PsiZ = psi*Z;
+      PhiZ = 1./PsiZ;
+      
+      err = w'*PhiZ;
+      err = err(:);
+   end
 end

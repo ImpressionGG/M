@@ -1017,3 +1017,15 @@ function r = RandInt(n)                % Random Integer Number
    end
 end
 
+% stability:
+%
+% x`= v
+% v`= A21*x + A22*v + B*u
+% y = C1*x + D
+% u = mu*y
+%
+% L0 = P/Q
+% T0 = L0/(1+L0)
+
+
+

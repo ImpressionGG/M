@@ -40,15 +40,21 @@ function Gs = trfval(o,s)              % Value of Transfer Function
              % calculate according to G(s) = C*inv(s*I-A)*B + D
              
          I = eye(size(A));
-         for (i=1:prod(size(S)))
+         n = prod(size(S));
+         for (i=1:n)
+            %progress(o,sprintf('%g of %g: TRF evaluation',i,n),i/n*100);
             si = S(i);
             if isinf(si)
                Phi = 0*I;
+               Gs(i) = D;
             else
-               Phi = inv(si*I-A);
+               Gs(i) = C*((si*I-A)\B) + D;
             end
-            Gs(i) = C*Phi*B + D;
          end
+         %progress(o);
+         
+      case {'psiw'}
+         [psi,w] = data(o,'psi,w');
          
       case {'strf'}
          [num,den] = peek(o);
