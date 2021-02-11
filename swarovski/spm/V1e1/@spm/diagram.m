@@ -813,7 +813,11 @@ function o = Precision(o)              % ZPK Precision
       for (i = 1:length(digs)) 
          oo = opt(oo,'digits',digs(i));  % set precision for checks
 
-         perr = check(oo,G,'Poles');
+            % poles of L0 must be zeros of 1/L0 must be zeros of G33(s)
+            
+         L0inv = 1/L0;
+         L0inv.data.idx = [3 3];
+         perr = check(oo,L0inv,'Zeros');
          dBp(i) = LogErr(perr);        
          semilogy(digs(i),dBp(i),'pr');
          if (i>1)
@@ -827,7 +831,10 @@ function o = Precision(o)              % ZPK Precision
          subplot(o);
          idle(o);
 
-         zerr = check(oo,G,'Zeros');
+            % zeros of L0 must be zeros of G31(s)
+
+         L0.data.idx = [3 1];
+         zerr = check(oo,L0,'Zeros');
          dBz(i) = LogErr(zerr);
          hdl = semilogy(digs(i),dBz(i),'oc');
          set(hdl,'linewidth',1,'color',o.color('cb'));

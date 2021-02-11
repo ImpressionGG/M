@@ -1,6 +1,7 @@
 function oo = system(o)
 %
-% SYSTEM  Create a CORASIM state space system from an SPM object
+% SYSTEM  Create a CORASIM state space system from an SPM object according
+%         to selected contact points.
 %
 %            oo = system(o)
 %
@@ -8,8 +9,12 @@ function oo = system(o)
 %
 %         See also: SPM, COOK
 %
-   [A,B,C,D] = cook(o,'A,B,C,D');
-   oo = system(corasim,A,B,C,D);
+   [A,B1,B2,C1,C2] = cook(o,'A,B1,B2,C1,C2');
+   
+      % use system with selected contact points. This is represented 
+      % only by partial matrices B1,B2, C1, C2
+      
+   oo = system(corasim,A,[B1;B2],[C1,C2]);
    
    oo = inherit(oo,o);
 end

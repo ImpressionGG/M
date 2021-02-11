@@ -62,7 +62,7 @@ function oo = vpa(o,digits)
          oo = o;
          oo.data.num = num;
          oo.data.den = den;
-         oo.data.K = k;
+         oo.data.T = T;
        
       case {'szpk','zzpk','qzpk'}
          [z,p,k,T] = zpk(o);
