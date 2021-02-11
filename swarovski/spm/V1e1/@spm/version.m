@@ -203,6 +203,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - Precision plot implemented
 % - View>Miscellaneous menu added
 % - pimp check algorithm
+% - isolation of brew/CalcGij
 %
 % Known bugs & wishlist
 % =========================

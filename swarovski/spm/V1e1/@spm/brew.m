@@ -432,6 +432,95 @@ end
 % Transfer Matrix G(s)
 %==========================================================================
 
+function Gij = CalcGij(o,i,j)
+%
+% CALCGIJ   Calculate Gij(s) from a modal state space form represented 
+%           as ZPK.
+%
+%              oo = brew(o,'System');
+%              Gij = CalcGij(oo,i,j);
+%
+   trftype = opt(o,{'trf.type','szpk'});
+   if ~isequal(trftype,'szpk')
+      error('this kind of Gij(s) brewing is not selected');
+   end
+   if (i < 1 || i > 3)
+      error('index i must be in range 1:3');
+   end
+   if (j < 1 || j > 3)
+      error('index j must be in range 1:3');
+   end
+      
+      % now since we have a1,a0 and M we can start calculating the transfer
+      % matrix
+   
+   %n = length(a0);
+   %m = size(M,2);
+
+      % calculating Gij(s)
+      
+   [sys,psi,mi,mj] = Prepare(o,i,j);
+   Gij = Calculate(o,i,j);   
+      
+   function [sys,psi,mi,mj] = Prepare(o,i,j)      
+      [A,B1,B2,C1,C2,A11,A12,A21,A22] = var(o,'A,B1,B2,C1,C2,A11,A12,A21,A22');
+      B = [B1;B2];  C = [C1,C2];  D = 0*C*B;
+      a0 = -diag(A21);
+      a1 = -diag(A22);
+      %I = eye(length(a0));  Z = zeros(length(a0));
+   
+      if ~isequal(B2,C1')
+         error('B2 does not match C1');
+      end
+      M = B2;
+      
+      sys = system(corasim,A,B(:,j),C(i,:),D(i,j));
+      psi = [1+0*a1(:) a1(:) a0(:)];
+      mi = M(:,i)';  mj = M(:,j); 
+   end
+   function Gij = Calculate(o,i,j)
+      digs = opt(o,{'precision.G',0});
+      
+      if (digs == 0)
+         wij = (mi(:).*mj(:))';     % weight vector
+         psiw = [psi,wij(:)];
+
+         Gij = zpk(sys);
+      else
+         sys = vpa(sys,digs);
+         old = digits(digs);
+
+         mi = vpa(mi,digs);
+         mj = vpa(mj,digs);
+         psi = vpa(psi,digs);
+         wij = (mi(:).*mj(:))';     % weight vector
+         psiw = [psi,wij(:)];
+
+         Gij = zpk(sys);
+         digits(old);
+      end
+
+      Gij.data.digits = digs;
+      Gij.data.idx = [i j];
+      
+      Gij.data.psiw = psiw;
+
+      Gij = CancelG(o,Gij);         % set cancel epsilon
+      Gij = data(Gij,'brewed','CalcGij as Zpk');
+
+      if control(o,'verbose') >= 2
+         fprintf('G%g%g(s):\n',i,j)
+         display(Gij);
+      end
+
+         % set name, store modal parameters in data and set 
+         % green color option (indicating free system TRF)
+
+      Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+      Gij = opt(Gij,'color','g');
+   end
+end
+
 function oo = Trf(o)                   % Double Transfer Matrix        
    progress(o,'Brewing Double Transfer Matrix ...');
    
@@ -593,32 +682,8 @@ function oo = TrfDouble(o)             % Double Transfer Matrix
 end
 function oo = TrfZpk(o)                % Zpk Based Transfer Matrix     
    oo = brew(o,'System');              % brew system matrices
-   
-      % get a1,a0 and M
-      
-   [A,B1,B2,C1,C2,A11,A12,A21,A22] = var(oo,'A,B1,B2,C1,C2,A11,A12,A21,A22');
-   B = [B1;B2];  C = [C1,C2];  D = 0*C*B;
-   a0 = -diag(A21);
-   a1 = -diag(A22);
-   I = eye(length(a0));  Z = zeros(length(a0));
-   
-   if ~isequal(B2,C1')
-      error('B2 does not match C1');
-   end
-   M = B2;
-   
-      % now since we have a1,a0 and M we can start calculating the transfer
-      % matrix
-   
-   n = length(a0);
-   m = size(M,2);
-   G = matrix(corasim);
-   psi = [1+0*a1(:) a1(:) a0(:)];
-   W = [];
-   
-      % depending on modal form ...
-     
-   Modal(o);
+        
+   [G,W,psi] = Modal(oo);
          
    progress(o);                        % complete!
    oo = cache(oo,'trf.G',G);           % store in cache
@@ -630,9 +695,51 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
       display(G);
    end
    
-   function Modal(o)                   % Gij(s) For Modal Forms              
-      digs = opt(o,{'precision.G',0});
+   function [G,W,psi] = Modal(o)       % Gij(s) For Modal Forms                    
+      W = [];                          % init
+      G = matrix(corasim);             % init
       
+      B = var(o,'B');
+      m = size(B,2);
+      
+      run = 0;
+      for (i=1:m)
+         for (j=1:i)
+            run = run+1; mm = m*(m+1)/2;
+            msg = sprintf('%g of %g: brewing G(%g,%g)',run,mm,i,j);
+            progress(o,msg,run/mm*100);
+
+               % calculate Gij
+
+            Gij = CalcGij(o,i,j);
+            psi = Gij.data.psiw(:,1:3);
+            wij = Gij.data.psiw(:,4)';
+            W{i,j} = wij;                 % store as matrix element
+            W{j,i} = wij;                 % symmetric matrix
+            
+            G = poke(G,Gij,i,j);          % lower half diagonal element
+            if (i ~= j)
+               G = poke(G,Gij,j,i);       % upper half diagonal element
+            end
+         end
+      end
+      
+      G.data.digits = Gij.data.digits;
+      G = data(G,'brewed','TrfZpk');
+      
+         % characteristic transfer functions
+         
+      Gpsi = set(matrix(corasim),'name','Gpsi[s]');
+      for (k=1:size(psi,1))
+         Gk = trf(Gpsi,1,psi(k,:));
+         Gk = set(Gk,'name',sprintf('G_%g(s)',k));
+         Gpsi = poke(Gpsi,Gk,k,1);
+      end
+      oo = cache(oo,'trf.Gpsi',Gpsi);  
+   end
+   function OldModal(o)                % Old Gij(s) For Modal Forms    
+      digs = opt(o,{'precision.G',0});
+M=[]; B=[];C=[];  % make compiler happy      
       run = 0;
       for (i=1:m)
          for (j=1:i)
