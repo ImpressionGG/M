@@ -225,6 +225,7 @@ function [K,f,Ki] = Stable(o,L0)
 end
 function [K,f,Ki] = Stability(o,sys,mu)
    [A0,B0,C0,D0] = system(sys);
+   V0 = sys.data.V0;
 
    if (nargout > 0)
       points = opt(o,{'search',100});
@@ -252,7 +253,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       %r = roots(poly);
 
       Mu = K*mu;
-      Amu = A0 - B0*inv(eye(size(D0))-Mu*D0)*Mu*C0;
+      Amu = A0 - B0*inv(eye(size(D0))+Mu*D0)*Mu*C0;
       r = eig(Amu);
       
       if isempty(r)

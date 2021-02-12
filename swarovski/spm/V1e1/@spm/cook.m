@@ -146,7 +146,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = C(idx+j,:);
          
       case 'Sys0'
-         oo = brew(o,'Multi');
+         oo = cache(o,o,'multi');
          oo = cache(oo,'multi.Sys0');
          oo = inherit(oo,o);
          oo = opt(oo,'oscale',oscale(o));

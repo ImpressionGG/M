@@ -205,6 +205,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp check algorithm
 % - isolation of brew/CalcGij
 % - reduced Sys0 calculation :-)
+% - bug fix in spm/stable: sign of feedback
 %
 % Known bugs & wishlist
 % =========================
