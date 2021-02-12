@@ -122,13 +122,13 @@ function oo = Zp2Tf(o)                 % Convert Zeros/Poles/K to TRF
    K = o.data.K;
    T = o.data.T;
    
-   den = real(poly(p(:)));
+   den = real(Poly(p(:)));
    [m,n] = size(z);
    
    num = [];
    for j=1:n
       zj = z(:,j);
-      pj = real(poly(zj)*K(j));
+      pj = real(Poly(zj)*K(j));
       num(j,:) = [zeros(1,1+m-length(pj)) pj];
    end
    
@@ -136,5 +136,13 @@ function oo = Zp2Tf(o)                 % Convert Zeros/Poles/K to TRF
       oo = trf(o,K,den);
    else
       oo = trf(o,num,den,T);
+   end
+   
+   function p = Poly(s)
+      if isa(s,'sym')
+         p = charpoly(diag(s));
+      else
+         p = poly(s);
+      end
    end
 end

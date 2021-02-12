@@ -16,7 +16,17 @@ function [V,lambda] = gain(o)
 %
 %        See also: CORASIM, TRF
 %
-   if type(o,{'css','modal'})
+   if type(o,{'css'})
+      [A,B,C,D] = system(o);
+      if (det(A) ~= 0)
+         lambda = 0;
+         V = -C*inv(A)*B + D;
+         if (V ~= 0)                   % if no zero at s=0
+            return;                    % found - bye!
+         end                           % otherwise chose path via trf
+      end
+      o = trf(o);                      % convert to transfer function
+   elseif type(o,{'modal'})
       o = trf(o);                      % convert to transfer function
    end
    

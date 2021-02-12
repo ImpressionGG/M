@@ -29,6 +29,7 @@ function varargout = cook(o,sym)
 %          Sys0 = cook(o,'Sys0');
 %          [A0,B0,C0,D0] = cook(o,'A0,B0,C0,D0');
 %          [M0,N0] = cook(o,'M0,N0');
+%          V0 = cook(o,'V0');               % gain matrix
 %          [AQ,BQ,CQ,DQ,CP,DP] = cook(o,'AQ,BQ,CQ,DQ,CP,DP')
 %
 %       Modal parametes
@@ -145,12 +146,12 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = C(idx+j,:);
          
       case 'Sys0'
-         [A0,B0,C0,D0] = cook(o,'A0,B0,C0,D0');
-         oo = system(corasim,A0,B0,C0,D0);
+         oo = brew(o,'Multi');
+         oo = cache(oo,'multi.Sys0');
          oo = inherit(oo,o);
          oo = opt(oo,'oscale',oscale(o));
          
-      case {'A0','B0','C0','D0','M0','N0','AQ','BQ','CQ','DQ','CP','DP'}
+      case {'A0','B0','C0','D0','M0','N0','V0','AQ','BQ','CQ','DQ','CP','DP'}
          oo = brew(o,'System');
          oo = var(oo,sym);
 
@@ -181,7 +182,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,o,'trf');        % hard refresh trf cache 
          oo = cache(o,'trf.Gpsi');
 
-      case {'G11','G12','G13', 'G21','G22','G23', 'G31','G32','G33'}
+      case {'G11','G12','G13', 'G21','G22','G23', 'G32'}
          oo = cache(o,o,'trf');        % hard refresh trf cache 
          G = cache(oo,'trf.G');
          oo = peek(G,i,j);
@@ -193,8 +194,31 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
             oo.data.digits = -abs(data(oo,{'digits',0}));
          end
 
-         % constrained transfer matrix
+      case {'G31','G33'}
+         bag = work(o,'cache.trf');
+         if ~isempty(bag)
+            G = cache(o,'trf.G');
+            oo = peek(G,i,j);
+         else
+            oo = cache(o,o,'principal');
+            if (i==3 && j == 1)
+               oo = cache(oo,'principal.G31');
+            elseif (i==3 && j == 3)
+               oo = cache(oo,'principal.G33');
+            else
+               error('bad indices');
+            end
+         end
          
+            % optionally convert G back from VPA to double representation
+            
+         if ~opt(o,{'precision.Gcook',0})
+            oo = vpa(oo,0);
+            oo.data.digits = -abs(data(oo,{'digits',0}));
+         end
+         
+         % constrained transfer matrix
+                  
       case 'H'
          oo = cache(o,o,'consd');      % hard refresh consd cache 
          oo = cache(oo,'consd.H');

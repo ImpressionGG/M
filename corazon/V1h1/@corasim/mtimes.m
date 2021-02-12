@@ -18,11 +18,13 @@ function oo = mtimes(o1,o2)
       % cancellation at the end of routine, which seems to be not
       % numerically stable
       
-   if isa(o1,'double') && length(o1) == 1 && type(o2,{'strf','qtrf','ztrf'})
+   if (isa(o1,'double') || isa(o1,'sym'))  ...
+         && length(o1) == 1 && type(o2,{'strf','qtrf','ztrf'})
       [num,den] = peek(o2);
       oo = poke(o2,o1*num,den);
       return
-   elseif isa(o2,'double') && length(o2) == 1 && type(o1,{'strf','qtrf','ztrf'})
+   elseif (isa(o2,'double') || isa(o2,'sym')) ...
+         && length(o2) == 1 && type(o1,{'strf','qtrf','ztrf'})
       [num,den] = peek(o1);
       oo = poke(o1,o2*num,den);
       return
@@ -152,7 +154,7 @@ function [o1,o2] = Comply(o1,o2)       % Make Compliant to Each Other
    %
       if isa(o,'corasim')
          oo = o;
-      elseif isa(o,'double')
+      elseif (isa(o,'double') || isa(o,'sym'))
          num = o;  den = 1;
          if (size(num,1) ~= 1)
             error('double operand must be scalar or row vector');

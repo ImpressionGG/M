@@ -30,6 +30,9 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'System')           % brew system matrices
 %           [A,B,C,D] = var(oo,'A,B,C,D)    % system matrices
 %
+%           oo = brew(o,'Multi')            % brew multi variable L0(s) rep.
+%           Sys0 = cache(oo,'multi.Sys0)    % state space system of L0(s)
+%
 %           oo = brew(o,'Trf')              % brew free TRF cache segment
 %           G = cache(oo,'trf.G');          % G(s)
 %
@@ -56,7 +59,12 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                        +-----------------+
 %                        |      system     | A,B,C,D,a0,a1
 %                        +-----------------+
-%                             |        |
+%                             |        |  |
+%                             |        |  +---------------+
+%                             |        |                  v
+%                             |        |         +-----------------+
+%                             |        |         |       multi     | Sys0
+%                             |        |         +-----------------+
 %                             v        v
 %              +-----------------+  +-----------------+
 %        L0(s) |    principal    |  |       trf       | G(s)
@@ -64,7 +72,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                   |         |              |
 %                   v         |              v
 %       +-----------------+   |      +-----------------+
-%       |                     |   |      |     consd       | H(s)
+%       |                 |   |      |     consd       | H(s)
 %       +-----------------+   |      +-----------------+
 %                             |       
 %                             |           friction
@@ -86,7 +94,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@System,...
-                       @Trf,@Principal,...
+                       @Trf,@Principal,@Multi,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -407,6 +415,8 @@ function oo = System(o)                % System Matrices
    N0 = sqrtm(inv(C_3*A*B_3));
    M0 = sqrtm(-inv(C_3*inv(A)*B_3));
    
+      % system augmentation
+      
    C0 = M0*C_3 + N0*C_3*A;
    CQ = M0*C0 + N0*C0*A;    CP = CQ;
    
@@ -417,6 +427,29 @@ function oo = System(o)                % System Matrices
    A0 = [A 0*A; BQ*CP AQ];  B0 = [B_1; BQ*DP];  
    C0 = [DQ\CP -DQ\CQ];     D0 = DQ\DP;
    
+      % calculate gain matrix of L0 system
+      
+   V00 = -(C0/A0)*B0 + D0;
+   
+      % calculate gain matrices of G31(s) and G33(s)
+      
+   C3overA = C_3/A;
+   V_31 = C3overA * B_1;
+   V_33 = C3overA * B_3;
+   V_0 = V_33\V_31;
+   
+      % calculate for modal forms: 
+      
+   V0 = CalcV0(o,a0,C_3(:,i1),B_1(i2,:),B_3(i2,:));
+   
+      % V00 = L0(0) must be same as V0 := V33\V31 = G33(0)\G31(0)
+      
+   err = norm(V0-V_0)/norm(V0);
+   err = norm(V0-V00)/norm(V0);
+   if (err > 1e-10)
+      fprintf('*** warning: high deviation of V0 = L0(0): %g\n',err);
+   end
+   
       % store as variables
    
    oo = var(oo,'A11,A12,A21,A22',A11,A12,A21,A22);
@@ -425,7 +458,168 @@ function oo = System(o)                % System Matrices
    
    oo = var(oo,'B_1,B_2,B_3,C_1,C_2,C_3',B_1,B_2,B_3,C_1,C_2,C_3);
    oo = var(oo,'N0,M0,AQ,BQ,CP,CQ,DP,DQ',N0,M0,AQ,BQ,CP,CQ,DP,DQ);
-   oo = var(oo,'A0,B0,C0,D0',A0,B0,C0,D0);
+   oo = var(oo,'A0,B0,C0,D0,V0',A0,B0,C0,D0,V0);
+   
+   function V0 = CalcV0(o,a0,C3,B1,B3)
+   %
+   % Method:
+   %
+   %    x`=v
+   %    v = A21*x + A22*v + B2*u
+   %    y = C1*x
+   %
+   %    G(s) = C1\(s^2*I-A22*s-A21)*B2
+   %    G(0) = C1\(-A21)*B2 = -C1*diag(1./a0)*B2
+   %
+      digs = opt(o,{'precision.V0',0});
+      
+      if (digs > 0)
+         a0 = vpa(a0,digs);
+         C3 = vpa(C3,digs);
+         B1 = vpa(B1,digs);
+         B3 = vpa(B3,digs);
+         
+         old = digits(digs);
+      end
+      
+      C3ovrA21 = C3*diag(1./a0);
+      V31 = -(C3ovrA21)*B1;
+      V33 = -(C3ovrA21)*B3;
+      V0 = V33\V31;
+      
+      if (digs > 0)
+         digits(old);
+      end
+   end
+end
+
+%==========================================================================
+% Multivariable Open Loop System
+%==========================================================================
+
+function oo = Multi(o)
+   [A0,B0,C0,D0,V0] = cook(o,'A0,B0,C0,D0,V0');
+   Ierr = norm(-(C0/A0)*B0+D0-V0)/norm(V0);     % initial gain error
+   
+      % reduce system by transforming to diagonal and deleting those
+      % state variables which are more or less not observable
+      
+   [V,AV] = eig(A0);                   % transform to diagonal form
+   BV = V\B0;
+   CV = C0*V;
+   DV = D0;
+
+   Verr = norm(-(CV/AV)*BV+DV-V0)/norm(V0);  % diagonal form error
+
+%  jw = CheckPoint(diag(AV),5);        % get 5 checkpoints
+%  Ljw = trfval(sys,jw); 
+   
+      % examine observability of state variables by building the 
+      % norm of each column vector of CV
+      
+   for (i=1:size(CV,2))
+      w(i) = norm(CV(:,i));
+   end
+   
+      % sort w and pick AR,BR,CR of reduced system
+      
+   [w,idx] = sort(w);
+   n = length(w)/2;
+   
+   if (n ~= round(n))
+      error('odd column size - cannot continue');
+   end
+   
+   ndx = idx(1:n);                     % index of non observable SV     
+   odx = idx(n+1:end);                 % indices of observable SV
+   AR = AV(odx,odx);                   % observable dynamic matrix
+   BR = BV(odx,:);
+   CR = CV(:,odx);
+   DR = DV;
+   
+   observability = norm(CV(:,ndx)) / norm(CV(:,odx));
+   Rerr = norm(-(CR/AR)*BR+DR-V0)/norm(V0);   % gain error of observable
+   
+       % transform to Schur form
+       
+   [U,AS] = schur(AR);
+   BS = U\BR;
+   CS = CR*U;
+   DS = DR;
+
+   Serr = norm(-(CS/AS)*BS+DS-V0)/norm(V0);    % gain error of Schur form
+   
+      % transform to modal form
+      
+   n = length(AS)/2;
+   if (n ~= round(n))
+      error('odd column size - cannot continue');
+   end
+   
+   T = zeros(2*n,2*n);
+   for (i=1:n)
+      k = 2*(i-1) + 1;
+      l1 = AS(k,k);
+      l2 = AS(k+1,k+1);
+      Ti = [-l2 1; -l1 1];
+      if ( det(Ti) == 0 )
+         error('cannot transform');
+      end
+      T(k:k+1,k:k+1) = Ti;
+   end
+   
+   A = real(T\AS*T);  B = real(T\BS);   C = real(CS*T);  D = real(DS);
+   i1 = 2*(1:n)-1;  i2 = 2*(1:n); 
+   
+      % reorder states
+      
+   A = [A(i1,i1), A(i1,i2); A(i2,i1), A(i2,i2)];
+   B = [B(i1,:); B(i2,:)];
+   C = [C(:,i1), C(:,i2)];
+   
+      % balance input and output matrix
+      
+   nB = norm(B);  nC = norm(C);
+   k = nB/sqrt(nB*nC);
+   
+   B = B/k;  C = C*k;
+
+   V0err = norm(-(C/A)*B+D-V0)/norm(V0);   % gain error of modal form
+   
+      % store in cache segment
+      
+   Sys0 = system(corasim,A,B,C,D);
+
+   Sys0.data.A0 = A0;
+   Sys0.data.B0 = B0;
+   Sys0.data.C0 = C0;
+   Sys0.data.D0 = D0;
+   Sys0.data.V0 = V0;
+   
+   Sys0.data.observability = observability;
+   
+      % store gain errors
+      
+   Sys0.data.Ierr = Ierr;
+   Sys0.data.Verr = Verr;
+   Sys0.data.Rerr = Rerr;
+   Sys0.data.Serr = Serr;
+   Sys0.data.V0err = V0err;
+   
+      % store in cache and unconditional hard refresh of cache
+      
+   oo = cache(o,'multi.Sys0',Sys0);
+   
+   cache(oo,oo);                       % hard refresh cache
+   progress(o);                        % progress complete   
+   
+   function jw = CheckPoint(s,n)       % get n check points
+      om0 = abs(s);
+      om1 = min(om0);
+      om2 = max(om0);
+      om = logspace(log10(om1),log10(om2),n);
+      jw = sqrt(-1)*om;
+   end
 end
 
 %==========================================================================
@@ -500,6 +694,9 @@ function Gij = CalcGij(o,i,j)
          digits(old);
       end
 
+      Gij.data.Zeros = Gij.data.zeros;
+      Gij.data.Poles = Gij.data.poles;
+      
       Gij.data.digits = digs;
       Gij.data.idx = [i j];
       
@@ -1015,9 +1212,11 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 %               P(s) := G31(s), Q(s) := G33(s)
 %
 %            oo = Principal(o)
+%            G31  = cache(oo,'principal.G31')  % G31(s)
+%            G33  = cache(oo,'principal.G33')  % G33(s)
 %            P  = cache(oo,'principal.P')      % P(s)
 %            Q  = cache(oo,'principal.Q')      % Q(s)
-%            Lp = cache(oo,'principal.Lp')     % Lp(s) := P(s)/Q(s)
+%            L0 = cache(oo,'principal.L0')     % L0(s) := P(s)/Q(s)
 %
    progress(o,'Brewing Principal Transfer Functions ...');
    oo = brew(o,'System');              % brew system matrices
@@ -1034,6 +1233,10 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    end
    M = B2;
    
+      % fetch G31 and G33 from cache or calculate
+      
+   [G31,G33] = G31G33(oo);
+   
       % now since we have a1,a0 and M we can start calculating the transfer
       % matrix
    
@@ -1043,9 +1246,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    if HasModalForm(o)
       trftype = opt(o,{'trf.type','szpk'});
       if isequal(trftype,'szpk');
-%        [P,Q] = ModalZpkPQ(o); 
          [P,Q] = ZpkPQ(o); 
-%        [P,Q] = ModalTrfPQ(o); 
       else
          [P,Q] = ModalTrfPQ(o); 
       end
@@ -1061,8 +1262,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 
       % calculate open loop transfer function
       
-   L0 = CalcL0(o,P,Q);
-   
+   L0 = CalcL0(o,G31,G33);
       
       % set expression based FQR, if enabled
       
@@ -1071,6 +1271,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       % store all stuff in cache
       
    oo = o;
+   oo = cache(oo,'principal.G31',G31);
+   oo = cache(oo,'principal.G33',G33);
    oo = cache(oo,'principal.F0',F0);
    oo = cache(oo,'principal.P',P);
    oo = cache(oo,'principal.Q',Q);
@@ -1083,6 +1285,19 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 
       % done
       
+   function [G31,G33] = G31G33(o)
+      trf = work(o,'cache.trf');
+      if isempty(trf)
+         progress(o,'calculating G31(s) ...');
+         G31 = CalcGij(o,3,1);
+         progress(o,'calculating G33(s) ...');
+         G33 = CalcGij(o,3,3);
+      else
+         G = cache(o,'trf.G');
+         G31 = peek(G,3,1);
+         G33 = peek(G,3,3);
+      end
+   end
    function ok = HasModalForm(o)       % Has System a Modal Form       
       ok = isequal(A11,Z) && isequal(A12,I) && ...
               isequal(A21,-diag(a0)) && isequal(A22,-diag(a1));
@@ -1141,8 +1356,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
          progress(o);                  % progress complete
       end
    end
-   function [P,Q] = ZpkPQ(o)           % P(s)/Q(s) For Zpk Forms     
-      [G31,G33] = cook(o,'G31,G33');
+   function [P,Q] = ZpkPQ(o)           % P(s)/Q(s) For Zpk Forms       
+      %[G31,G33] = cook(o,'G31,G33');
       P = set(G31,'name','P(s)');
       Q = set(G33,'name','Q(s)');
    end
@@ -1239,10 +1454,14 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       if (V0 == 0)
          F0 = zpk(Q,[],[],1);
       else
-         [num,den] = peek(Q/V0);
-         Vinf = num(1)/den(1);
+         if type(Q,{'szpk'})
+            Vinf = Q.data.K/V0;
+         else
+            [num,den] = peek(Q/V0);
+            Vinf = num(1)/den(1);
+         end
          om0 = sqrt(abs(Vinf));
-         F0 = V0/lf(Q,om0)/lf(Q,om0);   % normalizing factor
+         F0 = (1/lf(Q,om0)/lf(Q,om0)) * V0;   % normalizing factor
       end
       F0 = set(F0,'name','F0(s)');
 
@@ -1251,7 +1470,55 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       P = P/F0;
       Q = Q/F0;
    end
-   function L0 = CalcL0(o,P,Q)         % Calc L0(s)                    
+   function L0 = CalcL0(o,G31,G33)     % Calc L0(s)                    
+   %
+   % CALCL0    Calculate L0(s) = P(s)/Q(s)
+   %
+      if ~type(G31,{'szpk'}) || ~type(G33,{'szpk'})
+         error('cannot continue');
+      end
+      
+      progress(o,'calculating L0(s) ...');
+      L0 = G31;                        % zeros of L0(s) are zeros of G31(s)
+      assert(all(G31.data.Poles==G33.data.Poles));
+      
+         % take over uncanceled Zeros!
+         
+      L0.data = [];
+      L0.data.zeros = G31.data.Zeros;
+      L0.data.poles = G33.data.Zeros;
+      L0.data.K = G31.data.K / G33.data.K;
+      L0.data.T = 0;
+      L0.data.digits = data(G31,'digits');
+      L0.data.brewed = data(G31,'brewed');
+      
+         % set name and store L(s) in 'loop' cache segment
+
+      L0 = set(L0,'name','L0(s) = P(s)/Q(s)');
+
+         % feasibility check and potential repair
+         
+      [z,p,K] = zpk(L0);
+      if any(real(p) >= 0)
+         fprintf(['*** warning: L0(s) seeming instable',...
+                  ' => searching cancelation ...\n']); 
+return
+         eps = opt(o,{'cancel.L.eps',1e-7});
+         epsi = logspace(log10(min(eps,0.1)),0,25);
+
+         for(i=1:length(epsi))
+            L0 = opt(L0,'eps',epsi(i));
+            L0 = can(L0);
+            [z,p,K] = zpk(L0);
+            
+            if all(real(p) < 0)
+               fprintf('*** L0(s) cancel epsilon: %g\n',epsi(i));
+               break;
+            end
+         end
+      end
+   end
+   function L0 = OldCalcL0(o,P,Q)         % Calc L0(s)                    
    %
    % CALCL0    Calculate L0(s) = P(s)/Q(s)
    %
@@ -1259,6 +1526,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
 %     P = CancelG(o,P);                   % set cancel epsilon
       Q = CancelL(o,Q);                   % set cancel epsilon
 
+      progress(o,'calculating L0(s) ...');
       L0 = P/Q;
 
       [z,p,K] = zpk(L0);

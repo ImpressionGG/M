@@ -29,6 +29,8 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
 %          oo = zpk(o,num,den)
 %          oo = zpk(o,poly)
 %
+%          oo = zpk(o,{i,j})           % i/j-th element of transfer matrix
+%
 %          oo = zpk(o,z,p,K)           % s-type ZPK (continuous)
 %          oo = zpk(o,z,p,K,0)         % sameas above
 %
@@ -44,6 +46,14 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
 %
 %       See also: CORASIM
 %
+   if (nargin == 2 && type(o,{'css','dss'}) && iscell(num))
+      [A,B,C,D] = system(o);
+      i = num{1};  j = num{2};
+      o = system(o,A,B(:,j),C(i,:),D(i,j));
+      z = zpk(o);   % i/j-th transfer function of a ss
+      return
+   end
+   
    switch nargin
       case {0,1}
          if (nargout <= 1)             % cast to ZPK object
@@ -51,6 +61,7 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
                oo = o;                 % nothing left to do
             elseif type(o,{'css','dss'})
                [A,B,C,D] = system(o);
+               
                if (size(B,2) ~= 1 || size(C,1) ~= 1)
                   error('MIMO systems not supported');
                end
