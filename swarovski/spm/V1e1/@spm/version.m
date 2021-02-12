@@ -206,6 +206,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - isolation of brew/CalcGij
 % - reduced Sys0 calculation :-)
 % - bug fix in spm/stable: sign of feedback
+% - stability margin on multivariable state space system basis :-)))
 %
 % Known bugs & wishlist
 % =========================

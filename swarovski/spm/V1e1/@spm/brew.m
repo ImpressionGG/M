@@ -606,10 +606,17 @@ function oo = Multi(o)
    Sys0.data.Serr = Serr;
    Sys0.data.V0err = V0err;
    
+      % calculate critical gain and frequency
+      
+   [K0,f0]=stable(o,Sys0);
+
       % store in cache and unconditional hard refresh of cache
       
-   oo = cache(o,'multi.Sys0',Sys0);
-   
+   oo = o;
+   oo = cache(oo,'multi.Sys0',Sys0);
+   oo = cache(oo,'multi.K0',K0);
+   oo = cache(oo,'multi.f0',f0);
+      
    cache(oo,oo);                       % hard refresh cache
    progress(o);                        % progress complete   
    

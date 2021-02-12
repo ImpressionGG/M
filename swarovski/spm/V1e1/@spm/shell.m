@@ -792,7 +792,7 @@ function oo = Stability(o)             % Stability Menu
    choice(ooo,[25 50 100 200 500],{});
 
    ooo = mitem(oo,'Iterations',{},'stability.iter');
-   choice(ooo,[10 15 20 25 30 35 40 45 50 75 100],{});
+   choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
 end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off

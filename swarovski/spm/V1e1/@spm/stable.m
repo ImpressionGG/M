@@ -20,60 +20,66 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
 %
 %          See also: SPM, COOK
 %
-  contact = opt(o,{'contact',0});
-  algo = opt(o,{'algo','ss'});
+   algo = opt(o,{'algo','ss'});
+%  contact = opt(o,{'contact',0});
+   mu = opt(o,{'process.mu',0.1});
   
-  oo = o;                         % for eventual caching extension
-  if (nargin == 1)
-     if isequal(algo,'trf')       % transfer function algorithm
-        Lmu = cook(oo,'Lmu');
-     elseif isequal(algo,'ss')    % state space algorithm
-        Sys0 = cook(oo,'Sys0');
-        mu = opt(oo,{'process.mu',0.1});
-     elseif isequal(algo,'mix')   % mixed type algorithm
-        L0 = cook(oo,'L0');
-        Sys0 = system(L0);
-        mu = opt(oo,{'process.mu',0.1});
-     else
-        error('bad algo');
-     end
+   oo = o;                         % for eventual caching extension
+   if (nargin == 1)
+      if isequal(algo,'trf')       % transfer function algorithm
+         Lmu = cook(oo,'Lmu');
+      elseif isequal(algo,'ss')    % state space algorithm
+         Sys0 = cook(oo,'Sys0');
+      elseif isequal(algo,'mix')   % mixed type algorithm
+         L0 = cook(oo,'L0');
+         Sys0 = system(L0);
+      else
+         error('bad algo');
+      end
         
-  elseif (nargin == 2)
-     algo = 'trf';
-     Lmu = varargin{1};
-  elseif (nargin == 3)
-     algo = 'ss';
-     Sys0 = varargin{1};
-     mu = varargin{2};
-  end
+   elseif (nargin == 2)
+      %algo = 'trf';
+      Lmu = varargin{1};
+      Sys0 = Lmu;
+      mu = 1;                          % nominal mu
+   elseif (nargin == 3)
+      %algo = 'ss';
+      Sys0 = varargin{1};
+      mu = varargin{2};
+   end
   
-  if (nargout == 0)
-     if isequal(algo,'trf')
-        Stable(oo,Lmu);                % plot
-     else
-        Stability(oo,Sys0,mu);         % plot
-     end
-  else
-     if isequal(algo,'trf')
-        [K0,f,Ki] = Stable(oo,Lmu);
-     else
-        [K0,f,Ki] = Stability(oo,Sys0,mu);
-     end
+   if (nargout == 0)
+      if isequal(algo,'trf')
+         Stable(oo,Lmu);                % plot
+      else
+         Stability(oo,Sys0,mu);         % plot
+      end
+   else
+      if isequal(algo,'trf')
+         [K0,f,Ki] = Stable(oo,Lmu);
+      else
+         [K0,f,Ki] = Stability(oo,Sys0,mu);
+      end
         
-     if isinf(K0) || (K0 == 0)
-        K = K0;  f = inf;
-     else
-        if isequal(algo,'trf')
-           oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
-           %oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
-           oo = opt(oo,'magnitude.high',20*log10(Ki));
-           [K,f] = Stable(oo,Lmu);
-        else
-           oo = opt(oo,'magnitude.low',20*log10(K0));
-           oo = opt(oo,'magnitude.high',20*log10(Ki));
-           [K,f] = Stability(oo,Sys0,mu);
-        end
-     end
+      if isinf(K0) || (K0 == 0)
+         K = K0;  f = inf;
+      else
+         if isequal(algo,'trf')
+            oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
+            %oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
+            oo = opt(oo,'magnitude.high',20*log10(Ki));
+            [K,f] = Stable(oo,Lmu);
+         else
+            iter = opt(o,{'stability.iter',10});
+            for (k=1:iter)
+               oo = opt(oo,'magnitude.low',20*log10(K0));
+               oo = opt(oo,'magnitude.high',20*log10(Ki));
+               oo = opt(oo,'search',5);
+               [K0,f,Ki] = Stability(oo,Sys0,mu);
+            end
+            K = K0;
+         end
+      end
    end
 end
 
@@ -322,11 +328,14 @@ function [K,f,Ki] = Stability(o,sys,mu)
 
    idx = find(re>0);
    margin = inf;
-
+   f = cook(o,'f0');
+   
    if ~isempty(idx)
       semilogx(mag(idx),dB(idx),'r.');
       i = max(1,min(idx)-1);
-      margin = mag(i);
+      %margin = mag(i);
+      K0 = cook(o,'K0');
+      margin = K0/mu; 
    end
 
    idx = find(re<0);

@@ -151,6 +151,10 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = inherit(oo,o);
          oo = opt(oo,'oscale',oscale(o));
          
+      case {'K0','f0'}
+         oo = cache(o,o,'multi');
+         oo = cache(oo,['multi.',sym]);
+
       case {'A0','B0','C0','D0','M0','N0','V0','AQ','BQ','CQ','DQ','CP','DP'}
          oo = brew(o,'System');
          oo = var(oo,sym);
@@ -238,7 +242,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'principal');   % hard refresh of principal segment
          oo = cache(o,['principal.',sym]);
 
-      case {'Lmu','K0','f0','S0','T0'}
+      case {'Lmu','S0','T0'}
          oo = cache(o,o,'loop');       % hard refresh loop cache 
          oo = cache(oo,['loop.',sym]);
          
