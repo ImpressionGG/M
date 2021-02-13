@@ -1498,6 +1498,7 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       L0.data.T = 0;
       L0.data.digits = data(G31,'digits');
       L0.data.brewed = data(G31,'brewed');
+      L0.data.V0 = gain(G31)/gain(G33);
       
          % set name and store L(s) in 'loop' cache segment
 
@@ -1786,7 +1787,7 @@ function oo = Loop(o)                  % Loop Analysis Stuff
    L0 = cook(o,'L0');
    Lmu = mu * L0;                      % Loop TRF under friction mu
    Lmu = set(Lmu,'name','Lmu(s)');
-
+   
       % calc critical K and closed loop TRF
       
    contact = opt(o,{'process.contact',0});

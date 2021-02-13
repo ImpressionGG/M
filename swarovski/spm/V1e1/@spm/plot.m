@@ -2382,7 +2382,8 @@ function o = Stability(o)              % Plot Stability Margin
       oo = inherit(oo,o);
       
       if (opt(o,'process.contact') == 0)
-         margin(i) = stable(oo);
+%        margin(i) = stable(oo);
+         margin(i) = cook(oo,'K0') / mu;
       else
          margin(i) = cook(oo,'K0') / mu;
       end

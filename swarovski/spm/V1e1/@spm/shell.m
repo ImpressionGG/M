@@ -776,9 +776,9 @@ function oo = Simu(o)                  % Simulation Parameter Menu
 end
 function oo = Stability(o)             % Stability Menu                
    setting(o,{'stability.algo'},'ss'); % stability algorithm
-   setting(o,{'stability.points'},100);% points for diagram
-   setting(o,{'stability.search'},25); % number of search points
-   setting(o,{'stability.iter'},25);   % iterations
+   setting(o,{'stability.points'},200);% points for diagram
+   setting(o,{'stability.search'},50); % number of search points
+   setting(o,{'stability.iter'},15);   % iterations
 
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Algorithm',{},'stability.algo');
@@ -788,7 +788,7 @@ function oo = Stability(o)             % Stability Menu
    ooo = mitem(oo,'Points',{},'stability.points');
    choice(ooo,[25 50 100 200 500 1000 2000],{});
    
-   ooo = mitem(oo,'Initial Searches',{},'stability.init');
+   ooo = mitem(oo,'Initial Searches',{},'stability.search');
    choice(ooo,[25 50 100 200 500],{});
 
    ooo = mitem(oo,'Iterations',{},'stability.iter');

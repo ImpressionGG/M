@@ -428,7 +428,7 @@ function o = Nyq(o)                    % Nyquist Diagram
 end
 function o = Stability(o)              % Stability Analysis            
    o = Scaling(o);                     % manage scaling factors
-   o = with(o,'nyq');                  % override some Scaling opts
+   o = with(o,{'nyq','stability'});    % override some Scaling opts
    
    sym = arg(o,1);
    G = arg(o,2);

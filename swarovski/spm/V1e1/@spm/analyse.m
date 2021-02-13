@@ -336,7 +336,7 @@ function oo = Nyquist(o)               % Nyquist Stability Analysis
       Lmu = list{i};
       diagram(oo,'Bode','',Lmu,2211);
       xlabel('omega [1/s]');
-      diagram(o,'Stability','',Lmu,2221);
+      diagram(o,'Stability','',get(Lmu,'SysMu'),2221);
       oo = diagram(o,'Nyq','',Lmu,1212);
    end
    
@@ -354,9 +354,15 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
    list = {};                          % empty by default
    objs = {};
    head = heading(o);                  % default heading
+   mu = opt(o,{'process.mu',0.1});
    
    if type(o,{'spm'})
-      Lmu = cook(o,'Lmu');
+      [Lmu,Sys0] = cook(o,'Lmu,Sys0');
+      
+      SysMu = Sys0;
+      SysMu.data.B = SysMu.data.B * mu;
+      Lmu.par.SysMu = SysMu;
+      
       list = {Lmu};
       objs = {o};
    elseif type(o,{'shell'})

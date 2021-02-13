@@ -207,6 +207,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - reduced Sys0 calculation :-)
 % - bug fix in spm/stable: sign of feedback
 % - stability margin on multivariable state space system basis :-)))
+% - make stability margin chart running again
 %
 % Known bugs & wishlist
 % =========================

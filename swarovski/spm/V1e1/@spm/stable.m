@@ -231,7 +231,7 @@ function [K,f,Ki] = Stable(o,L0)
 end
 function [K,f,Ki] = Stability(o,sys,mu)
    [A0,B0,C0,D0] = system(sys);
-   V0 = sys.data.V0;
+   V0 = data(sys,'V0');                % for debug only
 
    if (nargout > 0)
       points = opt(o,{'search',100});
@@ -335,6 +335,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       i = max(1,min(idx)-1);
       %margin = mag(i);
       K0 = cook(o,'K0');
+      mu = opt(o,'process.mu');
       margin = K0/mu; 
    end
 
