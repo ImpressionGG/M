@@ -22,7 +22,16 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
 %       The zero locations are returned in the columns of matrix Z, with 
 %       as many columns as there are rows in NUM.  The pole locations are
 %       returned in column vector P, and the gains for each numerator 
-%       transfer function in vector K. 
+%       transfer function in vector K.
+%
+%       If o is a state space representation [A,B,C,D] of a MIMO system
+%       with nu inputs and ny outputs then
+%
+%          [Z,p,K] = zpk(system(corasim,A,B,C,D))
+%
+%       returns Z as a ny x nu cell array with z{i,j} containing the zeros
+%       of the i/j-th transfer function, p the (common) poles and K a
+%       matrix of the K(i,j) factors.
 %
 %       Create ZPK objects
 %
@@ -62,16 +71,36 @@ function [z,p,k,T] = zpk(o,num,den,k,T)
             elseif type(o,{'css','dss'})
                [A,B,C,D] = system(o);
                
-               if (size(B,2) ~= 1 || size(C,1) ~= 1)
-                  error('MIMO systems not supported');
-               end
-               [z,p,k] = Ss2zp(o,A,B,C,D,1);
-               idx = find(isinf(z));
-               
-                   % remove infinite zeros
-                   
-               if ~isempty(idx)
-                  z(idx) = [];
+               nu = size(B,2);  ny = size(C,1);
+               if (ny ~= 1 || nu ~= 1) % MIMO system
+                  z = {}; k = [];  
+                  p = eig(A);          % heads-up calculation of poles
+                  for (j = 1:nu)
+                     [zj,p,kj] = Ss2zp(o,A,B,C,D,j,p);
+                     k(1:ny,j) = kj;
+                     
+                     for(i=1:ny)
+                        zij = zj(:,i);
+                        idx = find(isinf(zij));
+
+                            % remove infinite zeros
+
+                        if ~isempty(idx)
+                           zij(idx) = [];
+                        end
+                        
+                        z{i,j} = zij;
+                     end
+                  end
+               else % SISO system
+                  [z,p,k] = Ss2zp(o,A,B,C,D,1);
+                  idx = find(isinf(z));
+
+                      % remove infinite zeros
+
+                  if ~isempty(idx)
+                     z(idx) = [];
+                  end
                end
                
                    % compose new zpk object
@@ -197,15 +226,15 @@ end
 % Find Zeros, Poles and K-factor from State Space Representation
 %==========================================================================
 
-function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
+function [z,p,k] = Ss2zp(o,a,b,c,d,iu,p)
 %
 %  SS2ZP	State-space to zero-pole conversion.
 %	[Z,P,K] = SS2ZP(A,B,C,D,iu)  calculates the transfer function in
 %	factored form:
 %
-%			     -1           (s-z1)(s-z2)...(s-zn)
+%			     -1                (s-z1)(s-z2)...(s-zn)
 %		H(s) = C(sI-A) B + D =  k ---------------------
-%			                  (s-p1)(s-p2)...(s-pn)
+%			                       (s-p1)(s-p2)...(s-pn)
 %	of the system:
 %		.
 %		x = Ax + Bu
@@ -217,8 +246,12 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
 %	outputs y.  The gains for each numerator transfer function are 
 %	returned in column vector K.
 %
-
-      % remove relevant input
+%  Optionally poles can be provided as an additional argument to avoid
+%  multiple eigenvalue calculation for MIMO systems
+%
+%     [z,p,k] = Ss2zp(o,A,B,C,D,iu,p)
+%
+      % pick relevant input
       
    b = b(:,iu);   % + 0*a(1,1);
    c = c + 0*a(1,1);
@@ -230,7 +263,9 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu)
       
       % Do poles first, they're easy
       
-   p = eig(a);
+   if (nargin < 7)
+      p = eig(a);
+   end
 
       % now try zeros, they're harder
    

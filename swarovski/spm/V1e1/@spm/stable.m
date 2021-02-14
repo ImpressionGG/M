@@ -328,13 +328,23 @@ function [K,f,Ki] = Stability(o,sys,mu)
 
    idx = find(re>0);
    margin = inf;
-   f = cook(o,'f0');
+   
+   try
+      f = cook(o,'f0');
+   catch
+      f = data(sys,{'f0',0});
+   end
    
    if ~isempty(idx)
       semilogx(mag(idx),dB(idx),'r.');
       i = max(1,min(idx)-1);
       %margin = mag(i);
-      K0 = cook(o,'K0');
+      try
+         K0 = cook(o,'K0');
+      catch
+         K0 = data(sys,{'K0',0});
+      end
+      
       mu = opt(o,'process.mu');
       margin = K0/mu; 
    end

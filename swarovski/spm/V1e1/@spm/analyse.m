@@ -302,6 +302,25 @@ function o = Rloc(o)                   % Root Locus
    o = with(o,'rloc');
    o = with(o,'style');
    
+   sym = 'Sys0';
+   oo = cook(o,sym);   
+   
+   mu = opt(o,{'process.mu',0.1});
+   B0 = data(oo,'B');
+   oo = data(oo,'B',B0*mu);
+   
+   oo = inherit(oo,o);
+   
+   subplot(o,111);
+   rloc(oo);
+   title(sprintf('Root Locus %s(s) - mu = %g',sym,mu));
+   
+   heading(o);
+end
+function o = OldRloc(o)                % Root Locus                    
+   o = with(o,'rloc');
+   o = with(o,'style');
+   
    sym = 'L1';
    L1 = cook(o,sym);   
    [num,den] = peek(L1);
@@ -334,9 +353,11 @@ function oo = Nyquist(o)               % Nyquist Stability Analysis
       end
 
       Lmu = list{i};
+      SysMu = get(Lmu,'SysMu');
+      
       diagram(oo,'Bode','',Lmu,2211);
       xlabel('omega [1/s]');
-      diagram(o,'Stability','',get(Lmu,'SysMu'),2221);
+      diagram(o,'Stability','',SysMu,2221);
       oo = diagram(o,'Nyq','',Lmu,1212);
    end
    
@@ -354,16 +375,9 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
    list = {};                          % empty by default
    objs = {};
    head = heading(o);                  % default heading
-   mu = opt(o,{'process.mu',0.1});
    
    if type(o,{'spm'})
-      [Lmu,Sys0] = cook(o,'Lmu,Sys0');
-      
-      SysMu = Sys0;
-      SysMu.data.B = SysMu.data.B * mu;
-      Lmu.par.SysMu = SysMu;
-      
-      list = {Lmu};
+      list = {GetLmu(o)};
       objs = {o};
    elseif type(o,{'shell'})
       pivot = opt(o,'basket.pivot');
@@ -376,12 +390,23 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
          ok = o.data{k};
          ok = inherit(ok,o);
          if (type(ok,{'spm'}) && isequal(get(ok,'pivot'),pivot))
-            Lmu = cook(ok,'Lmu');
-            list{end+1} = Lmu;
+            list{end+1} = GetLmu(ok);
             objs{end+1} = ok;
          end
       end
       head = sprintf('Pivot: %g°',pivot);
+   end
+   
+   function Lmu = GetLmu(o)
+      [Lmu,Sys0,K0,f0] = cook(o,'Lmu,Sys0,K0,f0');
+      mu = opt(o,{'process.mu',0.1});
+      
+      SysMu = Sys0;
+      SysMu.data.B = SysMu.data.B * mu;
+      SysMu.data.f0 = f0;
+      SysMu.data.K0 = K0;
+      
+      Lmu.par.SysMu = SysMu;
    end
 end
 

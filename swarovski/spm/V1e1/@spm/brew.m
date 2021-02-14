@@ -532,6 +532,8 @@ function oo = Multi(o)
    
    ndx = idx(1:n);                     % index of non observable SV     
    odx = idx(n+1:end);                 % indices of observable SV
+%  ndx = idx(1:n+1);                   % index of non observable SV     
+%  odx = idx(n+2:end);                 % indices of observable SV
    AR = AV(odx,odx);                   % observable dynamic matrix
    BR = BV(odx,:);
    CR = CV(:,odx);
@@ -563,7 +565,11 @@ function oo = Multi(o)
       l2 = AS(k+1,k+1);
       Ti = [-l2 1; -l1 1];
       if ( det(Ti) == 0 )
-         error('cannot transform');
+         if (imag(l1)== 0 && imag(l2)==0)
+            Ti = eye(2);                     % recover for real eigenvalues
+         else
+            error('cannot transform');
+         end
       end
       T(k:k+1,k:k+1) = Ti;
    end
