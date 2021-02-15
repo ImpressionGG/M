@@ -210,6 +210,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - make stability margin chart running again
 % - rloc adaption to state space systems
 % - stability coefficient plot
+% - change term stability coefficient to stability range
 %
 % Known bugs & wishlist
 % =========================

@@ -23,7 +23,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @G31G33L0,@L0Shell,@MagniPhase,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
-                   @Stability,@CriticalMu,@GijPrecision,@L0Precision,...
+                   @StabilityMargin,@StabilityRange,@GijPrecision,@L0Precision,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -86,8 +86,8 @@ function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type
    enable(oo,~isempty(get(current(o),'image')));
    
    oo = mitem(o,'-');
-   oo = mitem(o,'Stability Margin',{@WithCuo,'Stability'});
-   oo = mitem(o,'Stability Coefficient',{@WithCuo,'CriticalMu'});
+   oo = mitem(o,'Stability Range',{@WithCuo,'StabilityRange'});
+   oo = mitem(o,'Stability Margin',{@WithCuo,'StabilityMargin'});
 end
 
 function oo = ModeShapes(o)            % Mode Shapes Menu              
@@ -2347,7 +2347,7 @@ end
 % Stability
 %==========================================================================
 
-function o = Stability(o)              % Plot Stability Margin         
+function o = StabilityMargin(o)        % Plot Stability Margin         
    if ~type(o,{'pkg'})
       plot(o,'About');
       return
@@ -2455,7 +2455,7 @@ function o = Stability(o)              % Plot Stability Margin
       end
    end
 end
-function o = CriticalMu(o)             % Plot Critical Mu              
+function o = StabilityRange(o)         % Plot Critical Mu              
    if ~type(o,{'pkg'})
       plot(o,'About');
       return
@@ -2485,7 +2485,7 @@ function o = CriticalMu(o)             % Plot Critical Mu
    
    
    for (i=1:n)                         % calc & plot stability margin  
-      txt = sprintf('calculate stability margin of %s',get(o,'title'));
+      txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,i/n*100);
       
       oo = list{i};
@@ -2533,9 +2533,9 @@ function o = CriticalMu(o)             % Plot Critical Mu
       hold on;
       plot(o,get(gca,'xlim'),[1 1],'K-.2');
 
-      title(sprintf('Stability Coefficient%s',More(o,mu)));
+      title(sprintf('Stability Range%s',More(o,mu)));
 
-      ylabel(sprintf('Stability Coefficient @ mu: %g',mu));
+      ylabel(sprintf('Stability Range @ mu: %g',mu));
 
       if ~isempty(variation)
          xlabel(sprintf('Variation Parameter: %s',variation));
