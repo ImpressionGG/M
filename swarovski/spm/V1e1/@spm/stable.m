@@ -24,13 +24,13 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
 %  contact = opt(o,{'contact',0});
    mu = opt(o,{'process.mu',0.1});
   
-   oo = o;                         % for eventual caching extension
+   oo = o;                             % for eventual caching extension
    if (nargin == 1)
-      if isequal(algo,'trf')       % transfer function algorithm
+      if isequal(algo,'trf')           % transfer function algorithm
          Lmu = cook(oo,'Lmu');
-      elseif isequal(algo,'ss')    % state space algorithm
+      elseif isequal(algo,'ss')        % state space algorithm
          Sys0 = cook(oo,'Sys0');
-      elseif isequal(algo,'mix')   % mixed type algorithm
+      elseif isequal(algo,'mix')       % mixed type algorithm
          L0 = cook(oo,'L0');
          Sys0 = system(L0);
       else
@@ -41,7 +41,7 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
       %algo = 'trf';
       Lmu = varargin{1};
       Sys0 = Lmu;
-      mu = 1;                          % nominal mu
+      mu = 1*sign(mu);                  % nominal mu
    elseif (nargin == 3)
       %algo = 'ss';
       Sys0 = varargin{1};
@@ -50,7 +50,7 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
   
    if (nargout == 0)
       if isequal(algo,'trf')
-         Stable(oo,Lmu);                % plot
+         Stable(oo,Lmu);               % plot
       else
          Stability(oo,Sys0,mu);         % plot
       end

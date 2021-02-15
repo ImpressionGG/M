@@ -449,7 +449,7 @@ function o = Stability(o)              % Stability Analysis
    else                                % multi contact
       Sys0 = cook(o,'Sys0');
       o = with(o,'stability');
-      mu = opt(o,{'processs.mu',0.1}); % friction coefficient
+      mu = opt(o,{'process.mu',0.1});  % friction coefficient
       stable(o,Sys0,mu);
    end
 

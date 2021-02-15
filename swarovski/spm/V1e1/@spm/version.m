@@ -212,6 +212,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - stability coefficient plot
 % - change term stability coefficient to stability range
 % - trim info text
+% - adopt stability aalysis for negative mu
 %
 % Known bugs & wishlist
 % =========================
