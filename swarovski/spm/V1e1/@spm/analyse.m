@@ -17,7 +17,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
-                      @Contribution,@NumericCheck,...
+                      @Damping,@Contribution,@NumericCheck,...
                       @SensitivityW,@SensitivityF,@SensitivityD,...
                       @AnalyseRamp,@NormRamp,...
                       @BodePlots,@StepPlots,@PolesZeros,...
@@ -100,6 +100,8 @@ function oo = Stability(o)             % Closed Loop Stability Menu
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'Margin'});
+   ooo = mitem(oo,'Damping',{@WithCuo,'Damping'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
 %  ooo = mitem(oo,'-');
 %  ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
@@ -295,10 +297,71 @@ end
 
 function o = Margin(o)                 % Stability Margin              
    oo = with(o,{'process','stability'});
-   stable(oo);
+   L0 = cook(o,'Sys0');
+   mu = opt(o,{'process.mu',0.1});
+   
+   subplot(o,211);
+   stable(oo,L0,mu);
+   
+   subplot(o,212);
+   stable(oo,L0,-mu);
+
    heading(o);
 end
-function o = Rloc(o)                   % Root Locus                    
+function o = Damping(o)                % Closed Loop Damping           
+   o = with(o,'rloc');
+   o = with(o,'style');
+   
+   L0 = cook(o,'Sys0');
+   mu = opt(o,{'process.mu',0.1});
+   L0 = inherit(L0,o);
+
+   glim = [0 0.1; 0.1 1; 1 10; 10 inf];
+   Klab = {'0.001->0.01->0.1', '0.1->0.2->0.5->1',...
+           '1->2->5->10','10->100->1000'};
+   m = size(glim,1);
+   
+   fmin = opt(o,{'fmin',1});
+   fmax = opt(o,{'fmax',1e6});
+   
+   for (i=1:m)
+      subplot(o,[m 2 i 1]);
+      rlocus(o,L0,-mu,glim(i,:));
+      ylim = get(gca,'ylim');
+      set(gca,'ylim',[min(-2,ylim(1)),0]);
+      set(gca,'xlim',[fmin,fmax]);
+      
+      title(sprintf('K: %s (mu: %g)',Klab{i},-mu));
+      ylabel('damping [%]');
+   end
+   xlabel('frequency [Hz]');
+   
+   for (i=1:m)
+      subplot(o,[m 2 i 2]);
+      rlocus(o,L0,mu,glim(i,:));
+      ylim = get(gca,'ylim');
+      set(gca,'ylim',[min(-2,ylim(1)),0]);
+      set(gca,'xlim',[fmin,fmax]);
+      
+      title(sprintf('K: %s (mu: %g)',Klab{i},+mu));
+      ylabel('damping [%]');
+   end
+   xlabel('frequency [Hz]');
+   
+   heading(o);
+end
+function o = OldDamping(o)                % Closed Loop Damping           
+   o = with(o,'rloc');
+   o = with(o,'style');
+      
+   subplot(o,111);
+
+   L0 = cook(o,'Sys0');
+   mu = opt(o,{'process.mu',0.1});
+   L0 = inherit(L0,o);
+
+   rlocus(o,L0,mu);
+endfunction o = Rloc(o)                   % Root Locus                    
    o = with(o,'rloc');
    o = with(o,'style');
    
@@ -335,7 +398,7 @@ function o = OldRloc(o)                % Root Locus
    
    heading(o);
 end
-function oo = StabilityOverview(o)     % Stability Overview    
+function oo = StabilityOverview(o)     % Stability Overview            
    o = with(o,{'style','bode','nyq'});
 
    mu = opt(o,{'process.mu',0.1});
@@ -353,15 +416,17 @@ function oo = StabilityOverview(o)     % Stability Overview
       end
 
       Lmu = list{i};
-      SysMu = var(Lmu,'SysMu');
+      Sys0 = var(Lmu,'Sys0');
       
-      diagram(oo,'Magni','',Lmu,3211);
+      diagram(oo,'Magni','',Lmu,4211);
       xlabel('omega [1/s]');
 
-      diagram(oo,'Phase','',Lmu,3221);
+      diagram(oo,'Phase','',Lmu,4221);
       xlabel('omega [1/s]');
       
-      diagram(o,'Stability','',SysMu,3231);
+      diagram(o,'Stability',+mu,Sys0,4231);
+      diagram(o,'Stability',-mu,Sys0,4241);
+
       oo = diagram(o,'Nyq','',Lmu,1212);
    end
    
@@ -402,15 +467,9 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
    end
    
    function Lmu = GetLmu(o)
-      [Lmu,Sys0,K0,f0] = cook(o,'Lmu,Sys0,K0,f0');
-      mu = opt(o,{'process.mu',0.1});
-      
-      SysMu = Sys0;
-      SysMu.data.B = SysMu.data.B * mu;
-      SysMu.data.f0 = f0;
-      SysMu.data.K0 = K0;
-      
-      Lmu = var(Lmu,'SysMu',SysMu);
+      [Lmu,Sys0,K0,K180,f0,f180] = cook(o,'Lmu,Sys0,K0,K180,f0,f180');
+      Sys0 = var(Sys0,'f0,f180,K0,K180',f0,f180,K0,K180);
+      Lmu = var(Lmu,'Sys0',Sys0);
    end
 end
 

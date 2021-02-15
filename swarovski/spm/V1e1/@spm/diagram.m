@@ -15,7 +15,7 @@ function oo = diagram(o,varargin)
 %              diagram(o,'Astep','Ta1',Ta1,sub)       % accel. step rsp.
 %              diagram(o,'FStep','L51',L51,sub)       % force step response
 %              diagram(o,'Rloc','G11',G11,sub)        % root locus
-%              diagram(o,'Stability','L1',L1,sub)     % stability analysis
+%              diagram(o,'Stability',mu,Sys0,sub)     % stability analysis
 %              diagram(o,'Bode','G11',G11,sub)        % bode diagram
 %              diagram(o,'Magni','G11',G11,sub)       % magnitude diagram
 %              diagram(o,'Phase','G11',G11,sub)       % phase diagram
@@ -403,10 +403,12 @@ function o = NewBode(o)                % Bode Diagram
    bode(G);
    
    if (critical)
-      f0 = cook(o,'f0');
+      [f0,f180] = cook(o,'f0,f180');
       ylim = get(gca,'ylim');
       hold on;
       hdl = semilogx(2*pi*f0*[1 1],ylim,'r-.');
+      set(hdl,'linewidth',1);
+      hdl = semilogx(2*pi*f180*[1 1],ylim,o.iif(dark(o),'m-.','b-.'));
       set(hdl,'linewidth',1);
    end
    
@@ -446,7 +448,8 @@ function o = Stability(o)              % Stability Analysis
    o = Scaling(o);                     % manage scaling factors
    o = with(o,{'nyq','stability'});    % override some Scaling opts
    
-   sym = arg(o,1);
+   Mu = arg(o,1);
+   sym = 'Sys0';
    G = arg(o,2);
    sub = o.either(arg(o,3),[1 1 1]);
 
@@ -467,7 +470,7 @@ function o = Stability(o)              % Stability Analysis
       o = with(o,'stability');
       %mu = opt(o,{'process.mu',0.1});  % friction coefficient
       %stable(o,Sys0,mu);
-      stable(o,Sys0);
+      stable(o,Sys0,Mu);
    end
 
    subplot(o);                         % subplot done!

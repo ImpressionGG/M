@@ -334,7 +334,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
    idx = find(re>0);
    margin = inf;
    
-   mu = opt(o,'process.mu');
+   %mu = opt(o,'process.mu');
    symf = o.iif(mu>=0,'f0','f180');
    try
       f = cook(o,symf);
@@ -379,7 +379,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
    function txt = More(o)              % More Title Text               
       txt = '';  sep = '';
       
-      mu = opt(o,'process.mu');
+%     mu = opt(o,'process.mu');
       if ~isempty(mu)
          txt = sprintf('mu: %g',mu);  
          sep = ', ';

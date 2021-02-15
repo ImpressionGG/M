@@ -216,6 +216,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix in stability overview
 % - pimp stability margin chart
 % - start with spm/rlocus method
+% - pimp stability margin diagram and stability overview
 %
 % Known bugs & wishlist
 % =========================
