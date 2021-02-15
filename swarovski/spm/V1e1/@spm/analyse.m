@@ -16,7 +16,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @WithSpm,@Numeric,@Trf,@TfOverview,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
-                      @Margin,@Rloc,@Nyquist,@OpenLoop,@Calc,...
+                      @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
                       @Contribution,@NumericCheck,...
                       @SensitivityW,@SensitivityF,@SensitivityD,...
                       @AnalyseRamp,@NormRamp,...
@@ -43,7 +43,7 @@ function oo = Menu(o)                  % Setup Analyse Menu
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyquist'});
+   ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = NumericMenu(o);                % add Numeric menu
@@ -97,9 +97,9 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
 end
 function oo = Stability(o)             % Closed Loop Stability Menu    
    oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Stability Margin',{@WithCuo,'Margin'});
+   ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Nyquist',{@WithCuo,'Nyquist'});
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'Margin'});
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
 %  ooo = mitem(oo,'-');
 %  ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
@@ -335,7 +335,7 @@ function o = OldRloc(o)                % Root Locus
    
    heading(o);
 end
-function oo = Nyquist(o)               % Nyquist Stability Analysis    
+function oo = StabilityOverview(o)     % Stability Overview    
    o = with(o,{'style','bode','nyq'});
 
    mu = opt(o,{'process.mu',0.1});
@@ -353,11 +353,15 @@ function oo = Nyquist(o)               % Nyquist Stability Analysis
       end
 
       Lmu = list{i};
-      SysMu = get(Lmu,'SysMu');
+      SysMu = var(Lmu,'SysMu');
       
-      diagram(oo,'Bode','',Lmu,2211);
+      diagram(oo,'Magni','',Lmu,3211);
       xlabel('omega [1/s]');
-      diagram(o,'Stability','',SysMu,2221);
+
+      diagram(oo,'Phase','',Lmu,3221);
+      xlabel('omega [1/s]');
+      
+      diagram(o,'Stability','',SysMu,3231);
       oo = diagram(o,'Nyq','',Lmu,1212);
    end
    
@@ -406,7 +410,7 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
       SysMu.data.f0 = f0;
       SysMu.data.K0 = K0;
       
-      Lmu.par.SysMu = SysMu;
+      Lmu = var(Lmu,'SysMu',SysMu);
    end
 end
 

@@ -329,24 +329,26 @@ function [K,f,Ki] = Stability(o,sys,mu)
    idx = find(re>0);
    margin = inf;
    
+   mu = opt(o,'process.mu');
+   symf = o.iif(mu>=0,'f0','f180');
    try
-      f = cook(o,'f0');
+      f = cook(o,symf);
    catch
-      f = data(sys,{'f0',0});
+      f = data(sys,{symf,0});
    end
    
    if ~isempty(idx)
       semilogx(mag(idx),dB(idx),'r.');
       i = max(1,min(idx)-1);
       %margin = mag(i);
+      symK = o.iif(mu>=0,'K0','K180');
       try
-         K0 = cook(o,'K0');
+         K0 = cook(o,symK);
       catch
-         K0 = data(sys,{'K0',0});
+         K0 = data(sys,{symK,0});
       end
       
-      mu = opt(o,'process.mu');
-      margin = K0/mu; 
+      margin = K0/abs(mu); 
    end
 
    idx = find(re<0);

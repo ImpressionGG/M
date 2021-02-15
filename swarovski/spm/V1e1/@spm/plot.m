@@ -976,6 +976,10 @@ function CriticalFrequency(o,objs,sub) % Plot Critical Frequencies
       f0 = cook(oo,'f0');
       hdl = semilogx(2*pi*f0*[1 1],ylim,'r-.');
       set(hdl,'linewidth',o.iif(i==1,1,2));
+
+      f180 = cook(oo,'f180');
+      hdl = semilogx(2*pi*f180*[1 1],ylim,'b-.');
+      set(hdl,'linewidth',o.iif(i==1,1,2));
    end
 end
 

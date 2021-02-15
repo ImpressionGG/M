@@ -347,7 +347,12 @@ function o = Magni(o)                  % Magnitude Diagram
 
    G = arg(o,2);
    sym = o.either(arg(o,1),Sym(G));
-   title([sym,': Magnitude Plot']);
+   if isequal(sym,'Lmu(s)')
+      mu = opt(o,{'process.mu',0.1});
+      title(sprintf('%s: Magnitude Plot (mu: %g)',sym,mu));
+   else
+      title([sym,': Magnitude Plot']);
+   end
 end
 function o = Phase(o)                  % Phase Diagram                  
    o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
@@ -355,7 +360,13 @@ function o = Phase(o)                  % Phase Diagram
 
    G = arg(o,2);
    sym = o.either(arg(o,1),Sym(G));
-   title([sym,': Phase Plot']);
+   
+   if isequal(sym,'Lmu(s)')
+      mu = opt(o,{'process.mu',0.1});
+      title(sprintf('%s: Magnitude Plot (mu: %g)',sym,mu));
+   else
+      title([sym,': Magnitude Plot']);
+   end
 end
 function o = GoodBode(o)               % Bode Diagram
    o = Scaling(o);                     % manage scaling factors
@@ -422,7 +433,12 @@ function o = Nyq(o)                    % Nyquist Diagram
    subplot(o,sub);
    
    o = nyq(G);
-   title([sym,': Nyquist Diagram']);
+   if isequal(sym,'Lmu(s)')
+      mu = opt(o,{'process.mu',0.1});
+      title(sprintf('%s: Nyquist Diagram (mu: %g)',sym,mu));
+   else
+      title([sym,': Nyquist Diagram']);
+   end
 
    subplot(o);                         % subplot done!
 end
@@ -447,7 +463,7 @@ function o = Stability(o)              % Stability Analysis
 
       stable(o,G);
    else                                % multi contact
-      Sys0 = cook(o,'Sys0');
+      Sys0 = G;                        % Sys0 = cook(o,'Sys0');
       o = with(o,'stability');
       mu = opt(o,{'process.mu',0.1});  % friction coefficient
       stable(o,Sys0,mu);

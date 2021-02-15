@@ -168,7 +168,7 @@ function o = Phase(o)                  % Plot Phase
    hdl = semilogx(om,p,'r');
    col = opt(o,{'color','r--'});
    [col,lw,typ] = o.color(col);
-   lw = [];
+   %lw = [];
    
    set(hdl,'Color',col);
    if o.is(lw)

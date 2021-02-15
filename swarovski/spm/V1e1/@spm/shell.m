@@ -472,7 +472,7 @@ function oo = Scale(o)                 % Scale Sub-Menu
 end
 function oo = Bode(o)                  % Bode Settings Menu            
    setting(o,{'bode.omega.low'},1e2);
-   setting(o,{'bode.omega.high'},1e6);
+   setting(o,{'bode.omega.high'},1e5);
    setting(o,{'bode.magnitude.low'},[]);
    setting(o,{'bode.magnitude.high'},[]);
    setting(o,{'bode.phase.low'},-360);
