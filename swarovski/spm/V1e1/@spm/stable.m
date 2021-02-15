@@ -43,7 +43,8 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
       %algo = 'trf';
       Lmu = varargin{1};
       Sys0 = Lmu;
-      mu = 1*sign(mu);                  % nominal mu
+%     mu = 1*sign(mu);                 % nominal mu
+      mu = 1;                          % nominal mu
    elseif (nargin == 3)
       %algo = 'ss';
       Sys0 = varargin{1};
@@ -54,7 +55,7 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
       if isequal(algo,'trf')
          Stable(oo,Lmu);               % plot
       else
-         Stability(oo,Sys0,mu);         % plot
+         Stability(oo,Sys0,mu);        % plot
       end
    else
       if isequal(algo,'trf')
@@ -67,15 +68,14 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
          K = K0;  f = inf;
       else
          if isequal(algo,'trf')
-            oo = opt(oo,'gain.low',20*log10(K0*0.95));
-            %oo = opt(oo,'gain.high',20*log10(K0*1.05));
-            oo = opt(oo,'gain.high',20*log10(Ki));
+            oo = opt(oo,'gain.low',K0);
+            oo = opt(oo,'gain.high',Ki);
             [K,f] = Stable(oo,Lmu);
          else
             iter = opt(o,{'stability.iter',10});
             for (k=1:iter)
-               oo = opt(oo,'gain.low',20*log10(K0));
-               oo = opt(oo,'gain.high',20*log10(Ki));
+               oo = opt(oo,'gain.low',K0);
+               oo = opt(oo,'gain.high',Ki);
                oo = opt(oo,'search',5);
                [K0,f,Ki] = Stability(oo,Sys0,mu);
             end
