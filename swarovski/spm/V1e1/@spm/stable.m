@@ -15,6 +15,8 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
 %          Options:
 %             algo          algorithm ('ss' or 'trf', 'ss' by default)
 %             contact       single (0) or multi (1) contact
+%             gain.low      lower gain (default 1e-3)
+%             gain.high     upper gain (default 1e3)
 %
 %          Copyright(c): Bluenetics 2020
 %
@@ -65,15 +67,15 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
          K = K0;  f = inf;
       else
          if isequal(algo,'trf')
-            oo = opt(oo,'magnitude.low',20*log10(K0*0.95));
-            %oo = opt(oo,'magnitude.high',20*log10(K0*1.05));
-            oo = opt(oo,'magnitude.high',20*log10(Ki));
+            oo = opt(oo,'gain.low',20*log10(K0*0.95));
+            %oo = opt(oo,'gain.high',20*log10(K0*1.05));
+            oo = opt(oo,'gain.high',20*log10(Ki));
             [K,f] = Stable(oo,Lmu);
          else
             iter = opt(o,{'stability.iter',10});
             for (k=1:iter)
-               oo = opt(oo,'magnitude.low',20*log10(K0));
-               oo = opt(oo,'magnitude.high',20*log10(Ki));
+               oo = opt(oo,'gain.low',20*log10(K0));
+               oo = opt(oo,'gain.high',20*log10(Ki));
                oo = opt(oo,'search',5);
                [K0,f,Ki] = Stability(oo,Sys0,mu);
             end
@@ -88,9 +90,11 @@ end
 %==========================================================================
 
 function [K,f,Ki] = Stable(o,L0)
-   low = opt(o,{'magnitude.low',-300});
-   high = opt(o,{'magnitude.high',100});
-   delta = opt(o,{'magnitude.delta',20});
+   error('implementation restriction');
+   
+   low = opt(o,{'gain.low',-300});
+   high = opt(o,{'gain.high',100});
+   %delta = opt(o,{'gain.delta',20});
 
    if (nargout > 0)
       points = opt(o,{'search',100});
@@ -98,12 +102,12 @@ function [K,f,Ki] = Stable(o,L0)
       points = opt(o,{'points',1000});
    end
    
-   mag = logspace(low/20,high/20,points);
+   gain = logspace(log10(low),log10(high),points);
 
    [num,den] = peek(L0);
 
-   for (i=1:length(mag))
-      K = mag(i);
+   for (i=1:length(gain))
+      K = gain(i);
       poly = add(L0,K*num,den);
       r = roots(poly);
 
@@ -117,16 +121,16 @@ function [K,f,Ki] = Stable(o,L0)
       % find critical K
       
    K = inf;
-   Ki = max(mag);
+   Ki = max(gain);
    
    idx = find(re>0);
    if ~isempty(idx)
       idx = max(1,idx(1)-1);
-      K = mag(idx);
+      K = gain(idx);
       
-      for (j=idx:length(mag))
+      for (j=idx:length(gain))
          if (real(re(j)) >= 0)
-            Ki = mag(j);
+            Ki = gain(j);
             break;
          end
       end
@@ -168,7 +172,7 @@ function [K,f,Ki] = Stable(o,L0)
       dB(idx) = 20*log(-re(idx));
    end
 
-   hdl = semilogx(mag,dB);
+   hdl = semilogx(gain,dB);
    hold on;
 
    lw = opt(o,{'linewidth',1});
@@ -178,14 +182,14 @@ function [K,f,Ki] = Stable(o,L0)
    margin = inf;
 
    if ~isempty(idx)
-      semilogx(mag(idx),dB(idx),'r.');
+      semilogx(gain(idx),dB(idx),'r.');
       i = max(1,min(idx)-1);
-      margin = mag(i);
+      margin = gain(i);
    end
 
    idx = find(re<0);
    if ~isempty(idx)
-      semilogx(mag(idx),dB(idx),'g.');
+      semilogx(gain(idx),dB(idx),'g.');
    end
 
       % plot axes
@@ -239,22 +243,23 @@ function [K,f,Ki] = Stability(o,sys,mu)
       points = opt(o,{'points',1000});
    end
 
-   low = opt(o,{'magnitude.low',-300});
-   high = opt(o,{'magnitude.high',100});
-   delta = opt(o,{'magnitude.delta',20});
+   low = opt(o,{'gain.low',1e-3});
+   high = opt(o,{'gain.high',1e3});
+   %delta = opt(o,{'gain.delta',20});
 
-   mag = logspace(low/20,high/20,points);
+%  gain = logspace(low/20,high/20,points);
+   gain = logspace(log10(low),log10(high),points);
    
 %  [num,den] = peek(L0);
 
-   for (i=1:length(mag))
+   for (i=1:length(gain))
       if ( rem(i,10) == 1 )
-         percent = (i-1)/length(mag) * 100;
-         msg = sprintf('analyzing %g of %g',i,length(mag));
+         percent = (i-1)/length(gain) * 100;
+         msg = sprintf('analyzing %g of %g',i,length(gain));
          progress(o,msg,percent);
       end
       
-      K = mag(i);
+      K = gain(i);
       %poly = add(L0,K*num,den);
       %r = roots(poly);
 
@@ -275,17 +280,17 @@ function [K,f,Ki] = Stability(o,sys,mu)
       % find critical K and associated imaginary part
    
    K = inf;
-   Ki = max(mag);
+   Ki = max(gain);
    
    idx = find(re>0);
    if ~isempty(idx)
       idx = max(1,idx(1)-1);
-      K = mag(idx);
+      K = gain(idx);
       im = im(idx);
       
-      for (j=idx:length(mag))
+      for (j=idx:length(gain))
          if (real(re(j)) >= 0)
-            Ki = mag(j);
+            Ki = gain(j);
             break;
          end
       end
@@ -320,7 +325,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       dB(idx) = 20*log(-re(idx));
    end
 
-   hdl = semilogx(mag,dB);
+   hdl = semilogx(gain,dB);
    hold on;
 
    lw = opt(o,{'linewidth',1});
@@ -338,9 +343,9 @@ function [K,f,Ki] = Stability(o,sys,mu)
    end
    
    if ~isempty(idx)
-      semilogx(mag(idx),dB(idx),'r.');
+      semilogx(gain(idx),dB(idx),'r.');
       i = max(1,min(idx)-1);
-      %margin = mag(i);
+      %margin = gain(i);
       symK = o.iif(mu>=0,'K0','K180');
       try
          K0 = cook(o,symK);
@@ -353,7 +358,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
 
    idx = find(re<0);
    if ~isempty(idx)
-      semilogx(mag(idx),dB(idx),'g.');
+      semilogx(gain(idx),dB(idx),'g.');
    end
 
       % plot axes

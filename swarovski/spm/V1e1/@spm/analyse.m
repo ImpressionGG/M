@@ -368,7 +368,7 @@ function oo = StabilityOverview(o)     % Stability Overview
       % plot legend if more than 1 plots
       
    if (length(list) > 1)
-      Legend(o,2211,objs);
+      Legend(o,3211,objs);
    end
    
    Verbose(o,Lmu);   

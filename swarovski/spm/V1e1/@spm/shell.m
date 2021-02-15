@@ -779,6 +779,8 @@ function oo = Stability(o)             % Stability Menu
    setting(o,{'stability.points'},200);% points for diagram
    setting(o,{'stability.search'},50); % number of search points
    setting(o,{'stability.iter'},15);   % iterations
+   setting(o,{'stability.gain.low'},1e-3);
+   setting(o,{'stability.gain.high'},1e3);
 
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Algorithm',{},'stability.algo');
@@ -793,7 +795,13 @@ function oo = Stability(o)             % Stability Menu
 
    ooo = mitem(oo,'Iterations',{},'stability.iter');
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
-end
+   ooo = mitem(oo,'-');
+ 
+   ooo = mitem(oo,'Lower Gain',{},'stability.gain.low');
+         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
+   ooo = mitem(oo,'Upper Gain',{},'stability.gain.high');
+         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+ end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off
    setting(o,{'filter.type'},'LowPass2');

@@ -214,6 +214,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - trim info text
 % - adopt stability analysis for negative mu
 % - bug fix in stability overview
+% - pimp stability margin chart
 %
 % Known bugs & wishlist
 % =========================

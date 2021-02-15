@@ -363,9 +363,9 @@ function o = Phase(o)                  % Phase Diagram
    
    if isequal(sym,'Lmu(s)')
       mu = opt(o,{'process.mu',0.1});
-      title(sprintf('%s: Magnitude Plot (mu: %g)',sym,mu));
+      title(sprintf('%s: Phase Plot (mu: %g)',sym,mu));
    else
-      title([sym,': Magnitude Plot']);
+      title([sym,': Phase Plot']);
    end
 end
 function o = GoodBode(o)               % Bode Diagram
@@ -465,8 +465,9 @@ function o = Stability(o)              % Stability Analysis
    else                                % multi contact
       Sys0 = G;                        % Sys0 = cook(o,'Sys0');
       o = with(o,'stability');
-      mu = opt(o,{'process.mu',0.1});  % friction coefficient
-      stable(o,Sys0,mu);
+      %mu = opt(o,{'process.mu',0.1});  % friction coefficient
+      %stable(o,Sys0,mu);
+      stable(o,Sys0);
    end
 
    subplot(o);                         % subplot done!
