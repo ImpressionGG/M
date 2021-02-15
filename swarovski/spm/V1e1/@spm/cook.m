@@ -55,8 +55,8 @@ function varargout = cook(o,sym)
 %          F0 = cook(o,'F0')                % normalizing TRF
 %          L0 = cook(o,'L0')                % Open loop L0(s) := P(s)/Q(s)
 %
-%          K0 = cook(o,'K0')                % critical gain (mu)
-%          f0 = cook(o,'f0');               % critical frequency
+%          [K0,K180] = cook(o,'K0,K180')    % critical gain (mu)
+%          [f0,f180] = cook(o,'f0,f180');   % critical frequency
 %
 %          S0 = cook(o,'S0')                % closed loop Sensitivity @ K0
 %          T0 = cook(o,'T0')                % total closed loop TRF @ K0 
@@ -151,7 +151,7 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = inherit(oo,o);
          oo = opt(oo,'oscale',oscale(o));
          
-      case {'K0','f0'}
+      case {'K0','f0','K180','f180'}
          oo = cache(o,o,'multi');
          oo = cache(oo,['multi.',sym]);
 

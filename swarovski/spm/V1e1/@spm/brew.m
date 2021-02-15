@@ -615,6 +615,10 @@ function oo = Multi(o)
       % calculate critical gain and frequency
       
    [K0,f0]=stable(o,Sys0);
+   
+   Sys180 = Sys0;
+   Sys180.data.B = -Sys180.data.B;
+   [K180,f180]=stable(o,Sys180);
 
       % store in cache and unconditional hard refresh of cache
       
@@ -622,6 +626,8 @@ function oo = Multi(o)
    oo = cache(oo,'multi.Sys0',Sys0);
    oo = cache(oo,'multi.K0',K0);
    oo = cache(oo,'multi.f0',f0);
+   oo = cache(oo,'multi.K180',K180);
+   oo = cache(oo,'multi.f180',f180);
       
    cache(oo,oo);                       % hard refresh cache
    progress(o);                        % progress complete   

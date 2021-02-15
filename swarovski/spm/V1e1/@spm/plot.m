@@ -23,7 +23,7 @@ function oo = plot(o,varargin)         % SPM Plot Method
                    @G31G33L0,@L0Shell,@MagniPhase,...
                    @Ls,@LsStep,@LsBode,@Ts,@TsStep,@TsBode,@Step,...
                    @Ramp,@ForceRamp,@ForceStep,@MotionRsp,@NoiseRsp,...
-                   @Stability,@GijPrecision,@L0Precision,...
+                   @Stability,@CriticalMu,@GijPrecision,@L0Precision,...
                    @AnalyseRamp,@NormRamp);
    oo = gamma(oo);
 end
@@ -87,6 +87,7 @@ function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type
    
    oo = mitem(o,'-');
    oo = mitem(o,'Stability Margin',{@WithCuo,'Stability'});
+   oo = mitem(o,'Stability Coefficient',{@WithCuo,'CriticalMu'});
 end
 
 function oo = ModeShapes(o)            % Mode Shapes Menu              
@@ -2388,8 +2389,9 @@ function o = Stability(o)              % Plot Stability Margin
          margin(i) = cook(oo,'K0') / mu;
       end
       
-      
-      if (margin(i) > 1)
+      if isinf(margin(i))
+         plot(o,x(i),0,'gp');
+      elseif (margin(i) > 1)
          plot(o,x(i),margin(i),'g|o2');
       else
          plot(o,x(i),margin(i),'r|o2');
@@ -2431,6 +2433,121 @@ function o = Stability(o)              % Plot Stability Margin
       txt = '';  sep = '';
       
       mu = opt(o,'process.mu');
+      if ~isempty(mu)
+         txt = sprintf('mu: %g',mu);  
+         sep = ', ';
+      end
+      
+      vomega = opt(o,{'variation.omega',1});
+      if ~isequal(vomega,1)
+         txt = [txt,sep,sprintf('vomega: %g',vomega)]; 
+         sep = ', ';
+      end
+      
+      vzeta = opt(o,{'variation.zeta',1});
+      if ~isequal(vzeta,1)
+         txt = [txt,sep,sprintf('vzeta: %g',vzeta)];
+         sep = ', ';
+      end
+      
+      if ~isempty(txt)
+         txt = [' (',txt,')'];
+      end
+   end
+end
+function o = CriticalMu(o)             % Plot Critical Mu              
+   if ~type(o,{'pkg'})
+      plot(o,'About');
+      return
+   end
+   
+   package = get(o,'package');
+   if isempty(package)
+      error('no package ID provided');
+   end
+      
+      % get object list of package
+      % note that first list element is the package object, which has 
+      % to been deleted. calculate stability margin for all data objects
+      
+   olist = tree(o);                    % get list of package objects
+   list = olist{1};                    % pick object list
+   list(1) = [];                       % delete package object from list
+
+   o = with(o,{'style','process','stability'});
+   n = length(list);
+
+   mu = opt(o,{'process.mu',0.1});
+   x = Axes(o,211,mu);                 % get variation range and plot axes
+   x = Axes(o,212,-mu);                % get variation range and plot axes
+  
+      % calculate stability margin and plot
+   
+   
+   for (i=1:n)                         % calc & plot stability margin  
+      txt = sprintf('calculate stability margin of %s',get(o,'title'));
+      progress(o,txt,i/n*100);
+      
+      oo = list{i};
+      oo = inherit(oo,o);
+      
+      subplot(o,211);
+      Mu0(i) = mu/cook(oo,'K0');
+      
+      if (Mu0(i) < 1)
+         plot(o,x(i),Mu0(i),'g|o2');
+      else
+         plot(o,x(i),Mu0(i),'r|o2');
+      end
+      
+      subplot(o,212);
+      Mu180(i) = mu/cook(oo,'K180');
+      
+      if (Mu180(i) < 1)
+         plot(o,x(i),Mu180(i),'g|o2');
+      else
+         plot(o,x(i),Mu180(i),'r|o2');
+      end
+      
+      idle(o);                         % show graphics
+   end
+   
+   progress(o);                        % progress completed
+   heading(o);                         % add heading
+   
+   function x = Axes(o,sub,mu)         % Plot Axes                     
+      subplot(o,sub);
+
+      variation = get(o,'variation');
+      for (ii=1:n)
+         oi = list{ii};
+
+         if ~isempty(variation)
+            x(ii) = get(oi,{variation,ii});
+         else
+            x(ii) = ii;
+         end
+      end   
+      
+      plot(o,x,0*x,'K.');
+      hold on;
+      plot(o,get(gca,'xlim'),[1 1],'K-.2');
+
+      title(sprintf('Stability Coefficient%s',More(o,mu)));
+
+      ylabel(sprintf('Stability Coefficient @ mu: %g',mu));
+
+      if ~isempty(variation)
+         xlabel(sprintf('Variation Parameter: %s',variation));
+      else
+         xlabel('Variation Parameter');
+      end
+
+      subplot(o);                         % subplot complete
+   end
+   function txt = More(o,mu)              % More Title Text               
+      txt = '';  sep = '';
+      
       if ~isempty(mu)
          txt = sprintf('mu: %g',mu);  
          sep = ', ';

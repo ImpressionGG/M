@@ -209,6 +209,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - stability margin on multivariable state space system basis :-)))
 % - make stability margin chart running again
 % - rloc adaption to state space systems
+% - stability coefficient plot
 %
 % Known bugs & wishlist
 % =========================
