@@ -211,6 +211,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - rloc adaption to state space systems
 % - stability coefficient plot
 % - change term stability coefficient to stability range
+% - trim info text
 %
 % Known bugs & wishlist
 % =========================

@@ -1114,7 +1114,7 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
             end
          end
          
-         comment{end+1} = line;
+         comment{end+1} = o.trim(line);
          
             % search for key 'phi:' and if found set 'phi'
             % parameter
