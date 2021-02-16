@@ -339,7 +339,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
    try
       f = cook(o,symf);
    catch
-      f = data(sys,{symf,0});
+      f = var(sys,{symf,0});
    end
    
    if ~isempty(idx)
@@ -350,7 +350,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       try
          K0 = cook(o,symK);
       catch
-         K0 = data(sys,{symK,0});
+         K0 = var(sys,{symK,0});
       end
       
       margin = K0/abs(mu); 

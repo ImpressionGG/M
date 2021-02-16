@@ -2389,6 +2389,7 @@ function o = StabilityMargin(o)        % Plot Stability Margin
       progress(o,txt,i/n*100);
       
       oo = list{i};
+      oo = cache(oo,oo,'multi');       % hard refresh multi segment
       oo = inherit(oo,o);
       
       if (opt(o,'process.contact') == 0)
@@ -2500,11 +2501,17 @@ function o = StabilityRange(o)         % Plot Critical Mu
    n = length(list);
 
    mu = opt(o,{'process.mu',0.1});
-   x = Axes(o,211,mu);                 % get variation range and plot axes
-   x = Axes(o,212,-mu);                % get variation range and plot axes
+   x = Axes(o,2211,mu,'Range');        % get variation range and plot axes
+   x = Axes(o,2221,-mu,'Range');       % get variation range and plot axes
+   x = Axes(o,2212,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,2222,-mu,'Margin');      % get variation range and plot axes
   
       % calculate stability margin and plot
    
+   
+   infgreen = o.iif(dark(o),'g|p3','ggk|p3');
+   green = o.iif(dark(o),'g|o3','ggk|o3');
+   red = 'r|o2';
    
    for (i=1:n)                         % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
@@ -2513,23 +2520,13 @@ function o = StabilityRange(o)         % Plot Critical Mu
       oo = list{i};
       oo = inherit(oo,o);
       
-      subplot(o,211);
       Mu0(i) = mu/cook(oo,'K0');
+      PlotMu(x(i),Mu0(i),2211);
+      PlotMargin(x(i),1/Mu0(i),2212);
       
-      if (Mu0(i) < 1)
-         plot(o,x(i),Mu0(i),'g|o2');
-      else
-         plot(o,x(i),Mu0(i),'r|o2');
-      end
-      
-      subplot(o,212);
       Mu180(i) = mu/cook(oo,'K180');
-      
-      if (Mu180(i) < 1)
-         plot(o,x(i),Mu180(i),'g|o2');
-      else
-         plot(o,x(i),Mu180(i),'r|o2');
-      end
+      PlotMu(x(i),Mu180(i),2221);
+      PlotMargin(x(i),1/Mu180(i),2222);
       
       idle(o);                         % show graphics
    end
@@ -2537,7 +2534,26 @@ function o = StabilityRange(o)         % Plot Critical Mu
    progress(o);                        % progress completed
    heading(o);                         % add heading
    
-   function x = Axes(o,sub,mu)         % Plot Axes                     
+   function PlotMu(xi,mu,sub)
+      subplot(o,sub);
+      if (mu < 1)
+         plot(o,xi,mu,green);
+      else
+         plot(o,xi,mu,red);
+      end
+   end
+   function PlotMargin(xi,marg,sub)
+      subplot(o,sub);
+      if isinf(marg)
+         plot(o,xi,0,infgreen);
+      elseif (marg > 1)
+         plot(o,xi,marg,green);
+      else
+         plot(o,xi,marg,red);
+      end
+   end
+    
+   function x = Axes(o,sub,mu,tit)     % Plot Axes                     
       subplot(o,sub);
 
       variation = get(o,'variation');
@@ -2555,9 +2571,9 @@ function o = StabilityRange(o)         % Plot Critical Mu
       hold on;
       plot(o,get(gca,'xlim'),[1 1],'K-.2');
 
-      title(sprintf('Stability Range%s',More(o,mu)));
+      title(sprintf('Stability %s%s',tit,More(o,mu)));
 
-      ylabel(sprintf('Stability Range @ mu: %g',mu));
+      ylabel(sprintf('Stability %s @ mu: %g',tit,mu));
 
       if ~isempty(variation)
          xlabel(sprintf('Variation Parameter: %s',variation));
@@ -2567,7 +2583,7 @@ function o = StabilityRange(o)         % Plot Critical Mu
 
       subplot(o);                         % subplot complete
    end
-   function txt = More(o,mu)              % More Title Text               
+   function txt = More(o,mu)           % More Title Text               
       txt = '';  sep = '';
       
       if ~isempty(mu)

@@ -634,6 +634,8 @@ function oo = Multi(o)
 
       % store in cache and unconditional hard refresh of cache
       
+   Sys0 = var(Sys0,'K0,f0,K180,f180',K0,f0,K180,f180);
+   
    oo = o;
    oo = cache(oo,'multi.Sys0',Sys0);
    oo = cache(oo,'multi.K0',K0);

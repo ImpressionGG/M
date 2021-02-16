@@ -437,7 +437,7 @@ function oo = StabilityOverview(o)     % Stability Overview
       % plot legend if more than 1 plots
       
    if (length(list) > 1)
-      Legend(o,3211,objs);
+      Legend(o,4211,objs);
    end
    
    Verbose(o,Lmu);   
@@ -1354,7 +1354,7 @@ function Legend(o,sub,objects)         % Plot Legend
    hdl = legend(list);
    set(hdl,'color','w');
 end
-function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
+function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0           
 %
 % OMEGA  Omega range near f0
 %       
