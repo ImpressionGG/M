@@ -61,13 +61,24 @@ function rlocus(o,L0,mu,glim)
       
       % get critical gains
    
-   [K0,K180] = cook(o,'K0,K180');
+   [K0,K180,f0,f180] = cook(o,'K0,K180,f0,f180');
    col = o.iif(dark(o),'w','k');
    
    PlotRoots(A0,B0,C0,D0,0,'w','p');
    hold on;
    
-   PlotRoots(A0,B0,C0,D0,K0,'r','p');
+   Mu = abs(mu);
+   if (mu >= 0 && glim(1) <= K0/Mu && K0/Mu <= glim(2))
+       %PlotRoots(A0,B0,C0,D0,K0,col,'p');
+       hdl = semilogx(f0,0,[col,'o'], f0,0,[col,'.']);
+       set(hdl,'linewidth',1)
+   end
+   if (mu < 0 && glim(1) <= K180/Mu && K180/Mu <= glim(2))
+       %PlotRoots(A0,B0,C0,D0,K180,col,'p');
+       hdl = semilogx(f180,0,[col,'o'], f180,0,[col,'.']);
+       set(hdl,'linewidth',1)
+   end
+   
    %PlotRoots(A0,B0,C0,D0,-K0,'b','p');
    
    points = opt(o,{'points',25});

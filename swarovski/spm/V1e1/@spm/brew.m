@@ -278,9 +278,14 @@ function oo = Transform(o)             % coordinate transformation
    
       % transform system matrices (note: A is unchanged)
       
-   B = B/T;
+   invT = inv(T);
+   if (norm(invT-T') == 0)
+      invT = T';                       % no round-off errors!
+   end
+   
+   B = B*invT;
    C = T*C;
-   D = T*D/T;
+   D = T*D*invT;
     
       % refresh variables
       
@@ -336,6 +341,10 @@ function oo = Transform(o)             % coordinate transformation
             -sin(rad) cos(rad)  0
                 0        0      1
           ];
+       
+      if (rem((phi_o+phi_p),90) == 0)
+         T = round(T);
+      end
    end
 end
 function oo = System(o)                % System Matrices               
@@ -616,8 +625,11 @@ function oo = Multi(o)
       
    [K0,f0]=stable(o,Sys0);
    
+      % change of cutting direction changes sign of B andD matrix
+      
    Sys180 = Sys0;
    Sys180.data.B = -Sys180.data.B;
+   Sys180.data.D = -Sys180.data.D;
    [K180,f180]=stable(o,Sys180);
 
       % store in cache and unconditional hard refresh of cache
@@ -1807,11 +1819,13 @@ function oo = Loop(o)                  % Loop Analysis Stuff
    algo = opt(o,{'algo','ss'});
    
    if (contact < inf && isequal(algo,'trf'))
-      [K0,f0] = stable(o,L0);          % critical gain & frequency
+%     [K0,f0] = stable(o,L0);          % critical gain & frequency
+      [K0,f0] = cook(o,'K0,f0');
    else
       Sys0 = cook(o,'Sys0');
       o = opt(o,'contact',contact);
-      [K0,f0] = stable(o,Sys0,1);      % critical gain & frequency
+%     [K0,f0] = stable(o,Sys0,1);      % critical gain & frequency
+      [K0,f0] = cook(o,'K0,f0');
    end
       
    L0 = CancelT(o,L0);                 % set cancel epsilon for T(s)
@@ -1831,12 +1845,12 @@ function oo = Loop(o)                  % Loop Analysis Stuff
    
       % store in cache
    
-   %[oo,bag,rfr] = cache(o,'loop');     % refresh principal cache segment
+   %[oo,bag,rfr] = cache(o,'loop');    % refresh principal cache segment
    oo = o;
    oo = cache(oo,'loop.Lmu',Lmu);
 
-   oo = cache(oo,'loop.K0',K0);        % critical gain
-   oo = cache(oo,'loop.f0',f0);        % critical frequency
+%  oo = cache(oo,'loop.K0',K0);        % critical gain
+%  oo = cache(oo,'loop.f0',f0);        % critical frequency
 
    oo = cache(oo,'loop.S0',S0);
    oo = cache(oo,'loop.T0',T0);

@@ -312,7 +312,7 @@ function o = Damping(o)                % Closed Loop Damping
    o = with(o,'rloc');
    o = with(o,'style');
    
-   L0 = cook(o,'Sys0');
+   [L0,K0,f0,K180,f180] = cook(o,'Sys0,K0,f0,K180,f180');
    mu = opt(o,{'process.mu',0.1});
    L0 = inherit(L0,o);
 
@@ -328,29 +328,29 @@ function o = Damping(o)                % Closed Loop Damping
       subplot(o,[m 2 i 1]);
       rlocus(o,L0,-mu,glim(i,:));
       ylim = get(gca,'ylim');
-      set(gca,'ylim',[min(-2,ylim(1)),0]);
+      set(gca,'ylim',[min(-2,max(ylim(1),-20)),0]);
       set(gca,'xlim',[fmin,fmax]);
       
       title(sprintf('K: %s (mu: %g)',Klab{i},-mu));
       ylabel('damping [%]');
    end
-   xlabel('frequency [Hz]');
+   xlabel(sprintf('frequency [Hz] (K0: %g @ %g Hz)',K180/mu,f180));
    
    for (i=1:m)
       subplot(o,[m 2 i 2]);
       rlocus(o,L0,mu,glim(i,:));
       ylim = get(gca,'ylim');
-      set(gca,'ylim',[min(-2,ylim(1)),0]);
+      set(gca,'ylim',[min(-2,max(ylim(1),-20)),0]);
       set(gca,'xlim',[fmin,fmax]);
       
       title(sprintf('K: %s (mu: %g)',Klab{i},+mu));
       ylabel('damping [%]');
    end
-   xlabel('frequency [Hz]');
+   xlabel(sprintf('frequency [Hz] (K0: %g @ %g Hz)',K0/mu,f0));
    
    heading(o);
 end
-function o = OldDamping(o)                % Closed Loop Damping           
+function o = OldDamping(o)             % Closed Loop Damping           
    o = with(o,'rloc');
    o = with(o,'style');
       
@@ -400,6 +400,10 @@ function o = OldRloc(o)                % Root Locus
 end
 function oo = StabilityOverview(o)     % Stability Overview            
    o = with(o,{'style','bode','nyq'});
+   
+   if type(o,{'spm'})
+      o = cache(o,o,'multi');          % hard refresh multi segment
+   end
 
    mu = opt(o,{'process.mu',0.1});
    colors = {'bcc','b','c','bw','cd'};

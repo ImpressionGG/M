@@ -1542,6 +1542,9 @@ function o = Critical(o)               % Critical TRFs
       return
    end
    
+   o = with(o,'stability');
+   o = cache(o,o,'multi');             % hard refresh of multi segment
+   
    [L0,K0,S0,T0] = cook(o,'L0,K0,S0,T0');
    o = opt(o,'critical',1);            % plot critical frequency line
    om0 = round(cook(o,'f0')*2*pi);
@@ -1555,10 +1558,10 @@ function o = Critical(o)               % Critical TRFs
          Lc = set(K0*L0,'name','Lc(s)');
          o = opt(o,'color','c1');
          o = opt(o,'bode.magnitude.enable',1,'bode.phase.enable',0);
-         diagram(o,'Bode','',Lc,2211);
+         diagram(o,'Magni','',Lc,2211);
          
          o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
-         diagram(o,'Bode','',Lc,2221);
+         diagram(o,'Magni','',Lc,2221);
          xlabel('omega [1/s]'); 
          subplot(o,2212);
          stable(o,K0*L0);
@@ -2373,7 +2376,9 @@ function o = StabilityMargin(o)        % Plot Stability Margin
    o = with(o,{'style','process','stability'});
    n = length(list);
 
-   x = Axes(o);                        % get variation range and plot axes
+   mu = opt(o,'process.mu');
+   x = Axes(o,211,mu);                 % get variation range and plot axes
+   x = Axes(o,212,-mu);                % get variation range and plot axes
    
       % calculate stability margin and plot
    
@@ -2387,18 +2392,31 @@ function o = StabilityMargin(o)        % Plot Stability Margin
       oo = inherit(oo,o);
       
       if (opt(o,'process.contact') == 0)
+         error('implementation restriction');
 %        margin(i) = stable(oo);
-         margin(i) = cook(oo,'K0') / mu;
+         margin0(i) = cook(oo,'K0') / abs(mu);
+         margin180(i) = cook(oo,'K180') / abs(mu);
       else
-         margin(i) = cook(oo,'K0') / mu;
+         margin0(i) = cook(oo,'K0') / abs(mu);
+         margin180(i) = cook(oo,'K180') / abs(mu);
       end
       
-      if isinf(margin(i))
+      subplot(o,211);
+      if isinf(margin0(i))
          plot(o,x(i),0,'gp');
-      elseif (margin(i) > 1)
-         plot(o,x(i),margin(i),'g|o2');
+      elseif (margin0(i) > 1)
+         plot(o,x(i),margin0(i),'g|o2');
       else
-         plot(o,x(i),margin(i),'r|o2');
+         plot(o,x(i),margin0(i),'r|o2');
+      end
+      
+      subplot(o,212);
+      if isinf(margin180(i))
+         plot(o,x(i),0,'gp');
+      elseif (margin180(i) > 1)
+         plot(o,x(i),margin180(i),'g|o2');
+      else
+         plot(o,x(i),margin180(i),'r|o2');
       end
       idle(o);                         % show graphics
    end
@@ -2406,7 +2424,8 @@ function o = StabilityMargin(o)        % Plot Stability Margin
    progress(o);                        % progress completed
    heading(o);                         % add heading
    
-   function x = Axes(o)                % Plot Axes                     
+   function x = Axes(o,sub,mu)         % Plot Axes                     
+      subplot(o,sub);
       variation = get(o,'variation');
       for (i=1:n)
          oo = list{i};
@@ -2421,7 +2440,7 @@ function o = StabilityMargin(o)        % Plot Stability Margin
       hold on;
       plot(o,get(gca,'xlim'),[1 1],'K-.2');
 
-      title(sprintf('Stability Margin%s',More(o)));
+      title(sprintf('Stability Margin%s',More(o,mu)));
 
       ylabel('Stability Margin');
 
@@ -2433,10 +2452,9 @@ function o = StabilityMargin(o)        % Plot Stability Margin
 
       subplot(o);                         % subplot complete
    end
-   function txt = More(o)              % More Title Text               
+   function txt = More(o,mu)              % More Title Text               
       txt = '';  sep = '';
       
-      mu = opt(o,'process.mu');
       if ~isempty(mu)
          txt = sprintf('mu: %g',mu);  
          sep = ', ';
