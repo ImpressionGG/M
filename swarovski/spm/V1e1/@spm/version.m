@@ -218,7 +218,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - start with spm/rlocus method
 % - pimp stability margin diagram and stability overview
 % - bug fix in stability margin calculation for 180°
-% - stability margin and stability range in one chart 
+% - stability margin and stability range in one chart
+% - simple calculation of stability margin
 %
 % Known bugs & wishlist
 % =========================

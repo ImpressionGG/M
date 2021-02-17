@@ -1564,7 +1564,10 @@ function o = Critical(o)               % Critical TRFs
          diagram(o,'Magni','',Lc,2221);
          xlabel('omega [1/s]'); 
          subplot(o,2212);
-         stable(o,K0*L0);
+         
+         Sys0 = cook(o,'Sys0');
+%        stable(o,K0*L0);
+         stable(o,Sys0,K0);
          title(sprintf('Critical Gain: %g @ omega: %g 1/s, f: %g Hz',...
                o.rd(K0,4),om0,o.rd(om0/2/pi,1)));
 

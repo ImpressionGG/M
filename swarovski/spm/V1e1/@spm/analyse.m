@@ -19,7 +19,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
                       @Damping,@Contribution,@NumericCheck,...
                       @SensitivityW,@SensitivityF,@SensitivityD,...
-                      @AnalyseRamp,@NormRamp,...
+                      @AnalyseRamp,@NormRamp,@SimpleCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @EigenvalueCheck);
    oo = gamma(o);                 % invoke local function
@@ -103,6 +103,8 @@ function oo = Stability(o)             % Closed Loop Stability Menu
    ooo = mitem(oo,'Damping',{@WithCuo,'Damping'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Simple Calculation',{@WithSpm,'SimpleCalc'});
 %  ooo = mitem(oo,'-');
 %  ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
 end
@@ -443,7 +445,42 @@ function oo = StabilityOverview(o)     % Stability Overview
    Verbose(o,Lmu);   
    heading(o,head);
 end
-
+function o = SimpleCalc(o)             % Simple Calculation            
+   message(o,'Simple Calculation of Stability Margin',{'see console ...'});
+   idle(o);
+   
+   Cmd('[A,B_1,B_3,C_3]=cook(cuo,''A,B_1,B_3,C_3'');');
+   Cmd('f=0.8:1e-4:1.1;   % search frequency between o.8 and 1.1kHz');
+   Cmd('jw=sqrt(-1)*2*pi*f;');
+   Cmd('');
+   Cmd('    % calculate G31(jw) and G33(jw)');
+   Cmd('');
+   Cmd('I=eye(size(A));   % unit matrix');
+   Cmd('for(k=1:length(jw)) G31jw(k)=C_3*inv(jw(k)*I-A)*B_1; end');
+   Cmd('for(k=1:length(jw)) G33jw(k)=C_3*inv(jw(k)*I-A)*B_3; end');
+   Cmd('');
+   Cmd('    % calculate phases phi31,phi33 and phi=phi31-phi33');
+   Cmd('');
+   Cmd('phi31=angle(G31jw);');
+   Cmd('phi33=angle(G33jw);');
+   Cmd('phi=mod(phi31-phi33,2*pi)-2*pi;');
+   Cmd('');
+   Cmd('    % find f0 where phi = -pi');
+   Cmd('');
+   Cmd('idx=min(find(phi<=-pi));');
+   Cmd('f0=f(idx)             % critical frequency [kHz]');
+   Cmd('M31=abs(G31jw(idx))   % coupling gain');
+   Cmd('M33=abs(G33jw(idx))   % direct gain');
+   Cmd('');
+   Cmd('    % calculate critical friction coefficient mu');
+   Cmd('');
+   Cmd('mu=M33/M31');
+   
+   function Cmd(cmd)
+      fprintf('%s\n',cmd);
+      evalin('base',cmd);
+   end
+end
 function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
    list = {};                          % empty by default
    objs = {};
