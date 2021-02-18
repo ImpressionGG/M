@@ -394,12 +394,22 @@ function o = NewBode(o)                % Bode Diagram
    sub = o.either(arg(o,3),[1 1 1]);
    G = arg(o,2);
    sym = o.either(arg(o,1),Sym(G));
+   col = opt(G,'color');
 
    G = inherit(G,o);                   % inherit options
+   G = opt(G,'color',col);             % restore color option
    G = set(G,'name',sym);              % set name of transfer function
    G = Color(G);
    
    subplot(o,sub);  
+   
+   closeup = opt(o,{'closeup',0});
+   if (closeup)
+      f0 = cook(o,'f0');
+      fac = 1 + closeup;
+      G = opt(G,'omega.low',2*pi*f0/fac,'omega.high',2*pi*f0*fac);
+   end
+   
    bode(G);
    
    if (critical)

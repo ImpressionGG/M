@@ -1631,9 +1631,13 @@ end
 function o = MagniPhase(o)             % Magnitude/Phase Plot               
    sym = arg(o,1);
    G = cook(o,sym);
+   contact = Contact(o);
    
    diagram(o,'Magni','',G,211);
+   title([get(G,{'name','?'}),'Magnitude Plot (',contact,')']);
+   
    diagram(o,'Phase','',G,212);
+   title([get(G,{'name','?'}),'Phase Plot (',contact,')']);
    
    if opt(o,{'view.critical',1});
       o = cache(o,o,'loop');           % hard refresh loop cache segment
@@ -2737,3 +2741,16 @@ function Legend(o,sub,objects)         % Plot Legend
    hdl = legend(list);
    set(hdl,'color','w');
 end
+function txt = Contact(o)
+   contact = opt(o,'process.contact');
+   if isempty(contact)
+      txt = '';
+   elseif (contact == 0)
+      txt = 'contact: center';
+   elseif isinf(contact)
+      txt = 'contact: all';
+   else
+      txt = sprintf('contact: %g',contact);
+   end
+end
+

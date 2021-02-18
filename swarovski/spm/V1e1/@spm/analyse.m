@@ -1245,8 +1245,17 @@ function o = LambdaBode(o)
          lambdai = set(lambdai,'name',sprintf('Lambda[%g](s)',i));
       end
       o = opt(o,'critical',1);
+      lambdai = opt(lambdai,'color','ry');
       diagram(o,'Magni','',lambdai,211);
+      
+      [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
+      col = o.iif(dark(o),'wo','ko');
+      hdl = semilogx(2*pi*f0,20*log10([1/K0]),col);
+      xlabel(sprintf('K0: %g @ omega: %g 1/s (f: %g Hz)',o.rd(K0,4),...
+             o.rd(2*pi*f0,0),o.rd(f0,1)));
+      
       diagram(o,'Phase','',lambdai,212);
+      xlabel('omega [1/s]');
       hold on
    end
    

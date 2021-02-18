@@ -1,4 +1,4 @@
-function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
+function [o,B,C,D,T] = system(o,A,B,C,D,T,scale) % Create/Cast to a System
 %
 % SYSTEM   Setup a system for simulation
 %
@@ -6,6 +6,7 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
 %
 %             oo = system(o,A,B,C,D)        % continuous state space system
 %             oo = system(o,A,B,C,D,T)      % dscrete state space system
+%             oo = system(o,A,B,C,D,scale)  % provide time scaling factor
 %
 %             oo = system(o,{num,den})      % s-transfer function
 %             oo = system(o,{num,den},T)    % z-transfer function
@@ -51,7 +52,7 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
    end
    
    
-   o.argcheck(2,6,nargin);
+   o.argcheck(2,7,nargin);
    
       % in case of cell args we have to interprete arg2 as a pair of
       % numerator/denominator for a transfer function. Store as num/den
@@ -81,6 +82,9 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
       
       o.data = [];                     % clear data
       o = data(o,'num,den,T',num,den,T);
+      if (nargin >= 7)
+         o.data.scale = scale;
+      end
       return
    end
    
@@ -109,6 +113,10 @@ function [o,B,C,D,T] = system(o,A,B,C,D,T) % Create or Cast to a System
       o = data(o, 'A,B,C,D,T', A,B,C,D,T);
    end
    
+   if (nargin >= 7)
+      o.data.scale = scale;
+   end
+
    o = var(o, 'A,B,C,D,T', A,B,C,D,T);
 end
 

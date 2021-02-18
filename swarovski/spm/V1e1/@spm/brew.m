@@ -219,7 +219,7 @@ function oo = Normalize(o)             % Normalize System
 
       % refresh system
       
-   oo = var(o,'A,B,C,D,T0,a0,a1',A,B,C,D,T0,a0,a1);
+   oo = var(o,'A,B,C,D,T0,a0,a1,tscale',A,B,C,D,T0,a0,a1,T0);
 end
 function oo = Transform(o)             % coordinate transformation     
 %
@@ -779,13 +779,15 @@ function Gij = CalcGij(o,i,j)
       %I = eye(length(a0));  Z = zeros(length(a0));
    
       if ~isequal(B2,C1')
-         error('B2 does not match C1');
+         %error('B2 does not match C1');
+         fprintf('*** warning: B2 does not match C1\n');
       end
-      M = B2;
+      %M = B2;
       
       sys = system(corasim,A,B(:,j),C(i,:),D(i,j));
       psi = [1+0*a1(:) a1(:) a0(:)];
-      mi = M(:,i)';  mj = M(:,j); 
+%     mi = M(:,i)';  mj = M(:,j); 
+      mi = C1(i,:);  mj = B2(:,j); 
    end
    function Gij = Calculate(o,i,j)
       digs = opt(o,{'precision.G',0});
@@ -1349,9 +1351,10 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
    I = eye(length(a0));  Z = zeros(length(a0));
    
    if ~isequal(B2,C1')
-      error('B2 does not match C1');
+      %error('B2 does not match C1');
+      fprintf('*** warning: B2 does not match C1\n');
    end
-   M = B2;
+%  M = B2;
    
       % fetch G31 and G33 from cache or calculate
       
@@ -1361,13 +1364,14 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
       % matrix
    
    n = length(a0);
-   m = size(M,2);
+   m = size(B2,2);
 
    if HasModalForm(o)
       trftype = opt(o,{'trf.type','szpk'});
       if isequal(trftype,'szpk');
          [P,Q] = ZpkPQ(o); 
       else
+         error('implementation restriction');
          [P,Q] = ModalTrfPQ(o); 
       end
    else
@@ -1433,7 +1437,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
                continue
             end
             
-            mi = M(:,i)';  mj = M(:,j);
+%           mi = M(:,i)';  mj = M(:,j);
+            mi = C1(i,:);  mj = B2(:,j);
             wij = (mi(:).*mj(:))';        % weight vector
             W{i,j} = wij;                 % store as matrix element
             W{j,i} = wij;                 % symmetric matrix
@@ -1492,7 +1497,8 @@ function oo = Principal(o)             % Calculate P(s) and Q(s)
                continue
             end
             
-            mi = M(:,i)';  mj = M(:,j);
+%           mi = M(:,i)';  mj = M(:,j);
+            mi = C1(i,:);  mj = B2(:,j);
             wij = (mi(:).*mj(:))';        % weight vector
             W{i,j} = wij;                 % store as matrix element
             W{j,i} = wij;                 % symmetric matrix

@@ -221,6 +221,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - stability margin and stability range in one chart
 % - simple calculation of stability margin
 % - bode plot of spectrum implemented :-)
+% - spm/contact method added
 %
 % Known bugs & wishlist
 % =========================
