@@ -358,23 +358,65 @@ function oo = System(o)                % System Matrices
    oo = Normalize(oo);                 % normalize system
    oo = Transform(oo);                 % coordinate transformation
    
-   [A,B,C,N] = var(oo,'A,B,C,N');      % N: number of articles
+   [A,B,C,D,N] = var(oo,'A,B,C,D,N');  % N: number of articles
 
-      % get indices of 1-2-3 components
-      % deal with contact points
-   
-   idx1 = 1+3*(0:N-1);
-   idx2 = 2+3*(0:N-1);
-   idx3 = 3+3*(0:N-1);
-      
-   contact = opt(o,{'process.contact',0});
-   if (contact > 0 && contact < inf && contact > N)
-      msg = sprintf('incompatible contact point number: %d',contact);
+   cidx = opt(o,{'process.contact',0});
+   if (cidx > 0 && cidx < inf && cidx > N)
+      msg = sprintf('incompatible contact point number: %d',cidx);
       fprintf(['*** ',msg,'\n']);
       fprintf('*** proceeding with central contact\n');
       message(o,['Error: ',msg],{'proceeding with central contact'});
-      contact = 0;
+      cidx = 0;
    end
+   
+   sys = contact(oo,cidx,A,B,C,D);     % calc free system regarding contact
+
+      % expand cidx
+      
+   if isinf(cidx)
+      cidx = 1:N;
+   elseif isequal(cidx,0)
+      mid = (N+1)/2;
+      if (mid ~= round(mid))
+         error('no triple contact for even article number');
+      end
+      cidx = mid;
+   elseif isequal(cidx,-1)            % leading
+      mid = (N+1)/2;
+      if (mid ~= round(mid))
+         error('no leading contact for even article number');
+      end
+      cidx = 1:mid;
+   elseif isequal(cidx,-2)            % trailing
+      mid = (N+1)/2;
+      if (mid ~= round(mid))
+         error('no trailing contact for even article number');
+      end
+      cidx = mid:N;
+   elseif isequal(cidx,-3)
+      mid = (N+1)/2;
+      if (mid ~= round(mid))
+         error('no triple contact for even article number');
+      end
+      cidx = [1,mid,N];
+   end
+   
+%  idx1 = 1+3*(0:N-1);
+%  idx2 = 2+3*(0:N-1);
+%  idx3 = 3+3*(0:N-1);
+   
+      % for B1,B2 as well as C1,C2 we need idx0
+   
+   idx0 = [];
+   for (i=1:length(cidx))
+      idx0 = [idx0,3*(cidx(i)-1) + (1:3)];
+   end
+   
+      % for B_1,B_2,B_3 as well as C_1,C_2,C_3 we need idx1,idx2,idx3
+      
+   idx1 = 3*(cidx-1) + 1;
+   idx2 = 3*(cidx-1) + 2;
+   idx3 = 3*(cidx-1) + 3;
    
    if (rem(N,2) ~= 1)
       error('number of articles on apparatus must be odd');
@@ -386,15 +428,19 @@ function oo = System(o)                % System Matrices
       % N = 3: cidx = 4:6  => 3*floor((N-1)/2) + (1:3)
       % N = 4: cidx = 4:6
       % N = 5: cidx = 7:9
-         
-   if (contact > 0 && contact < inf)
-      idx0 = N;                        % use selected contact point index
+ 
+if(0)
+   if isequal(cidx,-3)                 % triple contact
+      idx0 =  (N+1)/2;                 % use center contact index by default
+      cdx = (1:3) + (idx0-1)*3;
+   elseif (cidx > 0 && cidx < inf)
+      idx0 = cidx;                     % use selected contact point index
       cdx = (1:3) + (idx0-1)*3;
    else
       idx0 =  (N+1)/2;                 % use center contact index by default
       cdx = 3*floor((N-1)/2) + (1:3);  % contact index
    end   
-      
+end      
       % continue regular calculations
       
    n = floor(length(A)/2);
@@ -403,8 +449,8 @@ function oo = System(o)                % System Matrices
    A11 = A(i1,i1);  A12 = A(i1,i2);
    A21 = A(i2,i1);  A22 = A(i2,i2);
   
-   B1 = B(i1,cdx);  B2 = B(i2,cdx);   
-   C1 = C(cdx,i1);  C2 = C(cdx,i2);
+   B1 = B(i1,idx0);  B2 = B(i2,idx0);   
+   C1 = C(idx0,i1);  C2 = C(idx0,i2);
   
    if (norm(B2-C1') ~= 0)
       fprintf('*** warning: B2 differs from C1''!\n');
@@ -416,22 +462,27 @@ function oo = System(o)                % System Matrices
       % state space representation of L0(s)
       
    N = floor(size(C,1)/3);
-   B_1 = B(:,idx1);  B_2 = B(:,idx2);  B_3 = B(:,idx3);
-   C_1 = C(idx1,:);  C_2 = C(idx2,:);  C_3 = C(idx3,:);
+   B_1_ = B(:,idx1);  B_2_ = B(:,idx2);  B_3_ = B(:,idx3);
+   C_1_ = C(idx1,:);  C_2_ = C(idx2,:);  C_3_ = C(idx3,:);
    
       % collapse B_i and C_j to a single column or single row
       % if contact option is zero
       
-   if (opt(o,{'process.contact',0}) == 0)
-      B_1 = B_1(:,idx0);  B_2 = B_2(:,idx0);  B_3 = B_3(:,idx0);
-      C_1 = C_1(idx0,:);  C_2 = C_2(idx0,:);  C_3 = C_3(idx0,:);
-   end
+   %if (opt(o,{'process.contact',0}) == 0)
+%      B_1_ = B_1_(:,idx0);  B_2_ = B_2_(:,idx0);  B_3_ = B_3_(:,idx0);
+%      C_1_ = C_1_(idx0,:);  C_2_ = C_2_(idx0,:);  C_3_ = C_3_(idx0,:);
+   %end
    
-   N0 = sqrtm(inv(C_3*A*B_3));
-   M0 = sqrtm(-inv(C_3*inv(A)*B_3));
+      % get C_j and B_i matrices and perform checks
+
+   [B_1,B_2,B_3,C_1,C_2,C_3] = var(sys,'B_1,B_2,B_3,C_1,C_2,C_3');
+   Checks(o);
    
       % system augmentation
       
+   N0 = sqrtm(inv(C_3*A*B_3));
+   M0 = sqrtm(-inv(C_3*inv(A)*B_3));
+   
    C0 = M0*C_3 + N0*C_3*A;
    CQ = M0*C0 + N0*C0*A;    CP = CQ;
    
@@ -505,6 +556,26 @@ function oo = System(o)                % System Matrices
       if (digs > 0)
          digits(old);
       end
+   end
+   function Checks(o)
+      [A_,B_,C_,D_] = system(sys);
+      B__ = [];   C__ = [];
+      for (k=1:size(B_1_,2))
+         B__ = [B__, B_1_(:,k),B_2_(:,k),B_3_(:,k)];
+         C__ = [C__; C_1_(k,:);C_2_(k,:);C_3_(k,:)];
+      end
+      
+      assert(norm(A_-A)==0);
+      assert(norm(B_-B__)==0);
+      assert(norm(C_-C__)==0);
+      assert(norm(D_-C__*B__)==0);
+           
+      assert(norm(B_1_-B_1)==0);
+      assert(norm(B_2_-B_2)==0);
+      assert(norm(B_3_-B_3)==0);
+      assert(norm(C_1_-C_1)==0);
+      assert(norm(C_2_-C_2)==0);
+      assert(norm(C_3_-C_3)==0);
    end
 end
 
@@ -1909,16 +1980,16 @@ function oo = Loop(o)                  % Loop Analysis Stuff
    
       % calc critical K and closed loop TRF
       
-   contact = opt(o,{'process.contact',0});
+   cidx = opt(o,{'process.contact',0});
    o = with(o,'stability');
    algo = opt(o,{'algo','ss'});
    
-   if (contact < inf && isequal(algo,'trf'))
+   if (cidx < inf && isequal(algo,'trf'))
 %     [K0,f0] = stable(o,L0);          % critical gain & frequency
       [K0,f0] = cook(o,'K0,f0');
    else
       Sys0 = cook(o,'Sys0');
-      o = opt(o,'contact',contact);
+      o = opt(o,'contact',cidx);
 %     [K0,f0] = stable(o,Sys0,1);      % critical gain & frequency
       [K0,f0] = cook(o,'K0,f0');
    end

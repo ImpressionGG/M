@@ -222,6 +222,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - simple calculation of stability margin
 % - bode plot of spectrum implemented :-)
 % - spm/contact method added
+% - general definition of contact indices
 %
 % Known bugs & wishlist
 % =========================

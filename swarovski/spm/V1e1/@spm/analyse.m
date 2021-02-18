@@ -309,6 +309,9 @@ end
 %==========================================================================
 
 function o = Margin(o)                 % Stability Margin              
+   if type(o,{'spm'})
+      o = cache(o,o,'multi');          % hard refresh multi cache segment
+   end
    oo = with(o,{'process','stability'});
    L0 = cook(o,'Sys0');
    mu = opt(o,{'process.mu',0.1});
@@ -319,7 +322,7 @@ function o = Margin(o)                 % Stability Margin
    subplot(o,212);
    stable(oo,L0,-mu);
 
-   heading(o);
+   Heading(o);
 end
 function o = Damping(o)                % Closed Loop Damping           
    o = with(o,'rloc');
@@ -1171,18 +1174,37 @@ end
 
 function o = L0Magni(o)                % L0(i,j) Magnitude Plots
    if type(o,{'spm'})
+      o = cache(o,o,'multi');
       o = cache(o,o,'spectrum');
    end
    o = with(o,'bode');
+   %o = opt(o,'critical',1);
    
    L0jw = cook(o,'L0jw');
    [~,m,n] = size(L0jw);
    
+   Ylim = [+inf,-inf];
    for (i=1:m)
       for(j=1:n)
          Lij = peek(L0jw,i,j);
          Lij = set(Lij,'name',sprintf('L0[%g,%g](s)',i,j));
          diagram(o,'Magni','',Lij,[m,n,i,j]);
+         ylim = get(gca,'ylim');
+         Ylim(1) = min(Ylim(1),ylim(1));
+         Ylim(2) = max(Ylim(2),ylim(2));
+      end
+   end
+   
+      % set same y-limits for all plots
+      
+   [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
+   for (i=1:m)
+      for(j=1:n)
+         subplot(o,[m,n,i,j]);
+         set(gca,'ylim',Ylim);
+         hdl1 = semilogx(2*pi*f0*[1 1],Ylim,'r-.');
+         hdl2 = semilogx(2*pi*f180*[1 1],Ylim,'m-.');
+         set([hdl1,hdl2],'linewidth',1);
       end
    end
    
@@ -1233,6 +1255,7 @@ function o = LambdaBode(o)
       o = cache(o,o,'spectrum');
    end
    o = with(o,'bode');
+   o = opt(o,'critical',1);
    
    lambda = cook(o,'lambda');
    [~,m,n] = size(lambda);
@@ -1244,7 +1267,6 @@ function o = LambdaBode(o)
       if (i==1)
          lambdai = set(lambdai,'name',sprintf('Lambda[%g](s)',i));
       end
-      o = opt(o,'critical',1);
       lambdai = opt(lambdai,'color','ry');
       diagram(o,'Magni','',lambdai,211);
       
@@ -1523,5 +1545,34 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
    
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
+end
+function Heading(o)
+   txt = Contact(o);
+   msg = [get(o,{'title',''}),' (',txt,')'];
+   heading(o,msg);
+end
+function txt = Contact(o)
+   contact = opt(o,'process.contact');
+   if isempty(contact)
+      txt = '';
+   elseif (contact == 0)
+      txt = 'contact: center';
+   elseif isequal(contact,-1)
+      txt = 'contact: leading';
+   elseif isequal(contact,-2)
+      txt = 'contact: trailing';
+   elseif isequal(contact,-3)
+      txt = 'contact: triple';
+   elseif isinf(contact)
+      txt = 'contact: all';
+   elseif (length(contact) == 1)
+      txt = sprintf('contact: %g',contact);
+   else
+      txt = 'contact: [';  sep = '';
+      for (i=1:length(contact(:)))
+         txt = [txt,sep,sprintf('%g',contact(i))];  sep = ',';
+      end
+      txt = [txt,']'];
+   end
 end
 

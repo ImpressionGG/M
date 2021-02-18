@@ -887,8 +887,16 @@ end
 function oo = Contact(o)               % Add Contact Menu Items        
    setting(o,{'process.contact'},inf); % multi contact
    
-   list = {{'Center',0},{'Multi',inf},{}};
-   for(i=1:7)
+   oo = current(o);
+   if type(oo,{'spm'})
+      N = round(size(oo.data.B,2)/3);
+   else
+      N = 7;
+   end
+   
+   list = {{'Center',0},{'Leading',-1},{'Trailing',-2},{'Triple',-3},...
+           {'Multi',inf},{}};
+   for(i=1:N)
       list{end+1} = {sprintf('%g',i),i};
    end
    

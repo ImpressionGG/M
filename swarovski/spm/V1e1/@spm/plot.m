@@ -2747,10 +2747,21 @@ function txt = Contact(o)
       txt = '';
    elseif (contact == 0)
       txt = 'contact: center';
+   elseif isequal(contact,-1)
+      txt = 'contact: leading';
+   elseif isequal(contact,-2)
+      txt = 'contact: trailing';
+   elseif isequal(contact,-3)
+      txt = 'contact: triple';
    elseif isinf(contact)
       txt = 'contact: all';
-   else
+   elseif (length(contact) == 1)
       txt = sprintf('contact: %g',contact);
+   else
+      txt = 'contact: [';  sep = '';
+      for (i=1:length(contact(:)))
+         txt = [txt,sep,sprintf('%g',contact(i))];  sep = ',';
+      end
+      txt = [txt,']'];
    end
 end
-
