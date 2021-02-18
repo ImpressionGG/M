@@ -99,8 +99,8 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %        See also: SPM
 %        
-   [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@System,...
-                       @Trf,@Principal,@Multi,@Spectrum,...
+   [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@Transform,...
+                       @System,@Trf,@Principal,@Multi,@Spectrum,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -422,25 +422,6 @@ function oo = System(o)                % System Matrices
       error('number of articles on apparatus must be odd');
    end
    
-      % calculate center indices
-      % N = 1: cidx = 1:3
-      % N = 2: cidx = 1:3
-      % N = 3: cidx = 4:6  => 3*floor((N-1)/2) + (1:3)
-      % N = 4: cidx = 4:6
-      % N = 5: cidx = 7:9
- 
-if(0)
-   if isequal(cidx,-3)                 % triple contact
-      idx0 =  (N+1)/2;                 % use center contact index by default
-      cdx = (1:3) + (idx0-1)*3;
-   elseif (cidx > 0 && cidx < inf)
-      idx0 = cidx;                     % use selected contact point index
-      cdx = (1:3) + (idx0-1)*3;
-   else
-      idx0 =  (N+1)/2;                 % use center contact index by default
-      cdx = 3*floor((N-1)/2) + (1:3);  % contact index
-   end   
-end      
       % continue regular calculations
       
    n = floor(length(A)/2);

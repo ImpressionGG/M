@@ -22,6 +22,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @AnalyseRamp,@NormRamp,@SimpleCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @L0Magni,@LambdaMagni,@LambdaBode,...
+                      @SetupMargin,...
                       @EigenvalueCheck);
    oo = gamma(o);                 % invoke local function
 end
@@ -58,7 +59,8 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = Sensitivity(o);                % add Sensitivity menu
    
    oo = mitem(o,'-'); 
-   oo = Multi(o);                      % add Multi contact menu
+   oo = Spectrum(o);                   % add Spectrum menu
+   oo = Setup(o);                      % add Setup menu
    
    oo = mitem(o,'-'); 
    oo = Force(o);                      % add Force menu
@@ -121,14 +123,18 @@ function oo = Sensitivity(o)           % Sensitivity Menu
    ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
    ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
 end
-function oo = Multi(o)                 % Multi C ontact Menu           
-   oo = mitem(o,'Multi');
+function oo = Spectrum(o)              % Spectrum Menu           
+   oo = mitem(o,'Spectrum');
    ooo = mitem(oo,'L0 Magnitude Plots',{@WithSpm,'L0Magni'});
    ooo = mitem(oo,'Lambda Magnitude Plots',{@WithSpm,'LambdaMagni'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lambda Bode Plot',{@WithSpm,'LambdaBode'});
 end
-function oo = Force(o)                 % Closed Loop Force Menu        
+function oo = Setup(o)                 % Setup Menu           
+   oo = mitem(o,'Setup');
+   ooo = mitem(oo,'Stability Margin',{@WithSpm,'SetupMargin'});
+end
+function oo = Force(o)                 % Closed Loop Force Menu
    oo = mitem(o,'Force');
    sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';  
 
@@ -1282,6 +1288,129 @@ function o = LambdaBode(o)
    end
    
    heading(o);
+end
+
+%==========================================================================
+% Setup
+%==========================================================================
+
+function o = SetupMargin(o)            % Setup Specific Stability Margin
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   o = with(o,{'style','process','stability'});
+   
+   C = cook(o,'C');
+   no = size(C,1)/3;
+   n = 2^no-1;
+
+   mu = opt(o,{'process.mu',0.1});
+   x = Axes(o,2211,mu,'Range');        % get variation range and plot axes
+   x = Axes(o,2221,-mu,'Range');       % get variation range and plot axes
+   x = Axes(o,2212,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,2222,-mu,'Margin');      % get variation range and plot axes
+  
+      % calculate stability margin and plot
+   
+   infgreen = o.iif(dark(o),'g|p3','ggk|p3');
+   green = o.iif(dark(o),'g|o3','ggk|o3');
+   red = 'r|o2';
+   
+   for (i=1:n)                         % calc & plot stability margin  
+      txt = sprintf('calculate stability range of %s',get(o,'title'));
+      progress(o,txt,i/n*100);
+      
+      cfg = Config(i);
+      oo = opt(o,'process.contact',cfg);
+      L0 = cook(oo,'Sys0');
+      K0 = stable(o,L0,mu);
+      
+      Mu0(i) = mu/K0;
+      PlotMu(o,x(i),Mu0(i),2211);
+      PlotMargin(o,x(i),1/Mu0(i),2212);
+      
+      %Mu180(i) = mu/cook(oo,'K180');
+      %PlotMu(o,x(i),Mu180(i),2221);
+      %PlotMargin(o,x(i),1/Mu180(i),2222);
+      
+      idle(o);                         % show graphics
+   end
+   
+   progress(o);                        % progress completed
+   heading(o);                         % add heading
+   
+   function idx = Config(N)            % Return Configuration Indices
+      kmax = log(n+1)/log(2);
+      idx = [];
+      for (k=1:kmax)
+         if (rem(N,2) == 1)
+            idx(end+1) = k;
+         end
+         N = floor(N/2);
+      end
+   end
+
+   function PlotMu(o,xi,mu,sub)
+      subplot(o,sub);
+      if (mu < 1)
+         plot(o,xi,mu,green);
+      else
+         plot(o,xi,mu,red);
+      end
+   end
+   function PlotMargin(o,xi,marg,sub)
+      subplot(o,sub);
+      if isinf(marg)
+         plot(o,xi,0,infgreen);
+      elseif (marg > 1)
+         plot(o,xi,marg,green);
+      else
+         plot(o,xi,marg,red);
+      end
+   end
+    
+   function x = Axes(o,sub,mu,tit)     % Plot Axes                     
+      subplot(o,sub);
+      
+      x = 1:n;
+      
+      plot(o,x,0*x,'K.');
+      hold on;
+      plot(o,get(gca,'xlim'),[1 1],'K-.2');
+
+      title(sprintf('Stability %s%s',tit,More(o,mu)));
+
+      ylabel(sprintf('Stability %s @ mu: %g',tit,mu));
+      xlabel('Variation Parameter: setup ID');
+
+      subplot(o);                         % subplot complete
+   end
+   function txt = More(o,mu)           % More Title Text               
+      txt = '';  sep = '';
+      
+      if ~isempty(mu)
+         txt = sprintf('mu: %g',mu);  
+         sep = ', ';
+      end
+      
+      vomega = opt(o,{'variation.omega',1});
+      if ~isequal(vomega,1)
+         txt = [txt,sep,sprintf('vomega: %g',vomega)]; 
+         sep = ', ';
+      end
+      
+      vzeta = opt(o,{'variation.zeta',1});
+      if ~isequal(vzeta,1)
+         txt = [txt,sep,sprintf('vzeta: %g',vzeta)];
+         sep = ', ';
+      end
+      
+      if ~isempty(txt)
+         txt = [' (',txt,')'];
+      end
+   end
 end
 
 %==========================================================================

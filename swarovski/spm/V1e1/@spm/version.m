@@ -223,6 +223,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bode plot of spectrum implemented :-)
 % - spm/contact method added
 % - general definition of contact indices
+% - extension of spm/contact to calc L0,K0,f0,K180,f180
 %
 % Known bugs & wishlist
 % =========================
