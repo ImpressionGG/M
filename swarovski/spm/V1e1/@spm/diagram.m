@@ -341,7 +341,7 @@ function o = Bode(o)                   % Bode Diagram
    end
    hold on;
 end
-function o = Magni(o)                  % Magnitude Diagram               
+function o = Magni(o)                  % Magnitude Diagram             
    o = opt(o,'magnitude.enable',1,'phase.enable',0);
    o = Bode(o);
 
@@ -354,7 +354,7 @@ function o = Magni(o)                  % Magnitude Diagram
       title([sym,': Magnitude Plot']);
    end
 end
-function o = Phase(o)                  % Phase Diagram                  
+function o = Phase(o)                  % Phase Diagram                 
    o = opt(o,'bode.magnitude.enable',0,'bode.phase.enable',1);
    o = Bode(o);
 
@@ -368,7 +368,7 @@ function o = Phase(o)                  % Phase Diagram
       title([sym,': Phase Plot']);
    end
 end
-function o = GoodBode(o)               % Bode Diagram
+function o = GoodBode(o)               % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors
    
    sub = o.either(arg(o,3),[1 1 1]);
@@ -755,7 +755,7 @@ function o = Numeric(o)                % Numeric Quality
       end
    end
 end
-function o = Precision(o)              % ZPK Precision                                   
+function o = Precision(o)              % ZPK Precision                 
    sub = o.either(arg(o,3),[1 1 1]);
    G = arg(o,2);
    sym = o.either(arg(o,1),Sym(G));
@@ -1059,6 +1059,8 @@ function o = Color(o)                  % Set Color Default
             col = 'm';
          case 'L'
             col = 'bcc';
+         case 'l'
+            col = 'c';
          case 'P'
             col = 'bbw';
          case 'Q'

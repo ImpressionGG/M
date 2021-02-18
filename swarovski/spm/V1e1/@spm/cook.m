@@ -78,6 +78,11 @@ function varargout = cook(o,sym)
 %          Tv = cook(o,'Tv')                % Velocity trf matrix Tv(s)
 %          Ta = cook(o,'Ta')                % Acceleration trf matrix Ta(s)
 %
+%       Spectrum
+%
+%          L0jw = cook(o,'L0jw')            % MIMO frequency responses
+%          lambda = cook(o,'lambda')        % MIMO spectral functions
+%
 %       Multiple output args
 %
 %          [Ts,Tv,Ta] = cook(o,'Ts,Tv,Ta')  % multiple output args
@@ -279,6 +284,14 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
 
+      case {'L0jw','lambda'}
+         oo = cache(o,o,'spectrum');
+         oo = cache(oo,['spectrum.',sym]);
+         if isa(oo,'corazon')
+            oo = inherit(oo,o);
+            oo = opt(oo,'oscale',oscale(o));
+         end
+         
       otherwise
          error('unsupported symbol');
    end

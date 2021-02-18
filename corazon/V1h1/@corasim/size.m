@@ -36,6 +36,10 @@ function [n,ni,no] = size(o)
          n = length(den(o));
          ni = 1; no = 1;
          
+      case 'fqr'
+         n = o.data.n;
+         [no,ni] = size(o.data.matrix);
+         
       otherwise
          error('type not supported!');
    end

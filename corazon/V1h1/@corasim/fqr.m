@@ -58,7 +58,8 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
    
       % scale omega 
       
-   Om = om * opt(o,{'oscale',1});
+   oscale = opt(o,{'oscale',1});
+   Om = om * oscale;
    
       % first check whether frequency response is expression based.
       % if so this overrules all standard methods
@@ -138,6 +139,19 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
          [psi,W,D] = data(o,'psi,W,D');
          Gjw = psion(o,psi,Om,W) + D;
       
+      case 'fqr'
+         Omega = data(o,'omega') * oscale;
+         if length(o.data.matrix) > 1
+            error('cannot handle MIMO systems');
+         end
+         
+         if (length(Omega) == length(Om) && all(Omega==Om))
+            Gjw = o.data.matrix{1,1};
+         else
+            Gjw = o.data.matrix{1,1};
+            Gjw = interp1(Omega,Gjw,Om);   % interpolate
+         end
+         
       otherwise
          error('bad type');
    end

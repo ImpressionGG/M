@@ -61,9 +61,15 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                        +-----------------+
 %                             |        |  |
 %                             |        |  +---------------+
+%                             |        |                  |
 %                             |        |                  v
 %                             |        |         +-----------------+
 %                             |        |         |       multi     | Sys0
+%                             |        |         +-----------------+
+%                             |        |                  |
+%                             |        |                  v
+%                             |        |         +-----------------+
+%                             |        |         |     spectrum    | L0jw
 %                             |        |         +-----------------+
 %                             v        v
 %              +-----------------+  +-----------------+
@@ -94,7 +100,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@System,...
-                       @Trf,@Principal,@Multi,...
+                       @Trf,@Principal,@Multi,@Spectrum,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -654,6 +660,82 @@ function oo = Multi(o)
       jw = sqrt(-1)*om;
    end
 end
+function oo = Spectrum(o)
+%
+% SPECTRUM  Calculate frequency responses L0ij(jw) according to
+%
+%              L0jw = C*inv(jw*I-A)*B + D
+%
+   o = with(o,'spectrum');
+   
+   L0 = cook(o,'Sys0');
+   [A,B,C,D] = system(L0,'A,B,C,D');
+   
+   [~,om] = fqr(L0);
+   Om = om*oscale(o);
+   
+   kmax = length(om);
+   
+   [n,ni,no] = size(L0);
+   L0jw = zeros(ni*no,length(Om));
+   
+   Lambda = zeros(max(ni,no),kmax);
+   
+   jI = 1i*eye(size(A));
+   for (k=1:kmax)
+      if (rem(k-1,100) == 0)
+         progress(o,sprintf('%g of %g: calculate L0(jw) frequency response',...
+                          k,kmax),k/kmax*100);
+      end
+      Ljwk = (C/(Om(k)*jI-A))*B + D;
+      lam = eig(Ljwk);
+      
+      Ljw(:,k) = Ljwk(:);
+
+      [~,idx] = sort(abs(lam),'descend');
+      lam = lam(idx);
+      Lambda(:,k) = lam(:);
+   end
+   
+      % pack into a corasim object
+      
+   progress(o,'re-arranging ...');
+
+   L0jw = matrix(corasim,[]);          % matrix of frequency responses
+   L0jw.data.n = length(A);            % system order
+   L0jw.data.omega = om;               % frequency matrix
+   L0jw.data.oscale = oscale(o);
+   L0jw.type = 'fqr';
+   
+   for (i=1:no)
+      for (j=1:ni)
+         k = (j-1)*no + i;
+         L0jw.data.matrix{i,j} = Ljw(k,:);
+      end
+   end
+   
+   lambda = matrix(corasim,[]);
+   lambda.data.n = length(A);            % system order
+   lambda.data.omega = om;               % frequency matrix
+   lambda.data.oscale = oscale(o);
+   lambda.type = 'fqr';
+
+   for (i=1:length(lam))
+      lambda.data.matrix{i,1} = Lambda(i,:);
+   end
+   
+   progress(o);
+   
+      % store in spectrum cache segment
+      
+   oo = o;
+   oo = cache(oo,'spectrum.L0jw',L0jw);
+   oo = cache(oo,'spectrum.lambda',lambda);
+   
+      % unconditional hard refresh of spectrum segment
+      
+   cache(oo,oo);                       % cache storeback to shell
+end
 
 %==========================================================================
 % Transfer Matrix G(s)
@@ -931,6 +1013,11 @@ function oo = TrfZpk(o)                % Zpk Based Transfer Matrix
       
       B = var(o,'B');
       m = size(B,2);
+      
+      if (m > 3)
+         fprintf('*** warning: calculating G(s) for multi contact\n');
+         m = 3;
+      end
       
       run = 0;
       for (i=1:m)

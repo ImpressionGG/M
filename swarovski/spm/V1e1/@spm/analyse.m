@@ -21,6 +21,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @SensitivityW,@SensitivityF,@SensitivityD,...
                       @AnalyseRamp,@NormRamp,@SimpleCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
+                      @L0Magni,@LambdaMagni,@LambdaBode,...
                       @EigenvalueCheck);
    oo = gamma(o);                 % invoke local function
 end
@@ -48,15 +49,18 @@ end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = NumericMenu(o);                % add Numeric menu
 
-   ooo = mitem(oo,'-'); 
+   oo = mitem(o,'-'); 
    oo = OpenLoopMenu(o);               % add Open Loop menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
-   ooo = mitem(oo,'-'); 
+   oo = mitem(o,'-'); 
    oo = Stability(o);                  % add Stability menu
    oo = Sensitivity(o);                % add Sensitivity menu
    
-   ooo = mitem(oo,'-'); 
+   oo = mitem(o,'-'); 
+   oo = Multi(o);                      % add Multi contact menu
+   
+   oo = mitem(o,'-'); 
    oo = Force(o);                      % add Force menu
    oo = Acceleration(o);               % add Acceleration menu
    oo = Velocity(o);                   % add Velocity menu
@@ -116,6 +120,13 @@ function oo = Sensitivity(o)           % Sensitivity Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
    ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
+end
+function oo = Multi(o)                 % Multi C ontact Menu           
+   oo = mitem(o,'Multi');
+   ooo = mitem(oo,'L0 Magnitude Plots',{@WithSpm,'L0Magni'});
+   ooo = mitem(oo,'Lambda Magnitude Plots',{@WithSpm,'LambdaMagni'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lambda Bode Plot',{@WithSpm,'LambdaBode'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
@@ -1152,6 +1163,94 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
    PlotY(oo);
    
    heading(o,sprintf('Analyse Force Ramp: F%g->y - %s',index,Title(o)));
+end
+
+%==========================================================================
+% Spectrum
+%==========================================================================
+
+function o = L0Magni(o)                % L0(i,j) Magnitude Plots
+   if type(o,{'spm'})
+      o = cache(o,o,'spectrum');
+   end
+   o = with(o,'bode');
+   
+   L0jw = cook(o,'L0jw');
+   [~,m,n] = size(L0jw);
+   
+   for (i=1:m)
+      for(j=1:n)
+         Lij = peek(L0jw,i,j);
+         Lij = set(Lij,'name',sprintf('L0[%g,%g](s)',i,j));
+         diagram(o,'Magni','',Lij,[m,n,i,j]);
+      end
+   end
+   
+   heading(o);
+end
+function o = LambdaMagni(o)
+   if type(o,{'spm'})
+      o = cache(o,o,'spectrum');
+   end
+   o = with(o,'bode');
+   
+   lambda = cook(o,'lambda');
+   [~,m,n] = size(lambda);
+   m = m*n;
+   
+   for (i=1:m)
+      lambdai = peek(lambda,i);
+      lambdai = set(lambdai,'name',sprintf('lambda[%g](s)',i));
+      if (i==1)
+         lambdai = set(lambdai,'name',sprintf('Lambda[%g](s)',i));
+      end
+      diagram(o,'Magni','',lambdai,111);
+      hold on
+   end
+   
+   heading(o);
+end
+function o = LambdaMagni2(o)
+   if type(o,{'spm'})
+      o = cache(o,o,'spectrum');
+   end
+   o = with(o,'bode');
+   
+   lambda = cook(o,'lambda');
+   [~,m,n] = size(lambda);
+   m = m*n;
+   
+   for (i=1:m)
+      lambdai = peek(lambda,i);
+      lambdai = set(lambdai,'name',sprintf('lambda[%g](s)',i));
+      diagram(o,'Magni','',lambdai,[m,1,i,1]);
+   end
+   
+   heading(o);
+end
+function o = LambdaBode(o)
+   if type(o,{'spm'})
+      o = cache(o,o,'spectrum');
+   end
+   o = with(o,'bode');
+   
+   lambda = cook(o,'lambda');
+   [~,m,n] = size(lambda);
+   m = 1;
+   
+   for (i=1:m)
+      lambdai = peek(lambda,i);
+      lambdai = set(lambdai,'name',sprintf('lambda[%g](s)',i));
+      if (i==1)
+         lambdai = set(lambdai,'name',sprintf('Lambda[%g](s)',i));
+      end
+      o = opt(o,'critical',1);
+      diagram(o,'Magni','',lambdai,211);
+      diagram(o,'Phase','',lambdai,212);
+      hold on
+   end
+   
+   heading(o);
 end
 
 %==========================================================================

@@ -101,6 +101,10 @@ function o = Magnitude(o)              % Plot Magnitude
    Instabilities(o)                    % draw instabilities
    
    function Instabilities(o)
+      if type(o,{'fqr'})
+         return                        % ignore for frequency response type
+      end
+      
       oscale = opt(o,{'oscale',1});    % frequency scaling factor
       [z,p,k] = zpk(o);                % get pole zeros
       

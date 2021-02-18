@@ -47,6 +47,16 @@ function [num,den,T] = peek(o,i,j)   % Peek Numerator/Denominator
       case 'matrix'
          num = o.data.matrix{i,j};
          
+      case 'fqr'
+         if (nargin < 2)
+            i = 1;
+         end
+         if (nargin < 3)
+            j = 1;
+         end
+         o.data.matrix = {o.data.matrix{i,j}};
+         num = o;
+         
       case 'psiw'
          oo = trf(o);
          [num,den] = data(oo,'num,nen');

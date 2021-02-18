@@ -801,7 +801,43 @@ function oo = Stability(o)             % Stability Menu
          choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
    ooo = mitem(oo,'Upper Gain',{},'stability.gain.high');
          choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
- end
+end
+function oo = Spectrum(o)              % Spectrum Menu                 
+   setting(o,{'spectrum.omega.low'},1e2);
+   setting(o,{'spectrum.omega.high'},1e5);
+   setting(o,{'spectrum.omega.points'},2000);
+   
+   
+   oo = mitem(o,'Spectrum');
+   ooo = mitem(oo,'Lower Frequency',{},'spectrum.omega.low');
+         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+   ooo = mitem(oo,'Upper Frequency',{},'spectrum.omega.high');
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'spectrum.omega.points');
+   choice(ooo,[100,500,1000,2000,5000,10000,20000,50000,...
+               1e5,2e5],{});
+
+   function Choice(o,values,cblist)    % Choice Menu List With Auto    
+      list = {{'Auto',[]},{}};         % list head
+      
+         % sort values in reverse order
+         
+      values = sort(values);
+      values = values(length(values):-1:1);
+      
+         % add values to choice items
+         
+      for (i=1:length(values))
+         list{end+1} = {sprintf('%g',values(i)),values(i)};
+      end
+      
+         % add choice menu items
+         
+      choice(o,list,cblist);
+   end
+end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off
    setting(o,{'filter.type'},'LowPass2');
@@ -870,6 +906,7 @@ function oo = Internal(o)              % Internal Menu
    ooo = Normalize(oo);                % add Normalize menu   
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Stability(oo);                % add Stability sub menu
+   ooo = Spectrum(oo);                 % add Spectrum sub menu
    ooo = Filter(oo);                   % add Filter sub menu
 end
 

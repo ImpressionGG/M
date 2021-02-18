@@ -13,6 +13,7 @@ classdef corasim < corazon             % Corasim Class Definition
 %              szpk:         s-transfer function (zero/pole/K)
 %              zzpk:         z-transfer function (zero/pole/K)
 %              qzpk:         q-transfer function (zero/pole/K)
+%              fqr:          frequency response representatiomns
 %              motion:       motion objects
 %
 %           Copyright(c): Bluenetics 2020
