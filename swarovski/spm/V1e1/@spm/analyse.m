@@ -1323,17 +1323,15 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
       progress(o,txt,i/n*100);
       
       cfg = Config(i);
-      oo = opt(o,'process.contact',cfg);
-      L0 = cook(oo,'Sys0');
-      K0 = stable(o,L0,mu);
+      [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
       
       Mu0(i) = mu/K0;
       PlotMu(o,x(i),Mu0(i),2211);
       PlotMargin(o,x(i),1/Mu0(i),2212);
       
-      %Mu180(i) = mu/cook(oo,'K180');
-      %PlotMu(o,x(i),Mu180(i),2221);
-      %PlotMargin(o,x(i),1/Mu180(i),2222);
+      Mu180(i) = mu/K180;
+      PlotMu(o,x(i),Mu180(i),2221);
+      PlotMargin(o,x(i),1/Mu180(i),2222);
       
       idle(o);                         % show graphics
    end
