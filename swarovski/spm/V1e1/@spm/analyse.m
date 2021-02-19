@@ -19,7 +19,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
                       @Damping,@Contribution,@NumericCheck,...
                       @SensitivityW,@SensitivityF,@SensitivityD,...
-                      @AnalyseRamp,@NormRamp,@SimpleCalc,...
+                      @AnalyseRamp,@NormRamp,@SimpleCalc,@CriticalCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @L0Magni,@LambdaMagni,@LambdaBode,...
                       @SetupMargin,...
@@ -110,7 +110,8 @@ function oo = Stability(o)             % Closed Loop Stability Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Simple Calculation',{@WithSpm,'SimpleCalc'});
+   ooo = mitem(oo,'Critical Quantities',{@WithSpm,'CriticalCalc'});
+   ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
 %  ooo = mitem(oo,'-');
 %  ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
 end
@@ -132,7 +133,8 @@ function oo = Spectrum(o)              % Spectrum Menu
 end
 function oo = Setup(o)                 % Setup Menu           
    oo = mitem(o,'Setup');
-   ooo = mitem(oo,'Stability Margin',{@WithSpm,'SetupMargin'});
+   ooo = mitem(oo,'Basic Study',{@WithSpm,'SetupMargin','basic'});
+   ooo = mitem(oo,'Symmetry Study',{@WithSpm,'SetupMargin','symmetry'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu
    oo = mitem(o,'Force');
@@ -470,7 +472,7 @@ function o = SimpleCalc(o)             % Simple Calculation
    idle(o);
    
    Cmd('[A,B_1,B_3,C_3]=cook(cuo,''A,B_1,B_3,C_3'');');
-   Cmd('f=0.8:1e-4:1.1;   % search frequency between o.8 and 1.1kHz');
+   Cmd('f=0.8:1e-4:1.1;   % search frequency between 0.8 and 1.1kHz');
    Cmd('jw=sqrt(-1)*2*pi*f;');
    Cmd('');
    Cmd('    % calculate G31(jw) and G33(jw)');
@@ -499,6 +501,102 @@ function o = SimpleCalc(o)             % Simple Calculation
    function Cmd(cmd)
       fprintf('%s\n',cmd);
       evalin('base',cmd);
+   end
+end
+function o = CriticalCalc(o)           % Calculate Critical Quantities        
+   heading = 'Calculation of Critical Quantities';
+   message(o,heading);
+   idle(o);
+   
+   [A,B,C]=data(cuo,'A,B,C');
+   cdx = contact(o,nan);               % get contact indices
+   idx1 = 3*(cdx-1)+1;  
+   idx3 = 3*(cdx-1)+3;
+   B_1 = B(:,idx1);  B_3 = B(:,idx3);  C_3 = C(idx3,:);
+   
+A_ = A;  B_1_  = B_1;  B_3_ = B_3;  C_3_ = C_3;   
+[A,B_1,B_3,C_3]=cook(cuo,'A,B_1,B_3,C_3');
+
+i1=1:length(A)/2;i2=i1+max(i1);
+A_(i2,i1)=A_(i2,i1)/1e6; A_(i2,i2)=A_(i2,i2)/1e3;
+err = norm(A_-A)
+err = norm(B_1-B_1_);
+err = norm(B_3-B_3_);
+err = norm(C_3-C_3_);
+
+   flim = [500,1500];                  % frequency from 800 to 1200Hz
+flim=flim/1000;   
+   for (iter=1:10)
+      f = flim(1):diff(flim)/200:flim(2);   % k-th frequency range
+      jw = sqrt(-1)*2*pi*f;
+
+         % calculate G31(jw) and G33(jw)
+
+      I=eye(size(A));   % unit matrix
+      for(k=1:length(jw))
+         Phi = inv(jw(k)*I-A);
+         G31jw(k) = C_3*Phi*B_1;
+         G33jw(k) = C_3*Phi*B_3;
+      end;
+
+         % calculate phases phi31,phi33 and phi=phi31-phi33
+
+      phi31 = angle(G31jw);
+      phi33 = angle(G33jw);
+      phi = mod(phi31-phi33,2*pi) - 2*pi;
+      
+      Plot(o);                         % plot intermediate results
+      
+         % find f0 where phi = -pi
+
+      if (phi(1) <= -pi)
+         idx = min(find(phi>=-pi));
+      else
+         idx = min(find(phi<=-pi));
+      end
+      
+      if (abs(phi(idx-1)-phi(idx+1)) > pi)   % no crossing of 180°
+         flim(1) = f(idx+1);                 % skip this frequency!
+      else                                  
+         flim = [f(idx-1),f(idx+1)];         % close-up
+      end
+   end
+   
+   f0 = f(idx);                        % critical frequency [kHz]
+   
+   M31 = abs(G31jw(idx));              % coupling gain
+   phi31 = phi31(idx);                 % coupling phase      
+
+   M33=abs(G33jw(idx));                % direct gain
+   phi33 = phi33(idx);                 % direkt phase      
+
+      % calculate critical gain (= critical friction coefficient mu)
+      
+   K0 = M33/M31;                       % critical gain
+
+   Results(o);                         % display results
+         
+   function Plot(o)
+      if (iter == 1)                   % in first iteration
+         subplot(o,211);
+         semilogx(f,0*f-180,'k',  f,phi*180/pi,'r');
+         set(gca,'ytick',-360:30:0);
+      elseif (iter <= 5)
+         subplot(o,212);
+         semilogx(f,0*f-180,'k', f,phi*180/pi,'r');
+      end
+      subplot(o);  idle(o);  % give time to refresh graphics
+      xlabel('frequency [Hz]');
+   end
+   function Results(o)
+      txt = sprintf('Critical gain/frequency K0: %g @ f0: %g Hz',K0,f0);
+      subplot(o,211);  title(txt);  hold on;
+      set(semilogx(f0*[1 1],get(gca,'ylim'),'r-.'),'linewidth',1);
+
+      txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
+             M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
+      subplot(o,212);  title(txt);  hold on;
+      set(semilogx(f0*[1 1],get(gca,'ylim'),'r-.'),'linewidth',1);
    end
 end
 function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
@@ -1301,18 +1399,29 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    end
    
    o = with(o,{'style','process','stability'});
+   mode = arg(o,1);
    
    C = cook(o,'C');
    no = size(C,1)/3;
    n = 2^no-1;
    
+   id = Order(no,mode);
+   N = length(id);
+   x = 1:N;
+   
    [K0K180,f0f180] = cook(o,'K0K180,f0f180');
 
    mu = opt(o,{'process.mu',0.1});
-   x = Axes(o,3211,mu,'Range');        % get variation range and plot axes
-   x = Axes(o,3231,-mu,'Range');       % get variation range and plot axes
-   x = Axes(o,3212,mu,'Margin');       % get variation range and plot axes
-   x = Axes(o,3232,-mu,'Margin');      % get variation range and plot axes
+   Axes(o,4211,mu,'Stability Range');  % get variation range and plot axes
+   Axes(o,4221,[],'Setup');
+   Axes(o,4231,mu,'Stability Margin'); % get variation range and plot axes
+   Axes(o,4241,nan,'Critical Frequency');
+
+   Axes(o,4212,-mu,'Stability Range'); % get variation range and plot axes
+   Axes(o,4222,[],'Setup');
+   Axes(o,4232,-mu,'Stability Margin');% get variation range and plot axes
+   Axes(o,4242,nan,'Critical Frequency');
+
   
       % calculate stability margin and plot
    
@@ -1320,10 +1429,12 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
    
-   for (i=1:n)                         % calc & plot stability margin  
+   fmin = inf;                      % init
+   for (j=1:N)                      % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
-      progress(o,txt,i/n*100);
+      progress(o,txt,j/N*100);
       
+      i = id(j); 
       cfg = Config(i);
       if isnan(K0K180(i,1))
          [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
@@ -1338,13 +1449,18 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
          f0 = f0f180(i,1);  f180 = f0f180(i,2);
       end
       
-      Mu0(i) = mu/K0;
-      PlotMu(o,x(i),Mu0(i),3211);
-      PlotMargin(o,x(i),1/Mu0(i),3212);
+      Mu0 = mu/K0;
+      PlotMu(o,x(j),Mu0,4211);
+      PlotConfig(o,x(j),cfg,id(j),4221);
+      PlotMargin(o,x(j),1/Mu0,4231);      
+      PlotFrequency(o,x(j),f0,4241);      
       
-      Mu180(i) = mu/K180;
-      PlotMu(o,x(i),Mu180(i),3231);
-      PlotMargin(o,x(i),1/Mu180(i),3232);
+
+      Mu180 = mu/K180;
+      PlotMu(o,x(j),Mu180,4212);
+      PlotConfig(o,x(j),cfg,id(j),4222);
+      PlotMargin(o,x(j),1/Mu180,4232);
+      PlotFrequency(o,x(j),f180,4242);      
       
       idle(o);                         % show graphics
    end
@@ -1380,26 +1496,65 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
          plot(o,xi,marg,red);
       end
    end   
-   function x = Axes(o,sub,mu,tit)     % Plot Axes                     
+   function PlotFrequency(o,xi,f0,sub)
+      col = o.iif(dark(o),'w|o','k|o');
+      subplot(o,sub);
+      plot(o,xi,f0,col);
+      hold on
+      fmin = min(fmin,f0);
+      set(gca,'xlim',[0.1 length(x)+0.9],'ylim',[fmin*0.95,inf]);
+   end   
+   function PlotConfig(o,xi,cfg,id,sub)
+      col = o.iif(dark(o),'w','k');
+      
+      subplot(o,sub);
+      for (k=1:no)
+         plot(o,[xi xi],[1 no],[col,'1']);
+         if any(cfg==k)
+            plot(o,xi,k,[col,'o']);
+         end
+         hold on
+      end
+      hdl = text(xi,no+0.3,sprintf('%g',id));
+      set(hdl,'Vertical','bottom','Horizontal','center','fontsize',6);
+   end
+   function Axes(o,sub,mu,tit)         % Plot Axes                     
       subplot(o,sub);
       
-      x = 1:n;
+      if isempty(mu)
+         for (k=1:no)
+            plot(o,x,k*ones(size(x)),'K.');
+            hold on;
+         end
+         set(gca,'ylim',[0 no+0.9]);
+      elseif isnan(mu)
+         %plot(o,x,0*x,'K.');
+         set(gca,'ylim',[0 no+0.9]);
+      else
+         plot(o,x,0*x,'K.');
+         hold on;
+         plot(o,get(gca,'xlim'),[1 1],'K-.2');
+      end
       
-      plot(o,x,0*x,'K.');
-      hold on;
-      plot(o,get(gca,'xlim'),[1 1],'K-.2');
+      title(sprintf('%s%s',tit,More(o,mu)));
 
-      title(sprintf('Stability %s%s',tit,More(o,mu)));
-
-      ylabel(sprintf('Stability %s @ mu: %g',tit,mu));
-      xlabel('Variation Parameter: setup ID');
-
-      subplot(o);                         % subplot complete
+      if ~isempty(mu) && ~isnan(mu)
+         ylabel(sprintf('%s @ mu: %g',tit,mu));
+      elseif isempty(mu)
+         ylabel('configuration')
+      else
+         ylabel('frequency [Hz]');
+      end
+      xlabel('Setup ID');
+      set(gca,'xlim',[0.1 length(x)+0.9]);
+      subplot(o);                      % subplot complete
    end
    function txt = More(o,mu)           % More Title Text               
       txt = '';  sep = '';
-      
-      if ~isempty(mu)
+
+      if isempty(mu)
+         return
+      else
          txt = sprintf('mu: %g',mu);  
          sep = ', ';
       end
@@ -1420,13 +1575,21 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
          txt = [' (',txt,')'];
       end
    end
+   function id = Order(no,mode)
+      if (no == 5 && isequal(mode,'symmetry'))
+         id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
+              [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
+      else
+         id = 1:(2^no-1);
+      end
+   end
 end
 
 %==========================================================================
 % Checks
 %==========================================================================
 
-function o = EigenvalueCheck(o)       % Check Numeric Quality of EVs   
+function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs  
    [a0,a1,A] = cook(o,'a0,a1,A');
       
    if Vpa(o)                           % use variable precision arithmetic?

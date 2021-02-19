@@ -81,7 +81,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                   |         |              |
 %                   v         |              v
 %       +-----------------+   |      +-----------------+
-%       |                 |   |      |     consd       | H(s)
+%       |      setup      |   |      |     consd       | H(s)
 %       +-----------------+   |      +-----------------+
 %                             |       
 %                             |           friction
@@ -404,10 +404,6 @@ function oo = System(o)                % System Matrices
       cidx = [1,mid,N];
    end
    
-%  idx1 = 1+3*(0:N-1);
-%  idx2 = 2+3*(0:N-1);
-%  idx3 = 3+3*(0:N-1);
-   
       % for B1,B2 as well as C1,C2 we need idx0
    
    idx0 = [];
@@ -448,15 +444,7 @@ function oo = System(o)                % System Matrices
    N = floor(size(C,1)/3);
    B_1_ = B(:,idx1);  B_2_ = B(:,idx2);  B_3_ = B(:,idx3);
    C_1_ = C(idx1,:);  C_2_ = C(idx2,:);  C_3_ = C(idx3,:);
-   
-      % collapse B_i and C_j to a single column or single row
-      % if contact option is zero
       
-   %if (opt(o,{'process.contact',0}) == 0)
-%      B_1_ = B_1_(:,idx0);  B_2_ = B_2_(:,idx0);  B_3_ = B_3_(:,idx0);
-%      C_1_ = C_1_(idx0,:);  C_2_ = C_2_(idx0,:);  C_3_ = C_3_(idx0,:);
-   %end
-   
       % get C_j and B_i matrices and perform checks
 
    [B_1,B_2,B_3,C_1,C_2,C_3] = var(sys,'B_1,B_2,B_3,C_1,C_2,C_3');

@@ -13,6 +13,10 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
 %
 %             oo = contact(o,idx,A,B,C,D)
 %
+%          fetch contact indices
+%
+%             idx = contact(o,nan);
+%
 %          Optionally can also calculate L0 transfer matrix in ss 
 %          representation or stability margins and critical frequencies
 %
@@ -46,36 +50,11 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
       error('input/output number not a multiple of 3');
    end
    
-   if isinf(idx)
-      cdx = [];                        % multi contact
-   elseif isequal(idx,0)               % center contact
-      cdx = (N+1)/2;
-      if (cdx ~= round(cdx))
-         error('no center contact for even article number');
-      end
-   elseif isequal(idx,-1)              % leading contact
-      cdx = (N+1)/2;                   % center index
-      if (cdx ~= round(cdx))
-         error('no center contact for even article number');
-      end
-      cdx = 1:cdx;                     % leading indices
-   elseif isequal(idx,-2)              % trailing contact
-      cdx = (N+1)/2;                   % center index
-      if (cdx ~= round(cdx))
-         error('no center contact for even article number');
-      end
-      cdx = cdx:N;                     % first, center and last index
-   elseif isequal(idx,-3)              % triple contact
-      cdx = (N+1)/2;                   % center index
-      if (cdx ~= round(cdx))
-         error('no center contact for even article number');
-      end
-      cdx = [1 cdx N];                 % first, center and last index
-   else
-      cdx = idx;
-      if (any(cdx<1) || any(cdx>N))
-         error('not all indices (arg2) in range');
-      end
+   cdx = ContactIndices(o,N,idx);
+
+   if (nargin == 2 && isequal(idx,nan))
+      oo = cdx;
+      return
    end
    
       % contact index (cdx) is either empty or it indexs B-columns
@@ -134,6 +113,45 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
       L180.data.D = -L180.data.D;
       [K180,f180]=stable(o,L180);
       L0 = var(L0,'K180,f180',K180,f180);
+   end
+end
+function cdx = ContactIndices(o,N,idx)
+   if isnan(idx)
+      idx = opt(o,{'process.contact',0});
+   end
+   
+   if isinf(idx)
+      cdx = 1:N;                       % multi contact
+   elseif isequal(idx,0)               % center contact
+      cdx = (N+1)/2;
+      if (cdx ~= round(cdx))
+         error('no center contact for even article number');
+      end
+   elseif iscell(idx)
+      cdx = [];
+      for (i=1:min(length(idx),N))
+         if (idx{i} ~= 0)
+            cdx(end+1) = i;
+         end
+      end
+   elseif (isa(idx,'double') && length(idx) == 1 && idx < 0)
+      cdx = [];  
+      idx = abs(idx);
+      for (i=1:N)
+         if rem(idx,2)
+            cdx(end+1) = i;
+         end
+         idx = floor(idx/2);
+      end
+   else
+      cdx = idx;
+      if (any(cdx<1) || any(cdx>N))
+         error('not all indices (arg2) in range');
+      end
+      
+      if isempty(cdx)
+         error('bad input arg');;
+      end
    end
 end
 function L0 = CalcL0(o,A,B_1,B_3,C_3)                                  

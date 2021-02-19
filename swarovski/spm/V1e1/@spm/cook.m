@@ -142,18 +142,12 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = var(oo,sym);
 
       case {'B_1','B_2','B_3'}         % B_1 = [B(:,1),B(:,4),B(:,7),...]
-         oo = brew(o,'System');        % B_2 = [B(:,2),B(:,5),B(:,8),...]
-         B = var(oo,'B');              % B_3 = [B(:,3),B(:,6),B(:,9),...]
-         N = floor(size(B,2)/3);
-         idx = 0:3:3*(N-1);
-         oo = B(:,idx+j);
+         oo = contact(o);              % B_2 = [B(:,2),B(:,5),B(:,8),...]
+         oo = var(oo,sym);             % B_3 = [B(:,3),B(:,6),B(:,9),...]
          
       case {'C_1','C_2','C_3'}         % C_1 = [C(1,:);C(4,:);C(7,:);...]
-         oo = brew(o,'System');        % C_2 = [C(2,:);C(5,:);C(8,:);...]
-         C = var(oo,'C');              % C_3 = [C(3,:);C(6,:);C(9,:);...]
-         N = floor(size(C,1)/3);
-         idx = 0:3:3*(N-1);
-         oo = C(idx+j,:);
+         oo = contact(o);              % C_2 = [C(2,:);C(5,:);C(8,:);...]
+         oo = var(oo,sym);             % C_3 = [C(3,:);C(6,:);C(9,:);...]
          
       case 'Sys0'
          oo = cache(o,o,'multi');

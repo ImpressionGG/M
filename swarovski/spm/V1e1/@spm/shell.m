@@ -894,8 +894,22 @@ function oo = Contact(o)               % Add Contact Menu Items
       N = 7;
    end
    
-   list = {{'Center',0},{'Leading',-1},{'Trailing',-2},{'Triple',-3},...
-           {'Multi',inf},{}};
+   if (N == 5)
+      leading =  {1 1 1 0 0};
+      trailing = {0 0 1 1 1};
+      triple =   {0 1 1 1 0};
+   elseif (N == 7)
+      leading =  {1 1 1 1 0 0 0};
+      trailing = {0 0 0 1 1 1 1};
+      triple =   {0 0 1 1 1 0 0};
+   else
+      leading = inf;
+      trailing = inf;
+      triple = inf;
+   end
+   
+   list = {{'Center',0},{'Leading',leading},{'Trailing',trailing},...
+           {'Triple',triple},{'Multi',inf},{}};
    for(i=1:N)
       list{end+1} = {sprintf('%g',i),i};
    end
