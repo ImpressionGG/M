@@ -225,6 +225,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - general definition of contact indices
 % - extension of spm/contact to calc L0,K0,f0,K180,f180
 % - setup analysis (basic diagrams)
+% - caching for setup analysis
 %
 % Known bugs & wishlist
 % =========================

@@ -51,6 +51,9 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Process')
 %           T = cache(oo,'process.T'); % get T(s)
 %
+%           oo = brew(o,'Setup')
+%           K0K180 = cache(oo,'setup.K0K180')
+%
 %        Dependency of cache segments
 %
 %                       variation   normalizing
@@ -59,13 +62,13 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                        +-----------------+
 %                        |      system     | A,B,C,D,a0,a1
 %                        +-----------------+
-%                             |        |  |
-%                             |        |  +---------------+
-%                             |        |                  |
-%                             |        |                  v
-%                             |        |         +-----------------+
-%                             |        |         |       multi     | Sys0
-%                             |        |         +-----------------+
+%                         |   |        |  |
+%              +----------+   |        |  +---------------+
+%              |              |        |                  |
+%              v              |        |                  v
+%     +-----------------+     |        |         +-----------------+
+%     |      setup      |     |        |         |       multi     | Sys0
+%     +-----------------+     |        |         +-----------------+
 %                             |        |                  |
 %                             |        |                  v
 %                             |        |         +-----------------+
@@ -100,7 +103,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@Transform,...
-                       @System,@Trf,@Principal,@Multi,@Spectrum,...
+                       @System,@Trf,@Principal,@Multi,@Spectrum,@Setup,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -558,6 +561,27 @@ function oo = System(o)                % System Matrices
       assert(norm(C_2_-C_2)==0);
       assert(norm(C_3_-C_3)==0);
    end
+end
+
+%==========================================================================
+% Setup
+%==========================================================================
+
+function oo = Setup(o)                 % Init Setup Cache Segment
+   C = cook(o,'C');
+   no = size(C,1)/3;
+   n = 2^no-1;
+   
+   K0K180 = ones(n,2)*nan;
+   f0f180 = ones(n,2)*nan;
+
+   oo = o;
+   oo = cache(oo,'setup.K0K180',K0K180);
+   oo = cache(oo,'setup.f0f180',f0f180);
+
+      % unconditional hard refresh of spectrum segment
+      
+   cache(oo,oo);                       % cache storeback to shell
 end
 
 %==========================================================================

@@ -83,6 +83,11 @@ function varargout = cook(o,sym)
 %          L0jw = cook(o,'L0jw')            % MIMO frequency responses
 %          lambda = cook(o,'lambda')        % MIMO spectral functions
 %
+%       Setup
+%
+%          K0K180 = cook(o,'K0K180')        % setup specific stab. margins
+%          f0f180 = cook(o,'f0f180')        % setup specific crit. frequ.
+%
 %       Multiple output args
 %
 %          [Ts,Tv,Ta] = cook(o,'Ts,Tv,Ta')  % multiple output args
@@ -291,6 +296,10 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
             oo = inherit(oo,o);
             oo = opt(oo,'oscale',oscale(o));
          end
+         
+      case {'K0K180','f0f180'}
+         oo = cache(o,o,'setup');
+         oo = cache(oo,['setup.',sym]);
          
       otherwise
          error('unsupported symbol');

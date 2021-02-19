@@ -1305,12 +1305,14 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    C = cook(o,'C');
    no = size(C,1)/3;
    n = 2^no-1;
+   
+   [K0K180,f0f180] = cook(o,'K0K180,f0f180');
 
    mu = opt(o,{'process.mu',0.1});
-   x = Axes(o,2211,mu,'Range');        % get variation range and plot axes
-   x = Axes(o,2221,-mu,'Range');       % get variation range and plot axes
-   x = Axes(o,2212,mu,'Margin');       % get variation range and plot axes
-   x = Axes(o,2222,-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,3211,mu,'Range');        % get variation range and plot axes
+   x = Axes(o,3231,-mu,'Range');       % get variation range and plot axes
+   x = Axes(o,3212,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,3232,-mu,'Margin');      % get variation range and plot axes
   
       % calculate stability margin and plot
    
@@ -1323,15 +1325,26 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
       progress(o,txt,i/n*100);
       
       cfg = Config(i);
-      [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
+      if isnan(K0K180(i,1))
+         [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
+         K0K180(i,:) = [K0,K180];
+         f0f180(i,:) = [f0,f180];
+         
+         o = cache(o,'setup.K0K180',K0K180);
+         o = cache(o,'setup.f0f180',f0f180);
+         cache(o,o);
+      else
+         K0 = K0K180(i,1);  K180 = K0K180(i,2);
+         f0 = f0f180(i,1);  f180 = f0f180(i,2);
+      end
       
       Mu0(i) = mu/K0;
-      PlotMu(o,x(i),Mu0(i),2211);
-      PlotMargin(o,x(i),1/Mu0(i),2212);
+      PlotMu(o,x(i),Mu0(i),3211);
+      PlotMargin(o,x(i),1/Mu0(i),3212);
       
       Mu180(i) = mu/K180;
-      PlotMu(o,x(i),Mu180(i),2221);
-      PlotMargin(o,x(i),1/Mu180(i),2222);
+      PlotMu(o,x(i),Mu180(i),3231);
+      PlotMargin(o,x(i),1/Mu180(i),3232);
       
       idle(o);                         % show graphics
    end
@@ -1349,7 +1362,6 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
          N = floor(N/2);
       end
    end
-
    function PlotMu(o,xi,mu,sub)
       subplot(o,sub);
       if (mu < 1)
@@ -1367,8 +1379,7 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
       else
          plot(o,xi,marg,red);
       end
-   end
-    
+   end   
    function x = Axes(o,sub,mu,tit)     % Plot Axes                     
       subplot(o,sub);
       
