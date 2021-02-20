@@ -300,14 +300,14 @@ function oo = Transform(o)             % coordinate transformation
       
    oo = var(o,'B,C,D,N',B,C,D,N);
 
-   function T = TransMatrix(o,contact)                                 
+   function T = TransMatrix(o,k)                                 
    %
    % TRANSMATRIX Transform coordinates by rotation around 3-axis (=z-axis)
    %             by angle phi_p (process phi) plus phi_o (object specific 
    %             phi depending on how SPM matrices are exported). 2nd input
-   %             arg (contact) ist the contact index.
+   %             arg (k) ist the contact index.
    %
-   %                 T = Treansform(o,contact)
+   %                 T = Treansform(o,k)
    %
    %             We have:
    %
@@ -338,12 +338,20 @@ function oo = Transform(o)             % coordinate transformation
    %                 C_123 = T * C_xyz
    %  
       phi_o = get(o,{'phi',0});        % object phi [°]
+      
       if (length(phi_o) == 1)
          phi_o = phi_o * ones(1,N);
       end
+
+         % only center phi correction is considered if delta phi
+         % correction is not enabled
+         
+      if ~opt(o,{'process.dphi',0})
+         phi_o = mean(phi_o) * ones(1,N);
+      end
       
-      phi_p = opt(o,{'process.phi',0});% process phi [°]
-      rad = (phi_o(contact)+phi_p) *pi/180;     % total phi [rad]
+      phi_p = opt(o,{'process.phi',0});     % process phi [°]
+      rad = (phi_o(k)+phi_p) *pi/180;       % total phi [rad]
          
       T = [
              cos(rad) sin(rad)  0
@@ -363,15 +371,8 @@ function oo = System(o)                % System Matrices
    
    [A,B,C,D,N] = var(oo,'A,B,C,D,N');  % N: number of articles
 
-   cidx = opt(o,{'process.contact',0});
-   if (cidx > 0 && cidx < inf && cidx > N)
-      msg = sprintf('incompatible contact point number: %d',cidx);
-      fprintf(['*** ',msg,'\n']);
-      fprintf('*** proceeding with central contact\n');
-      message(o,['Error: ',msg],{'proceeding with central contact'});
-      cidx = 0;
-   end
-   
+%  cidx = opt(o,{'process.contact',0});
+   cidx = contact(o,nan);              % get contact indices   
    sys = contact(oo,cidx,A,B,C,D);     % calc free system regarding contact
 
       % expand cidx

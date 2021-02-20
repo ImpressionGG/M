@@ -13,6 +13,7 @@ function oo = study(o,varargin)        % Do Some Studies
                        @PhiDouble,@PhiRational,...
                        @TrfmDouble,@TrfmRational,@TrfmInversion,...
                        @Quick,@Modal1,@Modal2,@Modal3,@Bilinear,...
+                       @MagniCheck,...
                        @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
 end
@@ -51,6 +52,8 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'A,B,C,D');
    ooo = mitem(oo,'Inspect B',{@InspectB});
    ooo = mitem(oo,'Canonic',{@Canonic});
+   oo = mitem(o,'Normalizing')
+   ooo = mitem(oo,'Magnitude Check',{@WithCuo,'MagniCheck'});
    
    oo = mitem(o,'-');
    oo = mitem(o,'Arithmetics');
@@ -514,6 +517,62 @@ function o = Canonic(o)                % Transform to Canonic Form
    fprintf('Canonical controllable form\n');
    display(oc)
    display(trf(set(oc,'name','Control')));
+end
+function o = MagniCheck(o)             % Magnitude Check               
+   T0 = 1.0;   
+   oo = opt(o,'brew.T0',T0);
+   oo = cache(oo,oo,[]);               % clear cache hard
+%  L0 = cook(oo,'Sys0');
+   [sys,L0] = contact(oo);
+
+   A0 = data(L0,'A');
+   s = eig(A0);
+   center = abs(mean(real(s)));   
+   om = logspace(round(log10(center*1e-1)),round(log10(center*1e3)),1000);
+
+   PlotEig(o,2211);
+   PlotMagni(o,2212);
+
+      % normalizing constant T0=1e-3
+   
+   T0 = 1e-3;
+   oo = opt(o,'brew.T0',T0);
+   oo = cache(oo,oo,[]);               % clear cache hard
+%  L0 = cook(oo,'Sys0');
+   [sys,L0] = contact(oo);
+   
+   PlotEig(o,2221);
+   PlotMagni(o,2222);                  % magnitude plot of scaled system
+
+   function PlotEig(o,sub)
+      subplot(o,sub);
+
+      [A0,B0,C0,D0] = data(L0,'A,B,C,D');
+      s = eig(A0);
+      center = abs(mean(real(s)));
+      
+      plot(o,real(s),imag(s),'rrwp');
+      set(gca,'xlim',center*[-3 +3]);
+      title('Eigenvalues of L0 System');
+      subplot(o);
+   end
+   function PlotMagni(o,sub)
+      subplot(o,sub);
+
+      [A0,B0,C0,D0] = data(L0,'A,B,C,D');
+      s = eig(A0);
+      center = abs(mean(real(s)));
+      
+      oo = with(oo,'bode');
+      Om = om*T0;
+      Ljw = 0*om;  I = eye(size(A0));
+      for (k=1:length(om))
+         Ljwk = C0*inv(1i*Om(k)*I-A0)*B0 + D0;
+         Ljw(k) = Ljwk(1);
+      end
+      set(semilogx(om,20*log10(abs(Ljw)),'y'),'color',o.color('yyr'),'linewidth',1);
+      subplot(o);
+   end
 end
 
 %==========================================================================

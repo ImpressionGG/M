@@ -1,4 +1,4 @@
-function out = plot(varargin)          % Corazita Plot Method          
+function out = plot(varargin)          % Corazito Plot Method          
 %
 % PLOT   CORAZITO PLOT method. Extension of MATLAB plot function by
 %        extended color strings denoting color, line width and line type

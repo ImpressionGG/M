@@ -1629,6 +1629,10 @@ function o = T0S0(o)                   % T0(s), S0(s)
    heading(o);
 end
 function o = MagniPhase(o)             % Magnitude/Phase Plot               
+   if type(o,{'spm'});
+      oo = cache(oo,oo,'multi');
+   end
+   
    sym = arg(o,1);
    G = cook(o,sym);
    contact = Contact(o);

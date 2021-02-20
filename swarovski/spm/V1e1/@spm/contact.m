@@ -52,16 +52,16 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
    
    cdx = ContactIndices(o,N,idx);
 
-   if (nargin == 2 && isequal(idx,nan))
+   if (nargin == 2 && any(isnan(idx(:))))
       oo = cdx;
       return
    end
    
-      % contact index (cdx) is either empty or it indexs B-columns
-      % and C-rows to pick
+      % contact index (cdx) is either empty or indexing B-columns
+      % and C-rows to be picked
       
+   kdx = [];
    if ~isempty(cdx)
-      kdx = [];
       for (i=1:N)
          if any(i==cdx)
             kdx = [kdx,(3*(i-1)+1):(3*(i-1)+3)];
@@ -79,10 +79,11 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
          
       oo = system(corasim,A,B,C,D,0,oscale(o));
    end
+   oo = var(oo,'T0',oscale(o));
    
       % add matrices B_1,B_2,B_3 and C_1,C_2,C_3 to variables
       
-         % get indices of 1-2-3 components
+      % get indices of 1-2-3 components
 
    idx1 = 1+3*(0:M-1);
    idx2 = 2+3*(0:M-1);
@@ -91,7 +92,7 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
    B_1 = B(:,idx1);  B_2 = B(:,idx2);  B_3 = B(:,idx3);
    C_1 = C(idx1,:);  C_2 = C(idx2,:);  C_3 = C(idx3,:);
    oo = var(oo,'B_1,B_2,B_3,C_1,C_2,C_3',B_1,B_2,B_3,C_1,C_2,C_3);
-   oo = var(oo,'contact',idx);
+   oo = var(oo,'contact,index,idx1,idx2,idx3',cdx,kdx,idx1,idx2,idx3);
    
       % finally inherit options from shell
       
@@ -116,23 +117,23 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
    end
 end
 function cdx = ContactIndices(o,N,idx)
-   if isnan(idx)
+   if ~iscell(idx) && any(isnan(idx(:)))
       idx = opt(o,{'process.contact',0});
    end
    
-   if isinf(idx)
-      cdx = 1:N;                       % multi contact
-   elseif isequal(idx,0)               % center contact
-      cdx = (N+1)/2;
-      if (cdx ~= round(cdx))
-         error('no center contact for even article number');
-      end
-   elseif iscell(idx)
+   if iscell(idx)
       cdx = [];
       for (i=1:min(length(idx),N))
          if (idx{i} ~= 0)
             cdx(end+1) = i;
          end
+      end
+   elseif isinf(idx)
+      cdx = 1:N;                       % multi contact
+   elseif isequal(idx,0)               % center contact
+      cdx = (N+1)/2;
+      if (cdx ~= round(cdx))
+         error('no center contact for even article number');
       end
    elseif (isa(idx,'double') && length(idx) == 1 && idx < 0)
       cdx = [];  

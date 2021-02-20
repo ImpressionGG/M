@@ -504,39 +504,36 @@ function o = SimpleCalc(o)             % Simple Calculation
    end
 end
 function o = CriticalCalc(o)           % Calculate Critical Quantities        
-   heading = 'Calculation of Critical Quantities';
-   message(o,heading);
+   message(o,'Calculation of Critical Quantities');
    idle(o);
    
-   [A,B,C]=data(cuo,'A,B,C');
-   cdx = contact(o,nan);               % get contact indices
-   idx1 = 3*(cdx-1)+1;  
-   idx3 = 3*(cdx-1)+3;
-   B_1 = B(:,idx1);  B_3 = B(:,idx3);  C_3 = C(idx3,:);
+      % we need a system according to contact specification, time
+      % normalization and coordinate transformation. All these aspects
+      % are implemented by contact method, which returns the required
+      % system
    
-A_ = A;  B_1_  = B_1;  B_3_ = B_3;  C_3_ = C_3;   
-[A,B_1,B_3,C_3]=cook(cuo,'A,B_1,B_3,C_3');
-
-i1=1:length(A)/2;i2=i1+max(i1);
-A_(i2,i1)=A_(i2,i1)/1e6; A_(i2,i2)=A_(i2,i2)/1e3;
-err = norm(A_-A)
-err = norm(B_1-B_1_);
-err = norm(B_3-B_3_);
-err = norm(C_3-C_3_);
-
-   flim = [500,1500];                  % frequency from 800 to 1200Hz
-flim=flim/1000;   
+   [oo,L0,K0_,f0_,K180,f180] = contact(o);
+   [A,B_1,B_3,C_3,T0]=var(oo,'A,B_1,B_3,C_3,T0');
+   
+   flim = [500,1500];                  % frequency from 500 to 1500Hz
    for (iter=1:10)
-      f = flim(1):diff(flim)/200:flim(2);   % k-th frequency range
-      jw = sqrt(-1)*2*pi*f;
+      df = diff(flim)/200;             % frequency increment
+      f = flim(1):df:flim(2);          % frequency range of this iteration
+      jw = sqrt(-1)*2*pi*f * T0;       % T0: time scaling constant
 
          % calculate G31(jw) and G33(jw)
 
       I=eye(size(A));   % unit matrix
       for(k=1:length(jw))
          Phi = inv(jw(k)*I-A);
-         G31jw(k) = C_3*Phi*B_1;
-         G33jw(k) = C_3*Phi*B_3;
+         G31jwk = C_3*Phi*B_1;
+         G33jwk = C_3*Phi*B_3;
+         
+         if (length(G31jwk) == 1)
+            G31jw(k) = G31jwk;  G33jw(k) = G33jwk;
+         else
+            error('cannot proceed');
+         end
       end;
 
          % calculate phases phi31,phi33 and phi=phi31-phi33
@@ -575,27 +572,45 @@ flim=flim/1000;
    K0 = M33/M31;                       % critical gain
 
    Results(o);                         % display results
-         
+      
+   heading(o);
+   
    function Plot(o)
+      col = o.iif(dark(o),'w','k');
       if (iter == 1)                   % in first iteration
-         subplot(o,211);
-         semilogx(f,0*f-180,'k',  f,phi*180/pi,'r');
+         subplot(o,311);
+         set(semilogx(f,20*log10(abs(-G31jw./G33jw)),'r'),'linewidth',1);
+         hold on;
+         set(semilogx(f0_*[1 1],get(gca,'ylim'),[col,'-.']),'linewidth',1);
+         set(semilogx(f0_,-20*log10(K0_),[col,'o']),'linewidth',1);
+         
+         title('L0(s)=G31(s)/G33(s): Magnitude Plot');
+         xlabel('frequency [Hz]');
+         subplot(o);
+         
+         subplot(o,312);
+         set(semilogx(f,0*f-180,col,  f,phi*180/pi,'r'),'linewidth',1);
          set(gca,'ytick',-360:30:0);
       elseif (iter <= 5)
-         subplot(o,212);
-         semilogx(f,0*f-180,'k', f,phi*180/pi,'r');
+         subplot(o,313);
+         set(semilogx(f,0*f-180,col, f,phi*180/pi,'r'),'linewidth',1);
       end
       subplot(o);  idle(o);  % give time to refresh graphics
       xlabel('frequency [Hz]');
    end
    function Results(o)
+      err = norm([K0-K0_,f0-f0_]);
+      subplot(o,311);
+      title(sprintf('L(s) = G31(s)/G33(s): Magnitude Plot (err: %g)',err));
+
+      subplot(o,312);
       txt = sprintf('Critical gain/frequency K0: %g @ f0: %g Hz',K0,f0);
-      subplot(o,211);  title(txt);  hold on;
+      subplot(o,312);  title(txt);  hold on;
       set(semilogx(f0*[1 1],get(gca,'ylim'),'r-.'),'linewidth',1);
 
       txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
              M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
-      subplot(o,212);  title(txt);  hold on;
+      subplot(o,313);  title(txt);  hold on;
       set(semilogx(f0*[1 1],get(gca,'ylim'),'r-.'),'linewidth',1);
    end
 end
@@ -1856,7 +1871,12 @@ function txt = Contact(o)
    contact = opt(o,'process.contact');
    if isempty(contact)
       txt = '';
-   elseif (contact == 0)
+   elseif iscell(contact)
+      txt = 'contact: -';  sep = '';
+      for (i=1:length(contact(:)))
+         txt = [txt,sep,sprintf('%g',contact{i})];  sep = '-';
+      end
+      txt = [txt,'-'];   elseif (contact == 0)
       txt = 'contact: center';
    elseif isequal(contact,-1)
       txt = 'contact: leading';
