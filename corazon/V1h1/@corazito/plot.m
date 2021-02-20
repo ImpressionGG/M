@@ -11,6 +11,10 @@ function out = plot(varargin)          % Corazito Plot Method
 %           corazito.plot(x,y,'r2.-')  % red, line width 2, solid and dot
 %           corazito.plot(x,y,'r|o')   % red stems and balls
 %
+%        Dependig on the aes parameters 'XScale'  and 'YScale' corazon/plot
+%        chooses either MATLAB plot, semilogx, semilogy or loglog as final
+%        plot driver
+%
 %        Forward argument list
 %
 %           corazito.plot(ilist)
@@ -76,15 +80,20 @@ function out = plot(varargin)          % Corazito Plot Method
 %           xscale:          x-scaling factor (default: 1)
 %           yscale:          y-scaling factor (default: 1)
 %
-%        Example:
+%        Example 1: linear plot
 %
-%           o = opt(corazita,'xscale',10,'yscale',0.1);
+%           o = opt(corazito,'xscale',10,'yscale',0.1);
 %           hdl = corazito.plot(o,hax,x1,y1,'r',x2,y2,'b|o',...)
 %           hdl = corazito.plot(o,x1,y1,'r',x2,y2,'b|o',...)
 %
+%        Example 2: semilogarithmic plot
+%
+%           set(gca,'XScale','log','YScale','linear');
+%           plot(corazito,x,y,'bc3-.')
+%
 %        Copyright(c): Bluenetics 2020 
 %
-%        See also: CORAZITO, CORAZITO.COLOR
+%        See also: CORAZITO,CORAZITO.COLOR,PLOT,SEMILOGX,SEMILOGY,LOGLOG
 %      
    color = @corazito.color;            % short hand
    bullets = [];                       % no bullet plotting
@@ -223,6 +232,18 @@ function hdl = Plot(hax,x,y,rgb,lwid,ltyp) % Plot graph and hold
       ltyp = '-';                      % solid by default
    end
    
+   mode = [get(gca,'XScale'),get(gca,'YScale')];
+   switch mode
+      case 'linearlinear'
+         xplot = @plot;
+      case 'loglinear'
+         xplot = @semilogx;
+      case 'linearlog'
+         xplot = @semilogy;
+      case 'linearlinear'
+         xplot = @loglog;
+   end
+   
    i = 1;
    while (i <= length(ltyp))
       c = ltyp(i);  i = i+1;
@@ -234,25 +255,25 @@ function hdl = Plot(hax,x,y,rgb,lwid,ltyp) % Plot graph and hold
                   error('sizes of arg1 and arg2 do not match!');
                end
             end
-            hdl = plot(hax,[x(:),x(:)]',[0*y(:),y(:)]','k-');
+            hdl = xplot(hax,[x(:),x(:)]',[0*y(:),y(:)]','k-');      
             hold on
             set(hdl,'color',rgb,'linewidth',lwid);
          case '-'
             if (i <= length(ltyp) && ltyp(i) == '.')
-               hdl = plot(hax,x,y,'-.');
+               hdl = xplot(hax,x,y,'-.');
                i = i+1;  hold on
                set(hdl,'color',rgb,'linewidth',lwid);
             elseif (i <= length(ltyp) && ltyp(i) == '-') 
-               hdl = plot(hax,x,y,'--');
+               hdl = xplot(hax,x,y,'--');
                i = i+1;  hold on
                set(hdl,'color',rgb,'linewidth',lwid);
             else
-               hdl = plot(hax,x,y,'-');
+               hdl = xplot(hax,x,y,'-');
                hold on
                set(hdl,'color',rgb,'linewidth',lwid);
             end
          case {'.','o','x','+','*','s','d','v','^','<','>','p','h',':'}
-            hdl = plot(hax,x,y,c);
+            hdl = xplot(hax,x,y,c);
             hold on
             set(hdl,'color',rgb);
          otherwise

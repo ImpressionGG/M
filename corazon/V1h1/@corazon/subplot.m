@@ -16,6 +16,16 @@ function hax = subplot(o,varargin)
 %
 %           The conversion formula from (i,j) to k is: k = (i-1)*n + j
 %
+%           subplot can be used to setup an axis in semi or double
+%           logarithmic plot mode, which affects all subsequent plot(o,...)
+%           calls. It also can activate the subplot as 'hold' 
+%
+%              subplot(o,sub,'linear')      % linear mode
+%              subplot(o,sub,'semilogx')    % logarithmic x, linear y
+%              subplot(o,sub,'semilogy')    % logarithmic y, linear x
+%              subplot(o,sub,'loglog')      % logarithmic x  and y
+%              subplot(o,sub,'hold')        % hold subsequent plots
+%
 %           A call to subplot(o) at the end of a plot sequence refreshes
 %           dark mode for theaxes object and draws grid if enabled
 %
@@ -52,6 +62,24 @@ function hax = subplot(o,varargin)
       [m,n,k] = Index(sub);
       hax = subplot(m,n,k);
       dark(o,'Axes');
+   elseif (nargin == 3)
+      subplot(o,varargin{1});
+      mode = varargin{2};
+      
+      switch mode
+         case 'linear'
+            set(gca,'XScale','linear','YScale','linear');
+         case 'semilogx'
+            set(gca,'XScale','log','YScale','linear');
+         case 'semilogy'
+            set(gca,'XScale','linear','YScale','log');
+         case 'loglog'
+            set(gca,'XScale','log','YScale','log');
+         case 'hold'
+            hold on;
+         otherwise
+            error('bad mode (arg3)');
+      end
    elseif (nargin >= 4)
       [m,n,k] = Index(varargin);
       hax = subplot(m,n,k);

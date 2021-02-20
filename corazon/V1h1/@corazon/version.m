@@ -531,7 +531,7 @@ function VersionV1G
 % - add corasim/vpa and corasim/check methods
 % - pimp corasim/display to deal with VPA
 % - bug fix in corasim/vpa: eliminate inf in zero poles after double conversion
-%
+% - pimp corazito/plot and corazon/subplot to support hold & semilog/lolog
 %
 % Known Bugs / Wishlist
 % - none so far
