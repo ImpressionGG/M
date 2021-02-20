@@ -230,6 +230,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - analyse: critical quantities
 % - some fixes
 % - stop mechanism added
+% - color code for setup analysis diagrams
 %
 % Known bugs & wishlist
 % =========================

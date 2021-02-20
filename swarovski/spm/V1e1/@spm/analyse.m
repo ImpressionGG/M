@@ -1535,21 +1535,25 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    end
    function PlotMu(o,xi,mu,sub)
       subplot(o,sub);
-      [fcol,bcol,ratio] = Colors(o,mu);
+      [fcol,bcol,ratio] = Colors(o,1/mu);
       X =  0.4*[1 1 -1 -1 1];
       Y = mu/2*[1 -1 -1 1 1];
       
-      hdl = patch(xi+X,mu/2+Y,o.color(bcol));
-      hdl = patch(xi+ratio*X,mu/2+ratio*Y,o.color(fcol));
+      hdl = patch(xi+X,mu/2+Y,o.color(fcol));
+      hdl = patch(xi+ratio*X,mu/2+Y,o.color(bcol));
    end
    function PlotMargin(o,xi,marg,sub)
       subplot(o,sub);
+      [fcol,bcol,ratio] = Colors(o,marg);
+      X =  0.4*[1 1 -1 -1 1];
+      Y = marg/2*[1 -1 -1 1 1];
+      
       if isinf(marg)
          plot(o,xi,0,infgreen);
-      elseif (marg > 1)
-         plot(o,xi,marg,green);
       else
-         plot(o,xi,marg,red);
+         patch(xi+X,marg/2+Y,o.color(fcol));
+         patch(xi+ratio*X,marg/2+Y,o.color(bcol));
+%        plot(o,xi,marg,green);
       end
    end   
    function PlotFrequency(o,xi,f0,sub)
@@ -1903,12 +1907,12 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
 end
-function Heading(o)
+function Heading(o)                                                    
    txt = Contact(o);
    msg = [get(o,{'title',''}),' (',txt,')'];
    heading(o,msg);
 end
-function txt = Contact(o)
+function txt = Contact(o)                                              
    contact = opt(o,'process.contact');
    if isempty(contact)
       txt = '';
@@ -1937,7 +1941,7 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-function [fcol,bcol,ratio] = Colors(o,K)
+function [fcol,bcol,ratio] = Colors(o,K)                               
 %
 % COLORS   Return colors and color ratio of a critical value, where output
 %          arg is the ratio of foreground (fcol) to background (bcol9 color 
@@ -1961,16 +1965,19 @@ function [fcol,bcol,ratio] = Colors(o,K)
 %             K = 5:        80% red   @ 20% yellow
 %             K = 10:       90% red   @ 10% yellow
 %
+   n = 2;                              % exponent
    K = abs(K);
    if (K > 1.0)
       fcol = 'ggk';  bcol = 'yyyr';
-      ratio = 1 - 1/K;
+      ratio = 1 - (1/K)^n;
    else
       fcol = 'r';  bcol = 'yyyr';
-      ratio = 1 - K;
+      ratio = 1 - K^n;
    end
+   
+   ratio = 1-ratio;
 end
-function Stop(o)                       % setup button down function
+function Stop(o)                       % setup button down function    
    stop(o,0);                          % clear stop flag
    cb = call(o,class(o),{@StopCb});
    set(gcf,'WindowButtonDownFcn',cb);
