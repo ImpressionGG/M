@@ -919,14 +919,14 @@ function oo = Contact(o)               % Add Contact Menu Items
 end
 function oo = Coordinates(o)           % Add Coordinates Menu Items    
    setting(o,{'process.phi'},0);
-   setting(o,{'process.dphi'},0);
+   setting(o,{'process.Cphi'},0);
     
    oo = mitem(o,'Coordinates');
    ooo = mitem(oo,'Phi Rotation',{},'process.phi');
    choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
    
-   ooo = mitem(oo,'Phi Correction',{},'process.dphi');
-   choice(ooo,{{'Off',0},{'On',1}},{});
+   ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
+   choice(ooo,[-1:0.2:1],{@CacheReset});
 end
 function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');

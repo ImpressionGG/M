@@ -325,6 +325,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       dB(idx) = 20*log(-re(idx));
    end
 
+   set(gca,'XScale','log','YScale','linear');
    hdl = semilogx(gain,dB);
    hold on;
 

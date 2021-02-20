@@ -1630,7 +1630,7 @@ function o = T0S0(o)                   % T0(s), S0(s)
 end
 function o = MagniPhase(o)             % Magnitude/Phase Plot               
    if type(o,{'spm'});
-      oo = cache(oo,oo,'multi');
+      o = cache(o,o,'multi');
    end
    
    sym = arg(o,1);

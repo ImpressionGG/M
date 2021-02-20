@@ -346,9 +346,9 @@ function oo = Transform(o)             % coordinate transformation
          % only center phi correction is considered if delta phi
          % correction is not enabled
          
-      if ~opt(o,{'process.dphi',0})
-         phi_o = mean(phi_o) * ones(1,N);
-      end
+      Cphi = opt(o,{'process.Cphi',0});
+      dphi_o = phi_o - mean(phi_o);
+      phi_o = mean(phi_o)*ones(1,N) + Cphi*dphi_o; 
       
       phi_p = opt(o,{'process.phi',0});     % process phi [°]
       rad = (phi_o(k)+phi_p) *pi/180;       % total phi [rad]

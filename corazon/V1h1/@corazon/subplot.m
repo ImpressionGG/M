@@ -1,6 +1,8 @@
 function hax = subplot(o,varargin)
 %
-% SUBPLOT   Select subplot - handle dark mode (optional grid)
+% SUBPLOT   Select subplot - handle dark mode (optional grid), always set
+%           axes hold mode (if hold is not desired, explicitely call hold 
+%           off).
 %
 %              hax = subplot(o,311);
 %              hax = subplot(o,3,1,1);
@@ -18,13 +20,12 @@ function hax = subplot(o,varargin)
 %
 %           subplot can be used to setup an axis in semi or double
 %           logarithmic plot mode, which affects all subsequent plot(o,...)
-%           calls. It also can activate the subplot as 'hold' 
+%           calls.
 %
 %              subplot(o,sub,'linear')      % linear mode
 %              subplot(o,sub,'semilogx')    % logarithmic x, linear y
 %              subplot(o,sub,'semilogy')    % logarithmic y, linear x
 %              subplot(o,sub,'loglog')      % logarithmic x  and y
-%              subplot(o,sub,'hold')        % hold subsequent plots
 %
 %           A call to subplot(o) at the end of a plot sequence refreshes
 %           dark mode for theaxes object and draws grid if enabled
@@ -75,8 +76,6 @@ function hax = subplot(o,varargin)
             set(gca,'XScale','linear','YScale','log');
          case 'loglog'
             set(gca,'XScale','log','YScale','log');
-         case 'hold'
-            hold on;
          otherwise
             error('bad mode (arg3)');
       end
@@ -85,6 +84,10 @@ function hax = subplot(o,varargin)
       hax = subplot(m,n,k);
       dark(o,'Axes');
    end
+   
+      % always hold on!
+      
+   hold on;
 end
 
 %==========================================================================

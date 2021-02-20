@@ -333,6 +333,10 @@ function o = Margin(o)                 % Stability Margin
    Heading(o);
 end
 function o = Damping(o)                % Closed Loop Damping           
+   if type(o,{'spm'})
+      o = cache(o,o,'multi');          % hard refresh cache segment
+   end
+   
    o = with(o,'rloc');
    o = with(o,'style');
    
@@ -349,7 +353,7 @@ function o = Damping(o)                % Closed Loop Damping
    fmax = opt(o,{'fmax',1e6});
    
    for (i=1:m)
-      subplot(o,[m 2 i 1]);
+      subplot(o,[m 2 i 1],'semilogx');
       rlocus(o,L0,-mu,glim(i,:));
       ylim = get(gca,'ylim');
       set(gca,'ylim',[min(-2,max(ylim(1),-20)),0]);
@@ -361,7 +365,7 @@ function o = Damping(o)                % Closed Loop Damping
    xlabel(sprintf('frequency [Hz] (K0: %g @ %g Hz)',K180/mu,f180));
    
    for (i=1:m)
-      subplot(o,[m 2 i 2]);
+      subplot(o,[m 2 i 2],'semilogx');
       rlocus(o,L0,mu,glim(i,:));
       ylim = get(gca,'ylim');
       set(gca,'ylim',[min(-2,max(ylim(1),-20)),0]);
@@ -514,14 +518,20 @@ function o = CriticalCalc(o)           % Calculate Critical Quantities
    
    [oo,L0,K0_,f0_,K180,f180] = contact(o);
    [A,B_1,B_3,C_3,T0]=var(oo,'A,B_1,B_3,C_3,T0');
+   multi = (size(C_3,1) > 1);          % multi contact
    
    flim = [500,1500];                  % frequency from 500 to 1500Hz
    for (iter=1:10)
+      if (flim(1) > f0_  || flim(2) < f0_)
+         fprintf('*** warning: helped search algorithm\n'); 
+         flim = f0_ * [0.99 1.01];
+      end
+      
       df = diff(flim)/200;             % frequency increment
       f = flim(1):df:flim(2);          % frequency range of this iteration
       jw = sqrt(-1)*2*pi*f * T0;       % T0: time scaling constant
 
-         % calculate G31(jw) and G33(jw)
+         % calculate G31(jw), G33(jw) and L0(jw)
 
       I=eye(size(A));   % unit matrix
       for(k=1:length(jw))
@@ -529,10 +539,24 @@ function o = CriticalCalc(o)           % Calculate Critical Quantities
          G31jwk = C_3*Phi*B_1;
          G33jwk = C_3*Phi*B_3;
          
-         if (length(G31jwk) == 1)
-            G31jw(k) = G31jwk;  G33jw(k) = G33jwk;
-         else
-            error('cannot proceed');
+         if (~multi)                   % single contact
+            G31jw(k) = G31jwk;  
+            G33jw(k) = G33jwk;
+            L0jw(k)  = G31jwk/G33jwk;
+         else                          % multi contact
+            s31k = eig(G31jwk);        % eigenvalues of G31(jwk)
+            [~ ,idx] = sort(abs(s31k));
+            G31jw(k) = s31k(idx(end)); % pick eigenvalue with greatest |.|
+
+
+            s33k = eig(G33jwk);
+            [~ ,idx] = sort(abs(s33k));
+            G33jw(k) = s33k(idx(end));
+            
+            L0jwk = G33jwk\G31jwk;
+            s0k = eig(L0jwk);          % eigenvalues of L0(jwk) 
+            [~ ,idx] = sort(abs(s0k)); % sort EV's by magnitude
+            L0jw(k) = s0k(idx(end));   % EV with greatest magnitude
          end
       end;
 
@@ -540,7 +564,13 @@ function o = CriticalCalc(o)           % Calculate Critical Quantities
 
       phi31 = angle(G31jw);
       phi33 = angle(G33jw);
-      phi = mod(phi31-phi33,2*pi) - 2*pi;
+      if (multi)
+         phi = angle(L0jw);            % multi contact case
+      else
+         phi = phi31-phi33;            % single contact case
+      end
+      
+      phi = mod(phi,2*pi) - 2*pi;      % map into interval -2*pi ... 0
       
       Plot(o);                         % plot intermediate results
       
@@ -564,36 +594,43 @@ function o = CriticalCalc(o)           % Calculate Critical Quantities
    M31 = abs(G31jw(idx));              % coupling gain
    phi31 = phi31(idx);                 % coupling phase      
 
-   M33=abs(G33jw(idx));                % direct gain
+   M33 = abs(G33jw(idx));              % direct gain
    phi33 = phi33(idx);                 % direkt phase      
 
+   ML0 = abs(L0jw(idx));
+   
       % calculate critical gain (= critical friction coefficient mu)
-      
-   K0 = M33/M31;                       % critical gain
 
+   if (multi)  
+      K0 = ML0;                        % critical gain
+   else
+      K0 = M33/M31;                    % critical gain
+   end
+   
    Results(o);                         % display results
       
    heading(o);
    
    function Plot(o)
-      col = o.iif(dark(o),'w','k');
       if (iter == 1)                   % in first iteration
-         subplot(o,311);
-         set(semilogx(f,20*log10(abs(-G31jw./G33jw)),'r'),'linewidth',1);
-         hold on;
-         set(semilogx(f0_*[1 1],get(gca,'ylim'),[col,'-.']),'linewidth',1);
-         set(semilogx(f0_,-20*log10(K0_),[col,'o']),'linewidth',1);
+         subplot(o,311,'semilogx');
+         plot(o,f,20*log10(abs(-G31jw./G33jw)),'K');
+         plot(o,f,20*log10(abs(-L0jw)),'ryyy1');
+         plot(o,f0_*[1 1],get(gca,'ylim'),'r1-.');
+         plot(o,f0_,-20*log10(K0_),'K1o');
          
          title('L0(s)=G31(s)/G33(s): Magnitude Plot');
          xlabel('frequency [Hz]');
          subplot(o);
          
-         subplot(o,312);
-         set(semilogx(f,0*f-180,col,  f,phi*180/pi,'r'),'linewidth',1);
-         set(gca,'ytick',-360:30:0);
+         subplot(o,312,'semilogx');
+         plot(o,f,0*f-180,'K',  f,phi*180/pi,'g1');
+         set(gca,'ytick',-360:45:0);
       elseif (iter <= 5)
-         subplot(o,313);
-         set(semilogx(f,0*f-180,col, f,phi*180/pi,'r'),'linewidth',1);
+         subplot(o,313,'semilogx');
+         hold off
+         plot(o,f,0*f-180,'K', f,phi*180/pi,'g1');
+         set(gca,'ytick',-360:45:0);
       end
       subplot(o);  idle(o);  % give time to refresh graphics
       xlabel('frequency [Hz]');
@@ -605,13 +642,13 @@ function o = CriticalCalc(o)           % Calculate Critical Quantities
 
       subplot(o,312);
       txt = sprintf('Critical gain/frequency K0: %g @ f0: %g Hz',K0,f0);
-      subplot(o,312);  title(txt);  hold on;
-      set(semilogx(f0*[1 1],get(gca,'ylim'),'r-.'),'linewidth',1);
+      title(txt);  hold on;
+      plot(o,f0*[1 1],get(gca,'ylim'),'r1-.');
 
       txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
              M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
       subplot(o,313);  title(txt);  hold on;
-      set(semilogx(f0*[1 1],get(gca,'ylim'),'r-.'),'linewidth',1);
+      plot(o,f0*[1 1],get(gca,'ylim'),'r1-.');
    end
 end
 function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
@@ -1436,7 +1473,6 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    Axes(o,4222,[],'Setup');
    Axes(o,4232,-mu,'Stability Margin');% get variation range and plot axes
    Axes(o,4242,nan,'Critical Frequency');
-
   
       % calculate stability margin and plot
    
