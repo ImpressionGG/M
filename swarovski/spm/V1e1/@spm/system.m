@@ -9,6 +9,8 @@ function oo = system(o)
 %
 %         See also: SPM, COOK
 %
+   error('obsolete');
+ 
    [A,B1,B2,C1,C2] = cook(o,'A,B1,B2,C1,C2');
    
       % use system with selected contact points. This is represented 

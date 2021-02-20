@@ -229,6 +229,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - extended setup analysis
 % - analyse: critical quantities
 % - some fixes
+% - stop mechanism added
 %
 % Known bugs & wishlist
 % =========================

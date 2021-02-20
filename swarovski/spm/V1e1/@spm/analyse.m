@@ -124,19 +124,19 @@ function oo = Sensitivity(o)           % Sensitivity Menu
    ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
    ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
 end
-function oo = Spectrum(o)              % Spectrum Menu           
+function oo = Spectrum(o)              % Spectrum Menu                 
    oo = mitem(o,'Spectrum');
    ooo = mitem(oo,'L0 Magnitude Plots',{@WithSpm,'L0Magni'});
    ooo = mitem(oo,'Lambda Magnitude Plots',{@WithSpm,'LambdaMagni'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lambda Bode Plot',{@WithSpm,'LambdaBode'});
 end
-function oo = Setup(o)                 % Setup Menu           
+function oo = Setup(o)                 % Setup Menu                    
    oo = mitem(o,'Setup');
    ooo = mitem(oo,'Basic Study',{@WithSpm,'SetupMargin','basic'});
    ooo = mitem(oo,'Symmetry Study',{@WithSpm,'SetupMargin','symmetry'});
 end
-function oo = Force(o)                 % Closed Loop Force Menu
+function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
    sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';  
 
@@ -241,7 +241,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithSpm(o)               % 'With Current Spm Callback
+function oo = WithSpm(o)               % 'With Current Spm Callback    
 %
 % WITHSPM Same as WithCuo but checking if current object is an spm object,
 %         otherwise calling plot(o,'About')
@@ -272,7 +272,7 @@ function oo = WithSpm(o)               % 'With Current Spm Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithBsk(o)               % 'With Basket' Callback
+function oo = WithBsk(o)               % 'With Basket' Callback        
 %
 % WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
 %          current object pulling and forwarding to executing local func-
@@ -1480,6 +1480,7 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
    
+   Stop(o);                         % setup button down function for stop
    fmin = inf;                      % init
    for (j=1:N)                      % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
@@ -1514,6 +1515,9 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
       PlotFrequency(o,x(j),f180,4242);      
       
       idle(o);                         % show graphics
+      if stop(o)
+         break;
+      end
    end
    
    progress(o);                        % progress completed
@@ -1531,11 +1535,12 @@ function o = SetupMargin(o)            % Setup Specific Stability Margin
    end
    function PlotMu(o,xi,mu,sub)
       subplot(o,sub);
-      if (mu < 1)
-         plot(o,xi,mu,green);
-      else
-         plot(o,xi,mu,red);
-      end
+      [fcol,bcol,ratio] = Colors(o,mu);
+      X =  0.4*[1 1 -1 -1 1];
+      Y = mu/2*[1 -1 -1 1 1];
+      
+      hdl = patch(xi+X,mu/2+Y,o.color(bcol));
+      hdl = patch(xi+ratio*X,mu/2+ratio*Y,o.color(fcol));
    end
    function PlotMargin(o,xi,marg,sub)
       subplot(o,sub);
@@ -1932,4 +1937,48 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-
+function [fcol,bcol,ratio] = Colors(o,K)
+%
+% COLORS   Return colors and color ratio of a critical value, where output
+%          arg is the ratio of foreground (fcol) to background (bcol9 color 
+%
+%             [fcol,bcol,ratio] = Colors(o,K)
+%
+%          Method
+%             K = 0:0.5     green/yellow, ratio = 1-K
+%             K = 0.5:1     green/yellow, ratio = 1-K
+%             K = 1:2       red/yellow,   ratio = 1-1/K
+%             K = 2:inf     red/yellow,   ratio = 1-1/K
+%
+%          Examples:
+%             K = 0.1:      90% green @ 10% yellow
+%             K = 0.2:      80% green @ 20% yellow
+%             K = 0.5:      50% green @ 50% yellow
+%             K = 0.8:      20% green @ 80% yellow
+%             K = 1.0:       0% green @ 100% yellow
+%             K = 1.5:      33% red   @ 67% yellow
+%             K = 2:        50% red   @ 50% yellow
+%             K = 5:        80% red   @ 20% yellow
+%             K = 10:       90% red   @ 10% yellow
+%
+   K = abs(K);
+   if (K > 1.0)
+      fcol = 'ggk';  bcol = 'yyyr';
+      ratio = 1 - 1/K;
+   else
+      fcol = 'r';  bcol = 'yyyr';
+      ratio = 1 - K;
+   end
+end
+function Stop(o)                       % setup button down function
+   stop(o,0);                          % clear stop flag
+   cb = call(o,class(o),{@StopCb});
+   set(gcf,'WindowButtonDownFcn',cb);
+   
+   function o = StopCb(o)
+      fprintf('*** stop by user''s button press\n');
+      stop(o,1);                       % set stop flag
+      set(gcf,'WindowButtonDownFcn',[]);
+   end
+end
+    

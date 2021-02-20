@@ -1,6 +1,9 @@
-function flag = stop(o)
+function flag = stop(o,value)
 %
 % STOP   Retrieve stop flag.
+%
+%           flag = stop(o)             % retrieve stop flag
+%           stop(o,value)              % set stop flag to value
 %
 %    Stop flag is cleared by TIMER function
 %    and set by butpress, if butpress properly set to Stop()
@@ -17,8 +20,9 @@ function flag = stop(o)
 %
 %    See also: CORAZITO, TIMER, TERMINATE, WAIT
 %
-   flag = setting(o,{'control.stop',0});
-   if (isempty(flag))
-      stop = 0;
+   if (nargin == 1)
+      flag = setting(o,{'control.stop',0});
+   else
+      setting(o,'control.stop',value);
    end
 end
