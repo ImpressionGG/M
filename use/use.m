@@ -29,7 +29,7 @@ function use(tag,version)
 %
    if (nargin < 2)
       version.carabao = 'V1l';
-      version.corazon = 'V1h1';
+      version.corazon = 'V1h';
       version.corinth = 'V2a1';
       version.cordoba = 'V1c';
       version.rat = 'V1a';
@@ -39,7 +39,8 @@ function use(tag,version)
       
       version.bluco = 'V1a';
       version.train = 'V1a';
-      version.spm = 'V1e1';
+      version.spm = 'V1e';
+      version.minispm = 'V1e';
       
       version.pll = 'V1a';
       version.kalman = 'V1a';
@@ -137,6 +138,11 @@ function use(tag,version)
          use corazon
          addpath([mhome,'/swarovski/spm/',version.spm]);
          fprintf(['   using SPM toolbox ',version.spm,'\n']);            
+         
+      case 'minispm'
+         use corazon
+         addpath([mhome,'/swarovski/spm/',version.minispm]);
+         fprintf(['   using Mini SPM toolbox ',version.minispm,'\n']);            
          
       case 'train'
          use corazon
