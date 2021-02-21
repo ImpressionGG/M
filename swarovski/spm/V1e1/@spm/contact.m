@@ -101,18 +101,20 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
       % optionally calculate L0 transfer matrix as ss
       
    if (nargout >= 2)
-      L0 = CalcL0(o,A,B_1,B_3,C_3);
+      L0 = CalcL0(o,A,B_1,B_3,C_3,oscale(o));
       L0 = Reduce(L0);
    end 
+   
    if (nargout >= 3)
-      [K0,f0]=stable(o,L0);
+      [K0,f0,s0]=stable(o,L0);
       L0 = var(L0,'K0,f0',K0,f0);
    end
+   
    if (nargout >= 5)
       L180 = L0;
       L180.data.B = -L180.data.B;
       L180.data.D = -L180.data.D;
-      [K180,f180]=stable(o,L180);
+      [K180,f180,s180]=stable(o,L180);
       L0 = var(L0,'K180,f180',K180,f180);
    end
 end
@@ -155,7 +157,7 @@ function cdx = ContactIndices(o,N,idx)
       end
    end
 end
-function L0 = CalcL0(o,A,B_1,B_3,C_3)                                  
+function L0 = CalcL0(o,A,B_1,B_3,C_3,T0)                                  
       % system augmentation
 
    N0 = sqrtm(inv(C_3*A*B_3));
@@ -200,13 +202,12 @@ function L0 = CalcL0(o,A,B_1,B_3,C_3)
       fprintf('*** warning: high deviation of V0 = L0(0): %g\n',err);
    end
 
-   scale = oscale(o);
    digits = 0;
    brew = 'contact';
 
-   L0 = system(corasim,A0,B0,C0,D0,0,scale);
+   L0 = system(corasim,A0,B0,C0,D0,0,T0);
    L0 = var(L0,[]);                    % clear all variables
-   L0 = var(L0,'digits,V0,err,brew',digits,V0,err,brew);
+   L0 = var(L0,'digits,V0,err,brew,T0',digits,V0,err,brew,T0);
 end
 function V0 = CalcV0(o,a0,C3,B1,B3)                                    
 %
@@ -241,6 +242,7 @@ function V0 = CalcV0(o,a0,C3,B1,B3)
 end
 function L0 = Reduce(L0)                                               
    [A0,B0,C0,D0] = system(L0,'A,B,C,D');
+   scale = data(L0,'scale');
    V0 = var(L0,'V0');
    Ierr = norm(-(C0/A0)*B0+D0-V0)/norm(V0);     % initial gain error
    
@@ -333,11 +335,11 @@ function L0 = Reduce(L0)
    
       % store in cache segment
       
-   L0 = system(L0,A,B,C,D);
+   L0 = system(L0,A,B,C,D,0,scale);
 
       % provide some more variables
       
-   L0 = var(L0,'A0,B0,C0,D0,V0',A0,B0,C0,D0,V0);
+   L0 = var(L0,'A0,B0,C0,D0,V0,T0',A0,B0,C0,D0,V0,scale);
    L0 = var(L0,'observability',observability);   
    L0 = var(L0,'Ierr,Verr,Rerr,Serr,V0err',Ierr,Verr,Rerr,Serr,V0err);
 end

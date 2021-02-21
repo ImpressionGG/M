@@ -508,6 +508,7 @@ function o = AboutPkg(o)               % About Package
    w = pos(3);  k = 1.5;               % k: stretch factor
    pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
    set(gca,'position',pos);
+   set(gca,'ydir','reverse')
 end
 function o = Image(o)                  % Plot Image                    
    path = [get(o,'dir'),'/',get(o,'image')];

@@ -1086,5 +1086,17 @@ end
 % L0 = P/Q
 % T0 = L0/(1+L0)
 
-
+% idea: closed loop EV  (not so good)
+%
+% x`=Ax+Bu
+% y =Cx
+% u = -Ky
+%
+% x`=Ax-BKCx = (A-BKC)*x
+%
+% s = eig(A)
+% eig(kI+A) = k+s
+% eig(A-kI) = s-k
+% eig(A-I) = s-1
+% eig(A-F) = eig(F*(F\A-I)) 
 

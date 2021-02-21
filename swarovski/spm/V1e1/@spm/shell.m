@@ -147,6 +147,9 @@ function oo = Tools(o)                 % Tools Menu Items
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Brew Cache',{@BrewCache});
    ooo = mitem(oo,'Clear Cache',{@ClearCache});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Store Cache',{@StoreCache});
+   ooo = mitem(oo,'Recall Cache',{@RecallCache});
 end
 function oo = PackageInfo(o)           % Provide Package Info File     
    caption = 'Provide Package Info File (.pkg)';
@@ -324,7 +327,31 @@ function oo = ClearCache(o)            % Clear All Caches
    end
    message(o,'Caches of all objects have been cleared!');
 end
-function oo = Extras(o)                % Extras Menu Items             
+function oo = StoreCache(o)            % Store All Caches              
+   o = pull(o);
+   for (i=1:length(o.data))
+      oo = o.data{i};
+      bag = work(oo,'cache');
+      oo = set(oo,'cache',bag);
+      o.data{i} = oo;
+   end
+   push(o);
+   message(o,'Caches of all objects have been stored!');
+end
+function oo = RecallCache(o)           % Recall All Caches              
+   o = pull(o);
+   for (i=1:length(o.data))
+      oo = o.data{i};
+      bag = get(oo,'cache');
+      if ~isempty(bag)
+         oo = work(oo,'cache',bag);
+      end
+      o.data{i} = oo;
+   end
+   push(o);
+   message(o,'Caches of all objects have been recalled!');
+end
+function oo = Extras(o)                % Extras Menu Items
    setting(o,{'study.menu'},false);    % provide setting
    
    oo = mseek(o,{'Extras'});
@@ -370,7 +397,7 @@ function oo = View(o)                  % View Menu
    ooo = Nyquist(oo);                  % add Nyquist settings menu
    ooo = Rloc(oo);                     % add Root Locus menu
    ooo = Weight(oo);                   % add Weight diagram settings menu
-   ooo = Critical(oo);                 % add Critical settings menu
+   ooo = Stability(oo);                % add Stability settings menu
    
    ooo = mitem(o,'-');
    ooo = Miscellaneous(oo);            % add Miscellaneous menu        
@@ -594,12 +621,25 @@ function oo = Weight(o)                % Weight Diagram Settings Menu
    ooo = mitem(oo,'Small',{},'weight.small');
    choice(ooo,[1e-1 1e-2 1e-3 1e-4 1e-5 1e-6],{});
 end
-function oo = Critical(o)              % Critical Frequency Menu       
+function oo = Stability(o)             % Stability Menu                
+   setting(o,{'stability.gain.points'},200);% points for diagram
+   setting(o,{'stability.gain.low'},1e-3);
+   setting(o,{'stability.gain.high'},1e3);
+
    setting(o,{'view.critical'},1);
+
+   oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Lower Gain',{},'stability.gain.low');
+         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
+   ooo = mitem(oo,'Upper Gain',{},'stability.gain.high');
+         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+   ooo = mitem(oo,'Points',{},'stability.gain.points');
+   choice(ooo,[25 50 100 200 500 1000 2000],{});  
    
-   oo = mitem(o,'Critical');
-   ooo = mitem(oo,'Show',{},'view.critical');
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Show Critical',{},'view.critical');
    choice(ooo,{{'Off',0},{'On',1}},{});
+
 end
 function oo = Miscellaneous(o)         % Miscellaneous Menu            
    setting(o,{'view.precision'},1);    % current settings
@@ -778,33 +818,22 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Stability(o)             % Stability Menu                
+function oo = Critical(o)              % Critical Menu                
    setting(o,{'stability.algo'},'ss'); % stability algorithm
-   setting(o,{'stability.points'},200);% points for diagram
    setting(o,{'stability.search'},50); % number of search points
    setting(o,{'stability.iter'},15);   % iterations
-   setting(o,{'stability.gain.low'},1e-3);
-   setting(o,{'stability.gain.high'},1e3);
 
-   oo = mitem(o,'Stability');
+   oo = mitem(o,'Critical');
    ooo = mitem(oo,'Algorithm',{},'stability.algo');
    choice(ooo,{{'Transfer function','trf'},{'State Space','ss'},...
                {'Mixed Type','mix'}},{});
-   
-   ooo = mitem(oo,'Points',{},'stability.points');
-   choice(ooo,[25 50 100 200 500 1000 2000],{});
    
    ooo = mitem(oo,'Initial Searches',{},'stability.search');
    choice(ooo,[25 50 100 200 500],{});
 
    ooo = mitem(oo,'Iterations',{},'stability.iter');
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
-   ooo = mitem(oo,'-');
- 
-   ooo = mitem(oo,'Lower Gain',{},'stability.gain.low');
-         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
-   ooo = mitem(oo,'Upper Gain',{},'stability.gain.high');
-         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+   ooo = mitem(oo,'-');  
 end
 function oo = Spectrum(o)              % Spectrum Menu                 
    setting(o,{'spectrum.omega.low'},1e2);
@@ -891,7 +920,7 @@ function oo = Contact(o)               % Add Contact Menu Items
    if type(oo,{'spm'})
       N = round(size(oo.data.B,2)/3);
    else
-      N = 7;
+      N = 5;
    end
    
    if (N == 5)
@@ -928,14 +957,15 @@ function oo = Coordinates(o)           % Add Coordinates Menu Items
    ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
    choice(ooo,[-1:0.2:1],{@CacheReset});
 end
-function oo = Internal(o)              % Internal Menu                 
+
+function oo = Internal(o)              % Internal Menu
    oo = mitem(o,'Internal');
    ooo = Trf(oo);                      % add Transfer Function menu
    ooo = Fqr(oo);                      % add Frequency Response menu
    ooo = Precision(oo);                % add Precision Menu
    ooo = Normalize(oo);                % add Normalize menu   
    ooo = Cancel(oo);                   % add Cancel sub menu
-   ooo = Stability(oo);                % add Stability sub menu
+   ooo = Critical(oo);                 % add Critical sub menu
    ooo = Spectrum(oo);                 % add Spectrum sub menu
    ooo = Filter(oo);                   % add Filter sub menu
 end

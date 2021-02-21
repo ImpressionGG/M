@@ -1,15 +1,15 @@
-function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
+function [K,f,s] = stable(o,varargin)  % Critical Stability Gain/Frequency
 %
 % STABLE   Calculate critical gain & frequency for closed loop stability
 %
 %             Lmu = cook(o,'Lmu');
-%             [K,f] = stable(o,Lmu);   % calc critical K value & omega
+%             [K,f,s] = stable(o,Lmu); % calc critical K, omega & EV
 %
 %             stable(o,Lmu)            % plot K range for stability
 %             stable(o)                % cook L0 from object 
 %
 %             sys0 = system(corasim,A0,B0,C0,D0)
-%             [K,f] = stable(o,sys0,mu)
+%             [K,f,s] = stable(o,sys0,mu)
 %             stable(o,sys0,mu)
 %
 %          Options:
@@ -61,7 +61,7 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
       if isequal(algo,'trf')
          [K0,f,Ki] = Stable(oo,Lmu);
       else
-         [K0,f,Ki] = Stability(oo,Sys0,mu);
+         [K0,f,Ki,s] = Stability(oo,Sys0,mu);
       end
         
       if isinf(K0) || (K0 == 0)
@@ -77,7 +77,7 @@ function [K,f] = stable(o,varargin)    % Critical Stability Gain/Frequency
                oo = opt(oo,'gain.low',K0);
                oo = opt(oo,'gain.high',Ki);
                oo = opt(oo,'search',5);
-               [K0,f,Ki] = Stability(oo,Sys0,mu);
+               [K0,f,Ki,s] = Stability(oo,Sys0,mu);
             end
             K = K0;
          end
@@ -233,9 +233,9 @@ function [K,f,Ki] = Stable(o,L0)
       end
    end
 end
-function [K,f,Ki] = Stability(o,sys,mu)
+function [K,f,Ki,s] = Stability(o,sys,mu)
    [A0,B0,C0,D0] = system(sys);
-   V0 = data(sys,'V0');                % for debug only
+   V0 = var(sys,'V0');                % for debug only
 
    if (nargout > 0)
       points = opt(o,{'search',100});
@@ -287,6 +287,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       idx = max(1,idx(1)-1);
       K = gain(idx);
       im = im(idx);
+      s = re(idx) + 1i*im;             % critical eigenvalue
       
       for (j=idx:length(gain))
          if (real(re(j)) >= 0)
@@ -296,6 +297,7 @@ function [K,f,Ki] = Stability(o,sys,mu)
       end
    else
       im = 0;
+      s = nan;                         % critical eigenvalue
    end
       
      % calc critical frequency om0
