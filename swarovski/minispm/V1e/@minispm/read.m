@@ -4,7 +4,7 @@ function oo = read(o,varargin)         % Read SPM Object From File
 %
 %             oo = read(o,'ReadLogLog',path) % .log data read driver
 %
-%          See also: SPM, IMPORT
+%          See also: MINISPM, IMPORT
 %
    [gamma,oo] = manage(o,varargin,@ReadLogLog,@ReadSpmSpm);
    oo = gamma(oo);
@@ -18,7 +18,7 @@ function oo = ReadLogLog(o)            % Read Driver for .log Data
    path = arg(o,1);
    [x,y,par] = Read(path);
 
-   oo = spm('log');
+   oo = minispm('log');
    oo.data.x = x;
    oo.data.y = y;
    oo.par = par;

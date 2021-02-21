@@ -141,7 +141,7 @@ function use(tag,version)
          
       case 'minispm'
          use corazon
-         addpath([mhome,'/swarovski/spm/',version.minispm]);
+         addpath([mhome,'/swarovski/minispm/',version.minispm]);
          fprintf(['   using Mini SPM toolbox ',version.minispm,'\n']);            
          
       case 'train'

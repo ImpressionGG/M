@@ -1,6 +1,6 @@
-classdef spm < corazon                 % Spm Class Definition
+classdef minispm < corazon             % MINISPM Class Definition
    methods                             % public methods
-      function o = spm(arg)            % spm constructor
+      function o = minispm(arg)        % minispm constructor
          if (nargin == 0)
             arg = 'shell';             % 'shell' type by default
          end

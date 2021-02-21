@@ -4,7 +4,7 @@ function oo = write(o,varargin)        % Write SPM Object To File
 %
 %             oo = write(o,'WriteStuffTxt',path)
 %
-%          See also: SPM, EXPORT
+%          See also: MINISPM, EXPORT
 %
    [gamma,oo] = manage(o,varargin,@WriteLogLog);
    oo = gamma(oo);

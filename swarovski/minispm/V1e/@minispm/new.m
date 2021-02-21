@@ -4,18 +4,18 @@ function oo = new(o,varargin)          % SPM New Method
 %
 %           oo = new(o,'Menu')         % menu setup
 %
-%           o = new(spm,'Mode3A')      % 3-mode sample, version A
-%           o = new(spm,'Mode3B')      % 3-mode sample, version B
-%           o = new(spm,'Mode3C')      % 3-mode sample, version C
+%           o = new(minispm,'Mode3A')      % 3-mode sample, version A
+%           o = new(minispm,'Mode3B')      % 3-mode sample, version B
+%           o = new(minispm,'Mode3C')      % 3-mode sample, version C
 %
-%           o = new(spm,'Academic1')   % academic sample 1
-%           o = new(spm,'Academic2')   % academic sample 2
+%           o = new(minispm,'Academic1')   % academic sample 1
+%           o = new(minispm,'Academic2')   % academic sample 2
 %
-%           o = new(spm,'Schleif75')   % Schleifsaal Hypothese 75°
+%           o = new(minispm,'Schleif75')   % Schleifsaal Hypothese 75°
 %
 %           o = new(sho,'Motion')      % motion object
 %
-%       See also: SPM, PLOT, ANALYSIS, STUDY
+%       See also: MINISPM, PLOT, ANALYSIS
 %
    [gamma,oo] = manage(o,varargin,@Mode2,@Mode3A,@Mode3B,@Mode3C,...
                        @Academic1,@Academic2,@Schleif,@Order,...
@@ -131,7 +131,7 @@ function oo = Mode2(o)                 % 2-Mode Sample
    C = [M' 0*M'];
    D = 0*C*B;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = '2-Mode Sample';
    oo.par.comment = {'omega = [3000 1/s, 7000 1/s]','zeta = [0.01  0.01]'};
     
@@ -158,7 +158,7 @@ function oo = Mode3A(o)                % 3-Mode Sample, Version A
    C = [M' 0*M'];
    D = 0*C*B;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = '3-Mode Sample A';
     
       % finally set data
@@ -188,7 +188,7 @@ function oo = Mode3B(o)                % 3-Mode Sample, Version B
    C = [M' 0*M'];
    D = 0*C*B;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = '3-Mode Sample B';
     
       % finally set data
@@ -220,7 +220,7 @@ function oo = Mode3C(o)                % 3-Mode Sample, Version C
    C = [M' 0*M'];
    D = 0*C*B;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = '3-Mode Sample C';
     
       % finally set data
@@ -257,7 +257,7 @@ function oo = Academic1(o)             % Academic Sample #1
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = 'Academic Sample #1';
    oo.par.comment = {'omega = [3 7 15],  zeta = 0.01',...
                      'Set simulation time: 10s'};
@@ -296,7 +296,7 @@ function oo = Academic2(o)             % Academic Sample #2
    C = [M' 0*M];
    D = 0*M;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = 'Academic Sample #2';
    oo.par.comment = {sprintf('omega = [%g %g %g],  zeta = %g',...
                               omega(1),omega(2),omega(3),zeta(1)),...
@@ -347,7 +347,7 @@ function oo = Order(o)                 % HIgh Order Sample
    C = [M' 0*M'];
    D = 0*C*B;
 
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = sprintf('%g-Mode Sample',n);
     
       % finally set data
@@ -400,7 +400,7 @@ function oo = Schleif(o)               % Schleifsaal Hypothese
    C = [I/sqrt(m) Z];
    D = Z;
    
-   oo = spm('spm');                    % new spm typed object
+   oo = minispm('spm');                    % new minispm typed object
    oo.par.title = sprintf('Schleifsaal Hypothese Pivot %g° @ Coupling %g',...
                           theta,coupling);
 

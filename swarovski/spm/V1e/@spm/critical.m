@@ -229,7 +229,7 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    plot(o,[K0 K0],get(gca,'ylim'),o.iif(K0<=1,'r1-.','g1-.'));
    plot(o,[1 1],get(gca,'ylim'),'K1-.');
    
-   title(sprintf('Worst Damping (K0: %g @ f0: %g)',K0,f0));
+   title(sprintf('Worst Damping (K0: %g @ f0: %g Hz)',K0,f0));
    xlabel('closed loop gain K');
    ylabel('worst damping [%]');
 end
