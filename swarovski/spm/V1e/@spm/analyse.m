@@ -138,6 +138,7 @@ function oo = Setup(o)                 % Setup Menu
    oo = mitem(o,'Setup');
    ooo = mitem(oo,'Basic Study',{@WithCuo,'SetupAnalysis','basic'});
    ooo = mitem(oo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry'});
+   ooo = mitem(oo,'Sample Study',{@WithCuo,'SetupAnalysis','sample'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
@@ -1605,7 +1606,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       PlotConfig(o,x(j),cfg,id(j),o.iif(flip,1714,3121));
    end
    
-   stop(o,'Buttonpress');              % setup stop button down function
+   stop(o,'Enable');                   % enable stop button down function
    for (ii=1:length(list))
       oi = list{ii};
       vi = get(oi,variation);
@@ -1649,6 +1650,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
          break;
       end
    end
+   stop(o,'Disable');                  % enable stop button down function
    
    if (flip)
       subplot(o,1311);
@@ -2018,6 +2020,8 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (no == 5 && isequal(mode,'symmetry'))
          id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
               [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
+      elseif (no == 5 && isequal(mode,'sample'))
+         id = [31 [7 [14] [1 2 []  4  [] 8 16] [14] 28] 31];
       else
          id = 1:(2^no-1);
       end

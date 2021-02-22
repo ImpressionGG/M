@@ -1,0 +1,10 @@
+title:         Z_LEAD=200mm                                     
+modes:         100                                              
+in-/outputs:   15 / 15                                          
+z leading:     200 mm                                           
+z trailing:    0 mm                                             
+description:   initial state                                    
+                                                                
+                                                                
+                                                                
+                                                                

@@ -1,0 +1,11 @@
+title:         initial state                                    
+article:       5x 70mm-sphere                                   
+adapter:       default                                          
+damping:       gray cast iron                                   
+modes:         100                                              
+in-/outputs:   15 / 15                                          
+description:   initial state                                    
+phi:           [45 57 90 123 135]
+                                                                
+                                                                
+                                                                
