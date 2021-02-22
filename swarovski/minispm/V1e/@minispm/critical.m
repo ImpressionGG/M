@@ -13,7 +13,7 @@ function [K0,f0] = critical(o)
 %
 %             Copyright(c): Bluenetics 2021
 %
-%             See also: SPM, CONTACT
+%             See also: MINISPM, CONTACT
 %
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % refresh multi segment
@@ -41,7 +41,9 @@ end
 %==========================================================================
 
 function Plot(o)
-   message(o,'Calculation of Critical Quantities');
+   subplot(o,312);
+   message(o,'Calculation of Critical Quantities',...
+             {'see figure bar for progress...'});
    idle(o);
    
       % we need a system according to contact specification, time
@@ -59,7 +61,7 @@ function Plot(o)
    if (stop(o))
       return
    end
-   
+      
    olo = opt(o,{'omega.low',100});
    ohi = opt(o,{'omega.high',1e5});
    points = opt(o,{'omega.points',2000});
@@ -117,6 +119,7 @@ function Plot(o)
    
    function Plot(o,sub1,sub2)
       subplot(o,sub1,'semilogx');
+      set(gca,'visible','on');
       
          % magnitude plot
          
@@ -135,6 +138,8 @@ function Plot(o)
          % phase plot
          
       subplot(o,sub2,'semilogx');
+      set(gca,'visible','on');
+
       plot(o,om,0*f-180,'K');
       plot(o,om,phi*180/pi,'kw');
       plot(o,om,phi(k0,:)*180/pi,'yyyr2');
@@ -156,11 +161,13 @@ function Plot(o)
       txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
              M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
       xlabel(txt);
+      subplot(o);
       
       subplot(o,sub2);
       title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+      subplot(o);
    end
 end
 

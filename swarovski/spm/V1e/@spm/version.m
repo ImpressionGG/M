@@ -240,6 +240,7 @@ function vers = version(o,arg)         % SPM Class Version
 % =====================
 %
 % - pimp & bug fixes SPM V1E
+% - pimping
 %
 % Known bugs & wishlist
 % =========================

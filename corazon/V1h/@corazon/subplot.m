@@ -134,7 +134,7 @@ function [m,n,k,sub] = Index(sub)
    
    if isempty(j)
       i = ceil(k/n);
-      j = k -(i-1)*n
+      j = k -(i-1)*n;
    end
    sub = [m,n,i,j];
 end

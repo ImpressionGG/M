@@ -45,6 +45,7 @@ function oo = Menu(o)                  % Setup Analyse Menu
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'Stability');
+return;   
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
