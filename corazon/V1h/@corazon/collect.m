@@ -401,11 +401,15 @@ function list = Import(o,package,folder,table) % Import Files of Table
       for (i=1:length(packages))
          oi = packages{i};
          oid = id(oi);
-         oo = select(o,oid);
+         oo = tree(o,oid);             % how it should be calculated
+         %oo = select(o,oid);          % legacy way of calculating
          
          if isempty(oo)
+            %assert(isempty(oo_o));     % must also be empty if oo is empty
             list{end+1} = oi;
             continue
+         else
+            %assert(isequal(id(oo),id(oo_o)));
          end
          
             % otherwise package already existing

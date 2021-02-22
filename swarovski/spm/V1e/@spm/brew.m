@@ -337,21 +337,8 @@ function oo = Transform(o)             % coordinate transformation
    %                 B_123 = B_xyz * inv(T)
    %                 C_123 = T * C_xyz
    %  
-      phi_o = get(o,{'phi',0});        % object phi [°]
-      
-      if (length(phi_o) == 1)
-         phi_o = phi_o * ones(1,N);
-      end
-
-         % only center phi correction is considered if delta phi
-         % correction is not enabled
-         
-      Cphi = opt(o,{'process.Cphi',0});
-      dphi_o = phi_o - mean(phi_o);
-      phi_o = mean(phi_o)*ones(1,N) + Cphi*dphi_o; 
-      
-      phi_p = opt(o,{'process.phi',0});     % process phi [°]
-      rad = (phi_o(k)+phi_p) *pi/180;       % total phi [rad]
+      phi = getphi(o);
+      rad = phi(k) * pi/180;           % total phi [rad]
          
       T = [
              cos(rad) sin(rad)  0
@@ -359,7 +346,7 @@ function oo = Transform(o)             % coordinate transformation
                 0        0      1
           ];
        
-      if (rem((phi_o+phi_p),90) == 0)
+      if (rem(phi(k),90) == 0)
          T = round(T);
       end
    end
@@ -434,7 +421,7 @@ function oo = System(o)                % System Matrices
    C1 = C(idx0,i1);  C2 = C(idx0,i2);
   
    if (norm(B2-C1') ~= 0)
-      fprintf('*** warning: B2 differs from C1''!\n');
+      %fprintf('*** warning: B2 differs from C1''!\n');
    end
    
    a0 = -diag(A21);  a1 = -diag(A22);

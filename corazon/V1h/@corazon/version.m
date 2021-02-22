@@ -533,6 +533,27 @@ function VersionV1G
 % - bug fix in corasim/vpa: eliminate inf in zero poles after double conversion
 % - pimp corazito/plot and corazon/subplot to support hold & semilog/lolog
 % - pimp corazon/stop method to set stop flag
+% - in corazon/collect use corazon/tree instead of corazon/select
+
+%
+% Known Bugs / Wishlist
+% - none so far
+%
+end
+
+function VersionV1H                                                    
+%
+% Release Notes Corazon/V1H
+% =========================
+%
+% - basis for MINISPM V1E toolbox
+%
+%
+% Change Log V1h:
+%
+% - starting corazon V1h
+% - obsoletion of corazon/select call in corazon/collect
+
 %
 % Known Bugs / Wishlist
 % - none so far

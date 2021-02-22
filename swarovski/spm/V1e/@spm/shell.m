@@ -1,3 +1,5 @@
+
+
 function oo = shell(o,varargin)        % SPM Shell                     
    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
                                  @Plot,@PlotCb,@Analysis,@Study);
@@ -948,15 +950,16 @@ function oo = Contact(o)               % Add Contact Menu Items
 end
 function oo = Coordinates(o)           % Add Coordinates Menu Items    
    setting(o,{'process.phi'},0);
-   setting(o,{'process.Cphi'},0);
+   setting(o,{'process.Cphi'},1);
     
    oo = mitem(o,'Coordinates');
    ooo = mitem(oo,'Phi Rotation',{},'process.phi');
    choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
    
    ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
-   choice(ooo,[-1:0.2:1],{@CacheReset});
+   choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
 end
+
 
 function oo = Internal(o)              % Internal Menu
    oo = mitem(o,'Internal');

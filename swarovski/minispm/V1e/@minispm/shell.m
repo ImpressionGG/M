@@ -818,7 +818,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Critical(o)              % Critical Menu                
+function oo = Critical(o)              % Critical Menu                 
    setting(o,{'stability.algo'},'ss'); % stability algorithm
    setting(o,{'stability.search'},50); % number of search points
    setting(o,{'stability.iter'},15);   % iterations
@@ -948,14 +948,14 @@ function oo = Contact(o)               % Add Contact Menu Items
 end
 function oo = Coordinates(o)           % Add Coordinates Menu Items    
    setting(o,{'process.phi'},0);
-   setting(o,{'process.Cphi'},0);
+   setting(o,{'process.Cphi'},1);
     
    oo = mitem(o,'Coordinates');
    ooo = mitem(oo,'Phi Rotation',{},'process.phi');
    choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
    
    ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
-   choice(ooo,[-1:0.2:1],{@CacheReset});
+   choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
 end
 
 function oo = Internal(o)              % Internal Menu
