@@ -114,6 +114,10 @@ end
 
 function [m,n,k,sub] = Index(sub)
    j = [];
+   if ischar(sub)
+      sub = double(sub-'0');
+   end
+   
    if iscell(sub)
       m = sub{1};  n = sub{2};  i = sub{3}; 
       if (length(sub) >= 4)

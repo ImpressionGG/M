@@ -2435,7 +2435,7 @@ function o = StabilityMargin(o)        % Plot Stability Margin
    end
    
    progress(o);                        % progress completed
-   heading(o);                         % add heading
+   Heading(o);                         % add heading
    
    function x = Axes(o,sub,mu)         % Plot Axes                     
       subplot(o,sub);
@@ -2525,7 +2525,7 @@ function o = StabilityRange(o)         % Plot Critical Mu
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
    
-   stop(o,'Buttonpress');
+   stop(o,'Enable');
    for (i=1:n)                         % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,i/n*100);
@@ -2546,9 +2546,10 @@ function o = StabilityRange(o)         % Plot Critical Mu
          break;
       end
    end
+   stop(o,'Enable');
    
    progress(o);                        % progress completed
-   heading(o);                         % add heading
+   Heading(o);                         % add heading
    
    function PlotMu(xi,mu,sub)
       subplot(o,sub);
@@ -2750,7 +2751,7 @@ function Legend(o,sub,objects)         % Plot Legend
    hdl = legend(list);
    set(hdl,'color','w');
 end
-function txt = Contact(o)
+function txt = Contact(o)              % Get Contact Description       
    contact = opt(o,'process.contact');
    if isempty(contact)
       txt = '';
@@ -2773,8 +2774,8 @@ function txt = Contact(o)
       end
       txt = [txt,']'];
    end
-end
-function Heading(o)  
+end  
+function Heading(o)                    % Add Heading                   
    txt = Contact(o);
    [~,phitxt] = getphi(o);
    msg = [get(o,{'title',''}),' (',txt,', ',phitxt,') - ',id(o)];

@@ -234,6 +234,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - color code for setup analysis diagrams
 % - spm/critical method
 % - release SPM V1E
+% - in spm/critcal handle infinite K0
 %
 %
 % Release Notes SPM/V1E

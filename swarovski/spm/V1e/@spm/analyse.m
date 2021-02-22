@@ -47,7 +47,7 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
-function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
+function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
    oo = Setup(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
@@ -472,7 +472,7 @@ function oo = StabilityOverview(o)     % Stability Overview
    end
    
    Verbose(o,Lmu);   
-   heading(o,head);
+   Heading(o,head);
 end
 function o = SimpleCalc(o)             % Simple Calculation            
    message(o,'Simple Calculation of Stability Margin',{'see console ...'});
@@ -510,7 +510,7 @@ function o = SimpleCalc(o)             % Simple Calculation
       evalin('base',cmd);
    end
 end
-function o = Critical(o)               % Calculate Critical Quantities       
+function o = Critical(o)               % Calculate Critical Quantities 
    if type(o,{'spm'})
       o = cache(o,o,'multi');
    else
@@ -1858,7 +1858,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
    
-   stop(o,'Buttonpress');           % setup button down function for stop
+   stop(o,'Enable');                % enable button down function for stop
    fmin = inf;                      % init
    for (j=1:N)                      % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
@@ -1897,6 +1897,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
          break;
       end
    end
+   stop(o,'Disable');                  % disable button down func. for stop
    
    progress(o);                        % progress completed
    Heading(o);                         % add heading
@@ -2285,10 +2286,14 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
 end
-function Heading(o)                                                    
+function Heading(o,head)  
    txt = Contact(o);
    [~,phitxt] = getphi(o);
-   msg = [get(o,{'title',''}),' (',txt,', ',phitxt,') - ',id(o)];
+   if (nargin == 1)
+      msg = [get(o,{'title',''}),' (',id(o),') ',txt,', ',phitxt];
+   else
+      msg = [head,' ',txt,', ',phitxt];
+   end
    heading(o,msg);
 end
 function txt = Contact(o)                                              

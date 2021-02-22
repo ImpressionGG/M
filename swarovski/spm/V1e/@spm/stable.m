@@ -17,6 +17,7 @@ function [K,f,s] = stable(o,varargin)  % Critical Stability Gain/Frequency
 %             contact       single (0) or multi (1) contact
 %             gain.low      lower gain (default 1e-3)
 %             gain.high     upper gain (default 1e3)
+%             gain.points   number of points to be plotted
 %
 %          Copyright(c): Bluenetics 2020
 %
@@ -99,7 +100,7 @@ function [K,f,Ki] = Stable(o,L0)
    if (nargout > 0)
       points = opt(o,{'search',100});
    else
-      points = opt(o,{'points',1000});
+      points = opt(o,{'gain.points',1000});
    end
    
    gain = logspace(log10(low),log10(high),points);
@@ -240,7 +241,7 @@ function [K,f,Ki,s] = Stability(o,sys,mu)
    if (nargout > 0)
       points = opt(o,{'search',100});
    else
-      points = opt(o,{'points',1000});
+      points = opt(o,{'gain.points',1000});
    end
 
    low = opt(o,{'gain.low',1e-3});

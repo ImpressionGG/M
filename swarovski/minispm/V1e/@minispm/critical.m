@@ -58,7 +58,13 @@ function Plot(o)
    multi = (m > 1);                 % multi contact
    
    [K0_,f0_] = PlotStability(oo,L0,3111);
-   if (stop(o))
+   if stop(o)
+      return
+   end
+   if isequal(K0_,inf)
+      set(gca,'ylim',[-5 5]);
+      subplot(o,312);
+      message(o,'No instabilities - skip frequency analysis!');
       return
    end
       
@@ -241,7 +247,9 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    end
    
    [K0,f0] = Stable(o,L0,K,s);
-   plot(o,[K0 K0],get(gca,'ylim'),o.iif(K0<=1,'r1-.','g1-.'));
+   if ~isequal(K0,inf)
+      plot(o,[K0 K0],get(gca,'ylim'),o.iif(K0<=1,'r1-.','g1-.'));
+   end
    plot(o,[1 1],get(gca,'ylim'),'K1-.');
    
    title(sprintf('Worst Damping (K0: %g @ f0: %g Hz)',K0,f0));
@@ -269,6 +277,11 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
    end
    
    Klim = Initial(o,L0,K,s);
+   if isequal(Klim,inf)
+      K0 = inf;  f0 = 0;
+      return
+   end
+   
    s = CritEig(o,L0,Klim);
    if (real(s(1))>= 0 || real(s(2)) < 0)
       error('bad initial data, cannot proceed');

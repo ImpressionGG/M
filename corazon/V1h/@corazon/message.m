@@ -109,6 +109,8 @@ function Message(o)                    % Display Screen Message
       cls(o,'off');                    % clear screen, axes off
    else
       subplot(o,sub);
+      delete(gca);
+      subplot(o,sub);
       set(gca,'visible','off');
    end
    

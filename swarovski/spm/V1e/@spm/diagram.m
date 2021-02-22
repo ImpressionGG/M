@@ -465,23 +465,23 @@ function o = Stability(o)              % Stability Analysis
 
    subplot(o,sub);
 
-   contact = opt(o,{'process.contact',0});
-   if (contact == 0)                   % single contact
-      G = inherit(G,o);                % inherit options
-      G = set(G,'name',sym);           % set name of transfer function
-
-      if isempty(opt(G,'color'))
-         G = opt(G,'color','r');
-      end
-
-      stable(o,G);
-   else                                % multi contact
+%   contact = opt(o,{'process.contact',0});
+%   if (contact == 0)                   % single contact
+%      G = inherit(G,o);                % inherit options
+%      G = set(G,'name',sym);           % set name of transfer function
+%
+%      if isempty(opt(G,'color'))
+%         G = opt(G,'color','r');
+%      end
+%
+%      stable(o,G);
+%   else                                % multi contact
       Sys0 = G;                        % Sys0 = cook(o,'Sys0');
       o = with(o,'stability');
       %mu = opt(o,{'process.mu',0.1});  % friction coefficient
       %stable(o,Sys0,mu);
       stable(o,Sys0,Mu);
-   end
+%  end
 
    subplot(o);                         % subplot done!
    
