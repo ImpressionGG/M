@@ -2525,6 +2525,7 @@ function o = StabilityRange(o)         % Plot Critical Mu
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
    
+   stop(o,'Buttonpress');
    for (i=1:n)                         % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,i/n*100);
@@ -2541,6 +2542,9 @@ function o = StabilityRange(o)         % Plot Critical Mu
       PlotMargin(x(i),1/Mu180(i),2222);
       
       idle(o);                         % show graphics
+      if stop(o)
+         break;
+      end
    end
    
    progress(o);                        % progress completed
@@ -2770,9 +2774,10 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-function Heading(o)                                                    
+function Heading(o)  
    txt = Contact(o);
    [~,phitxt] = getphi(o);
    msg = [get(o,{'title',''}),' (',txt,', ',phitxt,') - ',id(o)];
    heading(o,msg);
 end
+

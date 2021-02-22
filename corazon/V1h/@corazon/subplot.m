@@ -32,6 +32,11 @@ function hax = subplot(o,varargin)
 %
 %              subplot(o)                   % refresh dark mode & show grid
 %
+%           Retrieve subplot indizes (only working if subplot has been set
+%           using this method!)
+%
+%              sub = subplot(o)           
+%
 %           Copyright(c): Bluenetics 2020
 %
 %           See also: CORAZON, PLOT, CLS, GRID, DARK
@@ -42,10 +47,13 @@ function hax = subplot(o,varargin)
    
       % dispatch arg list
       
-   if (nargin == 1)
+   if (nargin == 1 && nargout == 0)
       dark(o,'Axes');                  % refresh dark mode of subplot
       grid(o);
       idle(o);                         % time to refresh graphics
+   elseif (nargin == 1 && nargout > 0)
+      hax = shelf(o,gca,'subplot');
+      return
    elseif (nargin == 2 && length(sub) == 1)
       sub = sprintf('%g',sub);
       m = double(sub(1)-'0');
@@ -55,13 +63,19 @@ function hax = subplot(o,varargin)
          j = double(sub(4)-'0');
          k = (i-1)*n + j;
          hax = subplot(m,n,k);
+         sub = sub(1:4);
       else
          hax = subplot(m,n,i);      
+         [m,n,k,sub] = Index([m,n,i]);
       end
+      
+      shelf(o,hax,'subplot',sub);
       dark(o,'Axes');
    elseif (nargin == 2 && length(sub) >= 3)
-      [m,n,k] = Index(sub);
+      [m,n,k sub] = Index(sub);
       hax = subplot(m,n,k);
+
+      shelf(o,hax,'subplot',sub);
       dark(o,'Axes');
    elseif (nargin == 3)
       subplot(o,varargin{1});
@@ -80,8 +94,12 @@ function hax = subplot(o,varargin)
             error('bad mode (arg3)');
       end
    elseif (nargin >= 4)
-      [m,n,k] = Index(varargin);
+      [m,n,k,sub] = Index(varargin);
       hax = subplot(m,n,k);
+      
+         % store subplot ID in axes' shelf
+         
+      shelf(o,hax,'subplot',sub);
       dark(o,'Axes');
    end
    
@@ -94,7 +112,7 @@ end
 % Helper
 %==========================================================================
 
-function [m,n,k] = Index(sub)
+function [m,n,k,sub] = Index(sub)
    j = [];
    if iscell(sub)
       m = sub{1};  n = sub{2};  i = sub{3}; 
@@ -113,4 +131,10 @@ function [m,n,k] = Index(sub)
    else
       k = i;
    end
+   
+   if isempty(j)
+      i = ceil(k/n);
+      j = k -(i-1)*n
+   end
+   sub = [m,n,i,j];
 end

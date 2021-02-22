@@ -760,15 +760,4 @@ function [fcol,bcol,ratio] = Colors(o,K)
    
    ratio = 1-ratio;
 end
-function Stop(o)                       % setup button down function    
-   stop(o,0);                          % clear stop flag
-   cb = call(o,class(o),{@StopCb});
-   set(gcf,'WindowButtonDownFcn',cb);
-   
-   function o = StopCb(o)
-      fprintf('*** stop by user''s button press\n');
-      stop(o,1);                       % set stop flag
-      set(gcf,'WindowButtonDownFcn',[]);
-   end
-end
     

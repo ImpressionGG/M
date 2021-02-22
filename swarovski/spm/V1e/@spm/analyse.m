@@ -1605,7 +1605,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       PlotConfig(o,x(j),cfg,id(j),o.iif(flip,1714,3121));
    end
    
-   Stop(o);                            % setup stop button down function
+   stop(o,'Buttonpress');              % setup stop button down function
    for (ii=1:length(list))
       oi = list{ii};
       vi = get(oi,variation);
@@ -1858,7 +1858,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
    
-   Stop(o);                         % setup button down function for stop
+   stop(o,'Buttonpress');           % setup button down function for stop
    fmin = inf;                      % init
    for (j=1:N)                      % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
@@ -2355,16 +2355,5 @@ function [fcol,bcol,ratio] = Colors(o,K)
    end
    
    ratio = 1-ratio;
-end
-function Stop(o)                       % setup button down function    
-   stop(o,0);                          % clear stop flag
-   cb = call(o,class(o),{@StopCb});
-   set(gcf,'WindowButtonDownFcn',cb);
-   
-   function o = StopCb(o)
-      fprintf('*** stop by user''s button press\n');
-      stop(o,1);                       % set stop flag
-      set(gcf,'WindowButtonDownFcn',[]);
-   end
 end
     

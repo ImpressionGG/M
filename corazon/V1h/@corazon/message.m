@@ -101,11 +101,15 @@ function Message(o)                    % Display Screen Message
    end
    figure(figure(o));
 
-   sub = opt(o,'subplot');
-   if isempty(sub)
+      % first look at subplot option, if option is empty then fetch
+      % current subplot settings with sub = subplot(o)
+      
+   sub = opt(o,{'subplot',subplot(o)});
+   if (isempty(sub) || isequal(sub,[1 1 1 1]))
       cls(o,'off');                    % clear screen, axes off
    else
       subplot(o,sub);
+      set(gca,'visible','off');
    end
    
    darkmode = dark(o);

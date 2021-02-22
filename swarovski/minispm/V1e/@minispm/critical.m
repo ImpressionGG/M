@@ -56,6 +56,9 @@ function Plot(o)
    multi = (m > 1);                 % multi contact
    
    [K0_,f0_] = PlotStability(oo,L0,3111);
+   if (stop(o))
+      return
+   end
    
    olo = opt(o,{'omega.low',100});
    ohi = opt(o,{'omega.high',1e5});
@@ -165,7 +168,7 @@ end
 % Helper
 %==========================================================================
 
-function [G31jw,G33jw,L0jw] = Fqr(A,B_1,B_3,C_3,jw) % Frequency Response
+function [G31jw,G33jw,L0jw] = Fqr(A,B_1,B_3,C_3,jw) % Frequ. Response  
    I=eye(size(A));                     % unit matrix
    Phi = inv(jw*I-A);
    G31jw = C_3*Phi*B_1;
@@ -193,7 +196,8 @@ function [G31jw,G33jw,L0jw] = Fqr(A,B_1,B_3,C_3,jw) % Frequency Response
    end
 end
 
-function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart               
+function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart          
+   K0 = nan;  f0 = nan;
    subplot(o,sub,'semilogx');
 
    low  = opt(o,{'gain.low',1e-3});
@@ -206,6 +210,7 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    [~,ridx] = sort(randn(1,length(K)));
    
    s = 0*K;
+   stop(o,'Enable');
    for (i=1:10)
       kdx = i:10:length(K);
       Ki = K(ridx(kdx));
@@ -223,6 +228,9 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
          plot(o,Ki(idx),-real(si(idx))*100,'r.');
       end
       idle(o);                         % give time for graphics refresh
+      if stop(o)
+         return;
+      end
    end
    
    [K0,f0] = Stable(o,L0,K,s);
@@ -321,7 +329,7 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
       end
    end
 end
-function s = CritEig(o,L0,K)           % Find critical Eigenvalues
+function s = CritEig(o,L0,K)           % Find critical Eigenvalues     
    [A0,B0,C0,D0] = data(L0,'A,B,C,D');
 
    kmax = length(K);

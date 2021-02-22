@@ -553,6 +553,10 @@ function VersionV1H
 %
 % - starting corazon V1h
 % - obsoletion of corazon/select call in corazon/collect
+%
+% - Release version CORAZON V1H
+% - store subplot indizes in axes shelf
+% - corazon/message to be displayed in subplot
 
 %
 % Known Bugs / Wishlist
