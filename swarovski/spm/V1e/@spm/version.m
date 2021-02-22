@@ -235,6 +235,12 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/critical method
 % - release SPM V1E
 %
+%
+% Release Notes SPM/V1E
+% =====================
+%
+% - pimp & bug fixes SPM V1E
+%
 % Known bugs & wishlist
 % =========================
 % - none so far

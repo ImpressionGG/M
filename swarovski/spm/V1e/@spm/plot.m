@@ -2770,3 +2770,9 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
+function Heading(o)                                                    
+   txt = Contact(o);
+   [~,phitxt] = getphi(o);
+   msg = [get(o,{'title',''}),' (',txt,', ',phitxt,') - ',id(o)];
+   heading(o,msg);
+end

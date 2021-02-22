@@ -379,7 +379,7 @@ function o = Damping(o)                % Closed Loop Damping
    end
    xlabel(sprintf('frequency [Hz] (K0: %g @ %g Hz)',K0/mu,f0));
    
-   heading(o);
+   Heading(o);
 end
 function o = OldDamping(o)             % Closed Loop Damping           
    o = with(o,'rloc');
@@ -531,6 +531,7 @@ function o = Critical(o)               % Calculate Critical Quantities
    o = opt(o,'omega.points',points/100);
    
    critical(o);
+   Heading(o);
    return
 
    message(o,'Calculation of Critical Quantities');
@@ -1662,7 +1663,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
    end
    
    progress(o);                        % progress completed
-   heading(o);                         % add heading
+   Heading(o);                         % add heading
    
    function idx = Config(N)            % Return Configuration Indices
       kmax = log(n+1)/log(2);
@@ -1898,7 +1899,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    end
    
    progress(o);                        % progress completed
-   heading(o);                         % add heading
+   Heading(o);                         % add heading
    
    function idx = Config(N)            % Return Configuration Indices
       kmax = log(n+1)/log(2);
@@ -2286,7 +2287,8 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
 end
 function Heading(o)                                                    
    txt = Contact(o);
-   msg = [get(o,{'title',''}),' (',txt,')'];
+   [~,phitxt] = getphi(o);
+   msg = [get(o,{'title',''}),' (',txt,', ',phitxt,') - ',id(o)];
    heading(o,msg);
 end
 function txt = Contact(o)                                              

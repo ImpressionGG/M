@@ -17,13 +17,18 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
 %
 %         See also: MINISPM
 %
-   if ~type(o,{'spm'})
-      error('SPM object expected');
-   end
-   
-   N = Pins(o);                     % number of pins
-      
+   phi_p = opt(o,{'process.phi',0});   % process phi [°]
    phi_o = get(o,{'phi',0});        % object phi [°]
+   Cphi = opt(o,{'process.Cphi',0});
+
+   if type(o,{'pkg'})
+      N = length(phi_o);
+   elseif type(o,{'spm'})
+      N = Pins(o);                     % number of pins
+   else
+      error('SPM or PKG object expected');
+   end
+         
       
    if (length(phi_o) == 1)
       phi_o = phi_o * ones(1,N);
@@ -32,17 +37,16 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
       % only center phi correction is considered if delta phi
       % correction is not enabled
 
-   Cphi = opt(o,{'process.Cphi',0});
    dphi_o = phi_o - mean(phi_o);
    phi_o = mean(phi_o)*ones(1,N) + Cphi*dphi_o; 
 
-   phi_p = opt(o,{'process.phi',0});     % process phi [°]
    phi = phi_o + phi_p;                  % total phi [°]
    
    txt = 'phi: ['; sep = '';
    for (i=1:length(phi))
-      txt = [txt,sep,sprintf('%g',phi(i))];
+      txt = [txt,sep,sprintf('%g',phi(i))]; sep = ',';
    end
+   txt = [txt,']'];
 end
 
 function npins = Pins(o)

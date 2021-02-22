@@ -627,6 +627,7 @@ function oo = Stability(o)             % Stability Menu
    setting(o,{'stability.gain.points'},200);% points for diagram
    setting(o,{'stability.gain.low'},1e-3);
    setting(o,{'stability.gain.high'},1e3);
+   setting(o,{'stability.chartstyle'},1);   % new stability chart style
 
    setting(o,{'view.critical'},1);
 
@@ -641,7 +642,8 @@ function oo = Stability(o)             % Stability Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Show Critical',{},'view.critical');
    choice(ooo,{{'Off',0},{'On',1}},{});
-
+   ooo = mitem(oo,'Chart Style',{},'stability.chartstyle');
+   choice(ooo,{{'Old',0},{'New',1}},{});
 end
 function oo = Miscellaneous(o)         % Miscellaneous Menu            
    setting(o,{'view.precision'},1);    % current settings

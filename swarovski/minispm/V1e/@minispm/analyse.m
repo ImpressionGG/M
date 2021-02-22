@@ -48,7 +48,7 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
-   oo = Setup(o);
+   oo = Stability(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu     
    oo = Stability(o);                  % add Stability menu
@@ -109,7 +109,9 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
 end
 function oo = Stability(o)             % Closed Loop Stability Menu    
    oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Critical Quantities',{@WithSpm,'Critical'});
+   if type(current(o),{'spm'})
+      ooo = mitem(oo,'Critical Quantities',{@WithSpm,'Critical'});
+   end
 return
 
    oo = mitem(o,'Stability');
@@ -334,6 +336,7 @@ function o = Critical(o)               % Calculate Critical Quantities
    o = opt(o,'omega.points',points/100);
    
    critical(o);
+   Heading(o);
    return
 
    message(o,'Calculation of Critical Quantities');
@@ -538,68 +541,6 @@ end
 % Sensitivity
 %==========================================================================
 
-function o = NumericCheck(o)           % Numerical Check               
-   if ~type(o,{'spm'})
-      plot(o,'About');
-      return;
-   end
-      
-   [L0,f0] = cook(o,'L0,f0');
-   
-   oscale = opt(L0,{'oscale',1});
-   om0 = 2*pi*f0;
-   Om0 = om0*oscale;                   % scaled omega
-   
-   Ljw = fqr(L0,Om0);
-   dB = 20*log10(abs(Ljw));
-   
-   o = opt(o,'critical',1);
-   diagram(o,'Bode','',L0,1111);
-   semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
-   
-   title(sprintf('om0: %g',om0));
-   
-   dB = Calculate(o);
-   heading(o);
-   
-   function dB = Calculate(o)
-   %
-   % Calculation to perform is:
-   %
-   %    L0(jw0) = G31(jw0)/G33(jw0)
-   %
-   % with psii(s) := s^2 + a1_i*s + a0_i*s
-   %
-   %    G31(s) = w31(1)/psi1(s) + w31(2)/psi2(s) + ... + w31(n)*psin(s)
-   %    G33(s) = w33(1)/psi1(s) + w33(2)/psi2(s) + ... + w33(n)*psin(s)
-   %
-   % let
-   %
-   %    phi(jw) := [1/psi1(jw), 1/psi2(jw), ..., 1/psin(jw)]'
-   %
-   % then
-   %
-   %                w31' * phi(jw0)
-   %    L0(jw0) = -------------------
-   %                w33' * phi(jw0)
-   %
-      [W,psi] = cook(o,'W,psi');       % weights and modal parameters
-      w31T = W{3,1};
-      w33T = W{3,3};
-      
-%     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
-      [Ljw,omega]=fqr(L0); 
-      Om0=omega*oscale;
-
-      phi = psion(L0,psi,omega);       % modal frequency response
-      L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
-      
-      dB = 20*log10(abs(L0jw0));
-      
-      hold on;
-      semilogx(omega,dB,'r'); 
-   end
-end
 
 %==========================================================================
 % Open Loop
@@ -750,10 +691,11 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
 end
 function Heading(o)                                                    
    txt = Contact(o);
-   msg = [get(o,{'title',''}),' (',txt,')'];
+   [~,phitxt] = getphi(o);
+   msg = [get(o,{'title',''}),' (',txt,', ',phitxt,') - ',id(o)];
    heading(o,msg);
 end
-function txt = Contact(o)                                              
+function txt = Contact(o)
    contact = opt(o,'process.contact');
    if isempty(contact)
       txt = '';
