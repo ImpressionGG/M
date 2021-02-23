@@ -73,20 +73,29 @@ function Plot(o)
    points = opt(o,{'omega.points',2000});
 
    om = logspace(log10(olo),log10(ohi),points);
+   Om = om*T0;                      % time normalized omega
    f = om/2/pi;                     % frequency range
-   jw = sqrt(-1)*2*pi*f * T0;       % T0: time scaling constant
    
-   L0jw = zeros(m,length(jw));  G31jw = L0jw;  G33jw = L0jw; 
+   L0jw = zeros(m,length(om));  G31jw = L0jw;  G33jw = L0jw; 
 
       % calculate G31(jw), G33(jw) and L0(jw)
 
-   kmax = length(jw);
+   i123 = (1:m)';
+   kmax = length(om);
+   
    for(k=1:kmax)
       if (rem(k-1,50)==0)
          progress(o,'frequency response calculation',k/kmax*100);
       end
       
-      [G31jw(:,k),G33jw(:,k),L0jw(:,k)] = Fqr(A,B_1,B_3,C_3,jw(k));
+      [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,A,B_1,B_3,C_3,Om(k));
+      
+         % re-arrange
+         
+      if (k > 1)
+         [~,idx] = TailSort(L0jw(:,k-1:k),om(k));
+         L0jw(:,k) = L0jw(idx,k);
+      end
    end
    progress(o);
    
@@ -97,7 +106,7 @@ function Plot(o)
 
       % calculate critical frequency response
       
-   [G31jw0,G33jw0,L0jw0] = Fqr(A,B_1,B_3,C_3,1i*2*pi*f0*T0);
+   [L0jw0,G31jw0,G33jw0] = Lambda(o,A,B_1,B_3,C_3,2*pi*f0*T0);
    phi0 = mod(angle(L0jw0),2*pi) - 2*pi;
    
       % search characteristic frequency response with best matching
@@ -178,36 +187,132 @@ function Plot(o)
 end
 
 %==========================================================================
-% Helper
+% Frequency Response
 %==========================================================================
 
-function [G31jw,G33jw,L0jw] = Fqr(A,B_1,B_3,C_3,jw) % Frequ. Response  
-   I=eye(size(A));                     % unit matrix
-   Phi = inv(jw*I-A);
-   G31jw = C_3*Phi*B_1;
-   G33jw = C_3*Phi*B_3;
-   L0jw = G33jw\G31jw;
+function [L0jw,G31jw,G33jw] = Lambda(o,A,B_1,B_3,C_3,om) % Lambda FQR's  
+   n = length(om);
+   for (k=1:n)
+      jw = 1i*om(k);
+      I=eye(size(A));                     % unit matrix
+      Phi = inv(jw*I-A);
+      G31jw = C_3*Phi*B_1;
+      G33jw = C_3*Phi*B_3;
+      L0jw = G33jw\G31jw;
 
-      % in multi contact case replace:
-      % - G31jw by 'largest' eigenvalue of G31jw
-      % - G33jw by 'smallest' eigenvalue of G33jw
-      % - L0jw  by 'largest' eigenvalue  of L0jw
-      
-   m = length(L0jw);                        % number of contacts
-   if (m > 1)                               % multi contact
-      s31 = eig(G31jw);                     % eigenvalues (EV) of G31(jwk)
-      [~,idx] = sort(abs(s31),'descend');   % get sorting indices
-      G31jw = s31(idx);                     % pick 'largest' eigenvalues
+         % in multi contact case replace:
+         % - G31jw by 'largest' eigenvalue of G31jw
+         % - G33jw by 'smallest' eigenvalue of G33jw
+         % - L0jw  by 'largest' eigenvalue  of L0jw
 
-      s33 = eig(G33jw);                     % eigenvalues (EV) of G33(jwk)
-      [~,idx] = sort(abs(s33),'ascend');    % get sorting indices
-      G33jw = s33(idx);                     % pick 'smallest' eigenvalues
+      m = length(L0jw);                        % number of contacts
+      if (m > 1)                               % multi contact
+         s31 = eig(G31jw);                     % eigenvalues (EV) of G31(jwk)
+         [~,idx] = sort(abs(s31),'descend');   % get sorting indices
+         G31jw = s31(idx);                     % pick 'largest' eigenvalues
 
-      s0 = eig(L0jw);                       % eigenvalues of L0(jwk) 
-      [~ ,idx] = sort(abs(s0),'descend');   % sort EV's by magnitude
-      L0jw = s0(idx);                       % pick 'largest' eigenvalues
+         s33 = eig(G33jw);                     % eigenvalues (EV) of G33(jwk)
+         [~,idx] = sort(abs(s33),'ascend');    % get sorting indices
+         G33jw = s33(idx);                     % pick 'smallest' eigenvalues
+
+         s0 = eig(L0jw);                       % eigenvalues of L0(jwk) 
+         [~ ,idx] = sort(abs(s0),'descend');   % sort EV's by magnitude
+         L0jw = s0(idx);                       % pick 'largest' eigenvalues
+      end
+   end
+   
+   if (n > 1)
+      L0jw = Rearrange(L0jw);
    end
 end
+function L = Rearrange(L)              % Rearrange FQR (obsolete)      
+%
+% REARRANGE   Rearrange characteristic frequency responses in order to
+%             obtain smooth graphs.
+%
+   [m,n] = size(L);
+   if (n <= 1)
+      return                           % nothing to re-arrange
+   end
+   
+   one = ones(m,1);
+   void = one*inf;
+   
+   for (k=2:n)
+      x = L(:,k-1);  y = L(:,k);
+      M = abs(y*one' - one*x.');       % magnitude change matrix
+
+      px = angle(x);  py = angle(y);
+      P = py*one' - one*px.';          % phase difference matrix
+      P = abs(mod(P+pi,2*pi) - pi);    % phase change matrix, maps to [0,pi]
+
+      % D matrix (deviations) is be a mix of magnitude changes M and
+      % phase changes P
+      
+      D = M/norm(M) + P/norm(P);       % mix them together
+      
+      idx = void;
+      for (l=1:m)
+         row = min(D);
+         j = min(find(row==min(row))); % target index
+         col = D(:,j);
+         i = min(find(col==min(col))); % source index
+         
+            % note: i-th element moves to j-th position
+            
+         idx(j) = i;                   % ith index equals j
+         D(i,:) = void';               % ith row out of game
+         D(:,j) = void;                % jth column out of game
+         
+       end
+       L(:,k) = L(idx,k);
+   end
+end
+function [L,idx] = TailSort(L,om)      % Sort Tail of FQR              
+%
+% TAILSORT    Rearrange characteristic frequency responses in order to
+%             obtain smooth graphs.
+%
+   [m,n] = size(L);
+   if (n <= 1)
+      idx = (1:m)';
+      return                        % nothing to sort
+   end
+   
+   one = ones(m,1);
+   void = one*inf;
+   
+   x = L(:,end-1);  y = L(:,end);
+   M = abs(y*one' - one*x.');       % magnitude change matrix
+   
+   px = angle(x);  py = angle(y);
+   P = py*one' - one*px.';          % phase difference matrix
+   P = abs(mod(P+pi,2*pi) - pi);    % phase change matrix, maps to [0,pi]
+   
+      % D matrix (deviations) is be a mix of magnitude changes M and
+      % phase changes P
+      
+   D = M/norm(M) + P/norm(P);       % mix them together
+   
+   idx = void;
+   for (l=1:m)
+      row = min(D);
+      j = min(find(row==min(row))); % target index
+      col = D(:,j);
+      i = min(find(col==min(col))); % source index
+
+         % note: i-th element moves to j-th position
+
+      idx(j) = i;                   % ith index equals j
+      D(i,:) = void';               % ith row out of game
+      D(:,j) = void;                % jth column out of game
+    end
+    L(:,end) = L(idx,end);
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
 
 function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart          
    K0 = nan;  f0 = nan;
@@ -224,8 +329,9 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    
    s = 0*K;
    stop(o,'Enable');
-   for (i=1:10)
-      kdx = i:10:length(K);
+   steps = 10;
+   for (i=1:steps)
+      kdx = i:steps:length(K);
       Ki = K(ridx(kdx));
       si = CritEig(o,L0,Ki);
       s(ridx(kdx)) = si;
@@ -245,6 +351,7 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
          return;
       end
    end
+   stop(o,'Disable');
    
    [K0,f0] = Stable(o,L0,K,s);
    if ~isequal(K0,inf)
