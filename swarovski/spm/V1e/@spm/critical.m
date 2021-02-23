@@ -57,7 +57,7 @@ function Plot(o)
    m = size(C_3,1);
    multi = (m > 1);                 % multi contact
    
-   [K0_,f0_] = PlotStability(oo,L0,3111);
+   [K0_,f0_] = PlotStability(o,L0,3111);
    if stop(o)
       return
    end
@@ -117,7 +117,7 @@ function Plot(o)
    k0 = min(find(M==nyqerr));          % indexing critical characteristics        
    l0jw = L0jw(k0,:);                  % critical characteristics 
    
-   Plot(o,3121,3131);                  % plot intermediate results
+   BodePlot(o,3121,3131);              % plot intermediate results
    
    M31 = abs(G31jw0(k0));              % coupling gain
    phi31 = angle(G31jw0(k0));          % coupling phase      
@@ -132,14 +132,22 @@ function Plot(o)
       
    heading(o);
    
-   function Plot(o,sub1,sub2)
+   function BodePlot(o,sub1,sub2)
       subplot(o,sub1,'semilogx');
       set(gca,'visible','on');
       
          % magnitude plot
-         
-%     plot(o,om,20*log10(abs(G31jw./G33jw)),'K');
-      plot(o,om,20*log10(abs(L0jw)),'wk');
+        
+      if dark(o)
+         colors = {'rk','gk','bk','ck','mk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww'};
+      end
+      
+      for (ii=1:size(L0jw,1))
+         col = colors{1+rem(ii-1,length(colors))};
+         plot(o,om,20*log10(abs(L0jw(ii,:))),col);
+      end
       plot(o,om,20*log10(abs(l0jw)),'ryyy2');
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
       plot(o,2*pi*f0,-20*log10(K0),'K1o');
@@ -156,7 +164,10 @@ function Plot(o)
       set(gca,'visible','on');
 
       plot(o,om,0*f-180,'K');
-      plot(o,om,phi*180/pi,'kw');
+      for (ii=1:size(L0jw,1))
+         col = colors{1+rem(ii-1,length(colors))};
+         plot(o,om,phi(ii,:)*180/pi,col);
+      end
       plot(o,om,phi(k0,:)*180/pi,'yyyr2');
       set(gca,'ytick',-360:45:0);
 
@@ -190,7 +201,7 @@ end
 % Frequency Response
 %==========================================================================
 
-function [L0jw,G31jw,G33jw] = Lambda(o,A,B_1,B_3,C_3,om) % Lambda FQR's  
+function [L0jw,G31jw,G33jw] = Lambda(o,A,B_1,B_3,C_3,om) % Lambda FQR's
    n = length(om);
    for (k=1:n)
       jw = 1i*om(k);
@@ -321,6 +332,14 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    low  = opt(o,{'gain.low',1e-3});
    high = opt(o,{'gain.high',1e3});
    points = opt(o,{'gain.points',200});
+   
+   closeup = opt(o,{'stability.closeup',0});
+   if (closeup)
+      K0 = cook(o,'K0');
+      low = K0/(1+closeup);
+      high = K0*(1+closeup);
+   end
+   
    K = logspace(log10(low),log10(high),points);
 
       % get L0 system matrices
@@ -357,7 +376,10 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    if ~isequal(K0,inf)
       plot(o,[K0 K0],get(gca,'ylim'),o.iif(K0<=1,'r1-.','g1-.'));
    end
+   
+   xlim = get(gca,'xlim');             % save x-limits
    plot(o,[1 1],get(gca,'ylim'),'K1-.');
+   set(gca,'xlim',xlim);               % restore x-limits
    
    title(sprintf('Worst Damping (K0: %g @ f0: %g Hz)',K0,f0));
    xlabel('closed loop gain K');

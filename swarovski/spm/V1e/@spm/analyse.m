@@ -520,6 +520,7 @@ function o = Critical(o)               % Calculate Critical Quantities
    end
 
    o = with(o,{'bode','stability'});
+   
    points = opt(o,{'omega.points',20000});
    closeup = opt(o,{'bode.closeup',0});
    

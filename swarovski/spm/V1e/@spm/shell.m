@@ -542,7 +542,8 @@ function oo = Bode(o)                  % Bode Settings Menu
    choice(ooo,[100,500,1000,5000,10000,20000,50000,...
                1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
    ooo = mitem(oo,'Closeup',{},'bode.closeup');
-   choice(ooo,{{'Off',0},{},{'50%',0.5},{'20%',0.2},{'10%',0.1},...
+   choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
+               {'50%',0.5},{'20%',0.2},{'10%',0.1},...
                {'5%',0.05},{'2%',0.02},{'1%',0.01}},{});
    
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
@@ -628,6 +629,7 @@ function oo = Stability(o)             % Stability Menu
    setting(o,{'stability.gain.low'},1e-3);
    setting(o,{'stability.gain.high'},1e3);
    setting(o,{'stability.chartstyle'},1);   % new stability chart style
+   setting(o,{'stability.closeup'},0); % closeup off
 
    setting(o,{'view.critical'},1);
 
@@ -644,6 +646,11 @@ function oo = Stability(o)             % Stability Menu
    choice(ooo,{{'Off',0},{'On',1}},{});
    ooo = mitem(oo,'Chart Style',{},'stability.chartstyle');
    choice(ooo,{{'Old',0},{'New',1}},{});
+
+   ooo = mitem(oo,'Closeup',{},'stability.closeup');
+   choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
+               {'50%',0.5},{'20%',0.2},{'10%',0.1},...
+               {'5%',0.05},{'2%',0.02},{'1%',0.01}},{});
 end
 function oo = Miscellaneous(o)         % Miscellaneous Menu            
    setting(o,{'view.precision'},1);    % current settings
