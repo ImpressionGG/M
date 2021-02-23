@@ -1,4 +1,6 @@
-function oo = shell(o,varargin)        % MINISPM Shell                     
+
+
+function oo = shell(o,varargin)        % SPM Shell                     
    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
                                  @Plot,@PlotCb,@Analysis,@Study);
    oo = gamma(o);                      % invoke local function
@@ -18,7 +20,7 @@ function o = Shell(o)                  % Shell Setup
    oo = Select(o);                     % add Select menu
    oo = Plot(o);                       % add Plot menu
    oo = Analyse(o);                    % add Analyse menu
-   %oo = Study(o);                      % add Study menu
+   oo = Study(o);                      % add Study menu
    oo = menu(o,'Gallery');             % add Gallery menu
    oo = Info(o);                       % add Info menu
    oo = menu(o,'Figure');              % add Figure menu
@@ -41,8 +43,8 @@ function o = Init(o)                   % Init Object
    o = opt(o,{'view.grid'},1);         % grid on by default
    o = opt(o,{'mode.organized'},'plain');
  
-   o = provide(o,'par.title','MiniSPM Toolbox');
-   o = provide(o,'par.comment',{'Analyzing SPM Data'});
+   o = provide(o,'par.title','SPM Toolbox');
+   o = provide(o,'par.comment',{'Playing around with SPM objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus         
@@ -59,7 +61,7 @@ function oo = File(o)                  % File Menu
    ooo = Import(oo);                   % add Import menu items
    ooo = Export(oo);                   % add Export menu items
    ooo = Tools(oo);
-   %ooo = Extras(oo);
+   ooo = Extras(oo);
 end
 function oo = New(o)                   % New Menu                      
    oo = mseek(o,{'New'});
@@ -73,8 +75,8 @@ function oo = Import(o)                % Import Menu Items
    oo = mhead(o,'Import');             % locate Import menu header
    ooo = mitem(oo,'Package',{@CollectCb});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Package Info (.pkg)',{@ImportCb,'ReadPkgPkg','.pkg',@minispm});
-   ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@minispm});
+   ooo = mitem(oo,'Package Info (.pkg)',{@ImportCb,'ReadPkgPkg','.pkg',@spm});
+   ooo = mitem(oo,'SPM Data (.spm)',{@ImportCb,'ReadSpmSpm','.spm',@spm});
    return
 
    function o = ImportCb(o)            % Import Log Data Callback
@@ -86,8 +88,8 @@ function oo = Import(o)                % Import Menu Items
    end
    function o = CollectCb(o)           % Collect All Files of Folder   
       collect(o,{})                    % reset collection config
-      table = {{@read,'minispm','ReadPkgPkg','.pkg'},...
-               {@read,'minispm','ReadSpmSpm', '.spm'}};
+      table = {{@read,'spm','ReadPkgPkg','.pkg'},...
+               {@read,'spm','ReadSpmSpm', '.spm'}};
       collect(o,{},table);             % only default table
 
       list = collect(o);               % collect files in directory
@@ -125,7 +127,7 @@ function oo = Export(o)                % Export Menu Items
    ooo = mitem(oo,'Spmx');
    enable(ooo,0);
 
-   oooo = mitem(ooo,'Log Data (.dat)',{@ExportCb,'WriteGenDat','.dat',@minispm});
+   oooo = mitem(ooo,'Log Data (.dat)',{@ExportCb,'WriteGenDat','.dat',@spm});
    return
 
    function oo = ExportCb(o)           % Export Log Data Callback
@@ -143,7 +145,7 @@ end
 function oo = Tools(o)                 % Tools Menu Items              
    oo = mseek(o,{'Tools'});
    ooo = mitem(oo,'Provide Package Info',{@PackageInfo});
-   %ooo = mitem(oo,'Setup Parameters',{@SetupParameters});
+   ooo = mitem(oo,'Setup Parameters',{@SetupParameters});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Brew Cache',{@BrewCache});
    ooo = mitem(oo,'Clear Cache',{@ClearCache});
@@ -180,7 +182,7 @@ function oo = PackageInfo(o)           % Provide Package Info File
    
       % create a package object and set package parameters
       
-   oo = minispm('pkg');
+   oo = spm('pkg');
    oo.data = [];                       % make a non-container object
    oo.par.title = title;
    oo.par.comment = {};
@@ -375,7 +377,7 @@ end
 function oo = Edit(o)                  % Edit Menu                     
    oo = menu(o,'Edit');                % add Edit menu items
 
-   plugin(o,'minispm/shell/Edit');         % plug point
+   plugin(o,'spm/shell/Edit');         % plug point
 end
 
 %==========================================================================
@@ -402,7 +404,7 @@ function oo = View(o)                  % View Menu
    ooo = mitem(o,'-');
    ooo = Miscellaneous(oo);            % add Miscellaneous menu        
    
-   plugin(o,'minispm/shell/View');         % plug point
+   plugin(o,'spm/shell/View');         % plug point
 
    function o = Cls(o)
       cls(o);
@@ -539,12 +541,11 @@ function oo = Bode(o)                  % Bode Settings Menu
    ooo = mitem(oo,'Points',{},'bode.omega.points');
    choice(ooo,[100,500,1000,5000,10000,20000,50000,...
                1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
-   
    ooo = mitem(oo,'Closeup',{},'bode.closeup');
    choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
                {'50%',0.5},{'20%',0.2},{'10%',0.1},...
                {'5%',0.05},{'2%',0.02},{'1%',0.01}},{});
- 
+   
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head
       
@@ -627,6 +628,7 @@ function oo = Stability(o)             % Stability Menu
    setting(o,{'stability.gain.points'},200);% points for diagram
    setting(o,{'stability.gain.low'},1e-3);
    setting(o,{'stability.gain.high'},1e3);
+   setting(o,{'stability.chartstyle'},1);   % new stability chart style
    setting(o,{'stability.closeup'},0); % closeup off
 
    setting(o,{'view.critical'},1);
@@ -642,6 +644,8 @@ function oo = Stability(o)             % Stability Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Show Critical',{},'view.critical');
    choice(ooo,{{'Off',0},{'On',1}},{});
+   ooo = mitem(oo,'Chart Style',{},'stability.chartstyle');
+   choice(ooo,{{'Old',0},{'New',1}},{});
 
    ooo = mitem(oo,'Closeup',{},'stability.closeup');
    choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
@@ -825,7 +829,7 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Critical(o)              % Critical Menu                 
+function oo = Critical(o)              % Critical Menu                
    setting(o,{'stability.algo'},'ss'); % stability algorithm
    setting(o,{'stability.search'},50); % number of search points
    setting(o,{'stability.iter'},15);   % iterations
@@ -965,7 +969,8 @@ function oo = Coordinates(o)           % Add Coordinates Menu Items
    choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
 end
 
-function oo = Internal(o)              % Internal Menu                 
+
+function oo = Internal(o)              % Internal Menu
    oo = mitem(o,'Internal');
    ooo = Trf(oo);                      % add Transfer Function menu
    ooo = Fqr(oo);                      % add Frequency Response menu
@@ -1099,7 +1104,7 @@ function oo = Plot(o)                  % Plot Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = plot(oo,'Menu');              % setup plot menu
 
-   plugin(o,'minispm/shell/Plot');         % plug point
+   plugin(o,'spm/shell/Plot');         % plug point
 end
 
 %==========================================================================
@@ -1111,7 +1116,7 @@ function oo = Analyse(o)               % Analyse Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = analyse(oo,'Menu');           % setup analyse menu
 
-   plugin(o,'minispm/shell/Analyse');      % plug point
+   plugin(o,'spm/shell/Analyse');      % plug point
 end
 
 %==========================================================================
@@ -1123,7 +1128,7 @@ function oo = Study(o)                 % Study Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = study(oo,'Menu');             % setup study menu
 
-   plugin(o,'minispm/shell/Study');        % plug point
+   plugin(o,'spm/shell/Study');        % plug point
 end
 
 %==========================================================================
@@ -1133,10 +1138,10 @@ end
 function oo = Info(o)                  % Info Menu                     
    oo = menu(o,'Info');                % add Info menu
    ooo = mseek(oo,{'Version'});
-   oooo = mitem(ooo,['MINISPM Class: Version ',version(minispm)]);
-   ooooo = mitem(oooo,'Edit Release Notes','edit minispm/version');
+   oooo = mitem(ooo,['Spm Class: Version ',version(spm)]);
+   ooooo = mitem(oooo,'Edit Release Notes','edit spm/version');
 
-   plugin(o,'minispm/shell/Info');         % plug point
+   plugin(o,'spm/shell/Info');         % plug point
 end
 
 %==========================================================================
