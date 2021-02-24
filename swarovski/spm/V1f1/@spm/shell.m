@@ -830,21 +830,44 @@ function oo = Simu(o)                  % Simulation Parameter Menu
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
 function oo = Critical(o)              % Critical Menu                
+   setting(o,{'critical.search'},50);  % number of search points
+   setting(o,{'critical.eps'},1e-10);  % epsilon
+   setting(o,{'critical.iter'},50);    % iterations
+   setting(o,{'critical.gain.low'},1e-3);
+   setting(o,{'critical.gain.high'},1e3);
+
    setting(o,{'stability.algo'},'ss'); % stability algorithm
    setting(o,{'stability.search'},50); % number of search points
    setting(o,{'stability.iter'},15);   % iterations
 
    oo = mitem(o,'Critical');
-   ooo = mitem(oo,'Algorithm',{},'stability.algo');
-   choice(ooo,{{'Transfer function','trf'},{'State Space','ss'},...
-               {'Mixed Type','mix'}},{});
-   
-   ooo = mitem(oo,'Initial Searches',{},'stability.search');
+   ooo = mitem(oo,'Initial Searches',{},'critical.search');
    choice(ooo,[25 50 100 200 500],{});
 
-   ooo = mitem(oo,'Iterations',{},'stability.iter');
+   ooo = mitem(oo,'Epsilon',{},'critical.eps');
+   choice(ooo,10.^[-15:-3],{});
+
+   ooo = mitem(oo,'Iterations',{},'critical.iter');
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
-   ooo = mitem(oo,'-');  
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Gain',{},'critical.gain.low');
+         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
+   ooo = mitem(oo,'Upper Gain',{},'critical.gain.high');
+         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Legacy');
+   
+   oooo = mitem(ooo,'Algorithm',{},'stability.algo');
+   choice(oooo,{{'Transfer function','trf'},{'State Space','ss'},...
+               {'Mixed Type','mix'}},{});
+   
+   oooo = mitem(ooo,'Initial Searches',{},'stability.search');
+   choice(oooo,[25 50 100 200 500],{});
+
+   oooo = mitem(ooo,'Iterations',{},'stability.iter');
+   choice(oooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
 end
 function oo = Spectrum(o)              % Spectrum Menu                 
    setting(o,{'spectrum.omega.low'},1e2);

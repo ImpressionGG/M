@@ -262,6 +262,7 @@ function vers = version(o,arg)         % SPM Class Version
 %     
 %
 % - start beta SPM V1F1
+% - introduce methods spm/system, spm/principal and pimp spm/critical
 %
 % Known bugs & wishlist
 % =========================

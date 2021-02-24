@@ -7,6 +7,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Variation')   % brew sys variation (change data)
 %           oo = brew(o,'Normalize')   % brew time scaled system
 %           oo = brew(o,'System')      % brew system matrices
+%           oo = brew(o,'Critical');   % brew critical cache segment
 %
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
@@ -55,6 +56,21 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           K0K180 = cache(oo,'setup.K0K180')
 %
 %        Dependency of cache segments
+%
+%                  variation  normalize transform
+%                          |      |      |
+%                          v      v      v
+%                        +-----------------+
+%                        |      system     | A,B,C,D,a0,a1
+%                        +-----------------+
+%                         |              |
+%                         v              v
+%              +--------------+        +---------------+
+%     L0,K0,f0 |   critical   |        |               |
+%              +--------------+        +---------------+
+%
+%
+%        Legacy Dependency of cache segments
 %
 %                       variation   normalizing
 %                             |        |
