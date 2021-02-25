@@ -325,6 +325,7 @@ function oo = ClearCache(o)            % Clear All Caches
       oo = o.data{i};
       cache(oo,oo,[]);                 % cache hard reset
    end
+   subplot(o,111);
    message(o,'Caches of all objects have been cleared!');
 end
 function oo = StoreCache(o)            % Store All Caches              

@@ -44,7 +44,7 @@ function o = Init(o)                   % Init Object
    o = opt(o,{'mode.organized'},'plain');
  
    o = provide(o,'par.title','SPM Toolbox');
-   o = provide(o,'par.comment',{'Playing around with SPM objects'});
+   o = provide(o,'par.comment',{'Analyzing SPM objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus         
@@ -327,6 +327,7 @@ function oo = ClearCache(o)            % Clear All Caches
       oo = o.data{i};
       cache(oo,oo,[]);                 % cache hard reset
    end
+   subplot(o,111);
    message(o,'Caches of all objects have been cleared!');
 end
 function oo = StoreCache(o)            % Store All Caches              

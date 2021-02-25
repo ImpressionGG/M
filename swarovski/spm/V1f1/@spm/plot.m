@@ -481,6 +481,7 @@ function o = About(o)                  % About Object
       case 'pkg'
          o = AboutPkg(o);
       otherwise
+         cls(o);
          o = menu(o,'About');          % keep it simple
    end
 end
@@ -495,8 +496,8 @@ function o = AboutPkg(o)               % About Package
       return
    end
    
-   oo = opt(o,'subplot',211,'pitch',2);
-   message(oo);
+   subplot(o,211);
+   message(opt(o,'pitch',2));
    axis off
    
    subplot(o,2322);

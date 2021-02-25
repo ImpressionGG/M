@@ -249,11 +249,11 @@ function vers = version(o,arg)         % SPM Class Version
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
 %     stable
-%   - introduction of spm/system method to do: variation, normalization,
+%   + introduction of spm/system method to do: variation, normalization,
 %     coordinate transformation
 %   - introduce pivot coordinate transformation (theta)
-%   - fast calculation of K0,f0,K180,f180 by spm/critical method
-%   - introduction of 'critical' cache segment to cache L0,L0jw,G31jw,G33jw,
+%   + fast calculation of K0,f0,K180,f180 by spm/critical method
+%   + introduction of 'critical' cache segment to cache L0,L0jw,G31jw,G33jw,
 %     lambda(jw)as well as K0,f0,K180,f180
 %   - pimp ANALYSE>STABILITY>NYQUIST AND Analyse>Stability>Overview  by
 %     plotting 5x characteristic plots and dsplaying nyquist error
@@ -263,6 +263,12 @@ function vers = version(o,arg)         % SPM Class Version
 %
 % - start beta SPM V1F1
 % - introduce methods spm/system, spm/principal and pimp spm/critical
+% - introduction of spm/system method to do: variation, normalization,
+%   coordinate transformation
+% - introduction of 'critical' cache segment to cache L0,L0jw,G31jw,G33jw,
+%   lambda(jw)as well as K0,f0,K180,f180
+% - Schur transformation for FQR caöculation
+% - fast calculation of K0,f0,K180,f180 by spm/critical method
 %
 % Known bugs & wishlist
 % =========================

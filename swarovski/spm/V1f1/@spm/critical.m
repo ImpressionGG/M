@@ -3,7 +3,7 @@ function [K0,f0,K180,f180,L0] = critical(o)
 %  CRITICAL   Calculate or plot critical stability parameters K0 (critical
 %             open loop gain) and f0 (critical frequency)
 %
-%                critical(o)               % plot critical stability params
+%                critical(o)      % plot critical stability charts
 %
 %             Calculate principal system andcritical qantities 
 %
@@ -74,8 +74,8 @@ function PlotOverview(o)
 %  [oo,L0] = contact(o);
    oo = system(o);
    L0 = principal(o,oo);            % calc L0 from oo
-%  [K0,f0] = cook(o,'K0,f0');
-   [K0,f0] = critical(o);
+   [K0,f0] = cook(o,'K0,f0');
+%  [K0,f0] = critical(o);
 
    [A,B_1,B_3,C_3,T0]=var(oo,'A,B_1,B_3,C_3,T0');
    m = size(C_3,1);
@@ -107,12 +107,17 @@ function PlotOverview(o)
    i123 = (1:m)';
    kmax = length(om);
    
+      % transform to Schur form
+      
+   [U,AS] = schur(A);
+   BS1 = U'*B_1;  BS3 = U'*B_3;  CS3 = C_3*U;
+   
    for(k=1:kmax)
-      if (rem(k-1,50)==0)
+      if (rem(k-1,round(kmax/10))==0)
          progress(o,'frequency response calculation',k/kmax*100);
       end
       
-      [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,A,B_1,B_3,C_3,Om(k));
+      [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,AS,BS1,BS3,CS3,Om(k));
       
          % re-arrange
          
@@ -462,7 +467,7 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
 
    [A0,B0,C0,D0,scale] = data(L0,'A,B,C,D,scale');
 
-   kmax = length(K);
+   %kmax = length(K);
    I = eye(size(D0));
    for (k=1:iter)
       if (rem(k-1,10)==0)
@@ -518,7 +523,7 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
 
    kmax = length(K);
    for (k=1:length(K))
-      if (rem(k-1,10) == 0)
+      if (kmax > 10 && rem(k-1,10) == 0)
          progress(o,sprintf('%g of %g: critical eigenvalues',k,kmax),k/kmax*100);
       end
 
@@ -535,5 +540,8 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
       idx = find(re==max(re));
       s(k) = sk(idx(1));
    end
-   progress(o);                     % done
+   
+   if (kmax > 10)
+      progress(o);                  % done
+   end
 end
