@@ -269,6 +269,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   lambda(jw)as well as K0,f0,K180,f180
 % - Schur transformation for FQR caöculation
 % - fast calculation of K0,f0,K180,f180 by spm/critical method
+% - setup study to access spm/critical instead of spm/stable
 %
 % Known bugs & wishlist
 % =========================

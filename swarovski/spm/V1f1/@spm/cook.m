@@ -295,9 +295,9 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
             oo = opt(oo,'oscale',oscale(o));
          end
          
-%     case {'K0K180','f0f180'}
-%        oo = cache(o,o,'setup');
-%        oo = cache(oo,['setup.',sym]);
+      case {'K0K180','f0f180'}
+         oo = cache(o,o,'setup');
+         oo = cache(oo,['setup.',sym]);
          
       otherwise
          error('unsupported symbol');

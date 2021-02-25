@@ -1,13 +1,15 @@
-function [K0,f0,K180,f180,L0] = critical(o)
+function [K0,f0,K180,f180,L0] = critical(o,cdx)
 %
 %  CRITICAL   Calculate or plot critical stability parameters K0 (critical
 %             open loop gain) and f0 (critical frequency)
 %
 %                critical(o)      % plot critical stability charts
+%                critical(o,cdx)  % plot for specific contact indices
 %
 %             Calculate principal system andcritical qantities 
 %
 %                [K0,f0,K180,f180,L0] = critical(o)
+%                [K0,f0,K180,f180,L0] = critical(o,cdx)  % contact index
 %
 %             Options:
 %                gain.low         % minimum gain (default: 1e-3)
@@ -28,12 +30,20 @@ function [K0,f0,K180,f180,L0] = critical(o)
       error('SPM object expected');
    end
    
-   if (nargout == 0)
-      PlotOverview(o);                 % plot critical parameter overview
-   elseif (nargout <= 2)
-      [K0,f0] = Calc(o);               % calculate some critical parameters
+%  [oo,L0] = contact(o);
+   if (nargin <= 1)
+      oo = system(o);
    else
-      [K0,f0,K180,f180,L0] = Calc(o);  % calculate all critical parameters
+      oo = system(o,cdx);
+   end
+   L0 = principal(o,oo);               % calc L0 from oo
+
+   if (nargout == 0)
+      PlotOverview(o,oo,L0);           % plot critical parameter overview
+   elseif (nargout <= 2)
+      [K0,f0] = Calc(o,L0);            % calculate some critical parameters
+   else
+      [K0,f0,K180,f180] = Calc(o,L0);  % calculate all critical parameters
    end
 end
 
@@ -41,8 +51,7 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0,K180,f180,L0] = Calc(o)
-   L0 = principal(o);                  % get principal system
+function [K0,f0,K180,f180] = Calc(o,L0)
    [K0,f0] = Stable(o,L0);
    
    if (nargout > 2)
@@ -60,7 +69,7 @@ end
 % Plot Overview
 %==========================================================================
 
-function PlotOverview(o)
+function PlotOverview(o,oo,L0)
    subplot(o,312);
    message(o,'Calculation of Critical Quantities',...
              {'see figure bar for progress...'});
@@ -71,9 +80,6 @@ function PlotOverview(o)
       % are implemented by contact method, which returns the required
       % system
    
-%  [oo,L0] = contact(o);
-   oo = system(o);
-   L0 = principal(o,oo);            % calc L0 from oo
    [K0,f0] = cook(o,'K0,f0');
 %  [K0,f0] = critical(o);
 
@@ -221,8 +227,9 @@ function PlotOverview(o)
       title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K0: ',...
                      '%g @ %g Hz (Eigenvalue error: %g)'],K0_,f0_,err));
 
-      txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
-             M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
+      txt = sprintf(['G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
+            ' => G31(jw0)/G33(jw0): %g @ %g deg'], Rd(M31*1e9),Rd(phi31*180/pi),...
+            Rd(M33*1e9),Rd(phi33*180/pi), o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi));
       xlabel(txt);
       subplot(o);
       
@@ -231,6 +238,11 @@ function PlotOverview(o)
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
       subplot(o);
+   end
+
+   function y = Rd(x)                  % round to 1 decimal
+      ooo = corazon;
+      y = ooo.rd(x,1);
    end
 end
 

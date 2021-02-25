@@ -105,17 +105,14 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
       L0 = Reduce(L0);
    end 
    
-   if (nargout >= 3)
-      [K0,f0,s0]=stable(o,L0);
-      L0 = var(L0,'K0,f0',K0,f0);
-   end
-   
-   if (nargout >= 5)
-      L180 = L0;
-      L180.data.B = -L180.data.B;
-      L180.data.D = -L180.data.D;
-      [K180,f180,s180]=stable(o,L180);
-      L0 = var(L0,'K180,f180',K180,f180);
+   if (nargout >= 3 && nargout <= 4)
+%     [K0,f0,s0]=stable(o,L0);
+      [K0,f0] = critical(o,cdx);
+      L0 = var(L0,'K0,f0',K0,f0);   
+   elseif (nargout >= 5)
+%     [K180,f180,s180]=stable(o,L180);
+      [K0,f0,K180,f180] = critical(o,cdx);
+      L0 = var(L0,'K0,f0,K180,f180',K0,f0,K180,f180);
    end
 end
 function cdx = ContactIndices(o,N,idx)
