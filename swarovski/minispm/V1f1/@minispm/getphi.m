@@ -15,7 +15,7 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
 %
 %         Copyright(c): Bluenetics 2021
 %
-%         See also: MINISPM
+%         See also: SPM
 %
    phi_p = opt(o,{'process.phi',0});   % process phi [°]
    phi_o = get(o,{'phi',0});        % object phi [°]
@@ -44,7 +44,7 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
    
    txt = 'phi: ['; sep = '';
    for (i=1:length(phi))
-      txt = [txt,sep,sprintf('%g',phi(i))]; sep = ',';
+      txt = [txt,sep,sprintf('%g',o.rd(phi(i),1))]; sep = ',';
    end
    txt = [txt,']'];
 end

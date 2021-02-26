@@ -1,30 +1,49 @@
-function [K0,f0] = critical(o)
+function [K0,f0,K180,f180,L0] = critical(o,cdx)
 %
 %  CRITICAL   Calculate or plot critical stability parameters K0 (critical
 %             open loop gain) and f0 (critical frequency)
 %
-%                critical(o)           % plot critical stability parameters
-%                [K0,f0] = critical(o) % calculate K0,f0
+%                critical(o)      % plot critical stability charts
+%                critical(o,cdx)  % plot for specific contact indices
+%
+%             Calculate principal system andcritical qantities 
+%
+%                [K0,f0,K180,f180,L0] = critical(o)
+%                [K0,f0,K180,f180,L0] = critical(o,cdx)  % contact index
 %
 %             Options:
-%                gain.low              % minimum gain (default: 1e-3)
-%                gain.high             % maximum gain (default: 1e+3)
-%                gain.points           % number of gain points
+%                gain.low         % minimum gain (default: 1e-3)
+%                gain.high        % maximum gain (default: 1e+3)
+%                gain.points      % number of gain points
+%
+%                search           % number of search points (default 50)
+%                eps              % termination epsilon (default 1e-10)
+%                iter             % max iterations (default 50)
 %
 %             Copyright(c): Bluenetics 2021
 %
-%             See also: MINISPM, CONTACT
+%             See also: MINISPM, CONTACT, PRINCIPAL
 %
    if type(o,{'spm'})
-      o = cache(o,o,'multi');          % refresh multi segment
+      %o = cache(o,o,'multi');          % refresh multi segment
    else
       error('SPM object expected');
    end
    
-   if (nargout == 0)
-      Plot(o);          
+%  [oo,L0] = contact(o);
+   if (nargin <= 1)
+      oo = system(o);
    else
-      [K0,f0] = Calc(o);               % calculate
+      oo = system(o,cdx);
+   end
+   L0 = principal(o,oo);               % calc L0 from oo
+
+   if (nargout == 0)
+      PlotOverview(o,oo,L0);           % plot critical parameter overview
+   elseif (nargout <= 2)
+      [K0,f0] = Calc(o,L0);            % calculate some critical parameters
+   else
+      [K0,f0,K180,f180] = Calc(o,L0);  % calculate all critical parameters
    end
 end
 
@@ -32,15 +51,25 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0] = Calc(o)
-   [oo,L0,K0,f0] = contact(o);
+function [K0,f0,K180,f180] = Calc(o,L0)
+   [K0,f0] = Stable(o,L0);
+   
+   if (nargout > 2)
+      L180 = Negate(L0); 
+      [K180,f180] = Stable(o,L180);
+   end
+   
+   function L = Negate(L)
+      L.data.B = -L.data.B;
+      L.data.D = -L.data.D;
+   end
 end
 
 %==========================================================================
-% Calculate
+% Plot Overview
 %==========================================================================
 
-function Plot(o)
+function PlotOverview(o,oo,L0)
    subplot(o,312);
    message(o,'Calculation of Critical Quantities',...
              {'see figure bar for progress...'});
@@ -51,8 +80,9 @@ function Plot(o)
       % are implemented by contact method, which returns the required
       % system
    
-   [oo,L0] = contact(o);
    [K0,f0] = cook(o,'K0,f0');
+%  [K0,f0] = critical(o);
+
    [A,B_1,B_3,C_3,T0]=var(oo,'A,B_1,B_3,C_3,T0');
    m = size(C_3,1);
    multi = (m > 1);                 % multi contact
@@ -83,12 +113,17 @@ function Plot(o)
    i123 = (1:m)';
    kmax = length(om);
    
+      % transform to Schur form
+      
+   [U,AS] = schur(A);
+   BS1 = U'*B_1;  BS3 = U'*B_3;  CS3 = C_3*U;
+   
    for(k=1:kmax)
-      if (rem(k-1,50)==0)
+      if (rem(k-1,round(kmax/10))==0)
          progress(o,'frequency response calculation',k/kmax*100);
       end
       
-      [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,A,B_1,B_3,C_3,Om(k));
+      [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,AS,BS1,BS3,CS3,Om(k));
       
          % re-arrange
          
@@ -192,8 +227,9 @@ function Plot(o)
       title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K0: ',...
                      '%g @ %g Hz (Eigenvalue error: %g)'],K0_,f0_,err));
 
-      txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
-             M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
+      txt = sprintf(['G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
+            ' => G31(jw0)/G33(jw0): %g @ %g deg'], Rd(M31*1e9),Rd(phi31*180/pi),...
+            Rd(M33*1e9),Rd(phi33*180/pi), o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi));
       xlabel(txt);
       subplot(o);
       
@@ -202,6 +238,11 @@ function Plot(o)
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
       plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
       subplot(o);
+   end
+
+   function y = Rd(x)                  % round to 1 decimal
+      ooo = corazon;
+      y = ooo.rd(x,1);
    end
 end
 
@@ -400,14 +441,16 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
 %         estimation of an initial interval.
 %
 %            [K0,f0] = Stable(o,L0,K,s)
+%            [K0,f0] = Stable(o,L0)
 %
    if (nargin < 3)
       low  = opt(o,{'gain.low',1e-3});
       high = opt(o,{'gain.high',1e3});
-      points = opt(o,{'points',200});
-      search = opt(o,{'search',points});
+      search = opt(o,{'search',50});
       K = logspace(log10(low),log10(high),search);
    end
+   iter = opt(o,{'iter',50});
+   epsi = opt(o,{'eps',1e-10});
    
    if (nargin < 4)
       s = CritEig(o,L0,K);
@@ -436,17 +479,18 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
 
    [A0,B0,C0,D0,scale] = data(L0,'A,B,C,D,scale');
 
-   kmax = length(K);
-   for (k=1:100)
+   %kmax = length(K);
+   I = eye(size(D0));
+   for (k=1:iter)
       if (rem(k-1,10)==0)
-         progress(o,'interval search of K0',k);
+         progress(o,'critical K interval search',k);
       end
       
       K0 = mean(Klim);
 
          % calculate closed loop dynamic matrix
 
-      Ak = A0 - B0*inv(eye(size(D0))+K0*D0)*K0*C0;  % closed loop A
+      Ak = A0 - B0*K0 * inv(I+D0*K0) * C0;  % closed loop dynamic matrix
 
          % find eigenvalue with largest real part
 
@@ -459,7 +503,7 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
          % terminate?
          
       err = abs(real(s));
-      if (err < 1e-10)
+      if (err < epsi)
          break;
       end
       
@@ -491,7 +535,7 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
 
    kmax = length(K);
    for (k=1:length(K))
-      if (rem(k-1,10) == 0)
+      if (kmax > 10 && rem(k-1,10) == 0)
          progress(o,sprintf('%g of %g: critical eigenvalues',k,kmax),k/kmax*100);
       end
 
@@ -508,5 +552,8 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
       idx = find(re==max(re));
       s(k) = sk(idx(1));
    end
-   progress(o);                     % done
+   
+   if (kmax > 10)
+      progress(o);                  % done
+   end
 end

@@ -13,7 +13,7 @@ function oo = study(o,varargin)        % Do Some Studies
                        @PhiDouble,@PhiRational,...
                        @TrfmDouble,@TrfmRational,@TrfmInversion,...
                        @Quick,@Modal1,@Modal2,@Modal3,@Bilinear,...
-                       @MagniCheck,...
+                       @MagniCheck,@MakeSeven,...
                        @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
 end
@@ -52,9 +52,13 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'A,B,C,D');
    ooo = mitem(oo,'Inspect B',{@InspectB});
    ooo = mitem(oo,'Canonic',{@Canonic});
-   oo = mitem(o,'Normalizing')
+
+   oo = mitem(o,'Normalizing');
    ooo = mitem(oo,'Magnitude Check',{@WithCuo,'MagniCheck'});
-   
+
+   oo = mitem(o,'7 Artices');
+   ooo = mitem(oo,'Make 7',{@WithCuo,'MakeSeven'});
+
    oo = mitem(o,'-');
    oo = mitem(o,'Arithmetics');
    ooo = mitem(oo,'Quick',{@Quick});
@@ -573,6 +577,33 @@ function o = MagniCheck(o)             % Magnitude Check
       set(semilogx(om,20*log10(abs(Ljw)),'y'),'color',o.color('yyr'),'linewidth',1);
       subplot(o);
    end
+end
+function o = MakeSeven(o)              % Make 7-Article System
+    oo = current(o);
+    if ~type(oo,{'spm'})
+       return
+    end
+    
+    [B,C] = data(oo,'B,C');
+    
+    if (size(C,1) == 15)
+       C = [randn(size(C(1:3,:))); C; randn(size(C(13:15,:)))];
+       B = [randn(size(B(:,1:3))), B, randn(size(B(:,13:15)))];
+       D = zeros(21,21);
+       
+%      B(end,1:3) = rand(size(B-B(end,1:3); 
+%      B(end,19:21) = -B(end,19:21);
+%      C(1:3,1) = -C(1:3,1); 
+%      C(19:21,1) = -C(19:21,1);
+       
+       oo = data(oo,'B,C,D',B,C,D);
+       
+       phi = get(oo,'phi');
+       if (length(phi) == 5)
+          oo = set(oo,'phi',[phi(1)-15,phi(:)',phi(5)+15]);
+       end
+       current(o,oo);
+    end
 end
 
 %==========================================================================

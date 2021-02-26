@@ -7,6 +7,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Variation')   % brew sys variation (change data)
 %           oo = brew(o,'Normalize')   % brew time scaled system
 %           oo = brew(o,'System')      % brew system matrices
+%           oo = brew(o,'Critical');   % brew critical cache segment
 %
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
@@ -18,6 +19,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %        The following cache segments are managed by brew:
 %
+%           'critical'                      % critical quantities
 %           'trf'                           % free system TRFs
 %           'consd'                         % constrained system TRFs
 %           'principal'                     % principal transfer functions
@@ -55,6 +57,21 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           K0K180 = cache(oo,'setup.K0K180')
 %
 %        Dependency of cache segments
+%
+%                  variation  normalize transform
+%                          |      |      |
+%                          v      v      v
+%                        +-----------------+
+%                        |      system     | A,B,C,D,a0,a1
+%                        +-----------------+
+%                         |              |
+%                         v              v
+%              +--------------+        +---------------+
+%     L0,K0,f0 |   critical   |        |               |
+%              +--------------+        +---------------+
+%
+%
+%        Legacy Dependency of cache segments
 %
 %                       variation   normalizing
 %                             |        |
@@ -104,6 +121,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@Transform,...
                        @System,@Trf,@Principal,@Multi,@Spectrum,@Setup,...
+                       @Critical,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -339,7 +357,7 @@ function oo = Transform(o)             % coordinate transformation
    %  
       phi = getphi(o);
       rad = phi(k) * pi/180;           % total phi [rad]
-        
+         
       T = [
              cos(rad) sin(rad)  0
             -sin(rad) cos(rad)  0
@@ -537,6 +555,34 @@ function oo = System(o)                % System Matrices
       assert(norm(C_2_-C_2)==0);
       assert(norm(C_3_-C_3)==0);
    end
+end
+
+%==========================================================================
+% Critical Quantities L0, K0, f0, K180, f180
+%==========================================================================
+
+function oo = Critical(o)
+   [K0,f0,K180,f180,L0] = critical(o);
+   
+      % calculate L180
+      
+   L180 = L0;
+   L180.data.B = -L180.data.B;
+   L180.data.D = -L180.data.D;
+   
+      % store in critical cache segment
+      
+   oo = o;
+   oo = cache(oo,'critical.L0',L0);
+   oo = cache(oo,'critical.L180',L180);
+   oo = cache(oo,'critical.K0',K0);
+   oo = cache(oo,'critical.K180',K180);
+   oo = cache(oo,'critical.f0',f0);
+   oo = cache(oo,'critical.f180',f180);
+   
+      % unconditional hard refresh of cache
+      
+   cache(oo,oo);                       % hard refresh
 end
 
 %==========================================================================

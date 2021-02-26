@@ -87,6 +87,10 @@ function oo = ReadSpmSpm(o)            % Read Driver for SPM Data
          end
       end
    end
+   
+      % read phi-file
+      
+   oo = ReadPhi(oo,path);
 end
 function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File   
    talk = (control(o,'verbose') >= 3);
@@ -182,18 +186,6 @@ function oo = ReadSpm1Spm(o)           % Read Driver 1 for .spm File
    oo.data.B = B;
    oo.data.C = C;
    oo.data.D = D;
-   
-   if (0)                              % do not support anymore
-      ev = eig(A);                     % eigenvalues
-      t = 1:length(ev);
-      x = real(ev);
-      y = imag(ev);
-      [~,idx] = sort(abs(imag(ev)));
-
-      oo.data.t = t;
-      oo.data.x = x(idx)';
-      oo.data.y = y(idx)';
-   end
    return
    
    function [mat] = OldReadMatrix(fid,name)
@@ -332,6 +324,7 @@ function oo = ReadSpm2Spm(o)           % Read Driver 2 for .spm File
    oo.data.t = t;
    oo.data.x = x(idx)';
    oo.data.y = y(idx)';
+
    return
    
    function [mat] = ReadMatrix(fid,name)
@@ -351,3 +344,39 @@ function oo = ReadSpm2Spm(o)           % Read Driver 2 for .spm File
    end
 end
 
+%==========================================================================
+% Read phi-file
+%==========================================================================
+
+function oo = ReadPhi(o,path)
+   oo = o;
+   number = get(oo,'number');
+   
+   if isempty(number)
+      return
+   end
+   
+   [dir,file,ext] = fileparts(path);
+   path = [dir,sprintf('/#%02d.phi',number)];
+
+   fid = fopen(path);
+   if isequal(fid,-1)
+      return                           % cannot read (don't alert)
+   end
+   
+   phi = [];
+   line = fgetl(fid);
+   while ~isequal(line,-1)
+      if ~isempty(line)
+         numbers = sscanf(line,'%f');
+         phi = [phi,numbers(:)'];
+      end
+      line = fgetl(fid);
+   end
+   
+   if ~isempty(phi)
+      oo.par.phi = phi;
+   end
+   
+   fclose(fid);
+end

@@ -105,7 +105,9 @@ function oo = Import(o)                % Import Menu Items
                if type(oo,{'spm'})
                   package = get(oo,{'package',''});
                   if isequal(package,get(po,'package'))
-                     oo = set(oo,'phi',phi);
+                     if isempty(get(oo,'phi'))
+                        oo = set(oo,'phi',phi);
+                     end
                   end
                end
                list{j} = oo;
@@ -830,46 +832,6 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Critical(o)              % Critical Menu                
-   setting(o,{'critical.search'},50);  % number of search points
-   setting(o,{'critical.eps'},1e-10);  % epsilon
-   setting(o,{'critical.iter'},50);    % iterations
-   setting(o,{'critical.gain.low'},1e-3);
-   setting(o,{'critical.gain.high'},1e3);
-
-   setting(o,{'stability.algo'},'ss'); % stability algorithm
-   setting(o,{'stability.search'},50); % number of search points
-   setting(o,{'stability.iter'},15);   % iterations
-
-   oo = mitem(o,'Critical');
-   ooo = mitem(oo,'Initial Searches',{},'critical.search');
-   choice(ooo,[25 50 100 200 500],{});
-
-   ooo = mitem(oo,'Epsilon',{},'critical.eps');
-   choice(ooo,10.^[-15:-3],{});
-
-   ooo = mitem(oo,'Iterations',{},'critical.iter');
-   choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Lower Gain',{},'critical.gain.low');
-         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
-   ooo = mitem(oo,'Upper Gain',{},'critical.gain.high');
-         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Legacy');
-   
-   oooo = mitem(ooo,'Algorithm',{},'stability.algo');
-   choice(oooo,{{'Transfer function','trf'},{'State Space','ss'},...
-               {'Mixed Type','mix'}},{});
-   
-   oooo = mitem(ooo,'Initial Searches',{},'stability.search');
-   choice(oooo,[25 50 100 200 500],{});
-
-   oooo = mitem(ooo,'Iterations',{},'stability.iter');
-   choice(oooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
-end
 function oo = Spectrum(o)              % Spectrum Menu                 
    setting(o,{'spectrum.omega.low'},1e2);
    setting(o,{'spectrum.omega.high'},1e5);
@@ -958,22 +920,30 @@ function oo = Contact(o)               % Add Contact Menu Items
       N = 5;
    end
    
+   list = {{'Center',0},{'All',inf},{}};
+
    if (N == 5)
-      leading =  {1 1 1 0 0};
-      trailing = {0 0 1 1 1};
-      triple =   {0 1 1 1 0};
+      leading =  1:3;
+      trailing = 3:5;
+      triple =   2:4;
+      list = {{'Center',0},{'All',inf},{},{'-o-o-o-x-x-',leading},...
+              {'-x-x-o-o-o-',trailing},...
+              {'-x-o-o-o-x-',triple},{}};
    elseif (N == 7)
-      leading =  {1 1 1 1 0 0 0};
-      trailing = {0 0 0 1 1 1 1};
-      triple =   {0 0 1 1 1 0 0};
+      list = {{'Center',0},{'All',inf},{},{'-o-o-o-o-x-x-x-',1:4},...
+              {'-x-x-x-o-o-o-o-',4:7},...
+              {'-x-o-x-x-x-o-x-',[2,6]},...
+              {'-x-x-o-x-o-x-x-',[3,5]},...
+              {'-x-o-x-o-x-o-x-',[2,4,6]},...
+              {'-o-x-o-x-o-x-o-',[1,3,5,7]},...
+              {'-x-x-o-o-o-x-x-',3:5},{},...
+              {'-o-o-x-o-x-o-o-',[1:2,4,6:7]},{}};
    else
       leading = inf;
       trailing = inf;
       triple = inf;
    end
    
-   list = {{'Center',0},{'Leading',leading},{'Trailing',trailing},...
-           {'Triple',triple},{'Multi',inf},{}};
    for(i=1:N)
       list{end+1} = {sprintf('%g',i),i};
    end
@@ -993,6 +963,9 @@ function oo = Coordinates(o)           % Add Coordinates Menu Items
    choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
 end
 
+%==========================================================================
+% Select/Internal Menu
+%==========================================================================
 
 function oo = Internal(o)              % Internal Menu
    oo = mitem(o,'Internal');
@@ -1087,6 +1060,46 @@ function oo = Normalize(o)             % Normalize Menu
    choice(ooo,{{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
                {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
                {@CacheReset});
+end
+function oo = Critical(o)              % Critical Menu                
+   setting(o,{'critical.search'},50);  % number of search points
+   setting(o,{'critical.eps'},1e-10);  % epsilon
+   setting(o,{'critical.iter'},50);    % iterations
+   setting(o,{'critical.gain.low'},1e-3);
+   setting(o,{'critical.gain.high'},1e3);
+
+   setting(o,{'stability.algo'},'ss'); % stability algorithm
+   setting(o,{'stability.search'},50); % number of search points
+   setting(o,{'stability.iter'},15);   % iterations
+
+   oo = mitem(o,'Critical');
+   ooo = mitem(oo,'Initial Searches',{},'critical.search');
+   choice(ooo,[25 50 100 200 500],{});
+
+   ooo = mitem(oo,'Epsilon',{},'critical.eps');
+   choice(ooo,10.^[-15:-3],{});
+
+   ooo = mitem(oo,'Iterations',{},'critical.iter');
+   choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Gain',{},'critical.gain.low');
+         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
+   ooo = mitem(oo,'Upper Gain',{},'critical.gain.high');
+         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Legacy');
+   
+   oooo = mitem(ooo,'Algorithm',{},'stability.algo');
+   choice(oooo,{{'Transfer function','trf'},{'State Space','ss'},...
+               {'Mixed Type','mix'}},{});
+   
+   oooo = mitem(ooo,'Initial Searches',{},'stability.search');
+   choice(oooo,[25 50 100 200 500],{});
+
+   oooo = mitem(ooo,'Iterations',{},'stability.iter');
+   choice(oooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
 end
 function oo = Cancel(o)                % Add Cancel Menu Items         
    setting(o,{'cancel.G.eps'},1e-7);

@@ -318,7 +318,8 @@ end
 
 function o = Critical(o)               % Calculate Critical Quantities       
    if type(o,{'spm'})
-      o = cache(o,o,'multi');
+%     o = cache(o,o,'multi');
+      o = cache(o,o,'critical');
    else
       plot(o,'About');
       return

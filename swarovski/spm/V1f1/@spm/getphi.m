@@ -44,7 +44,7 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
    
    txt = 'phi: ['; sep = '';
    for (i=1:length(phi))
-      txt = [txt,sep,sprintf('%g',phi(i))]; sep = ',';
+      txt = [txt,sep,sprintf('%g',o.rd(phi(i),1))]; sep = ',';
    end
    txt = [txt,']'];
 end

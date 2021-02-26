@@ -318,6 +318,7 @@ function oo = ClearCb(o)               % Clear All Objects
 
          current(o,0);                 % update current selection
          %refresh(oo);                 % and refresh screen
+         cls(o);
          menu(o,'About');
       end
    end
@@ -1267,6 +1268,7 @@ end
 function oo = Home(o)                  % Display Shell Home Info       
    oo = o;                             % copy to output by default
    o = pull(o);                        % pull container object
+   cls(o);
    message(o);                         % display shell info
    refresh(o,{'menu','Home'});         % update refresh callback
    comment = {'The shell info is represented by the title',...
@@ -1280,6 +1282,8 @@ function oo = About(o)                 % Display Object Info
 %
 % ABOUT   About the current object (object info)
 %
+   cls(o);
+   
    oo = current(o);
    if container(oo)
       list = Classes(oo);

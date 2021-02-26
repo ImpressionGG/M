@@ -155,9 +155,9 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = inherit(oo,o);
          oo = opt(oo,'oscale',oscale(o));
          
-      case {'K0','f0','K180','f180'}
-         oo = cache(o,o,'multi');
-         oo = cache(oo,['multi.',sym]);
+%     case {'K0','f0','K180','f180'}
+%        oo = cache(o,o,'multi');
+%        oo = cache(oo,['multi.',sym]);
 
       case {'A0','B0','C0','D0','M0','N0','V0','AQ','BQ','CQ','DQ','CP','DP'}
          oo = brew(o,'System');
@@ -242,10 +242,14 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,o,'consd');      % hard refresh consd cache 
          oo = cache(oo,'consd.L');
          
-      case {'P','Q','F0','L0'}
-         o = cache(o,o,'principal');   % hard refresh of principal segment
-         oo = cache(o,['principal.',sym]);
+%     case {'P','Q','F0','L0'}
+%        o = cache(o,o,'principal');   % hard refresh of principal segment
+%        oo = cache(o,['principal.',sym]);
 
+      case {'L0','L180','K0','K180','f0','f180'}
+         o = cache(o,o,'critical');
+         oo = cache(o,['critical.',sym]);
+         
       case {'Lmu','S0','T0'}
          oo = cache(o,o,'loop');       % hard refresh loop cache 
          oo = cache(oo,['loop.',sym]);

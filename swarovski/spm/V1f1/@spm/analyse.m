@@ -520,6 +520,7 @@ function o = Critical(o)               % Calculate Critical Quantities
       return
    end
 
+   Heading(o);
    o = with(o,{'bode','stability'});
    
    points = opt(o,{'omega.points',20000});
@@ -1411,7 +1412,7 @@ end
 % Spectrum
 %==========================================================================
 
-function o = L0Magni(o)                % L0(i,j) Magnitude Plots
+function o = L0Magni(o)                % L0(i,j) Magnitude Plots       
    if type(o,{'spm'})
       o = cache(o,o,'multi');
       o = cache(o,o,'spectrum');
