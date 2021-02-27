@@ -22,7 +22,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx)
 %
 %             Copyright(c): Bluenetics 2021
 %
-%             See also: MINISPM, CONTACT, PRINCIPAL
+%             See also: SPM, CONTACT, PRINCIPAL
 %
    if type(o,{'spm'})
       %o = cache(o,o,'multi');          % refresh multi segment
@@ -118,22 +118,26 @@ function PlotOverview(o,oo,L0)
    [U,AS] = schur(A);
    BS1 = U'*B_1;  BS3 = U'*B_3;  CS3 = C_3*U;
    
-   for(k=1:kmax)
-      if (rem(k-1,round(kmax/10))==0)
-         progress(o,'frequency response calculation',k/kmax*100);
+   if (0)
+      for(k=1:kmax)
+         if (rem(k-1,round(kmax/10))==0)
+            progress(o,'frequency response calculation',k/kmax*100);
+         end
+
+   %     [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,AS,BS1,BS3,CS3,Om(k));
+         L0jw(:,k) = lambda(o,A,B_1,B_3,C_3,Om(k));
+            % re-arrange
+
+         if (k > 1)
+            [~,idx] = TailSort(L0jw(:,k-1:k),om(k));
+            L0jw(:,k) = L0jw(idx,k);
+         end
       end
-      
-      [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,AS,BS1,BS3,CS3,Om(k));
-      
-         % re-arrange
-         
-      if (k > 1)
-         [~,idx] = TailSort(L0jw(:,k-1:k),om(k));
-         L0jw(:,k) = L0jw(idx,k);
-      end
+      progress(o);
+   else
+      L0jw = lambda(o,A,B_1,B_3,C_3,Om);
    end
-   progress(o);
-   
+    
       % calculate phases phi31,phi33 and phi=phi31-phi33
 
    phi = angle(L0jw);
@@ -170,9 +174,8 @@ function PlotOverview(o,oo,L0)
    phi0 = angle(L0jw0(k0));            % critical phase      
       
    Results(o,3121,3131);               % display results
-      
    heading(o);
-   
+         
    function BodePlot(o,sub1,sub2)
       subplot(o,sub1,'semilogx');
       set(gca,'visible','on');
@@ -251,6 +254,7 @@ end
 %==========================================================================
 
 function [L0jw,G31jw,G33jw] = Lambda(o,A,B_1,B_3,C_3,om) % Lambda FQR's
+
    n = length(om);
    for (k=1:n)
       jw = 1i*om(k);

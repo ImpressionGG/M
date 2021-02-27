@@ -512,7 +512,7 @@ function oo = Bode(o)                  % Bode Settings Menu
    
    setting(o,{'bode.magnitude.enable'},true);
    setting(o,{'bode.phase.enable'},false);
-   setting(o,{'bode.omega.points'},200000);
+   setting(o,{'bode.omega.points'},10000);
    setting(o,{'bode.closeup'},0);
    
    
@@ -542,7 +542,7 @@ function oo = Bode(o)                  % Bode Settings Menu
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'bode.omega.points');
-   choice(ooo,[100,500,1000,5000,10000,20000,50000,...
+   choice(ooo,[100,200,500,1000,2000,5000,10000,20000,50000,...
                1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
    ooo = mitem(oo,'Closeup',{},'bode.closeup');
    choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
@@ -1065,6 +1065,7 @@ function oo = Critical(o)              % Critical Menu
    setting(o,{'critical.search'},50);  % number of search points
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
+   setting(o,{'critical.check'},1);    % weak check
    setting(o,{'critical.gain.low'},1e-3);
    setting(o,{'critical.gain.high'},1e3);
 
@@ -1081,6 +1082,9 @@ function oo = Critical(o)              % Critical Menu
 
    ooo = mitem(oo,'Iterations',{},'critical.iter');
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
+
+   ooo = mitem(oo,'Check',{},'critical.check');
+   choice(ooo,{{'Off',0},{'Weak',1},{'Strong',2}},{});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Gain',{},'critical.gain.low');

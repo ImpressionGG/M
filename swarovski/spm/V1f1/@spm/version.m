@@ -271,6 +271,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - fast calculation of K0,f0,K180,f180 by spm/critical method
 % - setup study to access spm/critical instead of spm/stable
 % - methods spm/psion and spm/lambda :-)))
+% - fast algorithm to calculate K0,f0,K180,f180
 %
 % Known bugs & wishlist
 % =========================

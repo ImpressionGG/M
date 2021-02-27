@@ -48,11 +48,12 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
 return;   
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
-function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
+function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
    oo = Stability(o);
 end
-function oo = SpmMenu(o)               % Setup SPM Analyse Menu     
-   oo = Stability(o);                  % add Stability menu
+function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
+   oo = CriticalMenu(o);               % Add Critical menu
+%  oo = Stability(o);                  % add Stability menu
    return
    
    oo = NumericMenu(o);                % add Numeric menu
@@ -107,6 +108,15 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
+end
+function oo = CriticalMenu(o)          % Critical Menu                 
+   oo = mitem(o,'Critical');
+   ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Worst Damping',{@WithSpm,'Critical','Damping'});
+   ooo = mitem(oo,'Bode Plot',{@WithSpm,'Critical','Bode'});
+%  ooo = mitem(oo,'-');
+%  ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
 end
 function oo = Stability(o)             % Closed Loop Stability Menu    
    oo = mitem(o,'Stability');
@@ -318,7 +328,6 @@ end
 
 function o = Critical(o)               % Calculate Critical Quantities       
    if type(o,{'spm'})
-%     o = cache(o,o,'multi');
       o = cache(o,o,'critical');
    else
       plot(o,'About');
@@ -330,213 +339,16 @@ function o = Critical(o)               % Calculate Critical Quantities
    closeup = opt(o,{'bode.closeup',0});
    
    if (closeup)
-       points = max(points,200);
+       points = max(points,500);
        f0 = cook(o,'f0');
        o = opt(o,'omega.low',2*pi*f0/(1+closeup));
        o = opt(o,'omega.high',2*pi*f0*(1+closeup));
+       o = opt(o,'omega.points',points);
    end
-   o = opt(o,'omega.points',points/100);
+   o = opt(o,'omega.points',points);
    
    critical(o);
    Heading(o);
-   return
-
-   message(o,'Calculation of Critical Quantities');
-   idle(o);
-   
-      % we need a system according to contact specification, time
-      % normalization and coordinate transformation. All these aspects
-      % are implemented by contact method, which returns the required
-      % system
-   
-   [oo,L0,K0_,f0_,K180,f180] = contact(o);
-   [A,B_1,B_3,C_3,T0]=var(oo,'A,B_1,B_3,C_3,T0');
-   multi = (size(C_3,1) > 1);          % multi contact
-   
-   PlotStability(oo,3232);
-   
-   flim = [500,1500];                  % frequency from 500 to 1500Hz
-   for (iter=1:10)
-      if (flim(1) > f0_ || flim(2) < f0_)
-         fprintf('*** warning: helping search algorithm\n'); 
-         flim = f0_ * [0.99 1.01];
-      end
-      
-      df = diff(flim)/200;             % frequency increment
-      f = flim(1):df:flim(2);          % frequency range of this iteration
-      jw = sqrt(-1)*2*pi*f * T0;       % T0: time scaling constant
-
-         % calculate G31(jw), G33(jw) and L0(jw)
-
-      I=eye(size(A));   % unit matrix
-      for(k=1:length(jw))
-         Phi = inv(jw(k)*I-A);
-         G31jwk = C_3*Phi*B_1;
-         G33jwk = C_3*Phi*B_3;
-         L0jwk = G33jwk\G31jwk;
-         
-         if (~multi)                   % single contact
-            G31jw(k) = G31jwk;  
-            G33jw(k) = G33jwk;
-            L0jw(k)  = L0jwk;
-         else                          % multi contact
-            s31k = eig(G31jwk);        % eigenvalues (EV) of G31(jwk)
-            [~,idx] = sort(abs(s31k)); % get sorting indices
-            G31jw(k) = s31k(idx(end)); % pick 'largest' eigenvalue
-
-            s33k = eig(G33jwk);        % eigenvalues (EV) of G33(jwk)
-            [~,idx] = sort(abs(s33k)); % get sorting indices
-            G33jw(k) = s33k(idx(1));   % pick 'smallest' eigenvalue
-            
-            s0k = eig(L0jwk);          % eigenvalues of L0(jwk) 
-            [~ ,idx] = sort(abs(s0k)); % sort EV's by magnitude
-            L0jw(k) = s0k(idx(end));   % pick 'largest' eigenvalue
-         end
-      end;
-
-         % calculate phases phi31,phi33 and phi=phi31-phi33
-
-      phi31 = angle(G31jw);
-      phi33 = angle(G33jw);
-      if (true || multi)
-         phi = angle(L0jw);            % multi contact case
-      else
-         %phi = phi31-phi33;            % single contact case
-      end
-      
-      phi = mod(phi,2*pi) - 2*pi;      % map into interval -2*pi ... 0
-            
-         % find f0 where phi = -pi
-
-      if (phi(1) <= -pi)
-         idx = min(find(phi>=-pi));
-      else
-         idx = min(find(phi<=-pi));
-      end
-      
-      Plot(o);                         % plot intermediate results
-      
-      if (abs(phi(idx-1)-phi(idx+1)) > pi)   % no crossing of 180°
-         flim(1) = f(idx+1);                 % skip this frequency!
-      else                                  
-         flim = [f(idx-1),f(idx+1)];         % close-up
-      end
-   end
-   
-   f0 = f(idx);                        % critical frequency [kHz]
-   
-   M31 = abs(G31jw(idx));              % coupling gain
-   phi31 = phi31(idx);                 % coupling phase      
-
-   M33 = abs(G33jw(idx));              % direct gain
-   phi33 = phi33(idx);                 % direkt phase      
-
-   ML0 = abs(L0jw(idx));
-   
-      % calculate critical gain (= critical friction coefficient mu)
-
-   if (multi)  
-      K0 = ML0;                        % critical gain
-   else
-      K0 = M33/M31;                    % critical gain
-   end
-   
-   Results(o);                         % display results
-      
-   heading(o);
-   
-   function Plot(o)
-      if (iter == 1)                   % in first iteration
-         subplot(o,311,'semilogx');
-         plot(o,f,20*log10(abs(-G31jw./G33jw)),'K');
-         plot(o,f,20*log10(abs(-L0jw)),'ryyy1');
-         plot(o,f0_*[1 1],get(gca,'ylim'),'r1-.');
-         plot(o,f0_,-20*log10(K0_),'K1o');
-         
-         title(sprintf('L0(s)=G31(s)/G33(s): Magnitude Plot (K0: %g @ %g Hz)',...
-                       K0_,f0_));
-         xlabel('frequency [Hz]');
-         subplot(o);
-         
-         subplot(o,312,'semilogx');
-         plot(o,f,0*f-180,'K',  f,phi*180/pi,'g1');
-         set(gca,'ytick',-360:45:0);
-      elseif (diff(flim) >= 1e-6)
-         subplot(o,3231,'semilogx');
-         hold off
-         plot(o,f,0*f-180,'K', f,phi*180/pi,'g1');
-         hold on
-         plot(o,f(idx),-180,'Ko');
-         set(gca,'ytick',-360:45:0);
-      end
-      subplot(o);  idle(o);  % give time to refresh graphics
-      xlabel('frequency [Hz]');
-   end
-   function Results(o)
-      err = norm([K0-K0_,f0-f0_]);
-      subplot(o,311);
-      title(sprintf('L(s) = G31(s)/G33(s): Magnitude Plot (K0: %g @ %g Hz, err: %g)',...
-                    K0_,f0_,err));
-
-      subplot(o,312);
-      txt = sprintf('G31(jw): %g um/N @ %g deg, G33(jw): %g um/N @ %g deg',...
-             M31*1e6,phi31*180/pi, M33*1e6,phi33*180/pi);
-      title(txt); % hold on;
-      plot(o,f0_*[1 1],get(gca,'ylim'),'r1-.');
-      plot(o,f0*[1 1],get(gca,'ylim'),'K1-.');
-
-      subplot(o,3231);
-      txt = sprintf('Critical gain/frequency K0: %g @ f0: %g Hz',K0,f0);
-      title(txt);%  hold on;
-      plot(o,f0*[1 1],get(gca,'ylim'),'K1-.');
-   end
-   function PlotStability(o,sub)
-      subplot(o,sub,'semilogx');
-      low  = opt(o,{'stability.gain.low',1e-3});
-      high = opt(o,{'stability.gain.high',1e3});
-      points = opt(o,{'stability.points',200});
-      
-         % get L0 system matrices
-         
-      [A0,B0,C0,D0] = data(L0,'A,B,C,D');
-      
-      K = logspace(log10(low),log10(high),points);
-      kmax = length(K);
-      for (k=1:length(K))
-         if (rem(k-1,10) == 0)
-            progress(o,sprintf('%g of %g: calulate eigenvalues',k,kmax),k/kmax*100);
-         end
-         
-         Kk = K(k);
-         
-            % calculate closed loop dynamic matrix
-            
-         Ak = A0 - B0*inv(eye(size(D0))+Kk*D0)*Kk*C0;  % closed loop A
-         
-            % find eigenvalue with largest real part
-            
-         sk = eig(Ak);
-         re = real(sk);
-         idx = find(re==max(re));
-         s(k) = sk(idx(1));
-      end
-      progress(o);                     % done
-      
-         % plot K for stable EV in green and unstable in red
-         
-      idx = find(real(s)<0);
-      if ~isempty(idx)
-         plot(o,K(idx),-real(s(idx))*100,'g.');
-      end
-      idx = find(real(s)>=0);
-      if ~isempty(idx)
-         plot(o,K(idx),-real(s(idx))*100,'r.');
-      end
-      
-      title('Worst Damping');
-      xlabel('closed loop gain K');
-      ylabel('worst damping [%]');
-   end
 end
 
 %==========================================================================

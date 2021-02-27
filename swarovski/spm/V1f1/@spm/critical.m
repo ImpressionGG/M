@@ -1,10 +1,18 @@
-function [K0,f0,K180,f180,L0] = critical(o,cdx)
+function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %
 %  CRITICAL   Calculate or plot critical stability parameters K0 (critical
 %             open loop gain) and f0 (critical frequency)
 %
 %                critical(o)      % plot critical stability charts
 %                critical(o,cdx)  % plot for specific contact indices
+%
+%             Drawing specific plots
+%
+%                critical(o,'Overview',[sub1,sub2,sub3]);
+%                critical(o,'Damping',sub);
+%                critical(o,'Bode',[sub1,sub2]);
+%                critical(o,'Magni',sub);
+%                critical(o,'Phase',sub);
 %
 %             Calculate principal system andcritical qantities 
 %
@@ -19,6 +27,8 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx)
 %                search           % number of search points (default 50)
 %                eps              % termination epsilon (default 1e-10)
 %                iter             % max iterations (default 50)
+%                check            % check crit. quantities (0: off, 1: weak
+%                                 % 2: strong - default 1)
 %
 %             Copyright(c): Bluenetics 2021
 %
@@ -29,21 +39,57 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx)
    else
       error('SPM object expected');
    end
-   
-%  [oo,L0] = contact(o);
-   if (nargin <= 1)
+      
+   if (nargout == 0 || nargin == 1)
       oo = system(o);
-   else
+   elseif (nargout > 0)
       oo = system(o,cdx);
    end
    L0 = principal(o,oo);               % calc L0 from oo
 
    if (nargout == 0)
-      PlotOverview(o,oo,L0);           % plot critical parameter overview
+      if (nargin < 2)
+         mode = 'Overview';
+      else
+         mode = cdx;
+      end
+      
+      if (nargout < 3)
+         sub = [];
+      end
+      
+      switch mode
+         case 'Overview'
+            if (length(sub) ~= 3)
+               sub = [311,312,313];
+            end
+            Bode(o,oo,L0,sub(1:2));    % plot critical parameter overview
+            Damping(o,oo,L0,sub(3));
+         case 'Bode'
+            if (length(sub) ~= 2)
+               sub = [211,212];
+            end
+            Bode(o,oo,L0,sub(1:2));    % plot critical parameter overview
+         case 'Magni'
+            if (length(sub) ~= 1)
+               sub = [111];
+            end
+            Bode(o,oo,L0,[sub 0]);     % plot critical parameter overview
+         case 'Phase'
+            if (length(sub) ~= 1)
+               sub = [111];
+            end
+            Bode(o,oo,L0,[0 sub]);     % plot critical parameter overview
+         case 'Damping'
+            if (length(sub) ~= 1)
+               sub = [111];
+            end
+            Damping(o,oo,L0,sub);      % plot critical parameter overview
+     end
    elseif (nargout <= 2)
-      [K0,f0] = Calc(o,L0);            % calculate some critical parameters
+      [K0,f0] = Calc(o,oo,L0);         % calculate some critical parameters
    else
-      [K0,f0,K180,f180] = Calc(o,L0);  % calculate all critical parameters
+      [K0,f0,K180,f180]=Calc(o,oo,L0); % calculate all critical parameters
    end
 end
 
@@ -51,12 +97,35 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0,K180,f180] = Calc(o,L0)
-   [K0,f0] = Stable(o,L0);
+function [K0,f0,K180,f180] = Calc(o,oo,L0)
+   [K0,f0,K180,f180,err] = Critical(o,oo);
    
-   if (nargout > 2)
-      L180 = Negate(L0); 
-      [K180,f180] = Stable(o,L180);
+   check = opt(o,{'check',2});
+   if (check >= 1 )
+      if (check == 2)
+         [K0_,f0_] = Stable(o,L0);
+      else
+         [K0_,f0_] = Stable(o,L0,K0);
+      end
+      
+      err = norm([K0-K0_,f0-f0_]);
+      if (err > 1e-6)
+         fprintf('*** numerical struggles during K0,f0 calculation: err = %g\n',err);
+      end
+      
+      if (nargout > 2)
+         L180 = Negate(L0); 
+         if (check == 2)
+            [K180_,f180_] = Stable(o,L180);
+         else
+            [K180_,f180_] = Stable(o,L180,K180);
+         end
+
+         err = norm([K180-K180_,f180-f180_]);
+         if (err > 1e-6)
+            fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);
+         end
+      end
    end
    
    function L = Negate(L)
@@ -69,29 +138,24 @@ end
 % Plot Overview
 %==========================================================================
 
-function PlotOverview(o,oo,L0)
-   subplot(o,312);
-   message(o,'Calculation of Critical Quantities',...
-             {'see figure bar for progress...'});
-   idle(o);
-   
-      % we need a system according to contact specification, time
-      % normalization and coordinate transformation. All these aspects
-      % are implemented by contact method, which returns the required
-      % system
+function o = Damping(o,oo,L0,sub)
+   if isempty(sub)
+      sub = 111;
+   end
+   [K0_,f0_] = PlotStability(o,L0,sub);
+end
+function Bode(o,oo,L0,sub)
+   if (length(sub) ~= 2)
+      sub = [211,212];
+   end
    
    [K0,f0] = cook(o,'K0,f0');
-%  [K0,f0] = critical(o);
 
-   [A,B_1,B_3,C_3,T0]=var(oo,'A,B_1,B_3,C_3,T0');
+   [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
    m = size(C_3,1);
    multi = (m > 1);                 % multi contact
    
-   [K0_,f0_] = PlotStability(o,L0,3111);
-   if stop(o)
-      return
-   end
-   if isequal(K0_,inf)
+   if isequal(K0,inf)
       set(gca,'ylim',[-5 5]);
       subplot(o,312);
       message(o,'No instabilities - skip frequency analysis!');
@@ -140,9 +204,12 @@ function PlotOverview(o,oo,L0)
     
       % calculate phases phi31,phi33 and phi=phi31-phi33
 
-   phi = angle(L0jw);
-   phi = mod(phi,2*pi) - 2*pi;           % map into interval -2*pi ... 0
-
+   %phi = angle(L0jw);
+   %phi = mod(phi,2*pi) - 2*pi;           % map into interval -2*pi ... 0
+   kf0 = min(find(f>=f0));
+   
+   phi = angle(o,L0jw,kf0);
+         
       % calculate critical frequency response
       
    [L0jw0,G31jw0,G33jw0] = Lambda(o,A,B_1,B_3,C_3,2*pi*f0*T0);
@@ -161,8 +228,9 @@ function PlotOverview(o,oo,L0)
    aprerr = min(M);                    % approximate Nyquist error
    k0 = min(find(M==aprerr));          % indexing critical characteristics        
    l0jw = L0jw(k0,:);                  % critical characteristics 
+   phil0 = angle(o,l0jw,kf0);
    
-   BodePlot(o,3121,3131);              % plot intermediate results
+   BodePlot(o,sub(1),sub(2));          % plot intermediate results
    
    M31 = abs(G31jw0(k0));              % coupling gain
    phi31 = angle(G31jw0(k0));          % coupling phase      
@@ -173,74 +241,84 @@ function PlotOverview(o,oo,L0)
    ML0 = abs(L0jw0(k0));               % critical gain
    phi0 = angle(L0jw0(k0));            % critical phase      
       
-   Results(o,3121,3131);               % display results
+   [K0_,f0_] = Stable(o,L0,K0); 
+   Results(o,sub(1),sub(2));           % display results
    heading(o);
          
    function BodePlot(o,sub1,sub2)
-      subplot(o,sub1,'semilogx');
-      set(gca,'visible','on');
-      
-         % magnitude plot
-        
       if dark(o)
          colors = {'rk','gk','bk','ck','mk'};
       else
          colors = {'rwww','gwww','bwww','cwww','mwww'};
       end
       
-      for (ii=1:size(L0jw,1))
-         col = colors{1+rem(ii-1,length(colors))};
-         plot(o,om,20*log10(abs(L0jw(ii,:))),col);
+      if (sub1)
+         subplot(o,sub1,'semilogx');
+         set(gca,'visible','on');
+      
+            % magnitude plot  
+      
+         for (ii=1:size(L0jw,1))
+            col = colors{1+rem(ii-1,length(colors))};
+            plot(o,om,20*log10(abs(L0jw(ii,:))),col);
+         end
+         plot(o,om,20*log10(abs(l0jw)),'ryyy2');
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0,-20*log10(K0),'K1o');
+
+         title(sprintf('L0(s)=G31(s)/G33(s): Magnitude Plots (K0: %g @ %g Hz)',...
+                       K0,f0));
+         xlabel('Omega [1/s]');
+         ylabel('|L0[k](jw)| [dB]');
+         subplot(o);
       end
-      plot(o,om,20*log10(abs(l0jw)),'ryyy2');
-      plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-      plot(o,2*pi*f0,-20*log10(K0),'K1o');
-
-      title(sprintf('L0(s)=G31(s)/G33(s): Magnitude Plots (K0: %g @ %g Hz)',...
-                    K0,f0));
-      xlabel('Omega [1/s]');
-      ylabel('|L0[k](jw)| [dB]');
-      subplot(o);
-
+      
          % phase plot
          
-      subplot(o,sub2,'semilogx');
-      set(gca,'visible','on');
+      if (sub2)
+         subplot(o,sub2,'semilogx');
+         set(gca,'visible','on');
 
-      plot(o,om,0*f-180,'K');
-      for (ii=1:size(L0jw,1))
-         col = colors{1+rem(ii-1,length(colors))};
-         plot(o,om,phi(ii,:)*180/pi,col);
+         plot(o,om,0*f-180,'K');
+         for (ii=1:size(L0jw,1))
+            col = colors{1+rem(ii-1,length(colors))};
+            plot(o,om,phi(ii,:)*180/pi,col);
+         end
+
+   %     phil0 = mod(angle(l0jw),2*pi)-2*pi;
+         plot(o,om,phil0*180/pi,'yyyr2');
+         %set(gca,'ytick',-360:45:0);
+
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0,-180,'K1o');
+
+         subplot(o);  idle(o);  % give time to refresh graphics
+         xlabel('Omega [1/s]');
+         ylabel('L0[k](jw): Phase [deg]');
       end
-      
-      phil0 = mod(angle(l0jw),2*pi)-2*pi;
-      plot(o,om,phil0*180/pi,'yyyr2');
-      set(gca,'ytick',-360:45:0);
-
-      plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-      plot(o,2*pi*f0,-180,'K1o');
-      
-      subplot(o);  idle(o);  % give time to refresh graphics
-      xlabel('Omega [1/s]');
-      ylabel('L0[k](jw): Phase [deg]');
    end
    function Results(o,sub1,sub2)
       err = norm([K0-K0_,f0-f0_]);
-      subplot(o,sub1);
-      title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K0: ',...
-                     '%g @ %g Hz (Eigenvalue error: %g)'],K0_,f0_,err));
-
-      txt = sprintf(['G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
-            ' => G31(jw0)/G33(jw0): %g @ %g deg'], Rd(M31*1e9),Rd(phi31*180/pi),...
-            Rd(M33*1e9),Rd(phi33*180/pi), o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi));
-      xlabel(txt);
-      subplot(o);
       
-      subplot(o,sub2);
-      title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
-      plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
-      plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-      subplot(o);
+      if (sub1)
+         subplot(o,sub1);
+         title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K0: ',...
+                        '%g @ %g Hz (Eigenvalue error: %g)'],K0_,f0_,err));
+
+         txt = sprintf(['G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
+               ' => G31(jw0)/G33(jw0): %g @ %g deg'], Rd(M31*1e9),Rd(phi31*180/pi),...
+               Rd(M33*1e9),Rd(phi33*180/pi), o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi));
+         xlabel(txt);
+         subplot(o);
+      end
+      
+      if (sub2)
+         subplot(o,sub2);
+         title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+         subplot(o);
+      end
    end
 
    function y = Rd(x)                  % round to 1 decimal
@@ -381,6 +459,7 @@ end
 function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart          
    K0 = nan;  f0 = nan;
    subplot(o,sub,'semilogx');
+   set(gca,'visible','on');
 
    low  = opt(o,{'gain.low',1e-3});
    high = opt(o,{'gain.high',1e3});
@@ -445,6 +524,7 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
 %         estimation of an initial interval.
 %
 %            [K0,f0] = Stable(o,L0,K,s)
+%            [K0,f0] = Stable(o,L0,K)
 %            [K0,f0] = Stable(o,L0)
 %
    if (nargin < 3)
@@ -455,6 +535,10 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
    end
    iter = opt(o,{'iter',50});
    epsi = opt(o,{'eps',1e-10});
+   
+   if (length(K) == 1)
+      K = K*[0.99,1.01];               % convert to interval
+   end
    
    if (nargin < 4)
       s = CritEig(o,L0,K);
@@ -560,4 +644,153 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
    if (kmax > 10)
       progress(o);                  % done
    end
+end
+function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities 
+%
+% algorithm: for quadrants 1..4 assign quadrant IDs as follows
+%
+%    quadrant 1: ID = 1
+%    quadrant 2: ID = 2
+%    quadrant 3: ID = -2
+%    quadrant 4: ID = -1
+%
+% thus q (holding quadrant IDs could look as follows)
+%
+%     q = [-1 -1 -2 -2 2  2  1  1 -1 -1]
+%    dq = [ 0 -1  0  4 0 -1  0 -2  0]
+%
+%      0° passes are characterized by abs(diff(q)) = 2
+%    180° passes are characterized by abs(diff(q)) = 4
+%
+   olo = opt(o,{'omega.low',100});
+   ohi = opt(o,{'omega.high',1e5});
+   points = opt(o,{'omega.points',2000});
+
+      % get system matrices
+      
+   [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+   
+      % omega/frequency range
+      
+   om = logspace(log10(olo),log10(ohi),points);
+   Om = om*T0;                         % time normalized omega
+   f = om/2/pi;                        % frequency range
+   
+      % calculate spectrum
+
+   l0jw = lambda(o,A,B_1,B_3,C_3,Om);
+   phi = angle(o,l0jw,'Positive') * 180/pi;
+   [m,n] = size(phi);
+   
+      % find quadrant changes
+ 
+   for (i=1:m)
+      q = Quadrant(phi(i,:));      
+      Dq(i,:) = diff(q);               % find quadrant changes
+   end
+   dq = max(abs(Dq));
+   
+   jdx = find(dq>=2);
+   K0 = inf;  K180 = inf;  f0 = 0;  f180 = 0;
+   
+   for (k=1:length(jdx))
+      j = jdx(k);  dqj = Dq(:,j);
+      if (j == n)
+         break;                        % no passing
+      end
+      
+      for (i=1:m)
+         switch dqj(i)
+            case {-2,2}                % 0° passing
+               [K,Omega,err] = Pass(o,[Om(j),Om(j+1)],-1);
+               if (K < K180)
+                  K180 = K;  f180 = Omega/(2*pi*T0);
+               end
+            case {-4,4}                % 180° passing
+               [K,Omega,err] = Pass(o,[Om(j),Om(j+1)],1);
+               if (K < K0)
+                  K0 = K;  f0 = Omega/(2*pi*T0);
+               end
+         end
+      end
+   end
+   
+       % second run for exact calculation
+       
+   tol = opt(o,{'critical.eps',1e-12});
+   iter = opt(o,{'critical.iter',100});
+   
+   [K,Omega,err] = Pass(o,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
+   K0 = K;  f0 = Omega/(2*pi*T0);
+
+   [K,Omega,err] = Pass(o,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
+   K180 = K;  f180 = Omega/(2*pi*T0);
+   
+   function q = Quadrant(phi)          % Classify Quadrants            
+      while (phi(1) >= 360)
+         phi = phi - 360;
+      end
+      while (phi(1) < 0)
+         phi = phi + 360;
+      end
+      assert(0 <= phi(1) && phi(1) < 360);
+
+      q = nan*phi;
+
+      idx = find(0<=phi & phi<90);
+      q(idx) = 0*idx + 1;              % ID=1 for 1st quadrant
+
+      idx = find(90<=phi & phi<180);
+      q(idx) = 0*idx + 2;              % ID=2 for 2nd quadrant
+
+      idx = find(180<=phi & phi<270);
+      q(idx) = 0*idx - 2;              % ID=-2 for 3rd quadrant
+      
+      idx = find(270<=phi & phi<360);
+      q(idx) = 0*idx - 1;              % ID=-1 for 4th quadrant
+      
+      assert(any(any(isnan(q)))==0);
+   end
+   function [K,Omega,err] = Pass(o,Olim,sgn,tol,iter)
+      if (nargin < 4)
+         tol = 1e-5;
+      end
+      if (nargin < 5)
+         iter = 5;
+      end
+      
+      l0jw = lambda(o,A,B_1,B_3,C_3,Olim);
+      Gjw = 1 + sgn*l0jw;
+      
+      idx = find(imag(Gjw(:,1)) .* imag(Gjw(:,2)) <= 0);
+      Mi = max(mean(abs(Gjw(idx,:))'));
+      
+      ilim = imag(Gjw(idx,:));
+      ilim = [min(ilim(:)), max(ilim(:))];
+      
+      K = min(1./mean(abs(l0jw(idx,:))));
+
+      for (ii=1:iter)
+         Omega = mean(Olim);
+         l0jw = lambda(o,A,B_1,B_3,C_3,Omega);
+         Gjw = 1 + K*sgn*l0jw;
+
+         absGjw = abs(Gjw);
+         idx = min(find(absGjw==min(absGjw)));
+         K = min(1./abs(l0jw(idx)));
+         err = imag(Gjw(idx));
+         
+         if (abs(err) < tol)
+            return;                    % terminate
+         end
+         
+         if (sign(diff(ilim)) * sign(err) > 0)
+            ilim(2) = err;
+            Olim(2) = Omega;
+         else
+            ilim(1) = err;
+            Olim(1) = Omega;
+         end
+      end
+  end
 end

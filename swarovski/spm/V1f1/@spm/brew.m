@@ -562,6 +562,7 @@ end
 %==========================================================================
 
 function oo = Critical(o)
+   o = with(o,'critical');
    [K0,f0,K180,f180,L0] = critical(o);
    
       % calculate L180
