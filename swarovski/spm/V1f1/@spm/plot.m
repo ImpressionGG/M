@@ -2501,7 +2501,9 @@ function o = StabilityRange(o)         % Plot Critical Mu
    if isempty(package)
       error('no package ID provided');
    end
-      
+
+   Heading(o);                         % start with heading
+   
       % get object list of package
       % note that first list element is the package object, which has 
       % to been deleted. calculate stability margin for all data objects
@@ -2515,8 +2517,8 @@ function o = StabilityRange(o)         % Plot Critical Mu
 
    mu = opt(o,{'process.mu',0.1});
    x = Axes(o,2211,mu,'Range');        % get variation range and plot axes
-   x = Axes(o,2221,-mu,'Range');       % get variation range and plot axes
-   x = Axes(o,2212,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,2221,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,2212,-mu,'Range');       % get variation range and plot axes
    x = Axes(o,2222,-mu,'Margin');      % get variation range and plot axes
   
       % calculate stability margin and plot
@@ -2536,10 +2538,10 @@ function o = StabilityRange(o)         % Plot Critical Mu
       
       Mu0(i) = mu/cook(oo,'K0');
       PlotMu(x(i),Mu0(i),2211);
-      PlotMargin(x(i),1/Mu0(i),2212);
+      PlotMargin(x(i),1/Mu0(i),2221);
       
       Mu180(i) = mu/cook(oo,'K180');
-      PlotMu(x(i),Mu180(i),2221);
+      PlotMu(x(i),Mu180(i),2212);
       PlotMargin(x(i),1/Mu180(i),2222);
       
       idle(o);                         % show graphics

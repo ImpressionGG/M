@@ -1656,7 +1656,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       return
    end
    
-   o = with(o,{'style','process','stability'});
+   o = with(o,{'style','process','stability','critical'});
    mode = arg(o,1);
    
    C = cook(o,'C');
@@ -1688,6 +1688,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    
    stop(o,'Enable');                % enable button down function for stop
    fmin = inf;                      % init
+   
    for (j=1:N)                      % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,j/N*100);
@@ -1726,7 +1727,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       end
    end
    stop(o,'Disable');                  % disable button down func. for stop
-   
+
    progress(o);                        % progress completed
    Heading(o);                         % add heading
    
@@ -1847,7 +1848,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
          id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
               [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
       elseif (no == 5 && isequal(mode,'sample'))
-         id = [31 [7 [14] [1 2 []  4  [] 8 16] [56] 28] 31];
+         id = [31 [7 [14] [1 2 []  4  [] 8 16] [1] 28] 31];
       elseif (no == 7 && isequal(mode,'sample'))
          id = [127 63 [15 [14] [1 2 []  8  [] 32 64] [14] 120] 126 127];
       else
