@@ -105,7 +105,7 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Critical Val's
+function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Crit.Val's
    algo = opt(o,{'algo','fqr'});
    
    switch algo
@@ -750,6 +750,8 @@ function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities
       % get system matrices
       
    [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+   PsiW31 = psion(o,A,B_1,C_3);        % to calculate G31(jw)
+   PsiW33 = psion(o,A,B_3,C_3);        % to calculate G33(jw)
    
       % omega/frequency range
       
@@ -783,12 +785,12 @@ function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities
       for (i=1:m)
          switch dqj(i)
             case {-2,2}                % 0° passing
-               [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,[Om(j),Om(j+1)],-1);
+               [K,Omega,err] = Pass(o,PsiW31,PsiW33,[Om(j),Om(j+1)],-1);
                if (K < K180)
                   K180 = K;  f180 = Omega/(2*pi*T0);
                end
             case {-4,4}                % 180° passing
-               [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,[Om(j),Om(j+1)],1);
+               [K,Omega,err] = Pass(o,PsiW31,PsiW33,[Om(j),Om(j+1)],1);
                if (K < K0)
                   K0 = K;  f0 = Omega/(2*pi*T0);
                end
@@ -801,10 +803,10 @@ function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities
    tol = opt(o,{'critical.eps',1e-12});
    iter = opt(o,{'critical.iter',100});
    
-   [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
+   [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
    K0 = K;  f0 = Omega/(2*pi*T0);
 
-   [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
+   [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
    K180 = K;  f180 = Omega/(2*pi*T0);
 end
 function q = Quadrant(phi)             % Classify Quadrants            
@@ -832,7 +834,7 @@ function q = Quadrant(phi)             % Classify Quadrants
 
    assert(any(any(isnan(q)))==0);
 end
-function [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,Olim,sgn,tol,iter)       
+function [K,Omega,err] = Pass(o,PsiW31,PsiW33,Olim,sgn,tol,iter)       
    if (nargin < 8)
       tol = 1e-5;
    end
@@ -840,7 +842,7 @@ function [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,Olim,sgn,tol,iter)
       iter = 5;
    end
 
-   l0jw = lambda(o,A,B_1,B_3,C_3,Olim);
+   l0jw = lambda(o,PsiW31,PsiW33,Olim);
    Gjw = 1 + sgn*l0jw;
 
    idx = find(imag(Gjw(:,1)) .* imag(Gjw(:,2)) <= 0);
@@ -853,7 +855,7 @@ function [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,Olim,sgn,tol,iter)
 
    for (ii=1:iter)
       Omega = mean(Olim);
-      l0jw = lambda(o,A,B_1,B_3,C_3,Omega);
+      l0jw = lambda(o,PsiW31,PsiW33,Omega);
       Gjw = 1 + K*sgn*l0jw;
 
       absGjw = abs(Gjw);

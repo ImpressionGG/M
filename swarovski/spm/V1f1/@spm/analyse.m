@@ -1656,6 +1656,8 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       return
    end
    
+   Heading(o);                         % stat with heading
+
    o = with(o,{'style','process','stability','critical'});
    mode = arg(o,1);
    
@@ -1848,7 +1850,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
          id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
               [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
       elseif (no == 5 && isequal(mode,'sample'))
-         id = [31 [7 [14] [1 2 []  4  [] 8 16] [1] 28] 31];
+         id = [31 [7 [14] [1 2 []  4  [] 8 16] [14] 28] 31];
       elseif (no == 7 && isequal(mode,'sample'))
          id = [127 63 [15 [14] [1 2 []  8  [] 32 64] [14] 120] 126 127];
       else
