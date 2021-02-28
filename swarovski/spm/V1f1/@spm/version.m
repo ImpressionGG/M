@@ -272,6 +272,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - setup study to access spm/critical instead of spm/stable
 % - methods spm/psion and spm/lambda :-)))
 % - fast algorithm to calculate K0,f0,K180,f180
+% - two algorithms for critical quantities: eig & fqr
 %
 % Known bugs & wishlist
 % =========================

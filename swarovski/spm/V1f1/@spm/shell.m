@@ -967,7 +967,7 @@ end
 % Select/Internal Menu
 %==========================================================================
 
-function oo = Internal(o)              % Internal Menu
+function oo = Internal(o)              % Internal Menu                 
    oo = mitem(o,'Internal');
    ooo = Trf(oo);                      % add Transfer Function menu
    ooo = Fqr(oo);                      % add Frequency Response menu
@@ -1057,15 +1057,16 @@ function oo = Normalize(o)             % Normalize Menu
    
    oo = mitem(o,'Normalize');
    ooo = mitem(oo,'T0',{},'brew.T0');
-   choice(ooo,{{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
+   choice(ooo,{{'Auto',[]},{},{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
                {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
                {@CacheReset});
 end
-function oo = Critical(o)              % Critical Menu                
+function oo = Critical(o)              % Critical Menu                 
    setting(o,{'critical.search'},50);  % number of search points
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
    setting(o,{'critical.check'},1);    % weak check
+   setting(o,{'critical.algo'},'eig'); % EIG algorithm
    setting(o,{'critical.gain.low'},1e-3);
    setting(o,{'critical.gain.high'},1e3);
 
@@ -1082,6 +1083,9 @@ function oo = Critical(o)              % Critical Menu
 
    ooo = mitem(oo,'Iterations',{},'critical.iter');
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
+
+   ooo = mitem(oo,'Algorithm',{},'critical.algo');
+   choice(ooo,{{'Frequency Response','fqr'},{'Eigenvalue','eig'}},{@ClearCache});
 
    ooo = mitem(oo,'Check',{},'critical.check');
    choice(ooo,{{'Off',0},{'Weak',1},{'Strong',2}},{});

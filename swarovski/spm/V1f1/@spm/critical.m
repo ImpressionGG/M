@@ -29,6 +29,10 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %                iter             % max iterations (default 50)
 %                check            % check crit. quantities (0: off, 1: weak
 %                                 % 2: strong - default 1)
+%                algo             % algorithm to calculate critical
+%                                 % quantities (default: 'fqr')
+%                                 % 'fqr': frequency response
+%                                 % 'eig': eigenvalue based
 %
 %             Copyright(c): Bluenetics 2021
 %
@@ -39,6 +43,8 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
    else
       error('SPM object expected');
    end
+   
+      % calculate contact related system (oo) and principal system (L0)
       
    if (nargout == 0 || nargin == 1)
       oo = system(o);
@@ -47,6 +53,8 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
    end
    L0 = principal(o,oo);               % calc L0 from oo
 
+      % handle plot modes
+      
    if (nargout == 0)
       if (nargin < 2)
          mode = 'Overview';
@@ -97,7 +105,29 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0,K180,f180] = Calc(o,oo,L0)
+function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Critical Val's          
+   algo = opt(o,{'algo','fqr'});
+   
+   switch algo
+      case 'fqr'
+         if (nargout <= 2)
+            [K0,f0] = CalcFqr(o,oo,L0);
+         else
+            [K0,f0,K180,f180] = CalcFqr(o,oo,L0);
+         end
+         
+      case 'eig'
+         if (nargout <= 2)
+            [K0,f0] = CalcEig(o,oo,L0);
+         else
+            [K0,f0,K180,f180] = CalcEig(o,oo,L0);
+         end
+         
+      otherwise
+         error('bad algo');
+   end
+end
+function [K0,f0,K180,f180] = CalcFqr(o,oo,L0)    % Frequency Based     
    [K0,f0,K180,f180,err] = Critical(o,oo);
    
    check = opt(o,{'check',2});
@@ -128,6 +158,45 @@ function [K0,f0,K180,f180] = Calc(o,oo,L0)
       end
    end
    
+   function L = Negate(L)
+      L.data.B = -L.data.B;
+      L.data.D = -L.data.D;
+   end
+end
+function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based    
+   [K0,f0] = Stable(o,L0);
+    
+   if (nargout > 2)
+      L180 = Negate(L0); 
+      [K180,f180] = Stable(o,L180);
+   end
+   
+   check = opt(o,{'check',2});
+   if (check >= 1 )
+      tol = opt(o,{'critical.eps',1e-12});
+      iter = opt(o,{'critical.iter',100});
+
+     [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+      
+      [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
+      K0_ = K;  f0_ = Omega/(2*pi*T0);
+
+      err = norm([K0-K0_,f0-f0_]);
+      if (err > 1e-6)
+         fprintf('*** numerical struggles during K0,f0 calculation: err = %g\n',err);
+      end
+      
+      if (nargout > 2)
+         [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
+         K180_ = K;  f180_ = Omega/(2*pi*T0);
+
+         err = norm([K180-K180_,f180-f180_]);
+         if (err > 1e-6)
+            fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);
+         end
+      end
+   end
+ 
    function L = Negate(L)
       L.data.B = -L.data.B;
       L.data.D = -L.data.D;
@@ -702,12 +771,12 @@ function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities
       for (i=1:m)
          switch dqj(i)
             case {-2,2}                % 0° passing
-               [K,Omega,err] = Pass(o,[Om(j),Om(j+1)],-1);
+               [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,[Om(j),Om(j+1)],-1);
                if (K < K180)
                   K180 = K;  f180 = Omega/(2*pi*T0);
                end
             case {-4,4}                % 180° passing
-               [K,Omega,err] = Pass(o,[Om(j),Om(j+1)],1);
+               [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,[Om(j),Om(j+1)],1);
                if (K < K0)
                   K0 = K;  f0 = Omega/(2*pi*T0);
                end
@@ -720,77 +789,76 @@ function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities
    tol = opt(o,{'critical.eps',1e-12});
    iter = opt(o,{'critical.iter',100});
    
-   [K,Omega,err] = Pass(o,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
+   [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
    K0 = K;  f0 = Omega/(2*pi*T0);
 
-   [K,Omega,err] = Pass(o,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
+   [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
    K180 = K;  f180 = Omega/(2*pi*T0);
-   
-   function q = Quadrant(phi)          % Classify Quadrants            
-      while (phi(1) >= 360)
-         phi = phi - 360;
-      end
-      while (phi(1) < 0)
-         phi = phi + 360;
-      end
-      assert(0 <= phi(1) && phi(1) < 360);
-
-      q = nan*phi;
-
-      idx = find(0<=phi & phi<90);
-      q(idx) = 0*idx + 1;              % ID=1 for 1st quadrant
-
-      idx = find(90<=phi & phi<180);
-      q(idx) = 0*idx + 2;              % ID=2 for 2nd quadrant
-
-      idx = find(180<=phi & phi<270);
-      q(idx) = 0*idx - 2;              % ID=-2 for 3rd quadrant
-      
-      idx = find(270<=phi & phi<360);
-      q(idx) = 0*idx - 1;              % ID=-1 for 4th quadrant
-      
-      assert(any(any(isnan(q)))==0);
+end
+function q = Quadrant(phi)             % Classify Quadrants            
+   while (phi(1) >= 360)
+      phi = phi - 360;
    end
-   function [K,Omega,err] = Pass(o,Olim,sgn,tol,iter)
-      if (nargin < 4)
-         tol = 1e-5;
-      end
-      if (nargin < 5)
-         iter = 5;
-      end
-      
-      l0jw = lambda(o,A,B_1,B_3,C_3,Olim);
-      Gjw = 1 + sgn*l0jw;
-      
-      idx = find(imag(Gjw(:,1)) .* imag(Gjw(:,2)) <= 0);
-      Mi = max(mean(abs(Gjw(idx,:))'));
-      
-      ilim = imag(Gjw(idx,:));
-      ilim = [min(ilim(:)), max(ilim(:))];
-      
-      K = min(1./mean(abs(l0jw(idx,:))));
+   while (phi(1) < 0)
+      phi = phi + 360;
+   end
+   assert(0 <= phi(1) && phi(1) < 360);
 
-      for (ii=1:iter)
-         Omega = mean(Olim);
-         l0jw = lambda(o,A,B_1,B_3,C_3,Omega);
-         Gjw = 1 + K*sgn*l0jw;
+   q = nan*phi;
 
-         absGjw = abs(Gjw);
-         idx = min(find(absGjw==min(absGjw)));
-         K = min(1./abs(l0jw(idx)));
-         err = imag(Gjw(idx));
-         
-         if (abs(err) < tol)
-            return;                    % terminate
-         end
-         
-         if (sign(diff(ilim)) * sign(err) > 0)
-            ilim(2) = err;
-            Olim(2) = Omega;
-         else
-            ilim(1) = err;
-            Olim(1) = Omega;
-         end
+   idx = find(0<=phi & phi<90);
+   q(idx) = 0*idx + 1;              % ID=1 for 1st quadrant
+
+   idx = find(90<=phi & phi<180);
+   q(idx) = 0*idx + 2;              % ID=2 for 2nd quadrant
+
+   idx = find(180<=phi & phi<270);
+   q(idx) = 0*idx - 2;              % ID=-2 for 3rd quadrant
+
+   idx = find(270<=phi & phi<360);
+   q(idx) = 0*idx - 1;              % ID=-1 for 4th quadrant
+
+   assert(any(any(isnan(q)))==0);
+end
+function [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,Olim,sgn,tol,iter)       
+   if (nargin < 4)
+      tol = 1e-5;
+   end
+   if (nargin < 5)
+      iter = 5;
+   end
+
+   l0jw = lambda(o,A,B_1,B_3,C_3,Olim);
+   Gjw = 1 + sgn*l0jw;
+
+   idx = find(imag(Gjw(:,1)) .* imag(Gjw(:,2)) <= 0);
+   Mi = max(mean(abs(Gjw(idx,:))'));
+
+   ilim = imag(Gjw(idx,:));
+   ilim = [min(ilim(:)), max(ilim(:))];
+
+   K = min(1./mean(abs(l0jw(idx,:))));
+
+   for (ii=1:iter)
+      Omega = mean(Olim);
+      l0jw = lambda(o,A,B_1,B_3,C_3,Omega);
+      Gjw = 1 + K*sgn*l0jw;
+
+      absGjw = abs(Gjw);
+      idx = min(find(absGjw==min(absGjw)));
+      K = min(1./abs(l0jw(idx)));
+      err = imag(Gjw(idx));
+
+      if (abs(err) < tol)
+         return;                    % terminate
       end
-  end
+
+      if (sign(diff(ilim)) * sign(err) > 0)
+         ilim(2) = err;
+         Olim(2) = Omega;
+      else
+         ilim(1) = err;
+         Olim(1) = Omega;
+      end
+   end
 end

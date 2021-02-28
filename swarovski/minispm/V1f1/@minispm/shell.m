@@ -828,10 +828,189 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Critical(o)              % Critical Menu                
+function oo = Contact(o)               % Add Contact Menu Items        
+   setting(o,{'process.contact'},inf); % multi contact
+   
+   oo = current(o);
+   if type(oo,{'spm'})
+      N = round(size(oo.data.B,2)/3);
+   else
+      N = 5;
+   end
+   
+   if (N == 5)
+      leading =  {1 1 1 0 0};
+      trailing = {0 0 1 1 1};
+      triple =   {0 1 1 1 0};
+   elseif (N == 7)
+      leading =  {1 1 1 1 0 0 0};
+      trailing = {0 0 0 1 1 1 1};
+      triple =   {0 0 1 1 1 0 0};
+   else
+      leading = inf;
+      trailing = inf;
+      triple = inf;
+   end
+   
+   list = {{'Center',0},{'Leading',leading},{'Trailing',trailing},...
+           {'Triple',triple},{'Multi',inf},{}};
+   for(i=1:N)
+      list{end+1} = {sprintf('%g',i),i};
+   end
+   
+   oo = mitem(o,'Contact',{},'process.contact');
+   choice(oo,list,{@CacheReset});
+end
+function oo = Coordinates(o)           % Add Coordinates Menu Items    
+   setting(o,{'process.phi'},0);
+   setting(o,{'process.Cphi'},1);
+    
+   oo = mitem(o,'Coordinates');
+   ooo = mitem(oo,'Phi Rotation',{},'process.phi');
+   choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
+   
+   ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
+   choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
+end
+function oo = Motion(o)                % Add Motion Menu Items         
+   setting(o,{'motion.smax'},10e-6);   % 10 um stroke
+   setting(o,{'motion.vmax'},0.15e-3); % 0.15mm/s max velocity
+   setting(o,{'motion.amax'},100e-3);  % 100 mm/s2 max acceleration
+   setting(o,{'motion.tj'},0.005);     % 5 ms jerk time
+   setting(o,{'motion.sunit'},'mm');   % stroke unit: mm
+   setting(o,{'motion.tunit'},'ms');   % time unit: ms
+
+   oo = mitem(o,'Motion');
+   ooo = mitem(oo,'Stroke (smax)',{},'motion.smax');
+        choice(ooo,[10 20 50 100 200 300 400 500]*1e-6,{});
+   ooo = mitem(oo,'Max. Velocity [m/s]',{},'motion.vmax');
+        choice(ooo,[0.05 0.10 0.15 0.2 0.3 0.4 0.5]*1e-3,{});
+   ooo = mitem(oo,'Max. Acceleration [m/s2]',{},'motion.amax');
+        choice(ooo,[1e-3 1e-2 1e-1],{});
+   ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
+        choice(ooo,[0.02 0.01 0.005],{});
+end
+
+%==========================================================================
+% Select/Internal Menu
+%==========================================================================
+
+function oo = Internal(o)              % Internal Menu                 
+   oo = mitem(o,'Internal');
+   ooo = Trf(oo);                      % add Transfer Function menu
+   ooo = Fqr(oo);                      % add Frequency Response menu
+   ooo = Precision(oo);                % add Precision Menu
+   ooo = Normalize(oo);                % add Normalize menu   
+   ooo = Cancel(oo);                   % add Cancel sub menu
+   ooo = Critical(oo);                 % add Critical sub menu
+   ooo = Spectrum(oo);                 % add Spectrum sub menu
+   ooo = Filter(oo);                   % add Filter sub menu
+end
+function oo = Trf(o)                   % Transfer Function Menu        
+   setting(o,{'trf.type'},'szpk');
+   
+   oo = mitem(o,'Transfer Functions',{},'trf.type');
+   choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
+              {'Modal Type','modal'}},{@CacheReset});
+end
+function oo = Fqr(o)                   % Frequency Response Menu       
+   setting(o,{'select.fqr'},'standard');
+   
+   oo = mitem(o,'Frequency Response',{},'select.fqr');
+   choice(oo,{{'Standard','standard'},{'Expression','expression'}},...
+              {@CacheReset});
+end
+function oo = Precision(o)             % Variable Presicion Menu       
+   setting(o,{'precision.G'},0);       % VPA digits of G(s) calculation
+   setting(o,{'precision.Gcook'},0);   % G(s) cooking as double   
+   setting(o,{'precision.check'},128);
+   setting(o,{'precision.V0'},0);      % VPA digits of V0 calculation
+   setting(o,{'select.controltoolbox'},0);
+   
+   oo = mitem(o,'Precision');
+   ooo = mitem(oo,'G(s) Calculation',{},'precision.G');
+   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
+               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
+               {@DigitCb});
+   
+   ooo = mitem(oo,'G(s) Cooking',{},'precision.Gcook');
+   choice(ooo,{{'Double',0},{'VPA',1}},{});
+
+   ooo = mitem(oo,'Check',{},'precision.check');
+   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
+               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
+               {});
+   
+   ooo = mitem(oo,'V0 = G33(0)\G31(0)',{},'precision.V0');
+   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
+               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
+               {@DigitCb});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Use Control Toolbox',{},'select.controltoolbox');
+   check(ooo,{@ControlCb});
+   
+   function o = DigitCb(o)
+      CacheReset(o);
+      try
+         old = digits(32);
+         digits(old);                  % and restore immediately
+      catch
+         choice(o,'precision.G',0);
+         choice(o,'precision.Gcook',0);
+         choice(o,'precision.V0',0);
+         message(o,'Selection rejected!',...
+                   {'Seems that Symbolic Toolbox is not supported!'});
+      end
+   end
+   function o = ControlCb(o)
+      ctbox = setting(o,'select.controltoolbox');
+      if (ctbox == 0)
+         CacheReset(o);
+      else
+         try
+            sys = ss(1,1,1,1);
+            CacheReset(o);
+         catch
+            check(o,'select.controltoolbox',0);
+            message(o,'Selection rejected!',...
+                      {'Seems that Control Toolbox is not supported!'});
+         end
+      end
+   end
+end
+function oo = Normalize(o)             % Normalize Menu                
+   setting(o,{'brew.T0'},1e-3);
+   
+   oo = mitem(o,'Normalize');
+   ooo = mitem(oo,'T0',{},'brew.T0');
+   choice(ooo,{{'Auto',[]},{},{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
+               {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
+               {@CacheReset});
+end
+function oo = Cancel(o)                % Add Cancel Menu Items         
+   setting(o,{'cancel.G.eps'},1e-7);
+   setting(o,{'cancel.H.eps'},1e-7);
+   setting(o,{'cancel.L.eps'},1e-7);
+   setting(o,{'cancel.T.eps'},1e-7);
+   
+   oo = mitem(o,'Cancel');
+   ooo = mitem(oo,'G(s)',{},'cancel.G.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
+   choice(ooo,[0.1,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,...
+               0.005,0.002,0.001,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+end
+function oo = Critical(o)              % Critical Menu                 
    setting(o,{'critical.search'},50);  % number of search points
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
+   setting(o,{'critical.check'},1);    % weak check
+   setting(o,{'critical.algo'},'eig'); % EIG algorithm
    setting(o,{'critical.gain.low'},1e-3);
    setting(o,{'critical.gain.high'},1e3);
 
@@ -848,6 +1027,12 @@ function oo = Critical(o)              % Critical Menu
 
    ooo = mitem(oo,'Iterations',{},'critical.iter');
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
+
+   ooo = mitem(oo,'Algorithm',{},'critical.algo');
+   choice(ooo,{{'Frequency Response','fqr'},{'Eigenvalue','eig'}},{@ClearCache});
+
+   ooo = mitem(oo,'Check',{},'critical.check');
+   choice(ooo,{{'Off',0},{'Weak',1},{'Strong',2}},{});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Gain',{},'critical.gain.low');
@@ -927,180 +1112,6 @@ function oo = Filter(o)                % Add Filter Menu Items
    charm(ooo,{});
    ooo = mitem(oo,'Method',{},'filter.method');
    choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
-end
-function oo = Motion(o)                % Add Motion Menu Items         
-   setting(o,{'motion.smax'},10e-6);   % 10 um stroke
-   setting(o,{'motion.vmax'},0.15e-3); % 0.15mm/s max velocity
-   setting(o,{'motion.amax'},100e-3);  % 100 mm/s2 max acceleration
-   setting(o,{'motion.tj'},0.005);     % 5 ms jerk time
-   setting(o,{'motion.sunit'},'mm');   % stroke unit: mm
-   setting(o,{'motion.tunit'},'ms');   % time unit: ms
-
-   oo = mitem(o,'Motion');
-   ooo = mitem(oo,'Stroke (smax)',{},'motion.smax');
-        choice(ooo,[10 20 50 100 200 300 400 500]*1e-6,{});
-   ooo = mitem(oo,'Max. Velocity [m/s]',{},'motion.vmax');
-        choice(ooo,[0.05 0.10 0.15 0.2 0.3 0.4 0.5]*1e-3,{});
-   ooo = mitem(oo,'Max. Acceleration [m/s2]',{},'motion.amax');
-        choice(ooo,[1e-3 1e-2 1e-1],{});
-   ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
-        choice(ooo,[0.02 0.01 0.005],{});
-end
-function oo = Contact(o)               % Add Contact Menu Items        
-   setting(o,{'process.contact'},inf); % multi contact
-   
-   oo = current(o);
-   if type(oo,{'spm'})
-      N = round(size(oo.data.B,2)/3);
-   else
-      N = 5;
-   end
-   
-   if (N == 5)
-      leading =  {1 1 1 0 0};
-      trailing = {0 0 1 1 1};
-      triple =   {0 1 1 1 0};
-   elseif (N == 7)
-      leading =  {1 1 1 1 0 0 0};
-      trailing = {0 0 0 1 1 1 1};
-      triple =   {0 0 1 1 1 0 0};
-   else
-      leading = inf;
-      trailing = inf;
-      triple = inf;
-   end
-   
-   list = {{'Center',0},{'Leading',leading},{'Trailing',trailing},...
-           {'Triple',triple},{'Multi',inf},{}};
-   for(i=1:N)
-      list{end+1} = {sprintf('%g',i),i};
-   end
-   
-   oo = mitem(o,'Contact',{},'process.contact');
-   choice(oo,list,{@CacheReset});
-end
-function oo = Coordinates(o)           % Add Coordinates Menu Items    
-   setting(o,{'process.phi'},0);
-   setting(o,{'process.Cphi'},1);
-    
-   oo = mitem(o,'Coordinates');
-   ooo = mitem(oo,'Phi Rotation',{},'process.phi');
-   choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
-   
-   ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
-   choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
-end
-
-function oo = Internal(o)              % Internal Menu                 
-   oo = mitem(o,'Internal');
-   ooo = Trf(oo);                      % add Transfer Function menu
-   ooo = Fqr(oo);                      % add Frequency Response menu
-   ooo = Precision(oo);                % add Precision Menu
-   ooo = Normalize(oo);                % add Normalize menu   
-   ooo = Cancel(oo);                   % add Cancel sub menu
-   ooo = Critical(oo);                 % add Critical sub menu
-   ooo = Spectrum(oo);                 % add Spectrum sub menu
-   ooo = Filter(oo);                   % add Filter sub menu
-end
-
-function oo = Trf(o)                   % Transfer Function Menu        
-   setting(o,{'trf.type'},'szpk');
-   
-   oo = mitem(o,'Transfer Functions',{},'trf.type');
-   choice(oo,{{'Trf Type','strf'},{'ZPK Type','szpk'},...
-              {'Modal Type','modal'}},{@CacheReset});
-end
-function oo = Fqr(o)                   % Frequency Response Menu       
-   setting(o,{'select.fqr'},'standard');
-   
-   oo = mitem(o,'Frequency Response',{},'select.fqr');
-   choice(oo,{{'Standard','standard'},{'Expression','expression'}},...
-              {@CacheReset});
-end
-function oo = Precision(o)             % Variable Presicion Menu       
-   setting(o,{'precision.G'},0);       % VPA digits of G(s) calculation
-   setting(o,{'precision.Gcook'},0);   % G(s) cooking as double   
-   setting(o,{'precision.check'},128);
-   setting(o,{'precision.V0'},0);      % VPA digits of V0 calculation
-   setting(o,{'select.controltoolbox'},0);
-   
-   oo = mitem(o,'Precision');
-   ooo = mitem(oo,'G(s) Calculation',{},'precision.G');
-   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
-               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
-               {@DigitCb});
-   
-   ooo = mitem(oo,'G(s) Cooking',{},'precision.Gcook');
-   choice(ooo,{{'Double',0},{'VPA',1}},{});
-
-   ooo = mitem(oo,'Check',{},'precision.check');
-   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
-               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
-               {});
-   
-   ooo = mitem(oo,'V0 = G33(0)\G31(0)',{},'precision.V0');
-   choice(ooo,{{'Double',0},{},{'VPA 32',32},{'VPA 64',64},{'VPA 128',128},...
-               {'VPA 256',256},{'VPA 512',512},{'VPA 1024',1024}},...
-               {@DigitCb});
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Use Control Toolbox',{},'select.controltoolbox');
-   check(ooo,{@ControlCb});
-   
-   function o = DigitCb(o)
-      CacheReset(o);
-      try
-         old = digits(32);
-         digits(old);                  % and restore immediately
-      catch
-         choice(o,'precision.G',0);
-         choice(o,'precision.Gcook',0);
-         choice(o,'precision.V0',0);
-         message(o,'Selection rejected!',...
-                   {'Seems that Symbolic Toolbox is not supported!'});
-      end
-   end
-   function o = ControlCb(o)
-      ctbox = setting(o,'select.controltoolbox');
-      if (ctbox == 0)
-         CacheReset(o);
-      else
-         try
-            sys = ss(1,1,1,1);
-            CacheReset(o);
-         catch
-            check(o,'select.controltoolbox',0);
-            message(o,'Selection rejected!',...
-                      {'Seems that Control Toolbox is not supported!'});
-         end
-      end
-   end
-end
-function oo = Normalize(o)             % Normalize Menu                
-   setting(o,{'brew.T0'},1e-3);
-   
-   oo = mitem(o,'Normalize');
-   ooo = mitem(oo,'T0',{},'brew.T0');
-   choice(ooo,{{'1s',1},{},{'100ms',100e-3},{'10ms',10e-3},{'1 ms',1e-3},...
-               {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
-               {@CacheReset});
-end
-function oo = Cancel(o)                % Add Cancel Menu Items         
-   setting(o,{'cancel.G.eps'},1e-7);
-   setting(o,{'cancel.H.eps'},1e-7);
-   setting(o,{'cancel.L.eps'},1e-7);
-   setting(o,{'cancel.T.eps'},1e-7);
-   
-   oo = mitem(o,'Cancel');
-   ooo = mitem(oo,'G(s)',{},'cancel.G.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
-   ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
-   ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
-   choice(ooo,[0.1,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,...
-               0.005,0.002,0.001,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
-   ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end
 function oo = CacheReset(o)            % Reset All Caches              
 %  callback = control(o,'refresh');    % save refresh callback
