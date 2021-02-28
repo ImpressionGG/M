@@ -275,6 +275,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - two algorithms for critical quantities: eig & fqr
 % - spm/lambda can create CORASIM systems
 % - spm/critical: eigenvalue algorithm with no checks by default
+% - pimp display of eigenvalue error
 %
 % Known bugs & wishlist
 % =========================

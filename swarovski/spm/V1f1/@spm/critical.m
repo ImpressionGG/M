@@ -316,7 +316,7 @@ function Bode(o,oo,L0,sub)
          
    function BodePlot(o,sub1,sub2)
       if dark(o)
-         colors = {'rk','gk','bk','ck','mk'};
+         colors = {'rk','gk','b','ck','mk'};
       else
          colors = {'rwww','gwww','bwww','cwww','mwww'};
       end
@@ -367,7 +367,8 @@ function Bode(o,oo,L0,sub)
       end
    end
    function Results(o,sub1,sub2)
-      err = norm([K0-K0_,f0-f0_]);
+      s0 = CritEig(o,L0,K0);
+      err = norm([K0-K0_,f0-f0_,real(s0)]);
       
       if (sub1)
          subplot(o,sub1);
@@ -582,6 +583,11 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    xlim = get(gca,'xlim');             % save x-limits
    plot(o,[1 1],get(gca,'ylim'),'K1-.');
    set(gca,'xlim',xlim);               % restore x-limits
+   
+   ylim = get(gca,'ylim');
+   if (diff(ylim) < 1)
+      set(gca,'ylim',[min(ylim(1),-5),max(ylim(2),+5)]);
+   end
    
    title(sprintf('Worst Damping (K0: %g @ f0: %g Hz)',K0,f0));
    xlabel('closed loop gain K');
