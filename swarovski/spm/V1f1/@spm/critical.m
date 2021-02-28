@@ -62,7 +62,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
          mode = cdx;
       end
       
-      if (nargout < 3)
+      if (nargout < 3 && nargin < 3)
          sub = [];
       end
       
@@ -176,9 +176,11 @@ function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based
       tol = opt(o,{'critical.eps',1e-12});
       iter = opt(o,{'critical.iter',100});
 
-     [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+      [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+      PsiW31 = psion(o,A,B_1,C_3);     % to calculate G31(jw)
+      PsiW33 = psion(o,A,B_3,C_3);     % to calculate G33(jw)
       
-      [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
+      [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
       K0_ = K;  f0_ = Omega/(2*pi*T0);
 
       err = norm([K0-K0_,f0-f0_]);
@@ -187,7 +189,7 @@ function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based
       end
       
       if (nargout > 2)
-         [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
+         [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
          K180_ = K;  f180_ = Omega/(2*pi*T0);
 
          err = norm([K180-K180_,f180-f180_]);
@@ -373,11 +375,11 @@ function Bode(o,oo,L0,sub)
       if (sub1)
          subplot(o,sub1);
          title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K0: ',...
-                        '%g @ %g Hz (Eigenvalue error: %g)'],K0_,f0_,err));
+                        '%g @ %g Hz (EV error: %g)'],K0_,f0_,err));
 
-         txt = sprintf(['G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
-               ' => G31(jw0)/G33(jw0): %g @ %g deg'], Rd(M31*1e9),Rd(phi31*180/pi),...
-               Rd(M33*1e9),Rd(phi33*180/pi), o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi));
+         txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
+               Rd(M31*1e9),Rd(phi31*180/pi),...
+               Rd(M33*1e9),Rd(phi33*180/pi));
          xlabel(txt);
          subplot(o);
       end
@@ -387,6 +389,8 @@ function Bode(o,oo,L0,sub)
          title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+         xlabel(sprintf('omega [1/s]      (G31(jw0)/G33(jw0): %g @ %g deg)',...
+                o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi)));
          subplot(o);
       end
    end

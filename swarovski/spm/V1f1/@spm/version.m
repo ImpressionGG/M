@@ -277,6 +277,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/critical: eigenvalue algorithm with no checks by default
 % - pimp display of eigenvalue error
 % - spm/critical to call lambda with PsiW31,PsiW33
+% - nyquist plot in critical overview :-)))
 %
 % Known bugs & wishlist
 % =========================

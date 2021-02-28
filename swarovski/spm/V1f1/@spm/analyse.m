@@ -51,6 +51,10 @@ function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
    oo = Setup(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
+   oo = CriticalMenu(o);               % Add Critical menu
+   oo = SetupMenu(o);                  % add Setup menu
+   oo = mitem(o,'-'); 
+
    oo = NumericMenu(o);                % add Numeric menu
 
    oo = mitem(o,'-'); 
@@ -58,13 +62,11 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
    oo = mitem(o,'-'); 
-   oo = CriticalMenu(o);               % Add Critical menu
    oo = Stability(o);                  % add Stability menu
    oo = Sensitivity(o);                % add Sensitivity menu
    
    oo = mitem(o,'-'); 
    oo = Spectrum(o);                   % add Spectrum menu
-   oo = Setup(o);                      % add Setup menu
    
    oo = mitem(o,'-'); 
    oo = Force(o);                      % add Force menu
@@ -81,7 +83,29 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = Precision(o);
 end
 
-function oo = NumericMenu(o)           % Numeric Menu                  
+function oo = CriticalMenu(o)          % Critical Menu                 
+   oo = mitem(o,'Critical');
+   ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
+   ooo = mitem(oo,'Bode & Damping',{@WithSpm,'Critical','Combi'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Worst Damping',{@WithSpm,'Critical','Damping'});
+   ooo = mitem(oo,'Bode',{@WithSpm,'Critical','Bode'});
+   ooo = mitem(oo,'Magnitude',{@WithSpm,'Critical','Magni'});
+   ooo = mitem(oo,'Phase',{@WithSpm,'Critical','Phase'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Nyquist',{@WithSpm,'Critical','Nyquist'});
+   ooo = mitem(oo,'Critical',{@WithSpm,'Critical','Critical'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
+end
+function oo = SetupMenu(o)             % Setup Menu                    
+   oo = mitem(o,'Setup');
+   ooo = mitem(oo,'Basic Study',{@WithCuo,'SetupAnalysis','basic'});
+   ooo = mitem(oo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry'});
+   ooo = mitem(oo,'Sample Study',{@WithCuo,'SetupAnalysis','sample'});
+end
+
+function oo = NumericMenu(o)           % Numeric Menu
    oo = mitem(o,'Numeric');
    ooo = mitem(oo,'Numeric Quality of G(s)',{@WithSpm,'Numeric'});
 end
@@ -104,17 +128,6 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
-end
-function oo = CriticalMenu(o)          % Critical Menu                 
-   oo = mitem(o,'Critical');
-   ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Worst Damping',{@WithSpm,'Critical','Damping'});
-   ooo = mitem(oo,'Bode Plot',{@WithSpm,'Critical','Bode'});
-   ooo = mitem(oo,'Magnitude Plot',{@WithSpm,'Critical','Magni'});
-   ooo = mitem(oo,'Phase Plot',{@WithSpm,'Critical','Phase'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
 end
 function oo = Stability(o)             % Closed Loop Stability Menu    
    oo = mitem(o,'Stability');
@@ -142,12 +155,6 @@ function oo = Spectrum(o)              % Spectrum Menu
    ooo = mitem(oo,'Lambda Magnitude Plots',{@WithSpm,'LambdaMagni'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lambda Bode Plot',{@WithSpm,'LambdaBode'});
-end
-function oo = Setup(o)                 % Setup Menu                    
-   oo = mitem(o,'Setup');
-   ooo = mitem(oo,'Basic Study',{@WithCuo,'SetupAnalysis','basic'});
-   ooo = mitem(oo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry'});
-   ooo = mitem(oo,'Sample Study',{@WithCuo,'SetupAnalysis','sample'});
 end
 function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
@@ -305,6 +312,97 @@ end
 
 function o = Err(o)                    % Error Handler                 
    error('bad mode');
+end
+
+%==========================================================================
+% Critical
+%==========================================================================
+
+function o = Critical(o)               % Calculate Critical Quantities 
+   if type(o,{'spm'})
+      o = cache(o,o,'critical');
+   else
+      plot(o,'About');
+      return
+   end
+   
+   Heading(o);
+   o = with(o,{'bode','stability'});
+   
+   points = opt(o,{'omega.points',10000});
+   closeup = opt(o,{'bode.closeup',0});
+   
+   if (closeup)
+       points = max(points,500);
+       f0 = cook(o,'f0');
+       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
+       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
+       o = opt(o,'omega.points',points);
+   end
+   
+   mode = arg(o,1);
+   switch mode
+      case 'Overview'
+         critical(o,'Overview',[3211,3221,3231]);
+         PlotNyquist(o,122,1);   
+      case 'Combi'
+         critical(o,'Overview',[3111,3121,3131]);
+      case 'Damping'
+         critical(o,'Damping',111);
+      case 'Bode'
+         critical(o,'Bode',[211,212]);
+      case 'Magni'
+         critical(o,'Magni',111);
+      case 'Phase'
+         critical(o,'Phase',111);
+         
+      case 'Nyquist'
+         PlotNyquist(o,111,0);
+      case 'Critical'
+         PlotNyquist(o,111,1);   
+   end
+         
+   function PlotNyquist(o,sub,critical)
+      o = with(o,'nyq');
+      
+      subplot(o,sub);
+      [l0,K0] = cook(o,'l0,K0');
+      K = o.iif(critical,K0,1);
+      
+      if (dark(o))
+         colors = {'rk','gk','b','ck','mk','yk','wk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+      end
+      colors = get(l0,{'colors',colors});
+      
+      for (i=1:length(l0.data.matrix(:)))
+         l0i = peek(l0,i);
+         l0jwi = l0i.data.matrix{1,1};
+         l0jw0(i,1) = interp1(l0.data.omega,l0jwi,2*pi*f0);
+
+         col = colors{1+rem(i,length(colors))};
+         nyq(K*l0i,col);
+      end
+      
+      M = abs(1 + K0*l0jw0);
+      idx = min(find(M==min(M)));
+      
+      l00 = peek(l0,idx);
+      if (critical)
+         col = 'r2';
+      else
+         col = [get(l0,'color'),'2'];
+      end
+      nyq(K*l00,col);
+
+      if (critical)
+         title(sprintf('Critical Loci K0*l0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+      else
+         title(sprintf('Characteristic Loci l0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+      end
+   end
+   Heading(o);
 end
 
 %==========================================================================
@@ -519,44 +617,6 @@ function o = SimpleCalc(o)             % Simple Calculation
       fprintf('%s\n',cmd);
       evalin('base',cmd);
    end
-end
-function o = Critical(o)               % Calculate Critical Quantities 
-   if type(o,{'spm'})
-      o = cache(o,o,'critical');
-   else
-      plot(o,'About');
-      return
-   end
-   
-   Heading(o);
-   o = with(o,{'bode','stability'});
-   
-   points = opt(o,{'omega.points',10000});
-   closeup = opt(o,{'bode.closeup',0});
-   
-   if (closeup)
-       points = max(points,500);
-       f0 = cook(o,'f0');
-       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
-       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
-       o = opt(o,'omega.points',points);
-   end
-   
-   mode = arg(o,1);
-   switch mode
-      case 'Overview'
-         critical(o,'Overview',[311,312,313]);
-      case 'Damping'
-         critical(o,'Damping',111);
-      case 'Bode'
-         critical(o,'Bode',[211,212]);
-      case 'Magni'
-         critical(o,'Magni',111);
-      case 'Phase'
-         critical(o,'Phase',111);
-   end
-         
-   Heading(o);
 end
 function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
    list = {};                          % empty by default

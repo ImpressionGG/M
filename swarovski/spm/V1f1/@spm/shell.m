@@ -149,11 +149,11 @@ function oo = Tools(o)                 % Tools Menu Items
    ooo = mitem(oo,'Provide Package Info',{@PackageInfo});
    ooo = mitem(oo,'Setup Parameters',{@SetupParameters});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Brew Cache',{@BrewCache});
-   ooo = mitem(oo,'Clear Cache',{@ClearCache});
-   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Store Cache',{@StoreCache});
    ooo = mitem(oo,'Recall Cache',{@RecallCache});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Brew Cache',{@BrewCache});
+   ooo = mitem(oo,'Clear Cache',{@ClearCache});
 end
 function oo = PackageInfo(o)           % Provide Package Info File     
    caption = 'Provide Package Info File (.pkg)';
@@ -323,15 +323,6 @@ function oo = BrewCache(o)             % Re-Brew Cache Segments
    message(o,'Brewing complete!');
    return
 end
-function oo = ClearCache(o)            % Clear All Caches              
-   o = pull(o);
-   for (i=1:length(o.data))
-      oo = o.data{i};
-      cache(oo,oo,[]);                 % cache hard reset
-   end
-   subplot(o,111);
-   message(o,'Caches of all objects have been cleared!');
-end
 function oo = StoreCache(o)            % Store All Caches              
    o = pull(o);
    for (i=1:length(o.data))
@@ -355,6 +346,15 @@ function oo = RecallCache(o)           % Recall All Caches
    end
    push(o);
    message(o,'Caches of all objects have been recalled!');
+end
+function oo = ClearCache(o)            % Clear All Caches              
+   o = pull(o);
+   for (i=1:length(o.data))
+      oo = o.data{i};
+      cache(oo,oo,[]);                 % cache hard reset
+   end
+   subplot(o,111);
+   message(o,'Caches of all objects have been cleared!');
 end
 function oo = Extras(o)                % Extras Menu Items
    setting(o,{'study.menu'},false);    % provide setting

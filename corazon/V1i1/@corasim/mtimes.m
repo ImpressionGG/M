@@ -28,6 +28,15 @@ function oo = mtimes(o1,o2)
       [num,den] = peek(o1);
       oo = poke(o1,o2*num,den);
       return
+   elseif (isa(o1,'double') && type(o2,{'fqr'}))
+      [m,n] = size(o2.data.matrix);
+      for (i=1:n)
+         for (j=1:m)
+            o2.data.matrix{i,j} = o1 * o2.data.matrix{i,j};
+         end
+      end
+      oo = o2;
+      return
    end      
 
       % no scalar - proceed with the generic algorithm

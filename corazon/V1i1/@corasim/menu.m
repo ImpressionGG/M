@@ -154,7 +154,7 @@ function oo = Nyquist(o)               % Nyquist Settings Menu
    ooo = mitem(oo,'Lower Magnitude [dB]',{},'nyq.magnitude.low');
          Choice(ooo,[-400 -300 -260 -220 -180 -140 -100:10:-20],{});
    ooo = mitem(oo,'Upper Magnitude [dB]',{},'nyq.magnitude.high');
-         Choice(ooo,[20:10:100],{});
+         Choice(ooo,[5 10 20:10:100],{});
    ooo = mitem(oo,'Delta Magnitude [dB]',{},'nyq.magnitude.delta');
          choice(ooo,[10 20 40 60 80 100],{});
    ooo = mitem(oo,'Zoom',{},'nyq.zoom');         

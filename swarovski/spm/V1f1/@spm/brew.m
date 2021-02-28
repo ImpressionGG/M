@@ -67,7 +67,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                         |              |
 %                         v              v
 %              +--------------+        +---------------+
-%     L0,K0,f0 |   critical   |        |               |
+%     L0,K0,f0 |   critical   |        |     setup     |
 %              +--------------+        +---------------+
 %
 %
@@ -765,7 +765,16 @@ function oo = Spectrum(o)
 %
 %              L0jw = C*inv(jw*I-A)*B + D
 %
-   o = with(o,'spectrum');
+   o = with(o,{'spectrum'});
+   l0 = lambda(o);
+   
+   oo = o;
+   oo = cache(oo,'spectrum.l0',l0);    % store in cache
+   
+      % unconditional hard refresh of spectrum segment
+
+   cache(oo,oo);                       % hard refresh of spectrum segment
+return;   
    
    L0 = cook(o,'Sys0');
    [A,B,C,D] = system(L0,'A,B,C,D');
@@ -813,14 +822,14 @@ function oo = Spectrum(o)
       end
    end
    
-   lambda = matrix(corasim,[]);
-   lambda.data.n = length(A);            % system order
-   lambda.data.omega = om;               % frequency matrix
-   lambda.data.oscale = oscale(o);
-   lambda.type = 'fqr';
+   lamb = matrix(corasim,[]);
+   lamb.data.n = length(A);            % system order
+   lamb.data.omega = om;               % frequency matrix
+   lamb.data.oscale = oscale(o);
+   lamb.type = 'fqr';
 
    for (i=1:length(lam))
-      lambda.data.matrix{i,1} = Lambda(i,:);
+      lamb.data.matrix{i,1} = Lambda(i,:);
    end
    
    progress(o);
@@ -829,7 +838,7 @@ function oo = Spectrum(o)
       
    oo = o;
    oo = cache(oo,'spectrum.L0jw',L0jw);
-   oo = cache(oo,'spectrum.lambda',lambda);
+   oo = cache(oo,'spectrum.lambda',lamb);
    
       % unconditional hard refresh of spectrum segment
       

@@ -81,7 +81,7 @@ function varargout = cook(o,sym)
 %       Spectrum
 %
 %          L0jw = cook(o,'L0jw')            % MIMO frequency responses
-%          lambda = cook(o,'lambda')        % MIMO spectral functions
+%          l0 = cook(o,'l0')                % MIMO spectral functions l0(s)
 %
 %       Setup
 %
@@ -286,8 +286,8 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
       case 'psi'
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
-
-      case {'L0jw','lambda'}
+         
+      case {'L0jw','lambda','l0'}
          oo = cache(o,o,'spectrum');
          oo = cache(oo,['spectrum.',sym]);
          if isa(oo,'corazon')

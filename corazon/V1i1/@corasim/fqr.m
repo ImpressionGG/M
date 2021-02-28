@@ -42,8 +42,8 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
 %
 %      Create an 'fqr' typed system
 %
-%         G = fqr(corasim,omega,{Gjw},scale)
-%         G = fqr(corasim,omega,{G11jw,G12jw;G21jw,G22jw},scale)
+%         G = fqr(corasim,omega,{Gjw})
+%         G = fqr(corasim,omega,{G11jw,G12jw;G21jw,G22jw})
 %
 %      Options:
 %         input              input index (default 1)
@@ -55,11 +55,8 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
 %      See also: CORASIM, SYSTEM, PEEK, TRIM, BODE, TRFVAL
 %
    if (nargin >= 3 && iscell(i))       % create 'fqr'  typed system
-      matrix = i;  scale = 1;
-      if (nargin >= 4)
-         scale = j;
-      end
-      Gjw = System(o,om,matrix,scale);
+      matrix = i; 
+      Gjw = System(o,om,matrix);
       return
    end
    
@@ -311,13 +308,10 @@ end
 % Create FQR Typed System
 %==========================================================================
 
-function oo = System(o,om,matrix,scale)
+function oo = System(o,om,matrix)
    assert(iscell(matrix));
    if (size(om,1) ~= 1)
       error('row vector expected for omega (arg2)');
-   end
-   if (length(scale) ~= 1)
-      error('scale (arg4) must be a scalar');
    end
    
       % check dimensions
@@ -337,7 +331,6 @@ function oo = System(o,om,matrix,scale)
    oo = type(corasim,'fqr');
    oo.data.omega = om;
    oo.data.matrix = matrix;
-   oo.data.scale = scale;
 end
 
 %==========================================================================

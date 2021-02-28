@@ -147,11 +147,11 @@ function oo = Tools(o)                 % Tools Menu Items
    ooo = mitem(oo,'Provide Package Info',{@PackageInfo});
    %ooo = mitem(oo,'Setup Parameters',{@SetupParameters});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Brew Cache',{@BrewCache});
-   ooo = mitem(oo,'Clear Cache',{@ClearCache});
-   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Store Cache',{@StoreCache});
    ooo = mitem(oo,'Recall Cache',{@RecallCache});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Brew Cache',{@BrewCache});
+   ooo = mitem(oo,'Clear Cache',{@ClearCache});
 end
 function oo = PackageInfo(o)           % Provide Package Info File     
    caption = 'Provide Package Info File (.pkg)';

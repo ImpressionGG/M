@@ -26,8 +26,12 @@ function oo = nyq(o,col)               % NyquistPlot
    oo = Inherit(o);
    held = ishold;
 
+   if (nargin < 2)
+      col = [];
+   end
+   
    oo = Axes(o);                       % plot axes   
-   oo = Nyquist(oo);                   % actual Nyquist plot
+   oo = Nyquist(oo,col);               % actual Nyquist plot
       
    if (~held)
       hold off;
@@ -40,12 +44,17 @@ end
 % Nyquist Plot
 %==========================================================================
 
-function o = Nyquist(o)                % Nyquist Plot                  
+function o = Nyquist(o,col)            % Nyquist Plot                  
    points = opt(o,{'omega.points',10000});      
 %  oscale = opt(o,{'oscale',1});       % omega scaling factor
-   
-   [~,om] = fqr(o);                    % get omega vector
-   Gjw = fqr(o,om);
+
+   if type(o,{'fqr'})
+      om = o.data.omega;
+      Gjw = o.data.matrix{1,1};
+   else
+      [~,om] = fqr(o);                 % get omega vector
+      Gjw = fqr(o,om);
+   end
    
       % plot magnitude
       
@@ -61,11 +70,15 @@ function o = Nyquist(o)                % Nyquist Plot
    
       % set attributes
       
-   col = opt(o,{'color','g'});
+   if isempty(col)
+      col = opt(o,{'color','g'});
+      col = get(o,{'color',col});
+   end
+   
    [col,lw,typ] = o.color(col);
    
    set(hdl,'Color',col);
-   if o.is(lw) && lw > 1
+   if o.is(lw) && lw >= 1
       set(hdl,'Linewidth',lw);
    elseif ~isempty(opt(o,'linewidth'))
       set(hdl,'Linewidth',opt(o,'linewidth'));

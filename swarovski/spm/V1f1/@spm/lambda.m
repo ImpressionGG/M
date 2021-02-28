@@ -3,13 +3,14 @@ function oo = lambda(o,varargin)      % Spectral Frequency Responses
 % LAMBDA  Calculate spectral frequency responses lambda(s) for an open
 %         loop system. Result is an FQR typed corasim system
 %
+%            o = with(o,'critical');  
 %            sys = system(o,cdx);      % contact related system 
-%            Lam = lambda(o,sys);      % spectral frequency transfer system
+%            l0 = lambda(o,sys);       % spectral frequency transfer system
 %
-%            Lam = lambda(o);          % implicite call to system(o)
+%            l0 = lambda(o);           % implicite call to system(o)
 %
 %            sys = system(o,cdx);      % get contact relevant system
-%            Lam = lambda(o,sys,omega);% calculate spectral FQRs
+%            l0 = lambda(o,sys,omega);% calculate spectral FQRs
 %
 %         The next two calls return the frequency response (not a CORASIM
 %         system), which is for efficient calculations in some algorithms
@@ -43,7 +44,7 @@ function oo = lambda(o,varargin)      % Spectral Frequency Responses
 %
 %            PsiW31 = psion(o,A,B_1,C_3) % to calculate G31(jw)
 %            PsiW33 = psion(o,A,B_3,C_3) % to calculate G33(jw)
-%            ljw = lambda(o,PsiW31,PsiW33,T0*omega)
+%            l0jw = lambda(o,PsiW31,PsiW33,T0*omega)
 %
 %       
 %         Options:
@@ -108,7 +109,8 @@ function oo = lambda(o,varargin)      % Spectral Frequency Responses
    for (i=1:m)
       matrix{i,1} = ljw(i,:);
    end
-   oo = fqr(corasim,om,matrix,T0);     % FQR typed CORASIM system
+   oo = fqr(corasim,om,matrix);        % FQR typed CORASIM system
+   oo = set(oo,'name','l0(jw)','color','yyyr');
 end
 
 %==========================================================================
