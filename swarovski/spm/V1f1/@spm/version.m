@@ -273,6 +273,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - methods spm/psion and spm/lambda :-)))
 % - fast algorithm to calculate K0,f0,K180,f180
 % - two algorithms for critical quantities: eig & fqr
+% - spm/lambda can create CORASIM systems
 %
 % Known bugs & wishlist
 % =========================

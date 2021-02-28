@@ -1,7 +1,7 @@
 function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response            
 %
 % FQR  Frequency response of transfer function to given omega, where pro-
-%      vided omega arg is scaled with 'oscale' fgactor (option, default 1)
+%      vided omega arg is scaled with 'oscale' factor (option, default 1)
 %
 %		    [Gjw,~,dB] = fqr(G,omega)
 %		    [Gjw,~,dB] = fqr(G,omega,i,j)
@@ -40,6 +40,11 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
 %         '*'                product
 %         '/'                division
 %
+%      Create an 'fqr' typed system
+%
+%         G = fqr(corasim,omega,{Gjw},scale)
+%         G = fqr(corasim,omega,{G11jw,G12jw;G21jw,G22jw},scale)
+%
 %      Options:
 %         input              input index (default 1)
 %         output             output index (default 1)
@@ -49,6 +54,15 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
 %
 %      See also: CORASIM, SYSTEM, PEEK, TRIM, BODE, TRFVAL
 %
+   if (nargin >= 3 && iscell(i))       % create 'fqr'  typed system
+      matrix = i;  scale = 1;
+      if (nargin >= 4)
+         scale = j;
+      end
+      Gjw = System(o,om,matrix,scale);
+      return
+   end
+   
    if (nargin <= 1) || isempty(om)
       oml = opt(o,{'omega.low',1e-5});
       omh = opt(o,{'omega.high',1e5});
@@ -291,6 +305,39 @@ function Gjw = Eval(o,om,oo)           % Evaluate Expression
    else
       error('no idea how to evaluate');
    end
+end
+
+%==========================================================================
+% Create FQR Typed System
+%==========================================================================
+
+function oo = System(o,om,matrix,scale)
+   assert(iscell(matrix));
+   if (size(om,1) ~= 1)
+      error('row vector expected for omega (arg2)');
+   end
+   if (length(scale) ~= 1)
+      error('scale (arg4) must be a scalar');
+   end
+   
+      % check dimensions
+      
+   N = length(om);
+   [m,n] = size(matrix);
+   for (i=1:m)
+      for (j=1:n)
+         if ~all(size(om)==size(matrix{i,j}))
+            error('size mismatch (arg2,arg3)');
+         end
+      end
+   end
+   
+      % create FQR typed corasim object
+
+   oo = type(corasim,'fqr');
+   oo.data.omega = om;
+   oo.data.matrix = matrix;
+   oo.data.scale = scale;
 end
 
 %==========================================================================

@@ -105,7 +105,7 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Critical Val's          
+function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Critical Val's
    algo = opt(o,{'algo','fqr'});
    
    switch algo
@@ -522,7 +522,7 @@ function [L,idx] = TailSort(L,om)      % Sort Tail of FQR
 end
 
 %==========================================================================
-% Helper
+% Stability Plot
 %==========================================================================
 
 function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart          
@@ -568,12 +568,13 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
       end
       idle(o);                         % give time for graphics refresh
       if stop(o)
-         return;
+         break;
       end
    end
    stop(o,'Disable');
    
-   [K0,f0] = Stable(o,L0,K,s);
+%  [K0,f0] = Stable(o,L0,K,s);
+   [K0,f0] = Stable(o,L0);
    if ~isequal(K0,inf)
       plot(o,[K0 K0],get(gca,'ylim'),o.iif(K0<=1,'r1-.','g1-.'));
    end
@@ -586,6 +587,11 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    xlabel('closed loop gain K');
    ylabel('worst damping [%]');
 end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
 function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin         
 %
 % STABLE  Calculate critical K0 and frequency f0 for open loop system L0
@@ -821,10 +827,10 @@ function q = Quadrant(phi)             % Classify Quadrants
    assert(any(any(isnan(q)))==0);
 end
 function [K,Omega,err] = Pass(o,A,B_1,B_3,C_3,Olim,sgn,tol,iter)       
-   if (nargin < 4)
+   if (nargin < 8)
       tol = 1e-5;
    end
-   if (nargin < 5)
+   if (nargin < 9)
       iter = 5;
    end
 
