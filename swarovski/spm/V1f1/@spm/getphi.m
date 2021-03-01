@@ -46,7 +46,12 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
    for (i=1:length(phi))
       txt = [txt,sep,sprintf('%g',o.rd(phi(i),1))]; sep = ',';
    end
-   txt = [txt,']'];
+   
+   if (type(o,{'pkg'}) && Cphi)
+      txt = [txt,sprintf('+%g*delta]',Cphi)];
+   else
+      txt = [txt,']'];
+   end
 end
 
 function npins = Pins(o)

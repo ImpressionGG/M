@@ -2516,10 +2516,13 @@ function o = StabilityRange(o)         % Plot Critical Mu
    n = length(list);
 
    mu = opt(o,{'process.mu',0.1});
-   x = Axes(o,2211,mu,'Range');        % get variation range and plot axes
-   x = Axes(o,2221,mu,'Margin');       % get variation range and plot axes
-   x = Axes(o,2212,-mu,'Range');       % get variation range and plot axes
-   x = Axes(o,2222,-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,3211,mu,'Range');        % get variation range and plot axes
+   x = Axes(o,3221,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,3231,mu,'Frequency');    % get variation range and plot axes
+   
+   x = Axes(o,3212,-mu,'Range');       % get variation range and plot axes
+   x = Axes(o,3222,-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,3232,-mu,'Frequency');   % get variation range and plot axes
   
       % calculate stability margin and plot
    
@@ -2536,13 +2539,17 @@ function o = StabilityRange(o)         % Plot Critical Mu
       oo = list{i};
       oo = inherit(oo,o);
       
-      Mu0(i) = mu/cook(oo,'K0');
-      PlotMu(x(i),Mu0(i),2211);
-      PlotMargin(x(i),1/Mu0(i),2221);
+      [K0,f0,K180,f180] = cook(oo,'K0,f0,K180,f180');
+
+      Mu0(i) = mu/K0;
+      PlotMu(x(i),Mu0(i),3211);
+      PlotMargin(x(i),1/Mu0(i),3221);
+      PlotFrequency(x(i),f0,3231);
       
-      Mu180(i) = mu/cook(oo,'K180');
-      PlotMu(x(i),Mu180(i),2212);
-      PlotMargin(x(i),1/Mu180(i),2222);
+      Mu180(i) = mu/K180;
+      PlotMu(x(i),Mu180(i),3212);
+      PlotMargin(x(i),1/Mu180(i),3222);
+      PlotFrequency(x(i),f180,3232);
       
       idle(o);                         % show graphics
       if stop(o)
@@ -2572,6 +2579,10 @@ function o = StabilityRange(o)         % Plot Critical Mu
          plot(o,xi,marg,red);
       end
    end
+   function PlotFrequency(xi,f,sub)
+      subplot(o,sub);
+      plot(o,xi,f,'Ko|');
+   end
     
    function x = Axes(o,sub,mu,tit)     % Plot Axes                     
       subplot(o,sub);
@@ -2591,9 +2602,14 @@ function o = StabilityRange(o)         % Plot Critical Mu
       hold on;
       plot(o,get(gca,'xlim'),[1 1],'K-.2');
 
-      title(sprintf('Stability %s%s',tit,More(o,mu)));
+      if isequal(tit,'Frequency')
+         title(sprintf('Critical Frequency %s',More(o,mu)));
+         ylabel('Frequency [Hz]');
+      else
+         title(sprintf('Stability %s%s',tit,More(o,mu)));
+         ylabel(sprintf('Stability %s @ mu: %g',tit,mu));
+      end
 
-      ylabel(sprintf('Stability %s @ mu: %g',tit,mu));
 
       if ~isempty(variation)
          xlabel(sprintf('Variation Parameter: %s',variation));

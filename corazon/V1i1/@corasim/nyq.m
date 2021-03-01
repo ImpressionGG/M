@@ -37,7 +37,7 @@ function oo = nyq(o,col)               % NyquistPlot
       hold off;
    end
    
-   heading(oo);
+%  heading(oo);
 end
 
 %==========================================================================

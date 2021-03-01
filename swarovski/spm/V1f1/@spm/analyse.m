@@ -124,7 +124,7 @@ function oo = SetupMenu(o)             % Setup Menu
    ooo = mitem(oo,'Sample Study',{@WithCuo,'SetupAnalysis','sample'});
 end
 
-function oo = NumericMenu(o)           % Numeric Menu
+function oo = NumericMenu(o)           % Numeric Menu                  
    oo = mitem(o,'Numeric');
    ooo = mitem(oo,'Numeric Quality of G(s)',{@WithSpm,'Numeric'});
 end
