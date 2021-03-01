@@ -281,6 +281,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - brewing of lambda0,lambda180
 % - recovery of part of Analyse>Stability menu :-)
 % - add frequency plots to stability range
+% - some trials with better condition numbers - set T0=1s by default
 %
 % Known bugs & wishlist
 % =========================

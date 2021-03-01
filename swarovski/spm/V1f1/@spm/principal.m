@@ -49,14 +49,32 @@ end
 function L0 = CalcL0(o,A,B_1,B_3,C_3,T0)                                  
       % system augmentation
 
+if(0)
+T0 = 10.^(-5:5);
+for (k=1:length(T0))
+   N0 = sqrtm(inv(C_3*T0(k)*A*T0(k)*B_3));
+   M0 = sqrtm(-inv(C_3*inv(T0(k)*A)*T0(k)*B_3));
+
+   C0 = M0*C_3 + N0*C_3*T0(k)*A;
+   CQ = M0*C0 + N0*C0*T0(k)*A;    CP = CQ;
+   DP = N0*C0*T0(k)*B_1;  DQ = N0*C0*T0(k)*B_3;
+   BQ = T0(k)*B_3/DQ;     AQ = T0(k)*(A - BQ*CQ); 
+
+   A0 = [T0(k)*A 0*A; BQ*CP AQ];  B0 = [T0(k)*B_1; BQ*DP];  
+   C0 = [DQ\CP -DQ\CQ];     D0 = DQ\DP;
+   
+   [VV,~] = eig(A0);
+   condi(k) = cond(VV);
+end
+logc = log10(condi)
+end
+   
    N0 = sqrtm(inv(C_3*A*B_3));
    M0 = sqrtm(-inv(C_3*inv(A)*B_3));
 
    C0 = M0*C_3 + N0*C_3*A;
    CQ = M0*C0 + N0*C0*A;    CP = CQ;
-
    DP = N0*C0*B_1;  DQ = N0*C0*B_3;
-
    BQ = B_3/DQ;     AQ = A - BQ*CQ; 
 
    A0 = [A 0*A; BQ*CP AQ];  B0 = [B_1; BQ*DP];  
@@ -139,6 +157,17 @@ function L0 = Reduce(L0)
       % state variables which are more or less not observable
       
    [V,AV] = eig(A0);                   % transform to diagonal form
+   condi = cond(V)
+
+if(0)   
+   if (condi > 1e10)
+      [V1,AV1] = eig(A0*1000);
+       kilo = cond(V1)
+      [V2,AV2] = eig(A0/1000);
+       milli = cond(V2)
+   end
+end
+
    BV = V\B0;
    CV = C0*V;
    DV = D0;
@@ -188,23 +217,35 @@ function L0 = Reduce(L0)
       error('odd column size - cannot continue');
    end
    
-   T = zeros(2*n,2*n);
-   for (i=1:n)
-      k = 2*(i-1) + 1;
-      l1 = AS(k,k);
-      l2 = AS(k+1,k+1);
-      Ti = [-l2 1; -l1 1];
-      if ( det(Ti) == 0 )
-         if (imag(l1)== 0 && imag(l2)==0)
-            Ti = eye(2);                     % recover for real eigenvalues
-         else
-            error('cannot transform');
-         end
-      end
-      T(k:k+1,k:k+1) = Ti;
-   end
+      % time transformation:  X(tau) = x(t/T0) 
+      % x´= A*x + B*u          X´= (T0*A)*X + (T0*B)*U
+      % y = C*x + D*u          Y = C*X + D*U
+
+if(0)
+   T0 = 10.^(-3:3);
    
+   for (k=1:length(T0))
+      T{k} = Tmatrix(AS,T0(k));
+      condition(k) = cond(T{k});
+   end
+   [condi,idx] = sort(condition);  condi = condi(1);
+   T = T{idx(1)};  T0 = T0(idx(1));
+   
+      % time normalization
+      
+   AS = T0*AS;  B0 = T0*BS;
+end   
+      % state transformation
+      
+   T = Tmatrix(AS);
    A = real(T\AS*T);  B = real(T\BS);   C = real(CS*T);  D = real(DS);
+
+if(0)   
+      % time denormalization
+      
+   A = A/T0;   B = B/T0;
+end
+
    i1 = 2*(1:n)-1;  i2 = 2*(1:n); 
    
       % reorder states
@@ -231,4 +272,29 @@ function L0 = Reduce(L0)
    L0 = var(L0,'A0,B0,C0,D0,V0,T0',A0,B0,C0,D0,V0,scale);
    L0 = var(L0,'observability',observability);   
    L0 = var(L0,'Ierr,Verr,Rerr,Serr,V0err',Ierr,Verr,Rerr,Serr,V0err);
+   
+   function T = Tmatrix(AS,T0)
+      if (nargin < 2)
+         T0 = 1;
+      end
+      
+      AS = T0*AS;
+      
+      N = length(AS);
+      T = zeros(N,N);
+      for (ii=1:N/2)
+         kk = 2*(ii-1) + 1;
+         l1 = AS(kk,kk);
+         l2 = AS(kk+1,kk+1);
+         Ti = [-l2 1; -l1 1];
+         if ( det(Ti) == 0 )
+            if (imag(l1)== 0 && imag(l2)==0)
+               Ti = eye(2);                     % recover for real eigenvalues
+            else
+               error('cannot transform');
+            end
+         end
+         T(kk:kk+1,kk:kk+1) = Ti;
+      end
+   end
 end

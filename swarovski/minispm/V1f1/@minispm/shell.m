@@ -981,7 +981,7 @@ function oo = Precision(o)             % Variable Presicion Menu
    end
 end
 function oo = Normalize(o)             % Normalize Menu                
-   setting(o,{'brew.T0'},1e-3);
+   setting(o,{'brew.T0'},1);
    
    oo = mitem(o,'Normalize');
    ooo = mitem(oo,'T0',{},'brew.T0');
