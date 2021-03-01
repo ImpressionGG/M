@@ -832,42 +832,6 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Spectrum(o)              % Spectrum Menu                 
-   setting(o,{'spectrum.omega.low'},1e2);
-   setting(o,{'spectrum.omega.high'},1e5);
-   setting(o,{'spectrum.omega.points'},2000);
-   
-   
-   oo = mitem(o,'Spectrum');
-   ooo = mitem(oo,'Lower Frequency',{},'spectrum.omega.low');
-         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
-   ooo = mitem(oo,'Upper Frequency',{},'spectrum.omega.high');
-         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
-         
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Points',{},'spectrum.omega.points');
-   choice(ooo,[100,500,1000,2000,5000,10000,20000,50000,...
-               1e5,2e5],{});
-
-   function Choice(o,values,cblist)    % Choice Menu List With Auto    
-      list = {{'Auto',[]},{}};         % list head
-      
-         % sort values in reverse order
-         
-      values = sort(values);
-      values = values(length(values):-1:1);
-      
-         % add values to choice items
-         
-      for (i=1:length(values))
-         list{end+1} = {sprintf('%g',values(i)),values(i)};
-      end
-      
-         % add choice menu items
-         
-      choice(o,list,cblist);
-   end
-end
 function oo = Filter(o)                % Add Filter Menu Items         
    setting(o,{'filter.mode'},'raw');   % filter mode off
    setting(o,{'filter.type'},'LowPass2');
@@ -1061,6 +1025,23 @@ function oo = Normalize(o)             % Normalize Menu
                {},{'100 us',100e-6},{'10 us',10e-6},{'1 us',1e-6}},...
                {@CacheReset});
 end
+function oo = Cancel(o)                % Add Cancel Menu Items         
+   setting(o,{'cancel.G.eps'},1e-7);
+   setting(o,{'cancel.H.eps'},1e-7);
+   setting(o,{'cancel.L.eps'},1e-7);
+   setting(o,{'cancel.T.eps'},1e-7);
+   
+   oo = mitem(o,'Cancel');
+   ooo = mitem(oo,'G(s)',{},'cancel.G.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
+   choice(ooo,[0.1,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,...
+               0.005,0.002,0.001,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
+   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+end
 function oo = Critical(o)              % Critical Menu                 
    setting(o,{'critical.search'},50);  % number of search points
    setting(o,{'critical.eps'},1e-10);  % epsilon
@@ -1109,22 +1090,41 @@ function oo = Critical(o)              % Critical Menu
    oooo = mitem(ooo,'Iterations',{},'stability.iter');
    choice(oooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
 end
-function oo = Cancel(o)                % Add Cancel Menu Items         
-   setting(o,{'cancel.G.eps'},1e-7);
-   setting(o,{'cancel.H.eps'},1e-7);
-   setting(o,{'cancel.L.eps'},1e-7);
-   setting(o,{'cancel.T.eps'},1e-7);
+function oo = Spectrum(o)              % Spectrum Menu                 
+   setting(o,{'spectrum.omega.low'},1e2);
+   setting(o,{'spectrum.omega.high'},1e5);
+   setting(o,{'spectrum.omega.points'},10000);
    
-   oo = mitem(o,'Cancel');
-   ooo = mitem(oo,'G(s)',{},'cancel.G.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
-   ooo = mitem(oo,'H(s)',{},'cancel.H.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
-   ooo = mitem(oo,'L(s)',{},'cancel.L.eps');
-   choice(ooo,[0.1,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01,...
-               0.005,0.002,0.001,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
-   ooo = mitem(oo,'T(s)',{},'cancel.T.eps');
-   choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
+   
+   oo = mitem(o,'Spectrum');
+   ooo = mitem(oo,'Lower Frequency',{},'spectrum.omega.low');
+         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+   ooo = mitem(oo,'Upper Frequency',{},'spectrum.omega.high');
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'spectrum.omega.points');
+   choice(ooo,[100,500,1000,2000,5000,10000,20000,50000,...
+               1e5,2e5],{});
+
+   function Choice(o,values,cblist)    % Choice Menu List With Auto    
+      list = {{'Auto',[]},{}};         % list head
+      
+         % sort values in reverse order
+         
+      values = sort(values);
+      values = values(length(values):-1:1);
+      
+         % add values to choice items
+         
+      for (i=1:length(values))
+         list{end+1} = {sprintf('%g',values(i)),values(i)};
+      end
+      
+         % add choice menu items
+         
+      choice(o,list,cblist);
+   end
 end
 function oo = CacheReset(o)            % Reset All Caches              
 %  callback = control(o,'refresh');    % save refresh callback

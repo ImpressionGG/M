@@ -60,7 +60,10 @@ function varargout = cook(o,sym)
 %
 %          S0 = cook(o,'S0')                % closed loop Sensitivity @ K0
 %          T0 = cook(o,'T0')                % total closed loop TRF @ K0 
-%          
+%
+%       Spectral TRFs (characteristic loci)
+%
+%          [lambda0,lambda180] = cook(o,'lambda0,lambda180')
 %
 %       Constrained system transfer matrix
 %
@@ -287,9 +290,9 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
          
-      case {'L0jw','lambda','l0'}
-         oo = cache(o,o,'spectrum');
-         oo = cache(oo,['spectrum.',sym]);
+      case {'L0jw','lambda0','lambda180'}
+         oo = cache(o,o,'spectral');
+         oo = cache(oo,['spectral.',sym]);
          if isa(oo,'corazon')
             oo = inherit(oo,o);
             oo = opt(oo,'oscale',oscale(o));

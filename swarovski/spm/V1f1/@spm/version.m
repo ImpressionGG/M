@@ -278,6 +278,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp display of eigenvalue error
 % - spm/critical to call lambda with PsiW31,PsiW33
 % - nyquist plot in critical overview :-)))
+% - brewing of lambda0,lambda180
 %
 % Known bugs & wishlist
 % =========================

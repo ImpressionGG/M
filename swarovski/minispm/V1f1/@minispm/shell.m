@@ -906,6 +906,7 @@ function oo = Internal(o)              % Internal Menu
    ooo = Spectrum(oo);                 % add Spectrum sub menu
    ooo = Filter(oo);                   % add Filter sub menu
 end
+
 function oo = Trf(o)                   % Transfer Function Menu        
    setting(o,{'trf.type'},'szpk');
    
@@ -1056,7 +1057,7 @@ end
 function oo = Spectrum(o)              % Spectrum Menu                 
    setting(o,{'spectrum.omega.low'},1e2);
    setting(o,{'spectrum.omega.high'},1e5);
-   setting(o,{'spectrum.omega.points'},2000);
+   setting(o,{'spectrum.omega.points'},10000);
    
    
    oo = mitem(o,'Spectrum');
@@ -1088,43 +1089,6 @@ function oo = Spectrum(o)              % Spectrum Menu
          
       choice(o,list,cblist);
    end
-end
-function oo = Filter(o)                % Add Filter Menu Items         
-   setting(o,{'filter.mode'},'raw');   % filter mode off
-   setting(o,{'filter.type'},'LowPass2');
-   setting(o,{'filter.bandwidth'},5);
-   setting(o,{'filter.zeta'},0.6);
-   setting(o,{'filter.method'},1);
-
-   oo = mhead(o,'Filter');
-   ooo = mitem(oo,'Mode','','filter.mode');
-   choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Type',{},'filter.type');
-   choice(ooo,{{'Order 2 Low Pass','LowPass2'},...
-                {'Order 2 High Pass','HighPass2'},...
-                {'Order 4 Low Pass','LowPass4'},...
-                {'Order 4 High Pass','HighPass4'}},{});
-   ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
-   charm(ooo,{});
-   ooo = mitem(oo,'Zeta',{},'filter.zeta');
-   charm(ooo,{});
-   ooo = mitem(oo,'Method',{},'filter.method');
-   choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
-end
-function oo = CacheReset(o)            % Reset All Caches              
-%  callback = control(o,'refresh');    % save refresh callback
-   
-   o = pull(o);
-   for (i=1:length(o.data))
-      oo = o.data{i};
-      cache(oo,oo,[]);                 % cache hard reset
-   end
-   
-%  control(o,'refresh',callback);      % restore refresh callback
-   refresh(o);
-   oo = o;
 end
 
 %==========================================================================

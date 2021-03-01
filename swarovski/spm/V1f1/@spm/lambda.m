@@ -10,7 +10,7 @@ function oo = lambda(o,varargin)      % Spectral Frequency Responses
 %            l0 = lambda(o);           % implicite call to system(o)
 %
 %            sys = system(o,cdx);      % get contact relevant system
-%            l0 = lambda(o,sys,omega);% calculate spectral FQRs
+%            l0 = lambda(o,sys,omega); % calculate spectral FQRs
 %
 %         The next two calls return the frequency response (not a CORASIM
 %         system), which is for efficient calculations in some algorithms

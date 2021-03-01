@@ -48,7 +48,7 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
-   oo = Setup(o);
+   oo = SetupMenu(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = CriticalMenu(o);               % Add Critical menu
@@ -331,10 +331,11 @@ function o = Critical(o)               % Calculate Critical Quantities
    
    points = opt(o,{'omega.points',10000});
    closeup = opt(o,{'bode.closeup',0});
+
+   [f0,K0] = cook(o,'f0,K0');
    
    if (closeup)
        points = max(points,500);
-       f0 = cook(o,'f0');
        o = opt(o,'omega.low',2*pi*f0/(1+closeup));
        o = opt(o,'omega.high',2*pi*f0*(1+closeup));
        o = opt(o,'omega.points',points);
@@ -363,10 +364,12 @@ function o = Critical(o)               % Calculate Critical Quantities
    end
          
    function PlotNyquist(o,sub,critical)
+      o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+      
       o = with(o,'nyq');
       
       subplot(o,sub);
-      [l0,K0] = cook(o,'l0,K0');
+      l0 = cook(o,'lambda0');
       K = o.iif(critical,K0,1);
       
       if (dark(o))
@@ -379,27 +382,24 @@ function o = Critical(o)               % Calculate Critical Quantities
       for (i=1:length(l0.data.matrix(:)))
          l0i = peek(l0,i);
          l0jwi = l0i.data.matrix{1,1};
-         l0jw0(i,1) = interp1(l0.data.omega,l0jwi,2*pi*f0);
 
          col = colors{1+rem(i,length(colors))};
          nyq(K*l0i,col);
       end
-      
-      M = abs(1 + K0*l0jw0);
-      idx = min(find(M==min(M)));
-      
-      l00 = peek(l0,idx);
+            
       if (critical)
          col = 'r2';
       else
          col = [get(l0,'color'),'2'];
       end
+      
+      l00 = peek(l0,1);
       nyq(K*l00,col);
 
       if (critical)
-         title(sprintf('Critical Loci K0*l0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+         title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       else
-         title(sprintf('Characteristic Loci l0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+         title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       end
    end
    Heading(o);
@@ -1298,7 +1298,7 @@ end
 function o = L0Magni(o)                % L0(i,j) Magnitude Plots       
    if type(o,{'spm'})
       o = cache(o,o,'multi');
-      o = cache(o,o,'spectrum');
+      o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
    %o = opt(o,'critical',1);
@@ -1335,7 +1335,7 @@ function o = L0Magni(o)                % L0(i,j) Magnitude Plots
 end
 function o = LambdaMagni(o)
    if type(o,{'spm'})
-      o = cache(o,o,'spectrum');
+      o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
    
@@ -1357,7 +1357,7 @@ function o = LambdaMagni(o)
 end
 function o = LambdaMagni2(o)
    if type(o,{'spm'})
-      o = cache(o,o,'spectrum');
+      o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
    
@@ -1375,7 +1375,7 @@ function o = LambdaMagni2(o)
 end
 function o = LambdaBode(o)
    if type(o,{'spm'})
-      o = cache(o,o,'spectrum');
+      o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
    o = opt(o,'critical',1);

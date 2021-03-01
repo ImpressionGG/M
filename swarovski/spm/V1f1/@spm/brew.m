@@ -20,6 +20,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        The following cache segments are managed by brew:
 %
 %           'critical'                      % critical quantities
+%           'spectral'                      % spectral TRFs
 %           'trf'                           % free system TRFs
 %           'consd'                         % constrained system TRFs
 %           'principal'                     % principal transfer functions
@@ -89,7 +90,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                             |        |                  |
 %                             |        |                  v
 %                             |        |         +-----------------+
-%                             |        |         |     spectrum    | L0jw
+%                             |        |         |     spectral    | L0jw
 %                             |        |         +-----------------+
 %                             v        v
 %              +-----------------+  +-----------------+
@@ -120,7 +121,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        See also: SPM
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@Transform,...
-                       @System,@Trf,@Principal,@Multi,@Spectrum,@Setup,...
+                       @System,@Trf,@Principal,@Multi,@Spectral,@Setup,...
                        @Critical,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
@@ -561,21 +562,25 @@ end
 % Critical Quantities L0, K0, f0, K180, f180
 %==========================================================================
 
-function oo = Critical(o)
+function oo = Critical(o)              % Brew Critical Quantities      
    o = with(o,'critical');
+   
+      % calculate L0 (a CORASIM state space system)
+      
    [K0,f0,K180,f180,L0] = critical(o);
    
-      % calculate L180
+      % calculate L180 (a CORASIM state space system)
       
    L180 = L0;
    L180.data.B = -L180.data.B;
    L180.data.D = -L180.data.D;
-   
+       
       % store in critical cache segment
       
    oo = o;
    oo = cache(oo,'critical.L0',L0);
    oo = cache(oo,'critical.L180',L180);
+   
    oo = cache(oo,'critical.K0',K0);
    oo = cache(oo,'critical.K180',K180);
    oo = cache(oo,'critical.f0',f0);
@@ -587,10 +592,77 @@ function oo = Critical(o)
 end
 
 %==========================================================================
+% Spectral Quantities lambda0, lambda180
+%==========================================================================
+
+function oo = Spectral(o)              % Brew Spectral Quantities      
+%
+% SPECTRAL  Calculate frequency responses L0ij(jw) according to
+%
+%              L0jw = C*inv(jw*I-A)*B + D
+%
+   o = with(o,{'spectral'});
+   [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
+   
+      % calculate characteristic loci lambda0 (a CORASIM FQR system)
+      
+   lambda0 = lambda(o);
+   lambda0 = Sort(lambda0,K0,f0);
+   lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
+   lambda0 = var(lambda0,'K,f',K0,f0);
+   
+      % calculate characteristic loci lambda180 (a CORASIM FQR system)
+      
+   lambda180 = (-1)*lambda0;
+   lambda180 = Sort(lambda180,K180,f180);
+   lambda180 = set(lambda180,'name','lambda180(s)','color','yyyr');
+   lambda180 = var(lambda180,'K,f',K180,f180);
+   
+      % store in cache
+   
+   oo = o;
+   oo = cache(oo,'spectral.lambda0',lambda0);         % store in cache
+   oo = cache(oo,'spectral.lambda180',lambda180);     % store in cache
+   
+      % unconditional hard refresh of spectral segment
+
+   cache(oo,oo);                       % hard refresh of spectral segment
+   
+   function L = Sort(L,K,f)            % sort rows of lambda(jw)       
+      matrix = L.data.matrix;
+      n = prod(size(matrix));
+      
+         % get FQR
+         
+      Ljw = zeros(n,length(matrix{1}));
+      for (i=1:n)
+         Ljw(i,:) = matrix{i};
+         Ljw0(i,1) = interp1(L.data.omega,Ljw(i,:),2*pi*f);
+      end
+      
+         % Since K is critical we should have K*L(jw) = -1 or 1+K*L(jw) = 0
+         % Thus: sort by |1+K*L(jw)| and reorder
+         
+      M = abs(1+K*Ljw0);
+      [M,idx] = sort(M);
+      Ljw = Ljw(idx,:);
+      
+         % re-assemble transfer system
+
+      for (i=1:n)
+         matrix{i} = Ljw(i,:);
+      end
+      L.data.matrix = matrix;
+      
+      L = var(L,'Mmin',M(1));
+   end
+end
+
+%==========================================================================
 % Setup
 %==========================================================================
 
-function oo = Setup(o)                 % Init Setup Cache Segment
+function oo = Setup(o)                 % Init Setup Cache Segment      
    C = cook(o,'C');
    no = size(C,1)/3;
    n = 2^no-1;
@@ -602,7 +674,7 @@ function oo = Setup(o)                 % Init Setup Cache Segment
    oo = cache(oo,'setup.K0K180',K0K180);
    oo = cache(oo,'setup.f0f180',f0f180);
 
-      % unconditional hard refresh of spectrum segment
+      % unconditional hard refresh of spectral segment
       
    cache(oo,oo);                       % cache storeback to shell
 end
@@ -758,91 +830,6 @@ function oo = Multi(o)
       om = logspace(log10(om1),log10(om2),n);
       jw = sqrt(-1)*om;
    end
-end
-function oo = Spectrum(o)
-%
-% SPECTRUM  Calculate frequency responses L0ij(jw) according to
-%
-%              L0jw = C*inv(jw*I-A)*B + D
-%
-   o = with(o,{'spectrum'});
-   l0 = lambda(o);
-   
-   oo = o;
-   oo = cache(oo,'spectrum.l0',l0);    % store in cache
-   
-      % unconditional hard refresh of spectrum segment
-
-   cache(oo,oo);                       % hard refresh of spectrum segment
-return;   
-   
-   L0 = cook(o,'Sys0');
-   [A,B,C,D] = system(L0,'A,B,C,D');
-   
-   [~,om] = fqr(L0);
-   Om = om*oscale(o);
-   
-   kmax = length(om);
-   
-   [n,ni,no] = size(L0);
-   L0jw = zeros(ni*no,length(Om));
-   
-   Lambda = zeros(max(ni,no),kmax);
-   
-   jI = 1i*eye(size(A));
-   for (k=1:kmax)
-      if (rem(k-1,100) == 0)
-         progress(o,sprintf('%g of %g: calculate L0(jw) frequency response',...
-                          k,kmax),k/kmax*100);
-      end
-      Ljwk = (C/(Om(k)*jI-A))*B + D;
-      lam = eig(Ljwk);
-      
-      Ljw(:,k) = Ljwk(:);
-
-      [~,idx] = sort(abs(lam),'descend');
-      lam = lam(idx);
-      Lambda(:,k) = lam(:);
-   end
-   
-      % pack into a corasim object
-      
-   progress(o,'re-arranging ...');
-
-   L0jw = matrix(corasim,[]);          % matrix of frequency responses
-   L0jw.data.n = length(A);            % system order
-   L0jw.data.omega = om;               % frequency matrix
-   L0jw.data.oscale = oscale(o);
-   L0jw.type = 'fqr';
-   
-   for (i=1:no)
-      for (j=1:ni)
-         k = (j-1)*no + i;
-         L0jw.data.matrix{i,j} = Ljw(k,:);
-      end
-   end
-   
-   lamb = matrix(corasim,[]);
-   lamb.data.n = length(A);            % system order
-   lamb.data.omega = om;               % frequency matrix
-   lamb.data.oscale = oscale(o);
-   lamb.type = 'fqr';
-
-   for (i=1:length(lam))
-      lamb.data.matrix{i,1} = Lambda(i,:);
-   end
-   
-   progress(o);
-   
-      % store in spectrum cache segment
-      
-   oo = o;
-   oo = cache(oo,'spectrum.L0jw',L0jw);
-   oo = cache(oo,'spectrum.lambda',lamb);
-   
-      % unconditional hard refresh of spectrum segment
-      
-   cache(oo,oo);                       % cache storeback to shell
 end
 
 %==========================================================================
