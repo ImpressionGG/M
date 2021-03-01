@@ -9,7 +9,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %             Drawing specific plots
 %
 %                critical(o,'Overview',[sub1,sub2,sub3]);
-%                critical(o,'Damping',sub);
+%                critical(o,'Damping',[sub0,sub180]);
 %                critical(o,'Bode',[sub1,sub2]);
 %                critical(o,'Magni',sub);
 %                critical(o,'Phase',sub);
@@ -33,6 +33,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %                                 % quantities (default: 'fqr')
 %                                 % 'fqr': frequency response
 %                                 % 'eig': eigenvalue based
+%                mu               % alternative plots if provided
 %
 %             Copyright(c): Bluenetics 2021
 %
@@ -89,8 +90,8 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
             end
             Bode(o,oo,L0,[0 sub]);     % plot critical parameter overview
          case 'Damping'
-            if (length(sub) ~= 1)
-               sub = [111];
+            if (length(sub) == 1)
+               sub = [111,0];
             end
             Damping(o,oo,L0,sub);      % plot critical parameter overview
      end
@@ -211,9 +212,28 @@ end
 
 function o = Damping(o,oo,L0,sub)
    if isempty(sub)
-      sub = 111;
+      sub = [211,212];
    end
-   [K0_,f0_] = PlotStability(o,L0,sub);
+   if (length(sub) == 1)
+      sub = [sub 0];
+   end
+   
+   mu = opt(o,'mu');                   % get friction coefficient
+   gain = abs(o.either(mu,1));
+   
+   if (sub(1) ~= 0)
+      L = Gain(L0,gain);
+      [K0,f0] = PlotStability(o,L,sub(1),'0',mu);
+   end
+   if (sub(2) ~= 0)
+      L = Gain(L0,-gain);
+      [K180,f180] = PlotStability(o,L,sub(2),'180',-mu);
+   end
+   
+   function L = Gain(L,gain)
+      L.data.B = gain * L.data.B;
+      L.data.D = gain * L.data.D;
+   end
 end
 function Bode(o,oo,L0,sub)
    if (length(sub) ~= 2)
@@ -530,7 +550,14 @@ end
 % Stability Plot
 %==========================================================================
 
-function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart          
+function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart   
+   if (nargin < 4)
+      tag = '0';
+   end
+   if (nargin < 5)
+      mu = [];
+   end
+   
    K0 = nan;  f0 = nan;
    subplot(o,sub,'semilogx');
    set(gca,'visible','on');
@@ -541,7 +568,7 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
    
    closeup = opt(o,{'stability.closeup',0});
    if (closeup)
-      K0 = cook(o,'K0');
+      K0 = cook(o,['K',tag]);
       low = K0/(1+closeup);
       high = K0*(1+closeup);
    end
@@ -593,7 +620,12 @@ function [K0,f0] = PlotStability(o,L0,sub)  % Stability Chart
       set(gca,'ylim',[min(ylim(1),-5),max(ylim(2),+5)]);
    end
    
-   title(sprintf('Worst Damping (K0: %g @ f0: %g Hz)',K0,f0));
+   if isempty(mu)
+      title(sprintf('Critical Gain (K%s: %g @ f%s: %g Hz)',tag,K0,tag,f0));
+   else
+      title(sprintf('Stability Margin: %g @ f: %g Hz, omega: %g/s (mu: %g)',...
+                     o.rd(K0,2),o.rd(f0,1),o.rd(2*pi*f0,1),mu));
+   end
    xlabel('closed loop gain K');
    ylabel('worst damping [%]');
 end

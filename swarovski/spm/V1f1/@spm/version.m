@@ -279,6 +279,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/critical to call lambda with PsiW31,PsiW33
 % - nyquist plot in critical overview :-)))
 % - brewing of lambda0,lambda180
+% - recovery of part of Analyse>Stability menu :-) 
 %
 % Known bugs & wishlist
 % =========================

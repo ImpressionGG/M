@@ -14,12 +14,14 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @WithSpm,@Numeric,@Trf,@TfOverview,...
+                      @Critical,...
+                      @StabilitySummary,@StabilityMargin,@NyquistStability,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
                       @Damping,@Contribution,@NumericCheck,...
                       @SensitivityW,@SensitivityF,@SensitivityD,...
-                      @AnalyseRamp,@NormRamp,@SimpleCalc,@Critical,...
+                      @AnalyseRamp,@NormRamp,@SimpleCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @L0Magni,@LambdaMagni,@LambdaBode,...
                       @SetupAnalysis,...
@@ -52,6 +54,7 @@ function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = CriticalMenu(o);               % Add Critical menu
+   oo = StabilityMenu(o);              % add Stability menu
    oo = SetupMenu(o);                  % add Setup menu
    oo = mitem(o,'-'); 
 
@@ -62,7 +65,6 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
    oo = mitem(o,'-'); 
-   oo = Stability(o);                  % add Stability menu
    oo = Sensitivity(o);                % add Sensitivity menu
    
    oo = mitem(o,'-'); 
@@ -88,7 +90,8 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
    ooo = mitem(oo,'Bode & Damping',{@WithSpm,'Critical','Combi'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Worst Damping',{@WithSpm,'Critical','Damping'});
+   ooo = mitem(oo,'Critical Gain',{@WithSpm,'Critical','Damping'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Bode',{@WithSpm,'Critical','Bode'});
    ooo = mitem(oo,'Magnitude',{@WithSpm,'Critical','Magni'});
    ooo = mitem(oo,'Phase',{@WithSpm,'Critical','Phase'});
@@ -97,6 +100,22 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'Critical',{@WithSpm,'Critical','Critical'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
+end
+function oo = StabilityMenu(o)         % Stability Menu                
+   oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Overview',{@WithCuo,'StabilitySummary'});
+   ooo = mitem(oo,'-');   
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
+   ooo = mitem(oo,'Nyquist',{@WithCuo,'NyquistStability'});
+   
+   ooo = mitem(oo,'-');   
+   ooo = mitem(oo,'Legacy');
+   oooo = mitem(ooo,'Overview',{@WithCuo,'StabilityOverview'});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Stability Margin',{@WithCuo,'Margin'});
+   oooo = mitem(ooo,'Damping',{@WithCuo,'Damping'});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Root Locus',{@WithCuo,'Rloc'});
 end
 function oo = SetupMenu(o)             % Setup Menu                    
    oo = mitem(o,'Setup');
@@ -128,17 +147,6 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
-end
-function oo = Stability(o)             % Closed Loop Stability Menu    
-   oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Stability Margin',{@WithCuo,'Margin'});
-   ooo = mitem(oo,'Damping',{@WithCuo,'Damping'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
-%  ooo = mitem(oo,'-');
-%  ooo = mitem(oo,'Open Loop L0(s)',{@WithCuo,'OpenLoop','L0',1,'bc'});
 end
 function oo = Sensitivity(o)           % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
@@ -349,7 +357,7 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Combi'
          critical(o,'Overview',[3111,3121,3131]);
       case 'Damping'
-         critical(o,'Damping',111);
+         critical(o,'Damping',[211,212]);
       case 'Bode'
          critical(o,'Bode',[211,212]);
       case 'Magni'
@@ -362,6 +370,7 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Critical'
          PlotNyquist(o,111,1);   
    end
+   Heading(o);
          
    function PlotNyquist(o,sub,critical)
       o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
@@ -402,31 +411,107 @@ function o = Critical(o)               % Calculate Critical Quantities
          title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       end
    end
-   Heading(o);
-end
-
-%==========================================================================
-% Numeric Quality
-%==========================================================================
-
-function o = Numeric(o)                % G(s) Numeric FQR Quality Check
-   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
-   [m,n] = size(G);
-
-   for (i=1:m)
-      for (j=1:n)
-         Gij = peek(G,i,j);
-         wij = W{i,j};
-         diagram(o,'Numeric',{psi,wij},Gij,[m,n,i,j]);
-      end
-   end
-   heading(o);
 end
 
 %==========================================================================
 % Stability
 %==========================================================================
 
+function o = StabilitySummary(o)       % Plot Stability Overview        
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   mu = opt(o,{'process.mu',0.1});
+
+   Heading(o);
+   NyquistChart(o,1211,mu);
+   MarginChart(o,[2212,2222]);
+end
+function o = StabilityMargin(o)        % Plot Stability Margins        
+   if type(o,{'spm'})
+      o = cache(o,o,'critical');
+   else
+      plot(o,'About');
+      return
+   end
+   
+   Heading(o);
+   MarginChart(o,[211,212]);
+end
+function o = NyquistStability(o)       % Plot Stability Margins        
+   if type(o,{'spm'})
+      o = cache(o,o,'critical');
+   else
+      plot(o,'About');
+      return
+   end
+   
+   Heading(o);
+   
+   mu = opt(o,{'process.mu',0.1});
+   NyquistChart(o,111,mu);
+end
+
+   % charts
+   
+function NyquistChart(o,sub,mu)
+   o = cache(o,o,'critical');       % hard refresh 'spectral' segment
+   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+   o = with(o,'nyq');
+
+   subplot(o,sub);
+   l0 = cook(o,'lambda0');
+
+   if (dark(o))
+      colors = {'rk','gk','b','ck','mk','yk','wk'};
+   else
+      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+   end
+   colors = get(l0,{'colors',colors});
+
+   for (i=1:length(l0.data.matrix(:)))
+      l0i = peek(l0,i);
+      l0jwi = l0i.data.matrix{1,1};
+
+      col = colors{1+rem(i,length(colors))};
+      nyq(mu*l0i,col);
+   end
+
+   col = 'bcw2';
+
+   l00 = peek(l0,1);
+   nyq(mu*l00,col);
+
+   [K0,f0] = cook(o,'K0,f0');
+   title(sprintf('Nyquist Loci mu*lambda0(jw) - K0: %g @ f0: %g Hz (mu: %g)',K0,f0,mu));
+end
+function MarginChart(o,sub)
+   if length(sub) < 2
+      error('two subplot IDs expected');
+   end
+   
+   o = with(o,{'bode','stability'});
+   
+   points = opt(o,{'omega.points',10000});
+   closeup = opt(o,{'bode.closeup',0});
+
+   [f0,K0] = cook(o,'f0,K0');
+   
+   if (closeup)
+       points = max(points,500);
+       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
+       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
+       o = opt(o,'omega.points',points);
+   end
+   
+   mu = opt(o,{'process.mu',0.1});
+   o = opt(o,'mu',mu);
+   critical(o,'Damping',sub);
+end
+   % legacy
+   
 function o = Margin(o)                 % Stability Margin              
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % hard refresh multi cache segment
@@ -1909,14 +1994,35 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (no == 5 && isequal(mode,'symmetry'))
          id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
               [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
+      elseif (no == 7 && isequal(mode,'symmetry'))
+         id = [127 107 73 63 [31 15  [7 14 28],[12 6 3]  [1 2 [] 4 8 16 [] 32 64]  [96 48 24],[28 56 112] 120 124] 126 73 107 127];
+         
       elseif (no == 5 && isequal(mode,'sample'))
          id = [31 [7 [14] [1 2 []  4  [] 8 16] [14] 28] 31];
       elseif (no == 7 && isequal(mode,'sample'))
-         id = [127 63 [15 [14] [1 2 []  8  [] 32 64] [14] 120] 126 127];
+         id = [127 107 63 [15 [14 28] [1 2 []  8  [] 32 64] [28 56] 120] 126 107 127];
       else
          id = 1:(2^no-1);
       end
    end
+end
+
+%==========================================================================
+% Numeric Quality
+%==========================================================================
+
+function o = Numeric(o)                % G(s) Numeric FQR Quality Check
+   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
+   [m,n] = size(G);
+
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         wij = W{i,j};
+         diagram(o,'Numeric',{psi,wij},Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
 end
 
 %==========================================================================
