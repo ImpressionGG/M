@@ -282,6 +282,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - recovery of part of Analyse>Stability menu :-)
 % - add frequency plots to stability range
 % - some trials with better condition numbers - set T0=1s by default
+% - clear screen at begin of package import
 %
 % Known bugs & wishlist
 % =========================

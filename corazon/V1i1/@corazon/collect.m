@@ -208,6 +208,7 @@ function list = Collect(o)             % Collect Files
       end
    end
 
+   cls(o);
    if isempty(typ)
       message(o,'Error: something wrong with package folder syntax!',...
                 '(cannot import files)');
