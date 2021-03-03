@@ -14,6 +14,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @WithSpm,@Numeric,@Trf,@TfOverview,...
+                      @Principal,...
                       @Critical,...
                       @StabilitySummary,@StabilityMargin,@NyquistStability,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
@@ -53,11 +54,14 @@ function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
    oo = SetupMenu(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
+   oo = PrincipalMenu(o);              % Add Principal menu
    oo = CriticalMenu(o);               % Add Critical menu
+
+   oo = mitem(o,'-');
    oo = StabilityMenu(o);              % add Stability menu
    oo = SetupMenu(o);                  % add Setup menu
+   
    oo = mitem(o,'-'); 
-
    oo = NumericMenu(o);                % add Numeric menu
 
    oo = mitem(o,'-'); 
@@ -85,6 +89,10 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = Precision(o);
 end
 
+function oo = PrincipalMenu(o)         % Principal Menu                
+   oo = mitem(o,'Principal');
+   ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
+end
 function oo = CriticalMenu(o)          % Critical Menu                 
    oo = mitem(o,'Critical');
    ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
@@ -323,6 +331,80 @@ function o = Err(o)                    % Error Handler
 end
 
 %==========================================================================
+% Principal
+%==========================================================================
+
+function o = Principal(o)              % Pricipal Menu Callbacks       
+   if type(o,{'spm'})
+      o = cache(o,o,'critical');
+      o = cache(o,o,'spectral');
+   else
+      plot(o,'About');
+      return
+   end
+   
+   Heading(o);
+   
+   mode = arg(o,1);
+   switch mode
+      case 'Genesis'
+         PrincipalGenesis(o);
+   end
+end
+function o = PrincipalGenesis(o)
+   [l0,g31,g33,g0] = cook(o,'lambda0,g31,g33,g0');
+   
+   [~,no,~] = size(l0);
+   l0 = peek(l0,1);
+   g31 = peek(g31,1);
+   g33 = peek(g33,no);
+   
+   MagniChart(o,411,g31);
+   MagniChart(o,412,g33);
+   MagniChart(o,413,g0);
+   MagniChart(o,414,l0);
+end
+function oldPlotNyquist(o,sub,critical)
+   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+
+   o = with(o,'nyq');
+
+   subplot(o,sub);
+   l0 = cook(o,'lambda0');
+   K = o.iif(critical,K0,1);
+
+   if (dark(o))
+      colors = {'rk','gk','b','ck','mk','yk','wk'};
+   else
+      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+   end
+   colors = get(l0,{'colors',colors});
+
+   for (i=1:length(l0.data.matrix(:)))
+      l0i = peek(l0,i);
+      l0jwi = l0i.data.matrix{1,1};
+
+      col = colors{1+rem(i,length(colors))};
+      nyq(K*l0i,col);
+   end
+
+   if (critical)
+      col = 'r2';
+   else
+      col = [get(l0,'color'),'2'];
+   end
+
+   l00 = peek(l0,1);
+   nyq(K*l00,col);
+
+   if (critical)
+      title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+   else
+      title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+   end
+end
+
+%==========================================================================
 % Critical
 %==========================================================================
 
@@ -454,62 +536,6 @@ function o = NyquistStability(o)       % Plot Stability Margins
    NyquistChart(o,111,mu);
 end
 
-   % charts
-   
-function NyquistChart(o,sub,mu)
-   o = cache(o,o,'critical');       % hard refresh 'spectral' segment
-   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
-   o = with(o,'nyq');
-
-   subplot(o,sub);
-   l0 = cook(o,'lambda0');
-
-   if (dark(o))
-      colors = {'rk','gk','b','ck','mk','yk','wk'};
-   else
-      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
-   end
-   colors = get(l0,{'colors',colors});
-
-   for (i=1:length(l0.data.matrix(:)))
-      l0i = peek(l0,i);
-      l0jwi = l0i.data.matrix{1,1};
-
-      col = colors{1+rem(i,length(colors))};
-      nyq(mu*l0i,col);
-   end
-
-   col = 'bcw2';
-
-   l00 = peek(l0,1);
-   nyq(mu*l00,col);
-
-   [K0,f0] = cook(o,'K0,f0');
-   title(sprintf('Nyquist Loci mu*lambda0(jw) - K0: %g @ f0: %g Hz (mu: %g)',K0,f0,mu));
-end
-function MarginChart(o,sub)
-   if length(sub) < 2
-      error('two subplot IDs expected');
-   end
-   
-   o = with(o,{'bode','stability'});
-   
-   points = opt(o,{'omega.points',10000});
-   closeup = opt(o,{'bode.closeup',0});
-
-   [f0,K0] = cook(o,'f0,K0');
-   
-   if (closeup)
-       points = max(points,500);
-       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
-       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
-       o = opt(o,'omega.points',points);
-   end
-   
-   mu = opt(o,{'process.mu',0.1});
-   o = opt(o,'mu',mu);
-   critical(o,'Damping',sub);
-end
    % legacy
    
 function o = Margin(o)                 % Stability Margin              
@@ -2174,6 +2200,92 @@ assert(o);  % might be obsoleted!
       ok = true;
    end
 end
+
+%==========================================================================
+% Charts
+%==========================================================================
+
+function BodeChart(o,sub,G)            % Bode Chart                    
+   o = with(o,'bode');
+end
+function MagniChart(o,sub,G)           % Magnitude Chart                    
+   o = with(o,'bode');
+
+   subplot(o,sub,'semilogx');
+   col = get(G,'color');
+   magni(G,col);
+   
+   name = get(G,{'name',''});
+   
+   if opt(o,{'view.critical',0})
+      [K0,f0] = cook(o,'K0,f0');
+      plot(o,2*pi*[f0 f0],get(gca,'ylim'),'r-.');
+      
+      if isequal(name,'lambda0(s)')
+         plot(o,2*pi*f0,-20*log10(K0),'Ko');
+      end
+      
+      title(sprintf('%s: Magnitude Plot (K0: %g @ %g Hz)',name,K0,f0));
+   else
+      title(sprintf('%s: Magnitude Plot',name));
+   end
+   ylabel(sprintf('|%s|  [dB]',name));
+end
+function NyquistChart(o,sub,mu)        % Nyquist Chart                 
+   o = cache(o,o,'critical');       % hard refresh 'spectral' segment
+   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+   o = with(o,'nyq');
+
+   subplot(o,sub);
+   l0 = cook(o,'lambda0');
+
+   if (dark(o))
+      colors = {'rk','gk','b','ck','mk','yk','wk'};
+   else
+      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+   end
+   colors = get(l0,{'colors',colors});
+
+   for (i=1:length(l0.data.matrix(:)))
+      l0i = peek(l0,i);
+      l0jwi = l0i.data.matrix{1,1};
+
+      col = colors{1+rem(i,length(colors))};
+      nyq(mu*l0i,col);
+   end
+
+   col = 'bcw2';
+
+   l00 = peek(l0,1);
+   nyq(mu*l00,col);
+
+   [K0,f0] = cook(o,'K0,f0');
+   title(sprintf('Nyquist Loci mu*lambda0(jw) - K0: %g @ f0: %g Hz (mu: %g)',K0,f0,mu));
+end
+function MarginChart(o,sub)            % Margin Chart                  
+   if length(sub) < 2
+      error('two subplot IDs expected');
+   end
+   
+   o = with(o,{'bode','stability'});
+   
+   points = opt(o,{'omega.points',10000});
+   closeup = opt(o,{'bode.closeup',0});
+
+   [f0,K0] = cook(o,'f0,K0');
+   
+   if (closeup)
+       points = max(points,500);
+       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
+       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
+       o = opt(o,'omega.points',points);
+   end
+   
+   mu = opt(o,{'process.mu',0.1});
+   o = opt(o,'mu',mu);
+   critical(o,'Damping',sub);
+end
+
 
 %==========================================================================
 % Helper

@@ -37,7 +37,7 @@ function [n,ni,no] = size(o)
          ni = 1; no = 1;
          
       case 'fqr'
-         n = o.data.n;
+         n = data(o,{'n',nan});
          [no,ni] = size(o.data.matrix);
          
       otherwise

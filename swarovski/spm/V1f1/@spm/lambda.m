@@ -1,4 +1,4 @@
-function oo = lambda(o,varargin)      % Spectral Frequency Responses
+function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
 %
 % LAMBDA  Calculate spectral frequency responses lambda(s) for an open
 %         loop system. Result is an FQR typed corasim system
@@ -12,8 +12,10 @@ function oo = lambda(o,varargin)      % Spectral Frequency Responses
 %            sys = system(o,cdx);      % get contact relevant system
 %            l0 = lambda(o,sys,omega); % calculate spectral FQRs
 %
+%            [l0,g31,g33] = lambda(o,sys,omega);
+%
 %         The next two calls return the frequency response (not a CORASIM
-%         system), which is for efficient calculations in some algorithms
+%         system), which enables efficient calculation in some algorithms
 %
 %            ljw = lambda(o,A,B_1,B_3,C_3,T0*omega)
 %            ljw = lambda(o,PsiW31,PsiW33,T0*omega)
@@ -97,46 +99,83 @@ function oo = lambda(o,varargin)      % Spectral Frequency Responses
 
       % for nargin >= 4 we are done
       
+   m = size(B_1,2);  
+
    if (nargin >= 4)
+      ljw = Lambda(o,PsiW31,PsiW33,Om);
       oo = ljw;
       return
+   elseif (nargout > 1)
+      [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,Om);
+   else
+      ljw = Lambda(o,PsiW31,PsiW33,Om);
    end
    
-      % otherwise create a CORASIM system
-      
-   m = size(B_1,2);  
+      % otherwise create a CORASIM system l0(jw) and optionally 
+      % g31(jw),g33(jw) 
    
    for (i=1:m)
-      matrix{i,1} = ljw(i,:);
+      l0{i,1} = ljw(i,:);
    end
-   oo = fqr(corasim,om,matrix);        % FQR typed CORASIM system
+   oo = fqr(corasim,om,l0);            % FQR typed CORASIM system
    oo = set(oo,'name','l0(jw)','color','yyyr');
+   
+   if (nargout == 1)
+      return                           % return l0
+   else   
+      for (i=1:m)
+         g31{i,1} = g31jw(i,:);
+         g33{i,1} = g33jw(i,:);
+      end
+      g31 = fqr(corasim,om,g31);       % FQR typed CORASIM system
+      g31 = set(g31,'name','g31(s)','color','g');
+   
+      g33 = fqr(corasim,om,g33);       % FQR typed CORASIM system
+      g33 = set(g33,'name','g33(s)','color','g');
+   end
 end
 
 %==========================================================================
 % Lambda Calculation
 %==========================================================================
 
-function ljw = Lambda(o,PsiW31,PsiW33,om)
-   Pjw = psion(o,PsiW31,om);
-   Qjw = psion(o,PsiW33,om);
+function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
+   G31jw = psion(o,PsiW31,om);
+   G33jw = psion(o,PsiW33,om);
 
    m = sqrt(size(PsiW31,2)-3);
    if (m == 1)
-      Ljw = Pjw ./ Qjw;
+      Ljw = G31jw ./ G33jw;
       ljw = Ljw;
+
+      if (nargout > 1)
+         g31jw = G31jw;  g33jw = G33jw;
+      end
    else
       ljw = zeros(m,length(om));
 
-      kmax = size(Pjw,2);
+      kmax = size(G31jw,2);
       for (k=1:kmax)
-         Pjwk = reshape(Pjw(:,k),m,m);
-         Qjwk = reshape(Qjw(:,k),m,m);
-         Ljwk = Qjwk\Pjwk;
+         G31jwk = reshape(G31jw(:,k),m,m);
+         G33jwk = reshape(G33jw(:,k),m,m);
+         Ljwk = G33jwk\G31jwk;
 
          ljw(:,k) = eig(Ljwk);
          if (k > 1)
             ljw(:,k-1:k) = Sort(ljw(:,k-1:k));
+         end
+         
+            % optionally calculate g31(jw), g33(jw)
+            % note: ljw = g0jw * g31jw/g33jw
+            
+         if (nargout > 1)
+            g31jwk = eig(G31jwk);
+            [~,idx] = sort(abs(g31jwk));
+            g31jw(:,k) = g31jwk(idx);
+            
+            g33jwk = eig(G33jwk);
+            [~,idx] = sort(abs(g33jwk));
+            g33jw(:,k) = g33jwk(idx);
          end
       end
    end

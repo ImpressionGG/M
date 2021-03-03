@@ -157,7 +157,7 @@ function L0 = Reduce(L0)
       % state variables which are more or less not observable
       
    [V,AV] = eig(A0);                   % transform to diagonal form
-   condi = cond(V)
+   condi = cond(V);
 
 if(0)   
    if (condi > 1e10)

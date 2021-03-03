@@ -606,10 +606,21 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    
       % calculate characteristic loci lambda0 (a CORASIM FQR system)
       
-   lambda0 = lambda(o);
+   [lambda0,g31,g33] = lambda(o);
+   
    lambda0 = Sort(lambda0,K0,f0);
    lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
    lambda0 = var(lambda0,'K,f',K0,f0);
+   
+      % with l0 = g0 * g31/g33 calculate: g0 = l0 * g33/g31
+      
+   l0jw = lambda0.data.matrix{1,1};
+   g31jw = g31.data.matrix{1,1};
+   g33jw = g33.data.matrix{end,1};
+   
+   g0jw = l0jw .* g33jw ./ g31jw;
+   g0 = fqr(corasim,lambda0.data.omega,{g0jw});
+   g0 = set(g0,'name','g0(s)','color','m');
    
       % calculate characteristic loci lambda180 (a CORASIM FQR system)
       
@@ -623,6 +634,10 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    oo = o;
    oo = cache(oo,'spectral.lambda0',lambda0);         % store in cache
    oo = cache(oo,'spectral.lambda180',lambda180);     % store in cache
+
+   oo = cache(oo,'spectral.g31',g31);
+   oo = cache(oo,'spectral.g33',g33);
+   oo = cache(oo,'spectral.g0',g0);
    
       % unconditional hard refresh of spectral segment
 

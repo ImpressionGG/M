@@ -200,6 +200,11 @@ function o = Auto(o)                   % Automatic Axes Limits
       high = Ceil(20*log10(max(abs(Gjw))));
       low = Floor(20*log10(min(abs(Gjw))));
       
+      if (abs(high-low) < 1)
+         high = o.rd(low,-1)+20;
+         low  = o.rd(low,-1)-20;
+      end
+      
       if isinf(low)
          low = -300;
       end
