@@ -62,6 +62,8 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = SetupMenu(o);                  % add Setup menu
    
    oo = mitem(o,'-'); 
+o = mitem(o,'Legacy');
+   
    oo = NumericMenu(o);                % add Numeric menu
 
    oo = mitem(o,'-'); 
@@ -92,6 +94,9 @@ end
 function oo = PrincipalMenu(o)         % Principal Menu                
    oo = mitem(o,'Principal');
    ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'G31 Spectrum',{@WithSpm,'Principal','G31'});
+   ooo = mitem(oo,'G33 Spectrum',{@WithSpm,'Principal','G33'});
 end
 function oo = CriticalMenu(o)          % Critical Menu                 
    oo = mitem(o,'Critical');
@@ -349,6 +354,10 @@ function o = Principal(o)              % Pricipal Menu Callbacks
    switch mode
       case 'Genesis'
          PrincipalGenesis(o);
+      case 'G31'
+         PrincipalSpectrum(o,'g31');
+      case 'G33'
+         PrincipalSpectrum(o,'g33');
    end
 end
 function o = PrincipalGenesis(o)
@@ -364,6 +373,41 @@ function o = PrincipalGenesis(o)
    MagniChart(o,413,g0);
    MagniChart(o,414,l0);
 end
+function o = PrincipalSpectrum(o,tag)
+   g = cook(o,tag);
+   no = prod(size(g.data.matrix));
+   sub = [211,212];
+   name = get(g,{'name',''});
+   idx = o.iif(isequal(name,'g33(s)'),no,1);
+   
+      % draw magnitudes
+      
+   for (i=1:no)
+      gi = peek(g,i);
+      col = Colors(o,gi,i);
+      gi = set(gi,'color',col);
+      MagniChart(o,sub(1),gi,0);
+   end
+   gi = peek(g,idx);
+   col = [get(gi,'color'),'2'];
+   gi = set(gi,'color',col);
+   MagniChart(o,sub(1),gi,1);
+   
+      % draw phases
+      
+   for (i=1:no)
+      gi = peek(g,i);
+      col = Colors(o,gi,i);
+      gi = set(gi,'color',col);
+      PhaseChart(o,sub(2),gi,0);
+   end
+   gi = peek(g,idx);
+   col = [get(gi,'color'),'2'];
+   gi = set(gi,'color',col);
+   PhaseChart(o,sub(2),gi,1);
+end
+
+
 function oldPlotNyquist(o,sub,critical)
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
 
@@ -1682,9 +1726,13 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       
       if isinf(marg)
          if (flip)
-            plot(o,0,xi,infgreen);
+%           plot(o,0,xi,infgreen);
+            patch(yi+Y,xi+X,o.color('gw'));
+            plot(o,yi,xi,'kp');
          else
-            plot(o,xi,0,infgreen);
+%           plot(o,xi,0,infgreen);
+            patch(xi+X,yi+Y,o.color('gw'));
+            plot(o,xi,yi,'kp');
          end
       else
          if (flip)
@@ -1812,7 +1860,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
          txt = [' (',txt,')'];
       end
    end
-   function id = Order(no,mode)
+   function id = OldOrder(no,mode)
       if (no == 5 && isequal(mode,'symmetry'))
          id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
               [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
@@ -2016,20 +2064,23 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
          txt = [' (',txt,')'];
       end
    end
-   function id = Order(no,mode)
-      if (no == 5 && isequal(mode,'symmetry'))
-         id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
-              [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
-      elseif (no == 7 && isequal(mode,'symmetry'))
-         id = [127 107 73 63 [31 15  [7 14 28],[12 6 3]  [1 2 [] 4 8 16 [] 32 64]  [96 48 24],[28 56 112] 120 124] 126 73 107 127];
-         
-      elseif (no == 5 && isequal(mode,'sample'))
-         id = [31 [7 [14] [1 2 []  4  [] 8 16] [14] 28] 31];
-      elseif (no == 7 && isequal(mode,'sample'))
-         id = [127 107 63 [15 [14 28] [1 2 []  8  [] 32 64] [28 56] 120] 126 107 127];
-      else
-         id = 1:(2^no-1);
-      end
+end
+
+   % local helper
+   
+function id = Order(no,mode)
+   if (no == 5 && isequal(mode,'symmetry'))
+      id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
+           [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
+   elseif (no == 7 && isequal(mode,'symmetry'))
+      id = [127 107 73 63 [31 15  [7 14 28],[12 6 3]  [1 2 [] 4 8 16 [] 32 64]  [96 48 24],[28 56 112] 120 124] 126 73 107 127];
+
+   elseif (no == 5 && isequal(mode,'sample'))
+      id = [31 [7 [14] [1 2 []  4  [] 8 16] [14] 28] 31];
+   elseif (no == 7 && isequal(mode,'sample'))
+      id = [127 107 63 [15 [14 28] [1 2 []  8  [] 32 64] [28 56] 120] 126 107 127];
+   else
+      id = 1:(2^no-1);
    end
 end
 
@@ -2208,8 +2259,11 @@ end
 function BodeChart(o,sub,G)            % Bode Chart                    
    o = with(o,'bode');
 end
-function MagniChart(o,sub,G)           % Magnitude Chart                    
+function MagniChart(o,sub,G,critical)  % Magnitude Chart               
    o = with(o,'bode');
+   if (nargin < 4)
+      critical = 1;
+   end
 
    subplot(o,sub,'semilogx');
    col = get(G,'color');
@@ -2217,7 +2271,7 @@ function MagniChart(o,sub,G)           % Magnitude Chart
    
    name = get(G,{'name',''});
    
-   if opt(o,{'view.critical',0})
+   if (critical && opt(o,{'view.critical',0}))
       [K0,f0] = cook(o,'K0,f0');
       plot(o,2*pi*[f0 f0],get(gca,'ylim'),'r-.');
       
@@ -2231,6 +2285,29 @@ function MagniChart(o,sub,G)           % Magnitude Chart
    end
    ylabel(sprintf('|%s|  [dB]',name));
 end
+function PhaseChart(o,sub,G,critical)  % Phase Chart                  
+   o = with(o,'bode');
+   if (nargin < 4)
+      critical = 1;
+   end
+
+   subplot(o,sub,'semilogx');
+   col = get(G,'color');
+   phase(G,col);
+   
+   name = get(G,{'name',''});
+   
+   if (critical && opt(o,{'view.critical',0}))
+      [K0,f0] = cook(o,'K0,f0');
+      plot(o,2*pi*[f0 f0],get(gca,'ylim'),'r-.');
+            
+      title(sprintf('%s: Phase Plot (K0: %g @ %g Hz)',name,K0,f0));
+   else
+      title(sprintf('%s: Phase Plot',name));
+   end
+   ylabel(sprintf('|%s|  [dB]',name));
+end
+
 function NyquistChart(o,sub,mu)        % Nyquist Chart                 
    o = cache(o,o,'critical');       % hard refresh 'spectral' segment
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
@@ -2285,7 +2362,6 @@ function MarginChart(o,sub)            % Margin Chart
    o = opt(o,'mu',mu);
    critical(o,'Damping',sub);
 end
-
 
 %==========================================================================
 % Helper
@@ -2438,10 +2514,12 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-function [fcol,bcol,ratio] = Colors(o,K)                               
+function [fcol,bcol,ratio] = Colors(o,K,i)                               
 %
 % COLORS   Return colors and color ratio of a critical value, where output
 %          arg is the ratio of foreground (fcol) to background (bcol9 color 
+%
+%             colors = Colors(o,l0);
 %
 %             [fcol,bcol,ratio] = Colors(o,K)
 %
@@ -2462,16 +2540,29 @@ function [fcol,bcol,ratio] = Colors(o,K)
 %             K = 5:        80% red   @ 20% yellow
 %             K = 10:       90% red   @ 10% yellow
 %
-   n = 2;                              % exponent
-   K = abs(K);
-   if (K > 1.0)
-      fcol = 'ggk';  bcol = 'yyyr';
-      ratio = 1 - (1/K)^n;
+   if isobject(K)
+      if dark(o)
+         colors = {'rk','gk','b','ck','mk','yk','wkk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wwk'};
+      end
+      if (nargin < 3)
+         fcol = colors;                   % set out arg
+      else
+         fcol = colors{1+rem(i,length(colors))};
+      end
    else
-      fcol = 'r';  bcol = 'yyyr';
-      ratio = 1 - K^n;
+      n = 2;                              % exponent
+      K = abs(K);
+      if (K > 1.0)
+         fcol = 'ggk';  bcol = 'yyyr';
+         ratio = 1 - (1/K)^n;
+      else
+         fcol = 'r';  bcol = 'yyyr';
+         ratio = 1 - K^n;
+      end
+
+      ratio = 1-ratio;
    end
-   
-   ratio = 1-ratio;
 end
     

@@ -170,11 +170,11 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
             
          if (nargout > 1)
             g31jwk = eig(G31jwk);
-            [~,idx] = sort(abs(g31jwk));
+            [~,idx] = sort(abs(g31jwk),'descend');
             g31jw(:,k) = g31jwk(idx);
             
             g33jwk = eig(G33jwk);
-            [~,idx] = sort(abs(g33jwk));
+            [~,idx] = sort(abs(g33jwk),'descend');
             g33jw(:,k) = g33jwk(idx);
          end
       end

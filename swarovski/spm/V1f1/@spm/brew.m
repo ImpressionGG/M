@@ -133,6 +133,24 @@ end
 
 function oo = Brew(o)                  % Brew All Cache Segments       
    oo = current(o);
+   
+      % if current object is a container then explicite brewing is 
+      % avoided and instead all cashes are hard refreshed. This avoids
+      % second brewing of already brewed cache segments
+      
+   if container(oo)
+      pkgs = children(oo);             % get list of packages
+      n = 0;                           % init to count total objects
+      for (i=1:length(pkgs))
+         kids = children(pkgs{i});
+         n = n + 1 + length(kids);
+      end
+      
+      
+      return
+   end
+   
+   
    switch oo.type
       case 'spm'
          oo = BrewSpm(oo);
@@ -176,31 +194,26 @@ function oo = Brew(o)                  % Brew All Cache Segments
          'ok';                         % ignore other types
    end
    
-   function o = BrewSpm(o)
-      o = cache(o,o,[]);               % clear cache hard
 
-         % note that brewing function hard refreshes cache segment
-
-      o = brew(o,'Trf');
-      o = brew(o,'Constrain');
-      o = brew(o,'Process');
-   end
 end
-function oo = OldEigen(o)              % Brew Eigenvalues              
-   oo = o;                             % copy to out arg
-   A = data(oo,'A');
+function o = BrewPkg(o)
+   assert(type(o,{'pkg'});
    
-   ev = eig(A);                        % eigenvalues (EV)
-   i = 1:length(ev);                   % EV index 
-   x = real(ev);                       % real value
-   y = imag(ev);                       % imag value
-   [~,idx] = sort(abs(imag(ev)));
+   list = children(o);                 % get list of data objects
+   n = length(list);
    
-      % store calculated stuff in cache
-      
-   oo = cache(oo,'eigen.index',i);
-   oo = cache(oo,'eigen.real',x(idx));
-   oo = cache(oo,'eigen.imag',y(idx));
+end
+function o = BrewSpm(o)
+   o = cache(o,o,[]);               % clear cache hard
+
+      % note that brewing function hard refreshes cache segment
+
+   %o = brew(o,'Trf');
+   %o = brew(o,'Constrain');
+   %o = brew(o,'Process');
+
+   o = brew(o,'Critical');
+   o = brew(o,'Spectral');
 end
 
 %==========================================================================

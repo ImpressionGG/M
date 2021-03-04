@@ -557,6 +557,7 @@ function VersionV1H
 % - Release version CORAZON V1H
 % - store subplot indizes in axes shelf
 % - corazon/message to be displayed in subplot
+% - corazon/children method added
 
 %
 % Known Bugs / Wishlist
@@ -569,9 +570,12 @@ function VersionV1I
 % Release Notes Corazon/V1I
 % =========================
 %
+% + improve corazon/progress for simplified progress messages
+%
 % Change Log V1i1 (beta):
 %
-% starting corazon-v1i1 (beta)
+% - starting corazon-v1i1 (beta)
+% + improve corazon/progress method for simplified progress messages
 %
 %
 % Known Bugs / Wishlist

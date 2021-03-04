@@ -332,6 +332,8 @@ function oo = StoreCache(o)            % Store All Caches
       o.data{i} = oo;
    end
    push(o);
+   
+   cls(o);
    message(o,'Caches of all objects have been stored!');
 end
 function oo = RecallCache(o)           % Recall All Caches              
@@ -345,6 +347,8 @@ function oo = RecallCache(o)           % Recall All Caches
       o.data{i} = oo;
    end
    push(o);
+
+   cls(o);
    message(o,'Caches of all objects have been recalled!');
 end
 function oo = ClearCache(o)            % Clear All Caches              
@@ -353,7 +357,8 @@ function oo = ClearCache(o)            % Clear All Caches
       oo = o.data{i};
       cache(oo,oo,[]);                 % cache hard reset
    end
-   subplot(o,111);
+   
+   cls(o);
    message(o,'Caches of all objects have been cleared!');
 end
 function oo = Extras(o)                % Extras Menu Items
