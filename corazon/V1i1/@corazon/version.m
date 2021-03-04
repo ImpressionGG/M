@@ -570,12 +570,14 @@ function VersionV1I
 % Release Notes Corazon/V1I
 % =========================
 %
+% + add corazon/children method
 % + improve corazon/progress for simplified progress messages
 %
 % Change Log V1i1 (beta):
 %
 % - starting corazon-v1i1 (beta)
 % + improve corazon/progress method for simplified progress messages
+% + add corazon/children method
 %
 %
 % Known Bugs / Wishlist
