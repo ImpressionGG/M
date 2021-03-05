@@ -284,6 +284,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - some trials with better condition numbers - set T0=1s by default
 % - clear screen at begin of package import
 % - Analyse>Principal>Genesis
+% - bug fix in setup analysis: labeling
 %
 % Known bugs & wishlist
 % =========================
