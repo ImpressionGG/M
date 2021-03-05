@@ -478,8 +478,10 @@ function o = Critical(o)               % Calculate Critical Quantities
    mode = arg(o,1);
    switch mode
       case 'Overview'
-         critical(o,'Overview',[3211,3221,3231]);
-         PlotNyquist(o,122,1);   
+         critical(o,'Overview',[3211,3221,0]);
+         PlotNyquist(o,2212,0);   
+         PlotNyquist(o,2222,1);   
+         critical(o,'Overview',[0,0,3231]);
       case 'Combi'
          critical(o,'Overview',[3111,3121,3131]);
       case 'Damping'
@@ -514,7 +516,8 @@ function o = Critical(o)               % Calculate Critical Quantities
       end
       colors = get(l0,{'colors',colors});
       
-      for (i=1:length(l0.data.matrix(:)))
+      no = length(l0.data.matrix(:));
+      for (i=no)
          l0i = peek(l0,i);
          l0jwi = l0i.data.matrix{1,1};
 
@@ -528,12 +531,29 @@ function o = Critical(o)               % Calculate Critical Quantities
          col = [get(l0,'color'),'2'];
       end
       
-      l00 = peek(l0,1);
-      nyq(K*l00,col);
 
       if (critical)
+         l00 = peek(l0,1);
+         l00jw = l00.data.matrix{1};
+         
+         for (i=1:no)
+            ljw(i,:) = l0.data.matrix{i};
+         end
+         
+         for (j=1:size(ljw,2))
+            [~ ,idx] = sort(abs(ljw(:,j)));
+            l00jw(j) = ljw(idx(no),j);
+         end
+         
+         nyq(K*l00,col);
+
+         l00.data.matrix{1} = l00jw;   
+         nyq(K*l00,'r1');
+         
          title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       else
+         l00 = peek(l0,1);
+         nyq(K*l00,col);
          title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       end
    end
@@ -1598,7 +1618,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
    list = olist{1};                    % pick object list
    list(1) = [];                       % delete package object from list
 
-   o = with(o,{'style','process','stability'});
+   o = with(o,{'style','process','stability','critical'});
    m = length(list);
 
    if (m == 0)
@@ -1654,9 +1674,10 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       [K0K180,f0f180] = cook(oi,'K0K180,f0f180');
       
       fmin = inf;                      % init
+      progress(o,N,'calculate stability range');
       for (j=1:N)                      % calc & plot stability margin  
          txt = sprintf('calculate stability range of %s',get(o,'title'));
-         progress(o,txt,j/N*100);
+         progress(o,j);
 
          i = id(j); 
          cfg = Config(i);
@@ -1764,8 +1785,13 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
          end
          hold on
       end
-      hdl = text(xi,no+0.3,sprintf('%g',id));
-      set(hdl,'Vertical','bottom','Horizontal','center','fontsize',6);
+      if (flip)
+         hdl = text(no+0.6,xi,sprintf('%g',id));
+         set(hdl,'Vertical','mid','Horizontal','center','fontsize',6);
+      else
+         hdl = text(xi,no+0.3,sprintf('%g',id));
+         set(hdl,'Vertical','bottom','Horizontal','center','fontsize',6);
+      end
    end
    function Axes1(o,sub,mu,tit)        % Plot Axes                     
       subplot(o,sub);

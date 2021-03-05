@@ -319,7 +319,9 @@ function oo = BrewCache(o)             % Re-Brew Cache Segments
       otherwise
          message(o,'Select data object or package object for brewing!');
    end
+   stop(o,'on');
    oo = brew(o);
+   stop(o,'off');
    message(o,'Brewing complete!');
    return
 end

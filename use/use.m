@@ -15,17 +15,18 @@ function use(tag,version)
 %           use kalman
 %           use surge
 %           use trade
-%           use antenna    % Willy's Antennen Toolbox
+%           use antenna       % Willy's Antennen Toolbox
 %
 %        Releases
 %
-%           use cute-v1a   % Cute V1a release @ 24Aug20
-%           use cute-v1b1  % Cute V1b1   beta @ 27Aug20
-%           use cute-v1b2  % Cute V1b2   beta @ 28Aug20
-%           use cute-v1b3  % Cute V1b3   beta @ 31Aug20
-%           use cute-v1b   % Cute V1b release @ 07Aug20
+%           use cute-v1a      % Cute V1a release @ 24Aug20
+%           use cute-v1b1     % Cute V1b1   beta @ 27Aug20
+%           use cute-v1b2     % Cute V1b2   beta @ 28Aug20
+%           use cute-v1b3     % Cute V1b3   beta @ 31Aug20
+%           use cute-v1b      % Cute V1b release @ 07Aug20
 %
-%           use spm-v1c    % SPM V1c release @ 12Oct20
+%           use spm-v1c       % SPM V1c release @ 12Oct20
+%           use minispm-v1e   % MINISPM V1e release @ 
 %
    if (nargin < 2)
       version.carabao = 'V1l';
@@ -172,6 +173,9 @@ function use(tag,version)
 
       case 'spm-v1c'
          SpmV1cRelease;
+         
+      case 'minispm-v1e'
+         MiniSpmV1eRelease;
    end
 end
 
@@ -353,4 +357,29 @@ function SpmV1cRelease                 % SpmV1c  Release @ 12Oct20
    disp(['   ',pwd]);
 end
 
+function MiniSpmV1eRelease             % MiniSpmV1e  Release @ 22Feb21     
+   release = 'MiniSpmV1e-Release-22Feb21';
+   dirnum = '07';
+   version.corazon = 'V1h';
+   version.minispm = 'V1e';
+   
+   fprintf('Setting up for %s\n',release); 
+   relpath = [mhome,'/swarovski/@Release/',dirnum,' ',release,'/',release];
+
+      % use corazon
+
+   corazonpath = [relpath,'/corazon/',version.corazon];
+   addpath(corazonpath);
+   fprintf(['   using Corazon Toolbox ',version.corazon,'\n']);
+
+      % use minispm
+
+   minispmpath = [relpath,'/minispm/',version.minispm];
+   addpath(minispmpath);
+   fprintf(['   using MINISPM Toolbox ',version.minispm,'\n']);
+   
+      % show current directory path
+      
+   disp(['   ',pwd]);
+end
 

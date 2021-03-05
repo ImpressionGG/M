@@ -9,6 +9,9 @@ function oo = stop(o,value)
 %           stop(o,'Disable')          % disable stop callback for but.press
 %           stop(o,'Callback')         % handle stop callback
 %
+%           stop(o,'on')               % same as stop(o,'Enable')
+%           stop(o,'off')              % same as stop(o,'Disable')
+%
 %    Stop flag is cleared by TIMER function
 %    and set by butpress, if butpress properly set to Stop()
 %
@@ -22,13 +25,13 @@ function oo = stop(o,value)
 %
 %    Copyright(c): Bluenetics 2020 
 %
-%    See also: CORAZITO, TIMER, TERMINATE, WAIT
+%    See also: CORAZITO, TIMER, TERMINATE, WAIT, PROGRESS
 %
    if (nargin == 2 && ischar(value))
       switch value
-         case 'Enable'
+         case {'Enable','on'}
             oo = Enable(o);            % enable stop for button press
-         case 'Disable'
+         case {'Disable','off'}
             oo = Disable(o);           % disable stop for button press
          case 'Callback'
             oo = Callback(o);

@@ -125,7 +125,12 @@ function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Crit.Val's
          end
          
       otherwise
-         error('bad algo');
+         fprintf('*** bad algo => using EIG algorithm\n');
+         if (nargout <= 2)
+            [K0,f0] = CalcEig(o,oo,L0);
+         else
+            [K0,f0,K180,f180] = CalcEig(o,oo,L0);
+         end
    end
 end
 function [K0,f0,K180,f180] = CalcFqr(o,oo,L0)    % Frequency Based     
@@ -839,11 +844,19 @@ function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities
    tol = opt(o,{'critical.eps',1e-12});
    iter = opt(o,{'critical.iter',100});
    
-   [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
-   K0 = K;  f0 = Omega/(2*pi*T0);
+   try
+      [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f0*T0*[0.990,1.001],1,tol,iter);
+      K0 = K;  f0 = Omega/(2*pi*T0);
+   catch
+      fprintf('*** exception catched during final FQR calculation of K0,f0\n');
+   end
 
-   [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
-   K180 = K;  f180 = Omega/(2*pi*T0);
+   try
+      [K,Omega,err] = Pass(o,PsiW31,PsiW33,2*pi*f180*T0*[0.990,1.001],-1,tol,iter);
+      K180 = K;  f180 = Omega/(2*pi*T0);
+   catch
+      fprintf('*** exception catched during final FQR calculation\n');
+   end
 end
 function q = Quadrant(phi)             % Classify Quadrants            
    while (phi(1) >= 360)

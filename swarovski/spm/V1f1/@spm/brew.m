@@ -2,7 +2,14 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 % BREW   Brew data
 %
-%           oo = brew(o);              % brew all
+%           oo = brew(o);              % brew object (and its children)
+%           brew(sho)                  % brew shell object
+%           brew(children(sho,1))      % brew 1st package object
+%
+%        Object (o) can be a shell object, package object or data (SPM)
+%        object. BREW makes sure, that all relevant caches and (in case
+%        of a shell or package object) all relevant caches of its children
+%        are getting brewed. Note that existing caches are not cleated!
 %
 %           oo = brew(o,'Variation')   % brew sys variation (change data)
 %           oo = brew(o,'Normalize')   % brew time scaled system
@@ -19,14 +26,14 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %        The following cache segments are managed by brew:
 %
-%           'critical'                      % critical quantities
-%           'spectral'                      % spectral TRFs
-%           'trf'                           % free system TRFs
-%           'consd'                         % constrained system TRFs
-%           'principal'                     % principal transfer functions
-%           'inverse'                       % inverse system
-%           'loop'                          % loop transfer function
-%           'process'                       % closed loop process 
+%           'critical'                 % critical quantities
+%           'spectral'                 % spectral TRFs
+%           'trf'                      % free system TRFs
+%           'consd'                    % constrained system TRFs
+%           'principal'                % principal transfer functions
+%           'inverse'                  % inverse system
+%           'loop'                     % loop transfer function
+%           'process'                  % closed loop process 
 %
 %        Examples
 %
@@ -134,86 +141,63 @@ end
 function oo = Brew(o)                  % Brew All Cache Segments       
    oo = current(o);
    
-      % if current object is a container then explicite brewing is 
-      % avoided and instead all cashes are hard refreshed. This avoids
-      % second brewing of already brewed cache segments
-      
-   if container(oo)
-      pkgs = children(oo);             % get list of packages
-      n = 0;                           % init to count total objects
-      for (i=1:length(pkgs))
-         kids = children(pkgs{i});
-         n = n + 1 + length(kids);
-      end
-      
-      
-      return
-   end
-   
-   
    switch oo.type
       case 'spm'
          oo = BrewSpm(oo);
-         
       case 'pkg'
-         package = get(oo,'package');
-         if isempty(package)
-            error('empty package ID');
-         end
-         
-            % brew all data objects belonging to package except package
-            
-         o = pull(o);                  % make sure to have shell object
-         assert(container(o));
-
-         n = length(o.data);
-         for (i=1:n)
-            oi = o.data{i};
-            progress(o,sprintf('brewing: %s',get(oi,{'title',''})),i/n*100);
-            
-            if isequal(package,get(oi,'package')) && ~type(oi,{'pkg'})
-               oi = inherit(oi,o);     % inherit shell settings
-               oi = opt(oi,'progress',0);    % disable progress details
-               oi = BrewSpm(oi);
-            end
-            
-               % at the end brew package object
-         end
-               
-         progress(o,sprintf('brewing: %s',get(oo,{'title',''})),99);
-         oo = opt(oo,'progress',0); % disable progress details
-         %oo = Brew(oo);
-         
-         progress(o);                  % progress complete
-         
+         oo = BrewPkg(oo);
       case 'shell'
-         message(o,'Brewing not performed for shell object!',...
-                   {'select package or data object!'});
-         
+         oo = BrewShell(oo);
       otherwise
          'ok';                         % ignore other types
    end
    
 
 end
+function o = BrewShell(o)
+   assert(container(o));
+   
+   [list,n] = children(o);             % get list of package objects
+   progress(o,n,'Brew shell');   
+   for (i=1:n)
+      progress(o,i);                   % refresh progress message
+      oo = list{i};
+      switch oo.type
+         case 'pkg'
+            BrewPkg(oo);
+      end
+      
+      if (stop(o))
+         break;
+      end
+   end
+   progress(o);
+end
 function o = BrewPkg(o)
-   assert(type(o,{'pkg'});
+   assert(type(o,{'pkg'}));
    
-   list = children(o);                 % get list of data objects
-   n = length(list);
-   
+   [list,n] = children(o);                 % get list of data objects
+   progress(o,n,'Brew Package');
+   for (i=1:n)
+      progress(o,i);                   % refresh progress message
+      oo = list{i};
+      switch oo.type
+         case 'spm'
+            BrewSpm(oo);
+      end
+      if (stop(o))
+         break;
+      end
+   end
+   progress(o);
 end
 function o = BrewSpm(o)
-   o = cache(o,o,[]);               % clear cache hard
+   assert(type(o,{'spm'}));
+ 
+     % note that brewing function just hard refreshes cache segment
 
-      % note that brewing function hard refreshes cache segment
-
-   %o = brew(o,'Trf');
-   %o = brew(o,'Constrain');
-   %o = brew(o,'Process');
-
-   o = brew(o,'Critical');
-   o = brew(o,'Spectral');
+   o = cache(o,o,'critical');
+   o = cache(o,o,'spectral');
 end
 
 %==========================================================================
