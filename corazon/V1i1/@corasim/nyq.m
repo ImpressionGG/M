@@ -55,19 +55,7 @@ function o = Nyquist(o,col)            % Nyquist Plot
       [~,om] = fqr(o);                 % get omega vector
       Gjw = fqr(o,om);
    end
-   
-      % plot magnitude
       
-   if opt(o,{'log',1})                 % logarithmic plot?
-      phi = angle(Gjw);
-      dB = 20*log10(abs(Gjw));
-      r = Map(o,dB);
-      
-      hdl = plot(r.*cos(phi),r.*sin(phi));
-   else   
-      hdl = plot(real(Gjw),imag(Gjw));
-   end
-   
       % set attributes
       
    if isempty(col)
@@ -75,13 +63,18 @@ function o = Nyquist(o,col)            % Nyquist Plot
       col = get(o,{'color',col});
    end
    
-   [col,lw,typ] = o.color(col);
+%   [col,lw,typ] = o.color(col);
    
-   set(hdl,'Color',col);
-   if o.is(lw) && lw >= 1
-      set(hdl,'Linewidth',lw);
-   elseif ~isempty(opt(o,'linewidth'))
-      set(hdl,'Linewidth',opt(o,'linewidth'));
+         % plot magnitude
+      
+   if opt(o,{'log',1})                 % logarithmic plot?
+      phi = angle(Gjw);
+      dB = 20*log10(abs(Gjw));
+      r = Map(o,dB);
+      
+      hdl = plot(o,r.*cos(phi),r.*sin(phi),col);
+   else   
+      hdl = plot(o,real(Gjw),imag(Gjw),col);
    end
 
       % do some decorative actions
@@ -201,7 +194,7 @@ function o = Inherit(o)                % inherit options from shell
       if ~isempty(so)
          o = inherit(o,so);
          o = with(o,'nyq');
-         o = opt(o,'oscale',oscale(o));
+         %o = opt(o,'oscale',oscale(o));
       end
    end
 end

@@ -51,6 +51,9 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
+   oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
+
    oo = SetupMenu(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
@@ -479,6 +482,8 @@ function o = Critical(o)               % Calculate Critical Quantities
    switch mode
       case 'Overview'
          critical(o,'Overview',[3211,3221,0]);
+         subplot(o,3211);
+
          PlotNyquist(o,2212,0);   
          PlotNyquist(o,2222,1);   
          critical(o,'Overview',[0,0,3231]);
@@ -488,6 +493,7 @@ function o = Critical(o)               % Calculate Critical Quantities
          critical(o,'Damping',[211,212]);
       case 'Bode'
          critical(o,'Bode',[211,212]);
+         subplot(o,211);
       case 'Magni'
          critical(o,'Magni',111);
       case 'Phase'
@@ -531,7 +537,6 @@ function o = Critical(o)               % Calculate Critical Quantities
          col = [get(l0,'color'),'2'];
       end
       
-
       if (critical)
          l00 = peek(l0,1);
          l00jw = l00.data.matrix{1};
@@ -554,6 +559,7 @@ function o = Critical(o)               % Calculate Critical Quantities
       else
          l00 = peek(l0,1);
          nyq(K*l00,col);
+         limits(o,'Nyq');                 % plot nyquist limits
          title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       end
    end
@@ -563,7 +569,7 @@ end
 % Stability
 %==========================================================================
 
-function o = StabilitySummary(o)       % Plot Stability Overview        
+function o = StabilitySummary(o)       % Plot Stability Overview       
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -576,16 +582,16 @@ function o = StabilitySummary(o)       % Plot Stability Overview
    MarginChart(o,[2212,2222]);
 end
 function o = StabilityMargin(o)        % Plot Stability Margins        
-   if type(o,{'spm'})
-      o = cache(o,o,'critical');
-   else
-      plot(o,'About');
-      return
+   switch o.type
+      case 'pkg'
+         o = PkgStabilityMargin(o);
+      case 'spm'
+         o = SpmStabilityMargin(o);
+      otherwise
+         plot(o,'About');
    end
-   
-   Heading(o);
-   MarginChart(o,[211,212]);
 end
+
 function o = NyquistStability(o)       % Plot Stability Margins        
    if type(o,{'spm'})
       o = cache(o,o,'critical');
@@ -598,6 +604,184 @@ function o = NyquistStability(o)       % Plot Stability Margins
    
    mu = opt(o,{'process.mu',0.1});
    NyquistChart(o,111,mu);
+end
+
+function o = SpmStabilityMargin(o)  % Plot SPM Stability Margin
+   o = cache(o,o,'critical');
+   Heading(o);
+   MarginChart(o,[211,212]);
+end
+function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin     
+   if ~type(o,{'pkg'})
+      plot(o,'About');
+      return
+   end
+   
+   package = get(o,'package');
+   if isempty(package)
+      error('no package ID provided');
+   end
+
+   Heading(o);                         % start with heading
+   
+      % get object list of package
+      % note that first list element is the package object, which has 
+      % to been deleted. calculate stability margin for all data objects
+      
+
+   o = with(o,{'style','process','stability'});
+   [list,n] = children(o);
+
+   mu = opt(o,{'process.mu',0.1});
+   kmu = opt(o,{'process.kmu',1});
+   
+   x = Axes(o,4211,mu,'LogMargin');    % get variation range and plot axes
+   x = Axes(o,4221,mu,'Critical');     % get variation range and plot axes
+   x = Axes(o,4231,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,4241,mu,'Frequency');    % get variation range and plot axes
+   
+   x = Axes(o,4212,-mu,'LogMargin');   % get variation range and plot axes
+   x = Axes(o,4222,-mu,'Critical');    % get variation range and plot axes
+   x = Axes(o,4232,-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,4242,-mu,'Frequency');   % get variation range and plot axes
+  
+      % calculate stability margin and plot
+   
+   
+   infgreen = o.iif(dark(o),'g|p3','ggk|p3');
+   green = o.iif(dark(o),'g|o3','ggk|o3');
+   yellow = 'yyyr|o3'
+   red = 'r|o3';
+   
+   stop(o,'Enable');
+   for (i=1:n)                         % calc & plot stability margin  
+      txt = sprintf('calculate stability range of %s',get(o,'title'));
+      progress(o,txt,i/n*100);
+      
+      oo = list{i};
+      oo = inherit(oo,o);
+      
+      [K0,f0,K180,f180] = cook(oo,'K0,f0,K180,f180');
+
+%     Mu0(i) = mu/K0;
+      M0(i) = K0/mu;
+      PlotLogMargin(x(i),M0(i),4211);
+      PlotMucrit(x(i),K0,4221);
+      PlotMargin(x(i),M0(i),4231);
+      PlotFrequency(x(i),f0,4241);
+      
+%     Mu180(i) = mu/K180;
+      M180(i) = K180/mu;
+      PlotLogMargin(x(i),M180(i),4212);
+      PlotMucrit(x(i),K180,4222);
+      PlotMargin(x(i),M180(i),4232);
+      PlotFrequency(x(i),f180,4242);
+      
+      idle(o);                         % show graphics
+      if stop(o)
+         break;
+      end
+   end
+   stop(o,'Enable');
+   
+   progress(o);                        % progress completed
+   Heading(o);                         % add heading
+   
+   function PlotMucrit(xi,mu0,sub)     % Critical Friction Coefficient
+      subplot(o,sub);
+      if (mu0 > mu*kmu)
+         plot(o,xi,mu0,green);
+      elseif (mu0 < mu)
+         plot(o,xi,mu0,red);
+      else
+         plot(o,xi,mu0,yellow);
+      end
+   end
+   function PlotMargin(xi,marg,sub)
+      subplot(o,sub);
+      if isinf(marg)
+         plot(o,xi,0,infgreen);
+      elseif (marg > kmu)
+         plot(o,xi,marg,green);
+      elseif (marg < 1)
+         plot(o,xi,marg,red);
+      else
+         plot(o,xi,marg,yellow);
+      end
+   end
+   function PlotLogMargin(xi,marg,sub)
+      subplot(o,sub);
+      if isinf(marg)
+         marg = 0;
+         col = infgreen;
+      elseif (marg > kmu)
+         col = green;
+      elseif (marg < 1)
+         col = red;
+      else
+         col = yellow;
+      end
+      plot(o,xi,20*log10(marg),col);
+   end
+   function PlotFrequency(xi,f,sub)
+      subplot(o,sub);
+      plot(o,xi,f,'Ko|');
+   end
+    
+   function x = Axes(o,sub,mu,tit)     % Plot Axes 
+      subplot(o,sub);
+
+      variation = get(o,'variation');
+      for (ii=1:n)
+         oi = list{ii};
+
+         if ~isempty(variation)
+            x(ii) = get(oi,{variation,ii});
+         else
+            x(ii) = ii;
+         end
+      end   
+      
+      [lim,col] = limits(o);
+      plot(o,x,0*x,'K.');
+      if o.is(lim)
+         kmu = lim(1)/lim(2);
+         if isequal(tit,'Critical')
+            plot(o,get(gca,'xlim'),[1 1]/lim(1),col);
+            plot(o,get(gca,'xlim'),[1 1]/lim(2),col);
+         elseif isequal(tit,'Margin') 
+            plot(o,get(gca,'xlim'),[1 1],col);
+            plot(o,get(gca,'xlim'),[1 1]*kmu,col);
+         elseif isequal(tit,'LogMargin')
+            plot(o,get(gca,'xlim'),20*log10([1 1]),col);
+            plot(o,get(gca,'xlim'),20*log10([1 1]*kmu),col);
+         end
+      end
+
+      dir = o.iif(mu>0,'Forward','Backward');
+      if isequal(tit,'Frequency')
+         title(sprintf('Critical Frequency (%s Cutting)',dir));
+         ylabel('Frequency [Hz]');
+      elseif isequal(tit,'Critical')
+         title(sprintf('Critical Friction (%s Cutting)',dir));
+         ylabel(o.iif(mu>0,'mu0 = K0','mu180 = K180'));
+      elseif isequal(tit,'LogMargin')
+         title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+         ylabel('Stability margin [dB]');
+      else
+         title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+         ylabel(sprintf('Stability %s',tit));
+      end
+
+
+      if ~isempty(variation)
+         xlabel(sprintf('Variation Parameter: %s',variation));
+      else
+         xlabel('Variation Parameter');
+      end
+
+      subplot(o);                         % subplot complete
+   end
 end
 
    % legacy
@@ -758,6 +942,13 @@ function oo = StabilityOverview(o)     % Stability Overview
    Heading(o,head);
 end
 function o = SimpleCalc(o)             % Simple Calculation            
+   idx = contact(o,nan);
+   if (length(idx) > 1)
+      cls(o);
+      message(o,'Simple Calculation works only for single contact!');
+      return
+   end
+
    message(o,'Simple Calculation of Stability Margin',{'see console ...'});
    idle(o);
    
@@ -786,7 +977,7 @@ function o = SimpleCalc(o)             % Simple Calculation
    Cmd('');
    Cmd('    % calculate critical friction coefficient mu');
    Cmd('');
-   Cmd('mu=M33/M31');
+   Cmd('K0=M33/M31');
    
    function Cmd(cmd)
       fprintf('%s\n',cmd);
@@ -1613,19 +1804,19 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       % get object list of package
       % note that first list element is the package object, which has 
       % to been deleted. calculate stability margin for all data objects
-      
-   olist = tree(o);                    % get list of package objects
-   list = olist{1};                    % pick object list
-   list(1) = [];                       % delete package object from list
+    
+%  olist = tree(o);                    % get list of package objects
+%  list = olist{1};                    % pick object list
+%  list(1) = [];                       % delete package object from list
 
    o = with(o,{'style','process','stability','critical'});
-   m = length(list);
 
+   [list,m] = children(o);             % get list of package's data objects
    if (m == 0)
       message(o,'No SPM object in selected package');
       return
    end
-   
+
       % ...
       
    mode = arg(o,1);
@@ -2311,7 +2502,7 @@ function MagniChart(o,sub,G,critical)  % Magnitude Chart
    end
    ylabel(sprintf('|%s|  [dB]',name));
 end
-function PhaseChart(o,sub,G,critical)  % Phase Chart                  
+function PhaseChart(o,sub,G,critical)  % Phase Chart                   
    o = with(o,'bode');
    if (nargin < 4)
       critical = 1;

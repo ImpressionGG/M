@@ -738,10 +738,13 @@ function oo = Basket(o)                % Basket Menu
 end
 function oo = Friction(o)              % Friction Menu                 
    setting(o,{'process.mu'},0.1);      % Coulomb friction parameter
-   
+   setting(o,{'process.kmu'},5);       % Coulomb friction range
+    
    oo = mitem(o,'Friction');
    ooo = mitem(oo,'Mu (Coefficient)',{},'process.mu');
    charm(ooo,{@FrictionCb});
+   ooo = mitem(oo,'Range',{},'process.kmu');
+   choice(ooo,[1:0.5:5 6:10],{});
    
    function o = FrictionCb(o)          % On Friction Changes           
       mu = setting(o,'process.mu');    
@@ -904,7 +907,7 @@ function oo = Internal(o)              % Internal Menu
    ooo = Cancel(oo);                   % add Cancel sub menu
    ooo = Critical(oo);                 % add Critical sub menu
    ooo = Spectrum(oo);                 % add Spectrum sub menu
-   ooo = Filter(oo);                   % add Filter sub menu
+   %ooo = Filter(oo);                   % add Filter sub menu
 end
 
 function oo = Trf(o)                   % Transfer Function Menu        

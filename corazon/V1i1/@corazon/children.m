@@ -13,7 +13,7 @@ function [oo,n] = children(o,i)
 %
 %            returns a list of all (non-package and non container) objects
 %            belonging to the package. if o is neither a container object 
-%            nor a shell object then an empty list is returned.
+%            nor a package object then an empty list is returned.
 %
 %               oo = children(o,i)     % return i-th child
 %               n = children(o,inf)    % return number of children

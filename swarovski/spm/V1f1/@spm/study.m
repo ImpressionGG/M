@@ -13,7 +13,7 @@ function oo = study(o,varargin)        % Do Some Studies
                        @PhiDouble,@PhiRational,...
                        @TrfmDouble,@TrfmRational,@TrfmInversion,...
                        @Quick,@Modal1,@Modal2,@Modal3,@Bilinear,...
-                       @MagniCheck,@MakeSeven,...
+                       @MagniCheck,@MakeSeven,@StabilityMargin,...
                        @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
 end
@@ -52,6 +52,7 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'A,B,C,D');
    ooo = mitem(oo,'Inspect B',{@InspectB});
    ooo = mitem(oo,'Canonic',{@Canonic});
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
 
    oo = mitem(o,'Normalizing');
    ooo = mitem(oo,'Magnitude Check',{@WithCuo,'MagniCheck'});
@@ -604,6 +605,19 @@ function o = MakeSeven(o)              % Make 7-Article System
        end
        current(o,oo);
     end
+end
+function o = StabilityMargin(o)        % Calc Plot Stability Margin    
+   assert(type(o,{'pkg'}))
+   [list,n] = children(o);
+   for (i=1:n)
+      [K0,f0,K180,f180] = cook(list{i},'K0,f0,K180,f180');
+      pivot = get(list{i},{'pivot',nan});
+
+      subplot(o,211);
+      plot(o,pivot,K0,o.iif(K0>=0.1,'go|','ro|'));  title('K0');
+      subplot(o,212);
+      plot(o,pivot,K180,o.iif(K180>=0.1,'go|','ro|'));  title('K180');
+   end
 end
 
 %==========================================================================

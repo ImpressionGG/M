@@ -180,17 +180,27 @@ end
 % Actual Collection
 %==========================================================================
 
-function list = Collect(o)             % Collect Files                 
-   list = {};                          % by default empty list
-   
+function list = Collect(o)             % Collect Files                    
    caption = 'Import all objects from folder';
    directory = fselect(o,'d','*.*',caption);
    if isempty(directory)
       return
    end
-   
+
+   [dir,file,ext] = fileparts(directory);
+   if (exist(directory) == 7 && file(1) ~= '@')
+      list = CollectDir(o,directory);
+   else
+      list = CollectPkg(o,directory);  % collect packages in directory
+   end
+end
+
+function list = CollectPkg(o,directory)% Collect Files in Package      
+   list = {};                          % by default empty list
+
    [dir,file,ext] = fileparts(directory);
    name = [file,ext];                  % recombine file&extension to name
+   
    
       % extract package type
       
@@ -244,6 +254,28 @@ function list = Collect(o)             % Collect Files
       if type(oo,{'pkg'})
          list(i) = [];                 % remove package object from list
          list{end+1} = oo;             % add at the end of list
+      end
+   end
+end
+function list = CollectDir(o,path)     % Collect Packages in Directory
+   [~,file,~] = fileparts(path);
+   directory = path;
+   files = dir(path);
+
+   list = {};                          % start with empty list
+   for (i=1:length(files))
+      file = files(i).name; 
+      if ((length(file) == 0) || file(1) == '.')
+         continue;
+      else
+         path = [directory,'/',file];
+         if (exist(path) == 7 && file(1) == '@')  % package directory
+            sublist = CollectPkg(o,path);
+            list = [list,sublist];
+         elseif (exist(path) == 7)     % normal directory
+            sublist = CollectDir(o,path);
+            list = [list,sublist];
+         end
       end
    end
 end

@@ -2508,28 +2508,30 @@ function o = StabilityRange(o)         % Plot Critical Mu
       % note that first list element is the package object, which has 
       % to been deleted. calculate stability margin for all data objects
       
-   olist = tree(o);                    % get list of package objects
-   list = olist{1};                    % pick object list
-   list(1) = [];                       % delete package object from list
 
    o = with(o,{'style','process','stability'});
-   n = length(list);
+   [list,n] = children(o);
 
    mu = opt(o,{'process.mu',0.1});
-   x = Axes(o,3211,mu,'Range');        % get variation range and plot axes
-   x = Axes(o,3221,mu,'Margin');       % get variation range and plot axes
-   x = Axes(o,3231,mu,'Frequency');    % get variation range and plot axes
+   kmu = opt(o,{'process.kmu',1});
    
-   x = Axes(o,3212,-mu,'Range');       % get variation range and plot axes
-   x = Axes(o,3222,-mu,'Margin');      % get variation range and plot axes
-   x = Axes(o,3232,-mu,'Frequency');   % get variation range and plot axes
+   x = Axes(o,4211,mu,'LogMargin');    % get variation range and plot axes
+   x = Axes(o,4221,mu,'Critical');     % get variation range and plot axes
+   x = Axes(o,4231,mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,4241,mu,'Frequency');    % get variation range and plot axes
+   
+   x = Axes(o,4212,-mu,'LogMargin');   % get variation range and plot axes
+   x = Axes(o,4222,-mu,'Critical');    % get variation range and plot axes
+   x = Axes(o,4232,-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,4242,-mu,'Frequency');   % get variation range and plot axes
   
       % calculate stability margin and plot
    
    
    infgreen = o.iif(dark(o),'g|p3','ggk|p3');
    green = o.iif(dark(o),'g|o3','ggk|o3');
-   red = 'r|o2';
+   yellow = 'yyyr|o3'
+   red = 'r|o3';
    
    stop(o,'Enable');
    for (i=1:n)                         % calc & plot stability margin  
@@ -2541,15 +2543,19 @@ function o = StabilityRange(o)         % Plot Critical Mu
       
       [K0,f0,K180,f180] = cook(oo,'K0,f0,K180,f180');
 
-      Mu0(i) = mu/K0;
-      PlotMu(x(i),Mu0(i),3211);
-      PlotMargin(x(i),1/Mu0(i),3221);
-      PlotFrequency(x(i),f0,3231);
+%     Mu0(i) = mu/K0;
+      M0(i) = K0/mu;
+      PlotLogMargin(x(i),M0(i),4211);
+      PlotMucrit(x(i),K0,4221);
+      PlotMargin(x(i),M0(i),4231);
+      PlotFrequency(x(i),f0,4241);
       
-      Mu180(i) = mu/K180;
-      PlotMu(x(i),Mu180(i),3212);
-      PlotMargin(x(i),1/Mu180(i),3222);
-      PlotFrequency(x(i),f180,3232);
+%     Mu180(i) = mu/K180;
+      M180(i) = K180/mu;
+      PlotLogMargin(x(i),M180(i),4212);
+      PlotMucrit(x(i),K180,4222);
+      PlotMargin(x(i),M180(i),4232);
+      PlotFrequency(x(i),f180,4242);
       
       idle(o);                         % show graphics
       if stop(o)
@@ -2561,30 +2567,48 @@ function o = StabilityRange(o)         % Plot Critical Mu
    progress(o);                        % progress completed
    Heading(o);                         % add heading
    
-   function PlotMu(xi,mu,sub)
+   function PlotMucrit(xi,mu0,sub)     % Critical Friction Coefficient
       subplot(o,sub);
-      if (mu < 1)
-         plot(o,xi,mu,green);
+      if (mu0 > mu*kmu)
+         plot(o,xi,mu0,green);
+      elseif (mu0 < mu)
+         plot(o,xi,mu0,red);
       else
-         plot(o,xi,mu,red);
+         plot(o,xi,mu0,yellow);
       end
    end
    function PlotMargin(xi,marg,sub)
       subplot(o,sub);
       if isinf(marg)
          plot(o,xi,0,infgreen);
-      elseif (marg > 1)
+      elseif (marg > kmu)
          plot(o,xi,marg,green);
-      else
+      elseif (marg < 1)
          plot(o,xi,marg,red);
+      else
+         plot(o,xi,marg,yellow);
       end
+   end
+   function PlotLogMargin(xi,marg,sub)
+      subplot(o,sub);
+      if isinf(marg)
+         marg = 0;
+         col = infgreen;
+      elseif (marg > kmu)
+         col = green;
+      elseif (marg < 1)
+         col = red;
+      else
+         col = yellow;
+      end
+      plot(o,xi,20*log10(marg),col);
    end
    function PlotFrequency(xi,f,sub)
       subplot(o,sub);
       plot(o,xi,f,'Ko|');
    end
     
-   function x = Axes(o,sub,mu,tit)     % Plot Axes                     
+   function x = Axes(o,sub,mu,tit)     % Plot Axes 
       subplot(o,sub);
 
       variation = get(o,'variation');
@@ -2598,16 +2622,35 @@ function o = StabilityRange(o)         % Plot Critical Mu
          end
       end   
       
+      [lim,col] = limits(o);
       plot(o,x,0*x,'K.');
-      hold on;
-      plot(o,get(gca,'xlim'),[1 1],'K-.2');
+      if o.is(lim)
+         kmu = lim(1)/lim(2);
+         if isequal(tit,'Critical')
+            plot(o,get(gca,'xlim'),[1 1]/lim(1),col);
+            plot(o,get(gca,'xlim'),[1 1]/lim(2),col);
+         elseif isequal(tit,'Margin') 
+            plot(o,get(gca,'xlim'),[1 1],col);
+            plot(o,get(gca,'xlim'),[1 1]*kmu,col);
+         elseif isequal(tit,'LogMargin')
+            plot(o,get(gca,'xlim'),20*log10([1 1]),col);
+            plot(o,get(gca,'xlim'),20*log10([1 1]*kmu),col);
+         end
+      end
 
+      dir = o.iif(mu>0,'Forward','Backward');
       if isequal(tit,'Frequency')
-         title(sprintf('Critical Frequency %s',More(o,mu)));
+         title(sprintf('Critical Frequency (%s Cutting)',dir));
          ylabel('Frequency [Hz]');
+      elseif isequal(tit,'Critical')
+         title(sprintf('Critical Friction (%s Cutting)',dir));
+         ylabel(o.iif(mu>0,'mu0 = K0','mu180 = K180'));
+      elseif isequal(tit,'LogMargin')
+         title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+         ylabel('Stability margin [dB]');
       else
-         title(sprintf('Stability %s%s',tit,More(o,mu)));
-         ylabel(sprintf('Stability %s @ mu: %g',tit,mu));
+         title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+         ylabel(sprintf('Stability %s',tit));
       end
 
 
@@ -2618,30 +2661,6 @@ function o = StabilityRange(o)         % Plot Critical Mu
       end
 
       subplot(o);                         % subplot complete
-   end
-   function txt = More(o,mu)           % More Title Text               
-      txt = '';  sep = '';
-      
-      if ~isempty(mu)
-         txt = sprintf('mu: %g',mu);  
-         sep = ', ';
-      end
-      
-      vomega = opt(o,{'variation.omega',1});
-      if ~isequal(vomega,1)
-         txt = [txt,sep,sprintf('vomega: %g',vomega)]; 
-         sep = ', ';
-      end
-      
-      vzeta = opt(o,{'variation.zeta',1});
-      if ~isequal(vzeta,1)
-         txt = [txt,sep,sprintf('vzeta: %g',vzeta)];
-         sep = ', ';
-      end
-      
-      if ~isempty(txt)
-         txt = [' (',txt,')'];
-      end
    end
 end
 

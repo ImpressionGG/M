@@ -406,6 +406,7 @@ function Bode(o,oo,L0,sub)
                Rd(M31*1e9),Rd(phi31*180/pi),...
                Rd(M33*1e9),Rd(phi33*180/pi));
          xlabel(txt);
+         limits(o,'Magni');
          subplot(o);
       end
       
@@ -612,13 +613,26 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
    
 %  [K0,f0] = Stable(o,L0,K,s);
    [K0,f0] = Stable(o,L0);
+
+      % plot limits
+      
+   limits(o,'Gain');
+   lim = o.either(limits(o),[1 1]);
+   
    if ~isequal(K0,inf)
-      plot(o,[K0 K0],get(gca,'ylim'),o.iif(K0<=1,'r1-.','g1-.'));
+      if (K0 < 1/lim(1))
+         col = 'r';
+      elseif (K0 > 1/lim(2))
+         col = 'g';
+      else
+         col = 'yyyr';
+      end
+      plot(o,[K0 K0],get(gca,'ylim'),[col,'1-.']);
    end
    
-   xlim = get(gca,'xlim');             % save x-limits
-   plot(o,[1 1],get(gca,'ylim'),'K1-.');
-   set(gca,'xlim',xlim);               % restore x-limits
+   %xlim = get(gca,'xlim');             % save x-limits
+   %plot(o,[1 1],get(gca,'ylim'),'K1-.');
+   %set(gca,'xlim',xlim);               % restore x-limits
    
    ylim = get(gca,'ylim');
    if (diff(ylim) < 1)

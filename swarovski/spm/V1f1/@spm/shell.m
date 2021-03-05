@@ -412,6 +412,7 @@ function oo = View(o)                  % View Menu
    ooo = Stability(oo);                % add Stability settings menu
    
    ooo = mitem(o,'-');
+   ooo = Limits(oo);                   % add Limits menu
    ooo = Miscellaneous(oo);            % add Miscellaneous menu        
    
    plugin(o,'spm/shell/View');         % plug point
@@ -576,7 +577,12 @@ function oo = Bode(o)                  % Bode Settings Menu
    end
 end
 function oo = Nyquist(o)               % Nyquist Settings Menu         
+   maghi = setting(o,'nyq.magnitude.high');
+   
    oo = menu(corasim(o),'Nyquist');    % delegate to corasim/menu
+   if isempty(maghi)
+      choice(o,'nyq.magnitude.high',20);
+   end
 end
 function oo = Rloc(o)                  % Root Locus Settings Menu      
    setting(o,{'rloc.xlim'},[]);
@@ -661,6 +667,16 @@ function oo = Stability(o)             % Stability Menu
    choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
                {'50%',0.5},{'20%',0.2},{'10%',0.1},...
                {'5%',0.05},{'2%',0.02},{'1%',0.01}},{});
+end
+function oo = Limits(o)                % Limits Menu                   
+   setting(o,{'view.limits'},1);       % limits enabled
+   setting(o,{'view.limitstyle'},'c1-.');   % limit style
+   
+   oo = mitem(o,'Limits');
+   ooo = mitem(oo,'Plot Limits',{},'view.limits');
+   choice(ooo,{{'Off',0},{'On',1}},{});
+   ooo = mitem(oo,'Style',{},'view.limitstyle');
+   charm(ooo,{});
 end
 function oo = Miscellaneous(o)         % Miscellaneous Menu            
    setting(o,{'view.precision'},1);    % current settings
@@ -749,10 +765,13 @@ function oo = Basket(o)                % Basket Menu
 end
 function oo = Friction(o)              % Friction Menu                 
    setting(o,{'process.mu'},0.1);      % Coulomb friction parameter
-   
+   setting(o,{'process.kmu'},5);       % Coulomb friction range
+    
    oo = mitem(o,'Friction');
    ooo = mitem(oo,'Mu (Coefficient)',{},'process.mu');
    charm(ooo,{@FrictionCb});
+   ooo = mitem(oo,'Range',{},'process.kmu');
+   choice(ooo,[1:0.5:5 6:10],{});
    
    function o = FrictionCb(o)          % On Friction Changes           
       mu = setting(o,'process.mu');    

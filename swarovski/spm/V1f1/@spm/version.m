@@ -4,7 +4,7 @@ function vers = version(o,arg)         % SPM Class Version
 %
 %       vs = version(spm);            % get SPM version string
 %
-%    See also: SPMC
+%    See also: SPM
 %
 %--------------------------------------------------------------------------
 %
@@ -285,6 +285,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - clear screen at begin of package import
 % - Analyse>Principal>Genesis
 % - bug fix in setup analysis: labeling
+% - new 3-color stability margin diagrams with logarithmic chart
 %
 % Known bugs & wishlist
 % =========================
