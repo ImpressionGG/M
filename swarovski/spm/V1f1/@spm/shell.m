@@ -646,6 +646,8 @@ function oo = Stability(o)             % Stability Menu
    setting(o,{'stability.gain.high'},1e3);
    setting(o,{'stability.chartstyle'},1);   % new stability chart style
    setting(o,{'stability.closeup'},0); % closeup off
+   setting(o,{'stability.colorflip'},0.5); 
+
 
    setting(o,{'view.critical'},1);
 
@@ -667,6 +669,10 @@ function oo = Stability(o)             % Stability Menu
    choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
                {'50%',0.5},{'20%',0.2},{'10%',0.1},...
                {'5%',0.05},{'2%',0.02},{'1%',0.01}},{});
+            
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Color Flip',{},'stability.colorflip');
+   choice(ooo,[0:0.1:1],{});
 end
 function oo = Limits(o)                % Limits Menu                   
    setting(o,{'view.limits'},1);       % limits enabled

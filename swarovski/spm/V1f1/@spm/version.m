@@ -286,6 +286,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - Analyse>Principal>Genesis
 % - bug fix in setup analysis: labeling
 % - new 3-color stability margin diagrams with logarithmic chart
+% - new 3-color setup analysis charts
 %
 % Known bugs & wishlist
 % =========================

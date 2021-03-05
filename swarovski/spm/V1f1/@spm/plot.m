@@ -86,8 +86,9 @@ function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type
    enable(oo,~isempty(get(current(o),'image')));
    
    oo = mitem(o,'-');
-   oo = mitem(o,'Stability Range',{@WithCuo,'StabilityRange'});
-   oo = mitem(o,'Stability Margin',{@WithCuo,'StabilityMargin'});
+%  oo = mitem(o,'Stability Range',{@WithCuo,'StabilityRange'});
+   oo = mitem(o,'Legacy');
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
 end
 
 function oo = ModeShapes(o)            % Mode Shapes Menu              
@@ -2382,12 +2383,8 @@ function o = StabilityMargin(o)        % Plot Stability Margin
       % note that first list element is the package object, which has 
       % to been deleted. calculate stability margin for all data objects
       
-   olist = tree(o);                    % get list of package objects
-   list = olist{1};                    % pick object list
-   list(1) = [];                       % delete package object from list
-
    o = with(o,{'style','process','stability'});
-   n = length(list);
+   [list,n] = children(o);
 
    mu = opt(o,'process.mu');
    x = Axes(o,211,mu);                 % get variation range and plot axes
@@ -2397,13 +2394,13 @@ function o = StabilityMargin(o)        % Plot Stability Margin
    
    mu = opt(o,{'process.mu',0.1});
    
+   stop(o,'on');
    for (i=1:n)                         % calc & plot stability margin  
       txt = sprintf('calculate stability margin of %s',get(oo,'title'));
       progress(o,txt,i/n*100);
       
       oo = list{i};
       oo = cache(oo,oo,'multi');       % hard refresh multi segment
-      oo = inherit(oo,o);
       
       if (opt(o,'process.contact') == 0)
          error('implementation restriction');
@@ -2432,8 +2429,14 @@ function o = StabilityMargin(o)        % Plot Stability Margin
       else
          plot(o,x(i),margin180(i),'r|o2');
       end
+      
+      if stop(o)
+         break;
+      end
+      
       idle(o);                         % show graphics
    end
+   stop(o,'off');
    
    progress(o);                        % progress completed
    Heading(o);                         % add heading

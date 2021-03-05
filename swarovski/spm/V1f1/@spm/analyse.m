@@ -606,7 +606,7 @@ function o = NyquistStability(o)       % Plot Stability Margins
    NyquistChart(o,111,mu);
 end
 
-function o = SpmStabilityMargin(o)  % Plot SPM Stability Margin
+function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin     
    o = cache(o,o,'critical');
    Heading(o);
    MarginChart(o,[211,212]);
@@ -2108,14 +2108,16 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    [K0K180,f0f180] = cook(o,'K0K180,f0f180');
 
    mu = opt(o,{'process.mu',0.1});
-   Axes(o,4211,mu,'Stability Range');  % get variation range and plot axes
+%  Axes(o,4211,mu,'Stability Range');
+   Axes(o,4211,mu,'Critical Friction');
    Axes(o,4221,[],'Setup');
-   Axes(o,4231,mu,'Stability Margin'); % get variation range and plot axes
+   Axes(o,4231,mu,'Stability Margin');
    Axes(o,4241,nan,'Critical Frequency');
 
-   Axes(o,4212,-mu,'Stability Range'); % get variation range and plot axes
+%  Axes(o,4212,-mu,'Stability Range');
+   Axes(o,4212,-mu,'Critical Friction');
    Axes(o,4222,[],'Setup');
-   Axes(o,4232,-mu,'Stability Margin');% get variation range and plot axes
+   Axes(o,4232,-mu,'Stability Margin');
    Axes(o,4242,nan,'Critical Frequency');
   
       % calculate stability margin and plot
@@ -2147,16 +2149,20 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       end
       
       Mu0 = mu/K0;
-      PlotMu(o,x(j),Mu0,4211);
+%     PlotMu(o,x(j),Mu0,4211);
+      PlotK(o,x(j),K0,4211);
       PlotConfig(o,x(j),cfg,id(j),4221);
-      PlotMargin(o,x(j),1/Mu0,4231);      
+%     PlotMargin(o,x(j),1/Mu0,4231);      
+      PlotDb(o,x(j),1/Mu0,4231);      
       PlotFrequency(o,x(j),f0,4241);      
       
 
       Mu180 = mu/K180;
-      PlotMu(o,x(j),Mu180,4212);
+%     PlotMu(o,x(j),Mu180,4212);
+      PlotK(o,x(j),K180,4212);
       PlotConfig(o,x(j),cfg,id(j),4222);
-      PlotMargin(o,x(j),1/Mu180,4232);
+%     PlotMargin(o,x(j),1/Mu180,4232);
+      PlotDb(o,x(j),1/Mu180,4232);
       PlotFrequency(o,x(j),f180,4242);      
       
       idle(o);                         % show graphics
@@ -2188,20 +2194,52 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       hdl = patch(xi+X,mu/2+Y,o.color(fcol));
       hdl = patch(xi+ratio*X,mu/2+Y,o.color(bcol));
    end
+   function PlotK(o,xi,K,sub)
+      subplot(o,sub);
+      [fcol,bcol,ratio] = Colors(o,K/mu);
+      X =  0.4*[1 1 -1 -1 1];
+      Y = K/2*[1 -1 -1 1 1];
+      
+      hdl = patch(xi+X,K/2+Y,o.color(fcol));
+      hdl = patch(xi+ratio*X,K/2+Y,o.color(bcol));
+   end
    function PlotMargin(o,xi,marg,sub)
       subplot(o,sub);
       [fcol,bcol,ratio] = Colors(o,marg);
+
       X =  0.4*[1 1 -1 -1 1];
       Y = marg/2*[1 -1 -1 1 1];
+      
       
       if isinf(marg)
          plot(o,xi,0,infgreen);
       else
          patch(xi+X,marg/2+Y,o.color(fcol));
          patch(xi+ratio*X,marg/2+Y,o.color(bcol));
+
 %        plot(o,xi,marg,green);
       end
    end   
+   function PlotDb(o,xi,marg,sub)
+      subplot(o,sub);
+      [fcol,bcol,ratio] = Colors(o,marg);
+
+      dB = 20*log10(marg);
+      X =  0.4*[1 1 -1 -1 1];
+      Y = dB/2*[1 -1 -1 1 1];
+      
+      
+      if isinf(dB)
+         plot(o,xi,0,infgreen);
+      else
+         %patch(xi+X,marg/2+Y,o.color(fcol));
+         %patch(xi+ratio*X,marg/2+Y,o.color(bcol));
+
+         patch(xi+X,dB/2+Y,o.color(fcol));
+         patch(xi+ratio*X,dB/2+Y,o.color(bcol));
+%        plot(o,xi,marg,green);
+      end
+   end
    function PlotFrequency(o,xi,f0,sub)
       col = o.iif(dark(o),'w|o','k|o');
       subplot(o,sub);
@@ -2226,6 +2264,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    end
    function Axes(o,sub,mu,tit)         % Plot Axes                     
       subplot(o,sub);
+      [lim,col] = limits(o);
       
       if isempty(mu)
          for (k=1:no)
@@ -2239,13 +2278,36 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       else
          plot(o,x,0*x,'K.');
          hold on;
-         plot(o,get(gca,'xlim'),[1 1],'K-.2');
+         if isequal(tit,'Stability Margin')
+            if o.is(lim)
+               plot(o,get(gca,'xlim'),[1 1]*0,col);
+               plot(o,get(gca,'xlim'),[1 1]*20*log10(lim(1)/lim(2)),col);
+            end
+         elseif isequal(tit,'Critical Friction')
+            if o.is(lim)
+               plot(o,get(gca,'xlim'),[1 1]/lim(1),col);
+               plot(o,get(gca,'xlim'),[1 1]/lim(2),col);
+            end
+         else
+            plot(o,get(gca,'xlim'),[1 1],'K-.2');
+         end
       end
       
-      title(sprintf('%s%s',tit,More(o,mu)));
+      dir = o.iif(mu>=0,'Forward','Backward');
+      
+      switch tit
+         case 'Stability Margin'
+            title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+            ylabel(sprintf('%s [dB]',lower(tit)));
+         otherwise
+            title(sprintf('%s (%s Cutting)',tit,dir));
+            ylabel(lower(tit));
+      end
 
-      if ~isempty(mu) && ~isnan(mu)
-         ylabel(sprintf('%s @ mu: %g',tit,mu));
+      if isequal(tit,'Stability Margin')
+         ylabel('margin [dB]');
+      elseif ~isempty(mu) && ~isnan(mu)
+         ylabel(lower(tit));
       elseif isempty(mu)
          ylabel('configuration')
       else
@@ -2731,7 +2793,7 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-function [fcol,bcol,ratio] = Colors(o,K,i)                               
+function [fcol,bcol,ratio] = Colors(o,K,i)                             
 %
 % COLORS   Return colors and color ratio of a critical value, where output
 %          arg is the ratio of foreground (fcol) to background (bcol9 color 
@@ -2769,16 +2831,47 @@ function [fcol,bcol,ratio] = Colors(o,K,i)
          fcol = colors{1+rem(i,length(colors))};
       end
    else
-      n = 2;                              % exponent
-      K = abs(K);
-      if (K > 1.0)
-         fcol = 'ggk';  bcol = 'yyyr';
-         ratio = 1 - (1/K)^n;
-      else
-         fcol = 'r';  bcol = 'yyyr';
-         ratio = 1 - K^n;
-      end
+      mu = opt(o,{'process.mu',0.1});
+      kmu = opt(o,{'process.kmu',1});
+      Kgreen = kmu;
+      Kyellow = sqrt(kmu);
+      Kred = 1;
+      
+      legacy = 0;
+      if (legacy)                      % legacy algorithm?
+         n = 2;                        % exponent
+         K = abs(K);
 
+         if (K > 1.0)
+            fcol = 'ggk';  bcol = 'yyyr';
+            ratio = 1 - (1/K)^n;
+         else
+            fcol = 'r';  bcol = 'yyyr';
+            ratio = 1 - K^n;
+         end
+      else                             % new algorithm
+         n = 1;                        % exponent
+         K = abs(K);
+
+         flip = opt(o,{'stability.colorflip',0.5});
+         flip = max(0,min(flip,1));          % limit to interval 0..1
+         threshold = 1.0*(1-flip);
+         
+         if (K > Kgreen)
+            fcol = 'ggk';  bcol = 'yyyr';
+            ratio=1 - threshold*(Kgreen/K)^n;            
+         elseif (K < Kred)
+            fcol = 'r';  bcol = 'yyyr';
+            ratio=1 - threshold*(K/Kred)^n;            
+         elseif (K < Kyellow)
+            fcol = 'yyyr';  bcol = 'r';
+            ratio = 1 - threshold*(Kyellow-K)/(Kyellow-Kred);
+         else
+            fcol = 'yyyr';  bcol = 'ggk';
+            ratio = 1 - threshold*(Kyellow-K)/(Kyellow-Kgreen);
+         end
+      end
+         
       ratio = 1-ratio;
    end
 end
