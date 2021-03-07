@@ -288,6 +288,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - new 3-color stability margin diagrams with logarithmic chart
 % - new 3-color setup analysis charts
 % - spm/contact to accept binary coded contact IDs
+% - pimp stability margin chart
 %
 % Known bugs & wishlist
 % =========================
