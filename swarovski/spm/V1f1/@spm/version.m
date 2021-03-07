@@ -287,6 +287,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix in setup analysis: labeling
 % - new 3-color stability margin diagrams with logarithmic chart
 % - new 3-color setup analysis charts
+% - spm/contact to accept binary coded contact IDs
 %
 % Known bugs & wishlist
 % =========================

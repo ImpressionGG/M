@@ -635,6 +635,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
    mu = opt(o,{'process.mu',0.1});
    kmu = opt(o,{'process.kmu',1});
    
+   width = [];                         % init in current scope
    x = Axes(o,4211,mu,'LogMargin');    % get variation range and plot axes
    x = Axes(o,4221,mu,'Critical');     % get variation range and plot axes
    x = Axes(o,4231,mu,'Margin');       % get variation range and plot axes
@@ -653,6 +654,8 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
    yellow = 'yyyr|o3'
    red = 'r|o3';
    
+   legacy = 0;
+
    stop(o,'Enable');
    for (i=1:n)                         % calc & plot stability margin  
       txt = sprintf('calculate stability range of %s',get(o,'title'));
@@ -665,14 +668,27 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
 %     Mu0(i) = mu/K0;
       M0(i) = K0/mu;
-      PlotLogMargin(x(i),M0(i),4211);
+      if (legacy)
+         PlotLogMargin(x(i),M0(i),4211);
+      else
+         PlotDb(o,x(i),M0(i),4211);
+      end
+      
       PlotMucrit(x(i),K0,4221);
-      PlotMargin(x(i),M0(i),4231);
+      if (legacy)
+         PlotMargin(x(i),M0(i),4231);
+      else
+         PlotMargin(x(i),M0(i),4231);
+      end
       PlotFrequency(x(i),f0,4241);
       
 %     Mu180(i) = mu/K180;
       M180(i) = K180/mu;
-      PlotLogMargin(x(i),M180(i),4212);
+      if (legacy)
+         PlotLogMargin(x(i),M180(i),4212);
+      else
+         PlotDb(o,x(i),M180(i),4212);
+      end
       PlotMucrit(x(i),K180,4222);
       PlotMargin(x(i),M180(i),4232);
       PlotFrequency(x(i),f180,4242);
@@ -723,6 +739,22 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       end
       plot(o,xi,20*log10(marg),col);
    end
+   function PlotDb(o,xi,marg,sub)
+      subplot(o,sub);
+      [fcol,bcol,ratio] = Colors(o,marg);
+
+      dB = 20*log10(marg);
+      X =  0.4*width*[1 1 -1 -1 1];
+      Y = dB/2*[1 -1 -1 1 1];
+      
+      
+      if isinf(dB)
+         plot(o,xi,0,infgreen);
+      else
+         patch(xi+X,dB/2+Y,o.color(fcol));
+         patch(xi+ratio*X,dB/2+Y,o.color(bcol));
+      end
+   end
    function PlotFrequency(xi,f,sub)
       subplot(o,sub);
       plot(o,xi,f,'Ko|');
@@ -744,6 +776,10 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       
       [lim,col] = limits(o);
       plot(o,x,0*x,'K.');
+
+      width = (max(x) - min(x))/length(x);
+      set(gca,'xlim',[min(x)-width,max(x)+width]);
+      
       if o.is(lim)
          kmu = lim(1)/lim(2);
          if isequal(tit,'Critical')

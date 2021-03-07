@@ -5,7 +5,7 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
 %
 %             oo = contact(o)          % according to process.contact opt
 %             oo = contact(o,0)        % center contact
-%             oo = contact(o,-3)       % triple contact
+%             oo = contact(o,0b11011)  % binary coded contact
 %             oo = contact(o,idx)      % specfied contact indices
 %             oo = contact(o,inf)      % multi contact
 %
@@ -134,9 +134,9 @@ function cdx = ContactIndices(o,N,idx)
       if (cdx ~= round(cdx))
          error('no center contact for even article number');
       end
-   elseif (isa(idx,'double') && length(idx) == 1 && idx < 0)
+   elseif ((isa(idx,'uint8') || isa(idx,'uint16')) && length(idx) == 1)
       cdx = [];  
-      idx = abs(idx);
+      idx = double(idx);
       for (i=1:N)
          if rem(idx,2)
             cdx(end+1) = i;
