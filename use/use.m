@@ -10,6 +10,7 @@ function use(tag,version)
 %           use trf        % use TRF toolbox (transfer functions)
 %           use spm        % use (Andy's) SPM toolbox (ANSYS)
 %           use work       % use classes in work directory
+%           use midi       % use miditoolbox
 %
 %           use pll
 %           use kalman
@@ -33,6 +34,7 @@ function use(tag,version)
       version.corazon = 'V1i1';
       version.corinth = 'V2a1';
       version.cordoba = 'V1c';
+      version.midi = 'V1a';
       version.rat = 'V1a';
       version.cut = 'V1b';
       version.cute = 'V1b';
@@ -115,6 +117,13 @@ function use(tag,version)
          use corazon
          addpath([mhome,'/kalman/',version.kalman]);
          fprintf(['   using KALMAN toolbox ',version.kalman,'\n']);   
+         
+      case 'midi'
+         use corazon
+         addpath([mhome,'/midi/',version.midi]);
+         addpath([mhome,'/miditoolbox']);
+         fprintf(['   using MIDI toolbox\n']);            
+         fprintf(['   type: help miditoolbox\n']);            
       case 'rat'
          addpath([mhome,'/rat/',version.rat]);
          fprintf(['   using RAT toolbox ',version.rat,'\n']);   

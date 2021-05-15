@@ -135,6 +135,7 @@ function o = GridPhase(o)              % Grid Phase Estimation
    u_ = 0;  y_ = 0;
    for (k=1:length(u))
 %     y(k) = 0.9*y_ + 0.476/3*(u(k) + u_);
+%     y(k) = (7*y_ + (u(k) + u_)) / 8;
       y(k) = (7*y_ + (u(k) + u_)) / 8;
       y_ = y(k);  u_ = u(k);
    end
