@@ -12,6 +12,29 @@ function sound(o,keys,duration,channel)
 %          oo = new(o,'Laksin');
 %          sound(o,oo)
 %
+%       Examples
+%
+%          o = new(midi,'Piano')
+%          sound(o,note(o,g))
+%          sound(o,music(o,'ceg'))
+%
+%          a = note(o,'a');
+%          c = note(o,'c');
+%          e = note(o,'e');
+%          g = note(o,'g');
+%
+%          C = {c;e;g}                 % C major chord
+%          Am = {a;c;e}                % A minor chord
+%
+%          sound(o,c)
+%          sound(o,{c e g});           % play sequence
+%          sound(o,{c;e;g});           % play chord
+%
+%          sound(o,{C,Am,C})
+%
+%          sound(o,{2,C,Am,C})         % play chords on channel 2
+%          sound(o,{2,C,Am,C})         % play chords on channel 2
+%
 %       Options
 %          plot           % plot audio data (default: false);
 %
@@ -19,16 +42,25 @@ function sound(o,keys,duration,channel)
 %
    plt = opt(o,{'plot',false});
 
-   if isequal(class(keys),'midi')
-      oo = keys;         
-      if ~type(oo,{'midi'})
-         error('midi type expected for arg 2');
+   if (nargin >= 2)
+      oo = keys;                             % rename arg2 to oo
+      if isa(oo,'midi')
+         switch oo.type
+            case 'midi'
+               PlayMidi(o,oo);               % play MIDI music
+            case 'note'
+               PlayNote(o,oo);               % play note       
+            otherwise
+               error('midi type expected for arg 2');
+         end
+      elseif iscell(oo)
+         PlayList(o,oo);
+      else
+         error('bad arg2');
       end
-      
-      Midi(o,oo);                      % play MIDI music
       return
    end
-   
+      
       % otherwise play sound
       
    if ~type(o,{'band'})
@@ -65,7 +97,7 @@ end
 % Play Sound
 %==========================================================================
 
-function Sound(o,key,dur,plt)
+function Sound(o,key,dur,plt)          % Play Sound Parameter Based    
    assert(type(o,{'audio'}));
    if (nargin < 4)
       plt = false;
@@ -126,10 +158,151 @@ function Sound(o,key,dur,plt)
 end
 
 %==========================================================================
+% Play Note
+%==========================================================================
+
+function PlayNote(o,oo)                % Play Sound of a Note          
+   key = oo.data.pitch - 20;
+   duration = oo.data.duration;
+   channel = max(1,oo.data.channel);
+   
+   Sound(o.par.list{channel},key,duration);
+end
+
+%==========================================================================
+% Play Note
+%==========================================================================
+
+function PlayList(o,list)              % Play Sound of a List      
+   if isempty(list)
+      return                           % nothing left to do
+   end
+   
+      % if list is a column we need to embed the column into a list
+      
+   if (size(list,1) > 1)               % column?
+      list = {list};
+   end
+   
+      % if first list item is a number or a string then we have to
+      % eval the list
+      
+   first = list{1};
+   if isa(first,'double') || ischar(first)
+      list = eval(o,list);
+   end
+   
+      % play sound of list
+      
+   song = Assemble(o,list);
+   assert(size(list,1) <= 1);
+   
+   tic;                                % Start with zero time
+   for (i=1:length(song))
+      item = song{i};
+      if ~type(item,{'note'})
+         error('flattened list must only conatain notes');
+      end
+      
+      t = item.data.time;
+      duration = item.data.duration;
+      channel = max(1,item.data.channel);
+      key = item.data.pitch - 20;
+
+      while (t > toc)
+         % wait
+      end
+         
+      Sound(o.par.list{channel},key,duration);
+   end   
+end
+
+%==========================================================================
+% Music Assembler
+%==========================================================================
+
+function list = Eval(o,args)
+   if ~(iscell(args) || isa(args,'midi'))
+      error('cannot eval args');
+   end
+   
+      % atoms must be notes and can be handeled heads-up
+      
+   if ~iscell(args)
+      if type(args,{'note'})
+         list = args;
+         return
+      else
+         error('bad type');
+      end
+   end
+   
+      % otherwise we process a list which can be a bit more tricky
+      
+   assert(iscell(args));
+   if (size(args,1) <= 1)           % rows are processed 
+      list = {};
+   else
+      list = args;                  % columns are passed through
+      return
+   end
+   
+      % process output list
+      
+   for (i=1:length(args))
+      item = args{i};
+      result = Eval(o,item);
+      
+      if ~iscell(result)
+         list{end+1} = result;
+      elseif size(result,1) == 1    % row
+         list = [list,result];
+      else                          % column will not expanded
+         list{end+1} = result;
+      end
+   end
+end
+
+function song = Assemble(o,list)
+   time = 0;
+   dt = 0;
+   
+   list = Eval(o,list);
+   
+   song = {};                          % init song as empty list of notes
+   for (i=1:length(list))
+      item = list{i};
+      
+      if isa(item,'midi')
+         if type(item,{'note'})
+            duration = item.data.duration;
+            item.data.time = time;
+            song{end+1} = item;
+            time = time + duration;
+         end
+      elseif iscell(item)              % must be a  row cell
+         assert(size(item,1) > 1);
+         duration = 0;
+         for (j=1:length(item))
+            oo = item{i};
+            if ~type(oo,{'note'})
+               error('columns must contain only notes'); 
+            end
+            
+            duration = max(duration,oo.data.duration);
+            oo.data.time = time;
+            song{end+1} = oo;
+         end
+         time = time + duration;
+      end
+   end
+end
+
+%==========================================================================
 % Play MIDI music
 %==========================================================================
 
-function Midi(o,oo)                    % Play MIDI Music               
+function PlayMidi(o,oo)                % Play MIDI Music               
    assert(type(oo,{'midi'}));
    nmat = oo.data.nmat; 
    

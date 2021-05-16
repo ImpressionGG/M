@@ -11,15 +11,18 @@ function vers = version(o,arg)       % MIDI Class Version
 % Features MIDI/V1A
 % ==================
 %
-% - Toolbox to analyse and study ...
+% - MIDI Toolbox to play with audio
 %
 %--------------------------------------------------------------------------
 %
 % Roadmap
 % =======
-% - roadmap item 1
-% - roadmap item 2
-% - roadmap item ...
+% + basic objects (types: midi, audio, band, note)
+% + 3-octave implementation of Steinway Grand Piano
+% + sound playing based on lists
+% - simultaneous sound playing of chords
+% - list evaluation in general
+% - list evaluation based on Bach's Prelude
 %
 %--------------------------------------------------------------------------
 %
@@ -27,6 +30,9 @@ function vers = version(o,arg)       % MIDI Class Version
 % =======================
 %
 % - created: 15-May-2021 00:41:24
+% + basic objects (types: midi, audio, band, note)
+% + 3-octave implementation of Steinway Grand Piano
+% + sound playing based on lists
 %
 % Known bugs & wishlist
 % =========================
