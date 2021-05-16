@@ -1,52 +1,41 @@
-function song = chord(o,sym)
+function oo = chord(o,list)
 %
-% CHORD  Return source text for a chord
+% CHORD  Create a MIDI chord object
 %
-%           song = chord(o,'C')
-%           song = chord(o,'G')
-%           song = chord(o,'F')
+%           oo = chord(o,column)
 %
-%        Relative chords
+%        Examples
 %
-%           o = set(midi,'scale','C');           % C major scale
+%           c = note(o,'c');  e = note(o,'e');  g = note(o,'g');
 %
-%           song = chord(o,'@1')                 % C major scale: 'ceg'
-%           song = chord(o,'$2')                 % D minor scale: 'dfa'
-%           song = chord(o,'$3')                 % E minor scale: 'egb'
-%           song = chord(o,'@4')                 % F major scale: 'fac'
-%           song = chord(o,'@5')                 % G major scale: 'gbc'
-%           song = chord(o,'$6')                 % A minor scale: 'ace'
-%           song = chord(o,'$7')                 % B minor scale: 'bdf'
+%           o = new(midi,'Piano');
+%           oo = chord(o,{c;e;g});
+%           sound(o,oo);
 %
-   switch (sym)
-      case '@1'
-         song = 'ceg';
-      case '@2'
-         song = 'df#a';
-      case '@3'
-         song = 'eg#b';
-      case '@4'
-         song = 'fac';
-      case '@5'
-         song = 'gbc';
-      case '@6'
-         song = 'ac#e';
-      case '@7'
-         song = 'bd#f';
-
-      case '$1'
-         song = 'ce°g';
-      case '$2'
-         song = 'dfa';
-      case '$3'
-         song = 'egb';
-      case '$4'
-         song = 'fa°c';
-      case '$5'
-         song = 'gb°c';
-      case '$6'
-         song = 'ace';
-      case '$7'
-         song = 'bdf';
+%        See also: MIDI, NOTE, SOUND
+%
+   if (~iscell(list) || size(list,1) <= 1)
+      error('column expected for arg2 with 2 or more notes');
    end
+   
+   src = '';
+   
+   for (i=1:length(list))
+      item = list{i};
+      if ~isa(item,'midi') || ~type(item,{'note'})
+         error('column of notes expected for arg2');
+      end
+      src = [src,item.par.source];
+      duration(1,i) = item.data.duration;
+      pitch(i) = item.data.pitch;
+   end
+   
+   oo = midi('chord');
+   oo.par.source = src;
+   oo.par.title = ['<chord ',src,'>'];
+   oo.data.chord = list;
+   oo.data.time = 0;
+   oo.data.pitch = pitch;
+   oo.data.duration = duration;
+   oo.data.channel = 0*duration;
 end

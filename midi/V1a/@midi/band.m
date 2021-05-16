@@ -4,7 +4,6 @@ function oo = band(o,instruments)      % Setup Band
 %         for the particular MIDI channels
 %
 %            oo = band(o,{'Steinway Grand Piano'});
-%            oo = band(o,{'SWGP'});
 %            oo = band(o,{'Steinway Grand Piano','Volin'});
 %
 %         Short setup for default band:
@@ -40,7 +39,7 @@ end
 
 function oo = Instrument(o,id)
    switch id
-      case {'Steinway Grand Piano','SWGP'}
+      case 'Steinway Grand Piano'
 %        oo = audio(o,'steinway-C4-C5-[32,1].wav',40:52,[32,1]);
 %        oo.data.trim = 0.63;
          oo = audio(o,'steinway-C3-C6-[32,1].wav',28:64,[32,1]);

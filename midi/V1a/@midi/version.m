@@ -20,7 +20,8 @@ function vers = version(o,arg)       % MIDI Class Version
 % + basic objects (types: midi, audio, band, note)
 % + 3-octave implementation of Steinway Grand Piano
 % + sound playing based on lists
-% - simultaneous sound playing of chords
+% + simultaneous sound playing of chords
+% - music method to translate text to lists
 % - list evaluation in general
 % - list evaluation based on Bach's Prelude
 %
@@ -33,6 +34,7 @@ function vers = version(o,arg)       % MIDI Class Version
 % + basic objects (types: midi, audio, band, note)
 % + 3-octave implementation of Steinway Grand Piano
 % + sound playing based on lists
+% + simultaneous sound playing of chords :-)))
 %
 % Known bugs & wishlist
 % =========================
