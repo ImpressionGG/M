@@ -1,4 +1,4 @@
-function oo = audio(o,file,keys,notes)
+function oo = audio(o,file,keys,duration)
 %
 % AUDIO  Read audio data file
 %
@@ -43,7 +43,7 @@ function oo = audio(o,file,keys,notes)
    oo.data.audio = audio;
    oo.data.fs = fs;
    oo.data.keys = keys;
-   oo.data.notes = notes;
+   oo.data.duration = duration;
    
       % set parameters
       
