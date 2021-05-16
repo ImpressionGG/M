@@ -12,6 +12,10 @@ function oo = new(o,varargin)          % MIDI New Method
 %
 %           o = new(midi,'Piano');    % 'band' with just one piano
 %
+%       Song object
+%
+%           o = new(midi,'CelloPreludium');
+%
 %       Description of MIDI columns (beat unit is ticks per quarter note)
 %
 %          1: onset (beats)
@@ -37,7 +41,7 @@ function oo = new(o,varargin)          % MIDI New Method
 %          
 %       See also: MIDI, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Laksin,@Piano,@Menu);
+   [gamma,oo] = manage(o,varargin,@Laksin,@Piano,@CelloPreludium,@Menu);
    oo = gamma(oo);
 end
 
@@ -85,4 +89,17 @@ end
 
 function oo = Piano(o)                 % Steinway Grand Piano
    oo = band(midi,{'Steinway Grand Piano'});
+end
+
+%==========================================================================
+% Song Objects
+%==========================================================================
+
+function oo = CelloPreludium(o)
+   cello1 = 'g- d- b- a- b- d- b- d- ';
+   cello2 = 'g- e- c  b- c  e- c  e- ';
+   cello3 = 'g- f#- c  b- c  f#- c  f#- ';
+   cello4 = cello1;                          % not exactly
+   
+   oo = [cello1 cello1, cello2 cello2, cello3 cello3, cello4 cello4 ];
 end

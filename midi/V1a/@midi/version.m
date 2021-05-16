@@ -35,6 +35,7 @@ function vers = version(o,arg)       % MIDI Class Version
 % + 3-octave implementation of Steinway Grand Piano
 % + sound playing based on lists
 % + simultaneous sound playing of chords :-)))
+% - begin of Bach cello prelude
 %
 % Known bugs & wishlist
 % =========================

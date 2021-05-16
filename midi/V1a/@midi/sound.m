@@ -36,6 +36,8 @@ function sound(o,keys,duration,channel)
 %          sound(o,{2,C,Am,C})         % play chords on channel 2
 %
 %       Options
+%          speed          % change play speed (default: 100)
+%          delay          % time delay (default: 1)
 %          plot           % plot audio data (default: false);
 %
 %       See also:  MIDI, BAND
@@ -57,6 +59,9 @@ function sound(o,keys,duration,channel)
          end
       elseif iscell(oo)
          PlayList(o,oo);
+      elseif ischar(oo)
+         list  = music(o,oo);
+         PlayList(o,list);
       else
          error('bad arg2');
       end
@@ -99,104 +104,15 @@ end
 % Play Sound
 %==========================================================================
 
-function OldSound(o,key,dur,plt)       % Play Sound Parameter Based    
-   if (nargin < 4)
-      plt = false;
-   end
-   
-   if iscell(o)
-      SoundChord(o,key,dur,plt);
-   else
-      SoundNote(o,key,dur,plt);
-   end
-   
-   function [wave,fs] = SoundChord(list,keys,durs,plt)
-      assert(iscell(list));
-      for (i=1:length(list))
-         [wavi,fsi] = SoundNote(list{i},keys(i),durs(i),plt);
-
-         if (i == 1)
-            wave = wavi;
-            fs = fsi;
-         else
-            if (fsi ~= fs)
-               error('cannot play chord with different samplig frequencies');
-            end
-            
-            if all(size(wave) == size(wavi))
-               wave = wave + wavi;
-            else
-               error('implementation');
-            end
-         end
-      end
-      sound(wave,fs);
-   end
-   function [wave,fs] = SoundNote(o,key,dur,plt)
-      assert(type(o,{'audio'}));
-
-      duration = o.data.duration;
-      keys = o.data.keys;
-      fs = o.data.fs;
-      audio = o.data.audio;
-      trim = o.data.trim;                 % trim factor
-
-         % find index of dur, or if not found, index of shortest dur
-
-      ndx = find(duration==dur);
-      if isempty(ndx)
-         ndx = find(duration==max(duration));
-      end
-
-         % find key index
-
-      kdx = find(key==keys);
-      if isempty(kdx)
-         return                           % don't play sound if key not found
-      end
-
-         % calculate length of audio chunk and cut out proper chunk
-
-      m = length(keys);
-      n = length(duration);
-
-         % trim audio
-
-      M = floor(length(audio)*(m*n)/(m*n+trim));
-      audio = audio(1:M,:);
-
-         % calculate segment and chunk indices
-
-
-      N = size(audio,1)/(n*m);  
-      sdx = (ndx-1)*m + kdx;              % segment index
-
-      cdx = floor((sdx-1)*N) + (1:N);     % chunk indices
-      wave = audio(cdx,:);                % wave data
-
-         % play sound
-
-      if (plt)
-         clf;
-         subplot(311);
-         plot(1:length(audio),audio(:,1),'r');
-         subplot(312);
-         plot(1:length(wave),wave(:,1),'b');
-         subplot(313);
-         plot(1:length(wave),wave(:,2),'b');
-      end
-
-      if (nargout == 0)
-         sound(wave,fs);
-      end
-   end
-end
 function Sound(o,oo,t)                 % Play Sound Parameter Based       
    SoundChord(o,oo,t);
    
    function [wave,fs] = SoundChord(o,oo,t)
       assert(type(oo,{'note','chord'}));
       plt = opt(o,{'plot',false});
+      speed = get(o,{'speed',100});
+      delay = get(o,{'delay',1});
+      t = t*100/speed;                 % scale time
       
          % get relevant data
          
@@ -228,7 +144,7 @@ function Sound(o,oo,t)                 % Play Sound Parameter Based
       
          % wait until time for sound output
          
-      while (toc < t)
+      while (toc < t+delay)
          % wait
       end
       
@@ -355,7 +271,7 @@ function list = Eval(o,args)
       % atoms must be notes and can be handeled heads-up
       
    if ~iscell(args)
-      if type(args,{'note'})
+      if type(args,{'note','chord'})
          list = args;
          return
       else

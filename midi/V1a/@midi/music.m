@@ -29,7 +29,7 @@ function oo = music(o,source)
 %
 %        See also: MIDI, BAND, SOUND
 %
-   oo = Compile(o,source)
+   oo = CompileList(o,source);
 end
 
 %==========================================================================
@@ -107,7 +107,7 @@ function [source,kind,value,duration] = Token(source)
       
    if (c == ' ')
       while (Next(source) == ' ')
-         [source,c] = Next(source);
+         [c,source] = Next(source);
       end
       duration = 0;
       kind = 'space';
@@ -138,6 +138,7 @@ function [source,kind,value,duration] = Token(source)
          fprintf('parsing at: %s\n',[c,source]);
          error('syntax error');
    end
+   src = c;
    
       % any post operators?
       
@@ -166,12 +167,14 @@ function [source,kind,value,duration] = Token(source)
             [c,source] = Next(source);
             value.key = value.key-12;
          otherwise
+            value.source = src;
             return
       end
+      src = [src,c];
    end
 end
 
-function oo = Compile(o,source)
+function oo = CompileMidi(o,source)
    oo = midi('midi');
    oo.par.source = source;
    
@@ -197,4 +200,62 @@ function oo = Compile(o,source)
       % complete 'midi'  typed object
       
    oo.data.nmat = nmat;
+end
+function list = CompileList(o,source)
+   oo = midi('midi');
+   oo.par.source = source;
+   
+   time = 0;
+   list = {};
+   dt = 0;
+   same = false;
+   
+   while ~isempty(source)
+      [source,kind,value] = Token(source); 
+      switch (kind)
+         case 'note'
+            velocity = 100;            
+            oo = note(o,value.source,velocity);
+            oo.data.time = time;
+            
+            dt = max(dt,oo.data.duration);
+            
+            if (same)
+               item = list{end};
+               if ~iscell(item)
+                  item = {item};
+               end
+               item{end+1,1} = oo;
+               list{end} = item;
+            else
+               list{end+1} = oo;
+            end
+            
+            same = true;
+
+         case 'space'
+            time = time + dt;
+            dt = 0;
+            same = false;
+            
+            if ~isempty(list)
+               item = list{end};
+               if iscell(item)
+                  item = chord(o,item);
+                  list{end} = item;
+               end
+            end
+      end
+   end
+   
+      % finally if last list item is a column
+      % then replace column by chord
+      
+   if ~isempty(list)
+      item = list{end};
+      if iscell(item)
+         item = chord(o,item);
+         list{end} = item;
+      end
+   end   
 end
