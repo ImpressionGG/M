@@ -16,6 +16,17 @@ function oo = band(o,instruments)      % Setup Band
 %         See also: MIDI, AUDIO, SOUND
 %
     if (nargin < 2)
+       oo = get(o,'band');
+       if isa(oo,'midi') && type(oo,{'band'})
+          tempo = opt(o,'player.tempo');
+          if ~isempty(tempo)
+             oo = opt(oo,'player.tempo',tempo);
+          end
+          return
+       end
+       
+           % otherwise continue with default
+           
        instruments = {'Steinway Grand Piano'};
     end
     
@@ -40,11 +51,11 @@ end
 function oo = Instrument(o,id)
    switch id
       case 'Steinway Grand Piano'
-%        oo = audio(o,'steinway-C4-C5-[32,1].wav',40:52,[32,1]);
-%        oo.data.trim = 0.63;
-         oo = audio(o,'steinway-C3-C6-[32,1].wav',28:64,[32,1]);
+%        oo = audio(o,'steinway-C4-C5-[32,1].wav',40:52,[32,1],0.63);
+%        oo = audio(o,'steinway-C3-C6-[32,1].wav',28:64,[32,1],0.31);
+
+         oo = audio(o,'steinway-C1-C8-[3200,100].wav',4:88,[32,1],0.31);
          oo.par.id = 'Steinway Grand Piano';
-         oo.data.trim = 0.31;
          
       otherwise
          oo = [];

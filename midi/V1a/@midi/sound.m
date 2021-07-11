@@ -3,7 +3,15 @@ function sound(o,keys,duration,channel)
 % SOUND Play sound on a specific instrument based on an audio typed
 %       MIDI object. First argument must be a 'band'  typed object.
 %
-%          oo = band(o,{'Steinway Grand Piano'});
+%          o = band(midi,{'Steinway Grand Piano'})
+%          sound(o,oo)                 % play a MIDI object
+%
+%       Short form
+%
+%          sound(oo)                   % default band and pitch
+%
+%       Play sound based on particular parameters
+%
 %          sound(oo,keys,duration,channels)
 %
 %       In case of oo is a midi object
@@ -35,36 +43,36 @@ function sound(o,keys,duration,channel)
 %          sound(o,{2,C,Am,C})         % play chords on channel 2
 %          sound(o,{2,C,Am,C})         % play chords on channel 2
 %
+%          sound(o,song(o,'c d e f g* g*'))
+%
 %       Options
-%          speed          % change play speed (default: 100)
+%          tempo          % change play tempo (default: 100)
 %          delay          % time delay (default: 1)
 %          plot           % plot audio data (default: false);
 %
 %       See also:  MIDI, BAND
 %
    plt = opt(o,{'plot',false});
+   nin = nargin;
+   
+   if (nargin == 1)
+      oo = o;                          % shift argument
+      o = pull(o);                     % get shell object
+      tempo = opt(o,{'player.tempo',100});
 
-   if (nargin >= 2)
-      oo = keys;                             % rename arg2 to oo
-      if isa(oo,'midi')
-         switch oo.type
-            case 'midi'
-               PlayMidi(o,oo);               % play MIDI music
-            case 'note'
-               PlayNote(o,oo);               % play note       
-            case 'chord'
-               PlayChord(o,oo);              % play chord       
-            otherwise
-               error('midi type expected for arg 2');
-         end
-      elseif iscell(oo)
-         PlayList(o,oo);
-      elseif ischar(oo)
-         list  = music(o,oo);
-         PlayList(o,list);
-      else
-         error('bad arg2');
+      o = opt(oo,'player.band');
+      if isempty(o)
+         o = new(o,'Piano');
       end
+      
+      tempo = get(oo,{'tempo',100}) * tempo/100;
+      oo = set(oo,'tempo',tempo);
+      
+      PlaySound(o,oo);
+      return
+   elseif (nargin >= 2)
+      oo = keys;                             % rename arg2 to oo
+      PlaySound(o,oo);
       return
    end
       
@@ -98,10 +106,38 @@ function sound(o,keys,duration,channel)
       oo = instruments{channel(i)};
       Sound(oo,keys(i),duration(i),plt);    % play sound      
    end
-end
+   end
 
 %==========================================================================
 % Play Sound
+%==========================================================================
+
+function PlaySound(o,oo)
+   if isa(oo,'midi')
+      switch oo.type
+         case 'midi'
+            PlayMidi(o,oo);               % play MIDI music
+         case 'note'
+            PlayNote(o,oo);               % play note       
+         case 'chord'
+            PlayChord(o,oo);              % play chord       
+         case 'song'
+            PlayList(o,oo.data.list);     % play chord       
+         otherwise
+            error('bad object type expected for arg 2');
+      end
+   elseif iscell(oo)
+      PlayList(o,oo);
+   elseif ischar(oo)
+      list  = music(o,oo);
+      PlayList(o,list);
+   else
+      error('bad sound arg');
+   end
+end
+
+%==========================================================================
+% Sound Driver
 %==========================================================================
 
 function Sound(o,oo,t)                 % Play Sound Parameter Based       
@@ -110,9 +146,9 @@ function Sound(o,oo,t)                 % Play Sound Parameter Based
    function [wave,fs] = SoundChord(o,oo,t)
       assert(type(oo,{'note','chord'}));
       plt = opt(o,{'plot',false});
-      speed = get(o,{'speed',100});
-      delay = get(o,{'delay',1});
-      t = t*100/speed;                 % scale time
+      tempo = get(oo,{'tempo',100});
+      delay = get(o,{'player.delay',0});
+      t = t*100/tempo;                 % scale time
       
          % get relevant data
          
@@ -155,7 +191,7 @@ function Sound(o,oo,t)                 % Play Sound Parameter Based
    function [wave,fs] = SoundNote(o,key,dur,plt)
       assert(type(o,{'audio'}));
 
-      duration = o.data.duration;
+      tempo = o.data.tempo;
       keys = o.data.keys;
       fs = o.data.fs;
       audio = o.data.audio;
@@ -163,16 +199,16 @@ function Sound(o,oo,t)                 % Play Sound Parameter Based
 
          % find index of dur, or if not found, index of shortest dur
 
-      ndx = find(duration==dur);
+      ndx = find(tempo==dur);
       if isempty(ndx)
-         ndx = find(duration==max(duration));
+         ndx = find(duration==min(tempo));
       end
 
          % find key index
 
       kdx = find(key==keys);
       if isempty(kdx)
-         return                           % don't play sound if key not found
+         kdx = -1;              % don't play sound if key not found
       end
 
          % calculate length of audio chunk and cut out proper chunk
@@ -192,7 +228,11 @@ function Sound(o,oo,t)                 % Play Sound Parameter Based
       sdx = (ndx-1)*m + kdx;              % segment index
 
       cdx = floor((sdx-1)*N) + (1:N);     % chunk indices
-      wave = audio(cdx,:);                % wave data
+      if (kdx >= 0)
+         wave = audio(cdx,:);             % wave data
+      else
+         wave = 0*audio(1:floor(N),:);
+      end
 
          % play sound
 
@@ -263,7 +303,7 @@ end
 % Music Assembler
 %==========================================================================
 
-function list = Eval(o,args)
+function list = Eval(o,args)           % Eval Expression               
    if ~(iscell(args) || isa(args,'midi'))
       error('cannot eval args');
    end
@@ -304,7 +344,7 @@ function list = Eval(o,args)
       end
    end
 end
-function song = Assemble(o,list)
+function song = Assemble(o,list)       % Assemble Song                 
    time = 0;
    dt = 0;
    

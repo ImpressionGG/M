@@ -37,6 +37,10 @@ function oo = mtimes(o1,o2)
       end
       oo = o2;
       return
+   elseif (isa(o1,'double') && type(o2,{'css','dss'})) 
+      oo = o2;
+      oo.data.B = oo.data.B * o1;
+      return
    end      
 
       % no scalar - proceed with the generic algorithm

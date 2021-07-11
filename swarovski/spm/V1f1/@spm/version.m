@@ -43,6 +43,16 @@ function vers = version(o,arg)         % SPM Class Version
 %   vertible) principal transfer functions.
 % - introduce plot menu for critical closed loop transfer functions
 %
+% Features SPM/V1E
+% ================
+%
+% Features SPM/V1F
+% ================
+% - init organized setting is 'packages' by default
+% - pdf method to create PDF files from current figure
+% - batch menu
+% - plugin example for extension of batch menu
+% 
 %--------------------------------------------------------------------------
 %
 % Roadmap
@@ -289,6 +299,12 @@ function vers = version(o,arg)         % SPM Class Version
 % - new 3-color setup analysis charts
 % - spm/contact to accept binary coded contact IDs
 % - pimp stability margin chart
+%
+% - start beta SPM V1F1
+% - organizing mode 'packages' by default
+% - add Batch menu
+% - add spm/batch method
+% - add spm/pdf method
 %
 % Known bugs & wishlist
 % =========================

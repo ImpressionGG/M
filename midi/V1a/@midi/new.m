@@ -8,6 +8,10 @@ function oo = new(o,varargin)          % MIDI New Method
 %
 %           o = new(midi,'Laksin')    % some simple data
 %
+%       Audio object
+%
+%           o = new(midi,'Steinway');  % steinway piano
+%
 %       Band object
 %
 %           o = new(midi,'Piano');    % 'band' with just one piano
@@ -15,6 +19,7 @@ function oo = new(o,varargin)          % MIDI New Method
 %       Song object
 %
 %           o = new(midi,'CelloPreludium');
+%           o = new(midi,'QuietNight');
 %
 %       Description of MIDI columns (beat unit is ticks per quarter note)
 %
@@ -41,7 +46,8 @@ function oo = new(o,varargin)          % MIDI New Method
 %          
 %       See also: MIDI, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Laksin,@Piano,@CelloPreludium,@Menu);
+   [gamma,oo] = manage(o,varargin,@Laksin,@Steinway,@Piano,@CelloPreludium,...
+                       @QuietNight,@Menu);
    oo = gamma(oo);
 end
 
@@ -50,7 +56,15 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Menu
-   oo = mitem(o,'Laksin',{@Callback,'Laksin'},[]);
+   oo = mitem(o,'MIDI');
+   ooo = mitem(oo,'Laksin',{@Callback,'Laksin'},[]);
+   oo = mitem(o,'Audio');
+   ooo = mitem(oo,'Steinway',{@Callback,'Steinway'},[]);
+   oo = mitem(o,'Band');
+   ooo = mitem(oo,'Piano',{@Callback,'Piano'},[]);
+   oo = mitem(o,'Song');
+   ooo = mitem(oo,'Cello Preludium',{@Callback,'CelloPreludium'},[]);
+   ooo = mitem(oo,'Quiet Night',{@Callback,'QuietNight'},[]);
 end
 function oo = Callback(o)
    mode = arg(o,1);
@@ -79,8 +93,18 @@ function oo = Laksin(o)                % New wave object
       % pack into object
 
    oo = midi('midi');                  % MIDI type
-   oo.par.title = sprintf('Laksin (%s)',datestr(now));
+   oo.par.title = 'Laksin (MIDI Object)';
    oo.data.nmat = nmat;
+end
+
+%==========================================================================
+% Audio Objects
+%==========================================================================
+
+function oo = Steinway(o)              % Steinway Grand Piano
+   oo = audio(o,'steinway-C1-C8-[3200,100].wav',4:88,[32,1],0.31);
+   oo.par.id = 'Steinway Grand Piano';
+   oo.par.title = 'Steinway Grand Piano (Audio Object)';
 end
 
 %==========================================================================
@@ -89,6 +113,7 @@ end
 
 function oo = Piano(o)                 % Steinway Grand Piano
    oo = band(midi,{'Steinway Grand Piano'});
+   oo.par.title = 'Steinway Grand Piano (Audio Object)';
 end
 
 %==========================================================================
@@ -101,5 +126,21 @@ function oo = CelloPreludium(o)
    cello3 = 'g- f#- c  b- c  f#- c  f#- ';
    cello4 = cello1;                          % not exactly
    
-   oo = [cello1 cello1, cello2 cello2, cello3 cello3, cello4 cello4 ];
+   oo = song(o,[cello1 cello1,cello2 cello2, cello3 cello3,cello4 cello4]);
+   oo.par.title = 'Bach''s Cello Preludium (Sequence)';
+end
+function oo = QuietNight(o)
+%
+% from Soothing Relaxation
+% 'Quiet Night - Tiefschlafmusik mit Schwarzem Bildschirm'
+%
+   e = -3;  a = -6;  d = -2;  g = 5;  c = 1;  f = 4;
+   
+   s1 = [a d g c f g e f g c c f c f g e f g];
+   s2 = [c a f g a f g  c f d g f a c d g e a d g  f g f g  c f g e f g c];
+   s3 = [a f g c a f g  a d g c f g e f g f c f g e f g c a f c f d g f];
+   s4 = [a c d];
+   
+   oo = chord(o,[s1 s2 s3 s4]);
+   oo.par.title = 'Quiet Night (Sequence)';
 end

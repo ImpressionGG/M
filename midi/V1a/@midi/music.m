@@ -134,6 +134,8 @@ function [source,kind,value,duration] = Token(source)
          value.key = 49;
       case 'b'
          value.key = 51;
+      case ';'                         % pause
+         value.key = 0;
       otherwise
          fprintf('parsing at: %s\n',[c,source]);
          error('syntax error');

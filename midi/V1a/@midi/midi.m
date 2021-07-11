@@ -8,6 +8,7 @@ classdef midi < corazon                % Midi Class Definition
 %           band:           Band object, a collection of audio objects
 %           note:           Note object, representing one/more MIDI notes
 %           chord:          representating a chord relative to a scale
+%           song:           A song represented by a list of notes or chords
 %
 %        See also: MIDI, NEW, AUDIO, BAND, NOTE, CHORD
 %

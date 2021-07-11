@@ -2,7 +2,7 @@
 
 function oo = shell(o,varargin)        % SPM Shell                     
    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
-                                 @Plot,@PlotCb,@Analysis,@Study);
+                                 @Plot,@PlotCb,@Analysis,@Batch,@Study);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -21,6 +21,7 @@ function o = Shell(o)                  % Shell Setup
    oo = Plot(o);                       % add Plot menu
    oo = Analyse(o);                    % add Analyse menu
    oo = Study(o);                      % add Study menu
+   oo = Batch(o);                      % add batch menu
    oo = menu(o,'Gallery');             % add Gallery menu
    oo = Info(o);                       % add Info menu
    oo = menu(o,'Figure');              % add Figure menu
@@ -41,14 +42,14 @@ function o = Init(o)                   % Init Object
 
    o = opt(o,{'style.bullets'},0);     % provide bullets default
    o = opt(o,{'view.grid'},1);         % grid on by default
-   o = opt(o,{'mode.organized'},'plain');
+   o = opt(o,{'mode.organized'},'packages');
  
    o = provide(o,'par.title','SPM Toolbox');
    o = provide(o,'par.comment',{'Analyzing SPM objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus         
-   list = {'View','Select','Plot','Analyse','Study'};
+   list = {'View','Select','Plot','Analyse','Batch','Study'};
 end
 
 %==========================================================================
@@ -1206,6 +1207,18 @@ function oo = Study(o)                 % Study Menu
    ooo = study(oo,'Menu');             % setup study menu
 
    plugin(o,'spm/shell/Study');        % plug point
+end
+
+%==========================================================================
+% Batch Menu
+%==========================================================================
+
+function oo = Batch(o)                 % Batch Menu                    
+   oo = mhead(o,'Batch');              % add roll down header menu item
+   dynamic(oo);                        % make this a dynamic menu
+   ooo = batch(oo,'Menu');             % setup batch menu
+
+   plugin(o,'spm/shell/Batch');        % plug point
 end
 
 %==========================================================================

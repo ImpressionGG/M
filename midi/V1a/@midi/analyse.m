@@ -7,13 +7,11 @@ function oo = analyse(o,varargin)     % Graphical Analysis
 %       analyse(o)                % analyse @ opt(o,'mode.analyse')
 %
 %       oo = analyse(o,'menu')    % setup Analyse menu
-%       oo = analyse(o,'Surf')    % surface plot
-%       oo = analyse(o,'Histo')   % display histogram
 %
 %    See also: MIDI, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@Surf,@Histo);
+                                 @WithCuo,@Show);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -22,8 +20,7 @@ end
 %==========================================================================
 
 function oo = Menu(o)
-   oo = mitem(o,'Surface',{@WithCuo,'Surf'},[]);
-   oo = mitem(o,'Histogram',{@WithCuo,'Histo'},[]);
+   oo = mitem(o,'Show',{@WithCuo,'Show'},[]);
 end
 
 %==========================================================================
@@ -89,25 +86,35 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 end
 
 %==========================================================================
-% Actual Analysis
+% Show Object
 %==========================================================================
 
-function o = Surf(o)                   % Surf Plot
-   x = cook(o,'x');
-   y = cook(o,'y');
-
-   idx = 1:ceil(length(x)/50):length(x);
-   idy = 1:ceil(length(y)/50):length(y);
-   z = x(idx)'.*y(idy);
-   surf(x(idx),y(idy),z);
+function o = Show(o)                   % Surf Plot
+   switch o.type
+      case 'audio'
+         ShowAudio(o);
+      case 'band'
+         ShowBand(o);
+      otherwise
+         plot(o,'About');
+   end
 end
-function o = Histo(o)                  % Histogram
-   t = cook(o,':');
-   x = cook(o,'x');
-   y = cook(o,'y');
-
-   subplot(211);
-   plot(with(corazon(o),'style'),t,sort(x),'r');
-   subplot(212);
-   plot(with(corazon(o),'style'),t,sort(y),'b');
+function o = ShowAudio(o)
+   wave = o.data.audio;
+   m = size(wave,1);
+   
+   subplot(o,211);
+   plot(1:m, wave(:,1), 'r');
+   subplot(o);
+   
+   subplot(o,212);
+   plot(1:m, wave(:,2), 'b');
+   subplot(o);
+   
+   heading(o);
+end
+function o = ShowBand(o)
+   list = o.par.list;
+   oo = list{1};
+   ShowAudio(oo);
 end

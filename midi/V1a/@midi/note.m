@@ -23,6 +23,14 @@ function oo = note(o,src,vol)
 %          oo = note(g,100)            % G4, 1/4 beat, volume 100
 %          oo = note(g,55)             % G4, 1/4 beat, volume 55
 %
+%       Pause
+%          oo = note(o,';**')          % 1/1 beat pause
+%          oo = note(o,';*.')          % 3/4 beat pause
+%          oo = note(o,';*')           % 1/2 beat pause
+%          oo = note(o,';')            % 1/4 beat pause
+%          oo = note(o,';/')           % 1/8 beat pause
+%          oo = note(o,';//')          % 1/16 beat pause
+%
 %       Example
 %
 %          o = new(midi,'Piano');      % create band object with 1x piano
@@ -162,6 +170,8 @@ function [source,kind,value,duration] = Token(source)
          value.key = 49;
       case 'b'
          value.key = 51;
+      case ';'
+         value.key = 0;
       otherwise
          fprintf('parsing at: %s\n',[c,source]);
          error('syntax error');

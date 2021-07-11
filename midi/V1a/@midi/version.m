@@ -21,6 +21,8 @@ function vers = version(o,arg)       % MIDI Class Version
 % + 3-octave implementation of Steinway Grand Piano
 % + sound playing based on lists
 % + simultaneous sound playing of chords
+% - sound method to play MIDI matrix
+% - export MIDI object to .mid file
 % - music method to translate text to lists
 % - list evaluation in general
 % - list evaluation based on Bach's Prelude

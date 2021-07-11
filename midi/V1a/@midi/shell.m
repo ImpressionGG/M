@@ -16,8 +16,8 @@ function o = Shell(o)                  % Shell Setup
    oo = menu(o,'Edit');                % add Edit menu
    oo = View(o);                       % add View menu
    oo = menu(o,'Select');              % add Select menu
-   oo = Sound(o);                      % add Sound menu
-   oo = Plot(o);                       % add Plot menu
+   oo = Player(o);                     % add Sound menu
+%  oo = Plot(o);                       % add Plot menu
    oo = Analyse(o);                    % add Analyse menu
    oo = Study(o);                      % add Study menu
    oo = menu(o,'Gallery');             % add Gallery menu
@@ -33,12 +33,18 @@ function o = Tiny(o)                   % Tiny Shell Setup
    o = menu(o,'End');                  % end menu setup (will refresh)
 end
 function o = Init(o)                   % Init Object
-   o = dynamic(o,true);                % setup as a dynamic shell
+   o = dynamic(o,false);               % not a dynamic shell
    o = launch(o,mfilename);            % setup launch function
-   o = control(o,{'dark'},0);          % run in non dark mode
+   o = control(o,{'dark'},1);          % run in non dark mode
 
    o = provide(o,'par.title','Midi Shell');
    o = provide(o,'par.comment',{'Playing around with MIDI objects'});
+   
+   o = opt(o,{'fontsize.title'},20);
+   o = opt(o,{'fontsize.comment'},12);
+
+   o = provide(o,'par.band',new(o,'Piano'));
+   
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus
@@ -58,10 +64,9 @@ end
 function oo = New(o)                   % New Menu
    oo = mseek(o,{'New'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Stuff');
-   oooo = new(corazon(ooo),'Menu');    % add CORAZON New stuff items
-   ooo = mitem(oo,'Midi');
-   oooo = new(ooo,'Menu');
+%  ooo = mitem(oo,'Stuff');
+%  oooo = new(corazon(ooo),'Menu');    % add CORAZON New stuff items
+   ooo = new(oo,'Menu');
 end
 function oo = Import(o)                % Import Menu Items
    oo = mhead(o,'Import');             % locate Import menu header
@@ -114,32 +119,31 @@ function oo = View(o)                  % View Menu
 end
 
 %==========================================================================
-% Play Menu
+% Player Menu
 %==========================================================================
 
-function oo = Sound(o)                 % Sound Menu
-   oo = mhead(o,'Sound');              % add roll down header menu item
+function oo = Player(o)                % Player Menu
+   setting(o,{'player.tempo'},100);
+   setting(o,{'player.band'},new(o,'Piano'));
+      
+   oo = mhead(o,'Player');             % add roll down header menu item
+   ooo = mitem(oo,'Tempo',{},'player.tempo');
+   choice(ooo,[40:10:150,200,250,300],{});
+   
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Play',{@PlayCb});   % setup plot menu
 
    function o = PlayCb(o)
       oo = current(o);
-      if type(oo,{'mid'})
-         nmat = data(oo,'nmat');
-         playsound(nmat);
+      if type(oo,{'mid','song','note','chord'})
+%        nmat = data(oo,'nmat');
+%        playsound(nmat);
+   
+         sound(oo);                 % play midi file
+      else
+         message(o,'Cannot play selected object');
       end
    end
-end
-
-%==========================================================================
-% Plot Menu
-%==========================================================================
-
-function oo = Plot(o)                  % Plot Menu
-   oo = mhead(o,'Plot');               % add roll down header menu item
-   dynamic(oo);                        % make this a dynamic menu
-   ooo = plot(oo,'Menu');              % setup plot menu
-
-   plugin(o,'midi/shell/Plot');       % plug point
 end
 
 %==========================================================================
