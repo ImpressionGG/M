@@ -338,7 +338,7 @@ function oo = StoreCache(o)            % Store All Caches
    cls(o);
    message(o,'Caches of all objects have been stored!');
 end
-function oo = RecallCache(o)           % Recall All Caches             
+function oo = RecallCache(o)           % Recall All Caches              
    o = pull(o);
    for (i=1:length(o.data))
       oo = o.data{i};
@@ -353,12 +353,12 @@ function oo = RecallCache(o)           % Recall All Caches
    cls(o);
    message(o,'Caches of all objects have been recalled!');
 end
-function o  = ClearCache(o)            % Clear All Caches              
+function o  = ClearCache(o)
    ClearAllCaches(o);
    cls(o);
    message(o,'Caches of all objects have been cleared!');
 end
-function oo = Extras(o)                % Extras Menu Items             
+function oo = Extras(o)                % Extras Menu Items
    setting(o,{'study.menu'},false);    % provide setting
    
    oo = mseek(o,{'Extras'});
