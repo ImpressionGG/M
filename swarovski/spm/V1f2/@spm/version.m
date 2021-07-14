@@ -264,6 +264,7 @@ function vers = version(o,arg)         % SPM Class Version
 %     object is selected
 %   - Sensitivity Analysis
 %   + View>Sensitivity menu for sensitivity analysis
+%   + caching of sensitivity analysis data
 %   - Modified Graphics (Andy's suggestion) for Stability Margin
 %   - Additional Plot graphics for mode frequencies
 %   - Comparison of Packages
@@ -325,7 +326,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - first version of weight sensitivity for multi contact systems
 % + Edit>Copy/Cut to copy/cut whole packages or all shell objects
 % + View>Sensitivity menu for sensitivity analysis
-
+% + caching of sensitivity analysis data
 
 % Known bugs & wishlist
 % =========================
