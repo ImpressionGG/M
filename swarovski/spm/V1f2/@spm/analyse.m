@@ -21,7 +21,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
                       @Damping,@Contribution,@NumericCheck,...
-                      @SensitivityW,@SensitivityF,@SensitivityD,...
+                      @Sensitive,@SensitivityF,@SensitivityD,...
                       @AnalyseRamp,@NormRamp,@SimpleCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @L0Magni,@LambdaMagni,@LambdaBode,...
@@ -1760,11 +1760,18 @@ end
 
 function oo = SensitivityMenu(o)       % Sensitivity Menu
    oo = mitem(o,'Sensitivity');
-   ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
+   ooo = mitem(oo,'Damping Sensitivity',{@WithSpm,'Sensitive','damping'});
+   ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'Sensitive','weight'});
+return
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Live Watch',{@WithSpm,'LiveWatch'});
 end
-function o = SensitivityW(o)           % Weight Sensitivity
+function oo = Sensitive(o)
+   mode = arg(o,1);
+   o = opt(o,'mode.sensitivity',mode);
+   oo = Sensi(o);
+end
+function o = Sensi(o)                  % Sensi
 %
 % Idea:
 %    - let L0(jw) be the nominal frequency response
@@ -1776,6 +1783,10 @@ function o = SensitivityW(o)           % Weight Sensitivity
    watch = false;                      % don't watch (try to set true!)
 
    col = o.iif(dark(o),'w.','k.');
+
+   o = with(o,'sensitivity');          % access sensitivity settings
+opts = opt(o,'sensitivity');
+o = opt(o,'bode',opts);
 
    o = cache(o,o,'critical');
    
@@ -1834,6 +1845,10 @@ function o = SensitivityW(o)           % Weight Sensitivity
    end
    function PlotV(o,sub1,sub2)         % plot Variation      
       subplot(o,sub2);
+      
+      modus = opt(o,'mode.sensitivity');
+      vari = opt(o,'sensitivity.variation');
+      
       bode(trf(corasim),'W');
       set(gca,'ylim',[-10,40],'ytick',-10:10:40);
       
@@ -1845,9 +1860,18 @@ function o = SensitivityW(o)           % Weight Sensitivity
       l0jw0 = lambda(o,L0jw0);
             
       for (i=1:m)
-         w31 = W31;  w31(i,:) = w31(i,:)*zero;  psiw31 = [Psi31 w31];
-         w33 = W33;  w33(i,:) = w33(i,:)*zero;  psiw33 = [Psi33 w33];
-
+         switch modus
+            case 'weight'
+               w31 = W31;  w31(i,:) = w31(i,:)*zero;  psiw31 = [Psi31 w31];
+               w33 = W33;  w33(i,:) = w33(i,:)*zero;  psiw33 = [Psi33 w33];
+            case 'damping'
+               k = i;         
+               psiw31 = PsiW31;  psiw31(k,2) = vari*psiw31(k,2);
+               psiw33 = PsiW33;  psiw33(k,2) = vari*psiw33(k,2);
+            otherwise
+               error('bad sensitivity calculation mode')
+         end
+         
          Gjw = lambda(o,psiw31,psiw33,om*T0);    % full omega range
          Gjw0 = lambda(o,psiw31,psiw33,om0*T0);  % omega range next to om0
 
@@ -1883,8 +1907,9 @@ watch=1;
                           i,o.rd(S(i),1),mode,mode/2/pi));
                                               
             idle(o);
-            delete([hdl0 hdl1,hdl2,hdl3,hdl4]);
-         end
+            %delete([hdl0 hdl1,hdl2,hdl3,hdl4]);
+            delete([hdl0 hdl1,hdl3,hdl4]);
+          end
 
          if (rem(i-1,10) == 0)
             progress(o,'analysing sensitivity',(i-1)/m*100);
@@ -1966,7 +1991,7 @@ function o = LiveWatch(o)
 end
 
 %%%%%%%%%%%%%%%%%% obsolete
-function L0 = OldCriticalFqr(l0)          % Calculate Critical Fqr
+function L0 = OldCriticalFqr(l0)       % Calculate Critical Fqr
    assert(type(l0,{'fqr'}));
    [m,n] = size(l0.data.matrix);
    assert(n==1);
@@ -2970,7 +2995,7 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
 %           [om,om0] = Omega(o)        % also return center frequency
 %
    if (nargin < 4)
-      n = 50;
+      n = opt(o,{'omega.window',50});
    end
    if (nargin < 3)
       k = 1.05;

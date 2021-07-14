@@ -5,7 +5,7 @@ function [o1,o2,o3] = sensitivity(o,in1,in2)
 %             region and return modenumber and according dB values sorted
 %             by greatest sensitivity.
 %
-%                [modes,dB] = sensitivity(o)
+%                [dB,Sjw] = sensitivity(o)
 %
 %             Calculate sensitivity frequency response for given mode
 %             number and omega vector
@@ -36,9 +36,9 @@ function [o1,o2,o3] = sensitivity(o,in1,in2)
        [o1,o2] = Sensitivity(o);
     elseif (nargin == 3)
        if (nargout > 0)
-          [o1,o2,o3] = Sens(o,in1,in2);
+          [o1,o2,o3] = Sfqr(o,in1,in2);
        else
-          Sens(o,in1,in2);
+          Sfqr(o,in1,in2);
        end
     else
        error('1 or 3 input args expected');
@@ -46,12 +46,24 @@ function [o1,o2,o3] = sensitivity(o,in1,in2)
 end
 
 %==========================================================================
+% Sensitivity
+%==========================================================================
+
+function [dB,Sjw] = Sensitivity(o)     % Sensitivity Data Calculation  
+   o = cache(o,o,'spectral');          % hard refresh spectral cache
+   [PsiW31,PsiW33] = cook(o,'PsiW31,PsiW33');
+   
+   dB = 0*PsiW31(:,1);
+   Sjw = PsiW33;
+end
+
+%==========================================================================
 % Calculate Sensitivity Frequency Response
 %==========================================================================
 
-function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sens(o,k,omega,l0jw,PsiW31,PsiW33)
+function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sfqr(o,k,omega,l0jw,PsiW31,PsiW33)
 %
-%   SENS  Sensitivity Frequency Response
+%   SFQR  Sensitivity Frequency Response
 %
 %      Example 1: standard call
 %
@@ -87,7 +99,12 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sens(o,k,omega,l0jw,PsiW31,PsiW33)
    if (k < 0 || k > m)
       error('mode number (arg2) of range');
    end
+   
+      % get sensitivity calculation mode
       
+   mode = opt(o,'mode.sensitivity');
+   vari = opt(o,'sensitivity.variation');
+   
       % extract Psi and weight parts from PsiW31 and PsiW33
       
    Psi31 = PsiW31(:,1:3);  W31 = PsiW31(:,4:end);
@@ -99,11 +116,20 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sens(o,k,omega,l0jw,PsiW31,PsiW33)
       lkjw = l0jw;  skjw = 0*l0jw;
       return
    else
-      W31(k,:) = 0*W31(k,:);  
-      W33(k,:) = 0*W33(k,:);
+      switch mode
+         case 'weight'
+            W31(k,:) = 0*W31(k,:);  
+            W33(k,:) = 0*W33(k,:);
+         case 'damping'
+            Psi31(k,2) = vari*Psi31(k,2);
+            Psi33(k,2) = vari*Psi33(k,2);
+         otherwise
+            error('bad sensitivity calculation mode');
+      end
    end
    
-      % refresh PsiW31 and PsiW33 with inactivated weight
+      % refresh PsiW31 and PsiW33 with inactivated weight or
+      % damping variation
    
    PsiW31 = [Psi31 W31];
    PsiW33 = [Psi33 W33];

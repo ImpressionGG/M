@@ -327,6 +327,7 @@ function vers = version(o,arg)         % SPM Class Version
 % + Edit>Copy/Cut to copy/cut whole packages or all shell objects
 % + View>Sensitivity menu for sensitivity analysis
 % + caching of sensitivity analysis data
+% + weight sensitivity and damping sensitivity analysis
 
 % Known bugs & wishlist
 % =========================

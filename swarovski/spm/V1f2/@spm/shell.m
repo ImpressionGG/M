@@ -679,6 +679,8 @@ function oo = Sensitivity(o)           % Sensitivity Settings Menu
    setting(o,{'sensitivity.magnitude.enable'},true);
    setting(o,{'sensitivity.phase.enable'},false);
    setting(o,{'sensitivity.omega.points'},1000);
+   setting(o,{'sensitivity.omega.window'},50);
+   setting(o,{'sensitivity.variation'},50);
    
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Lower Frequency',{},'sensitivity.omega.low');
@@ -696,6 +698,10 @@ function oo = Sensitivity(o)           % Sensitivity Settings Menu
    ooo = mitem(oo,'Points',{},'sensitivity.omega.points');
    choice(ooo,[100,200,500,1000,2000,5000,10000,20000,50000,...
                1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
+   ooo = mitem(oo,'Window',{},'sensitivity.omega.window');
+   choice(ooo,[10,25,50,100,250,500,1000],{@WindowCb});
+   ooo = mitem(oo,'Variation',{},'sensitivity.variation');
+   choice(ooo,[0.1 0.2 0.5 1 2 5 10 20 50 100],{@WindowCb});
    
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head
@@ -714,6 +720,10 @@ function oo = Sensitivity(o)           % Sensitivity Settings Menu
          % add choice menu items
          
       choice(o,list,cblist);
+   end
+   function o = WindowCb(o)
+      ClearAllCaches(o);               % ??? no need - implicitely dirty
+      refresh(pull(o));                % finally refresh actual drawing
    end
 end
 
