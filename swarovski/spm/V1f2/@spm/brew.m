@@ -28,6 +28,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %           'critical'                 % critical quantities
 %           'spectral'                 % spectral TRFs
+%           'sensitivity'              % sensitivity frequency response
 %           'trf'                      % free system TRFs
 %           'consd'                    % constrained system TRFs
 %           'principal'                % principal transfer functions
@@ -99,6 +100,11 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                             |        |         +-----------------+
 %                             |        |         |     spectral    | L0jw
 %                             |        |         +-----------------+
+%                             |        |                  |
+%                             |        |                  v
+%                             |        |         +-----------------+
+%                             |        |         |   sensitivity   | S0jw
+%                             |        |         +-----------------+
 %                             v        v
 %              +-----------------+  +-----------------+
 %        L0(s) |    principal    |  |       trf       | G(s)
@@ -129,7 +135,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@Transform,...
                        @System,@Trf,@Principal,@Multi,@Spectral,@Setup,...
-                       @Critical,...
+                       @Critical,@Sensitivity,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -675,6 +681,35 @@ function oo = Spectral(o)              % Brew Spectral Quantities
       
       L = var(L,'Mmin',M(1));
    end
+end
+
+%==========================================================================
+% Sensitivity Frequency Response
+%==========================================================================
+
+function oo = Sensitivity(o)           % Brew Sensitivity FQR          
+%
+% SENSITIVITY  Calculate sensitivity frequency response
+%
+%              For each mode k:
+%
+%                 l0jw: critical lambda
+%                 lkjw: critical lambda with zero weight k
+%
+%                 skjw = max(abs(l0jw./lkjw),lkjw./l0jw))
+%                 Sjw = [s1jw;s2jw;...;smjw]
+%
+   o = with(o,{'sensitivity'});
+   Sjw = sensitivity(o);
+   
+      % store in cache
+   
+   oo = o;
+   oo = cache(oo,'sensitivity.Sjw',Sjw);         % store in cache
+   
+      % unconditional hard refresh of spectral segment
+
+   cache(oo,oo);                       % hard refresh sensitivity segment
 end
 
 %==========================================================================

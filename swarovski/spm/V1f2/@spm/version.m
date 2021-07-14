@@ -257,11 +257,13 @@ function vers = version(o,arg)         % SPM Class Version
 % =====================
 %
 % - What's new
-%   + clear cache @omega or zeta varitation
-%   - Edit>Copy and Edit>Cut act now on all objects of shell, if shell
+%   + clear cache @ omega or zeta varitation
+%   + organization per packages is the default after start
+%   + Edit>Copy and Edit>Cut act now on all objects of shell, if shell
 %     object is selected, or on all objects of a package, if package 
 %     object is selected
 %   - Sensitivity Analysis
+%   + View>Sensitivity menu for sensitivity analysis
 %   - Modified Graphics (Andy's suggestion) for Stability Margin
 %   - Additional Plot graphics for mode frequencies
 %   - Comparison of Packages
@@ -322,6 +324,7 @@ function vers = version(o,arg)         % SPM Class Version
 % + clear cache @omega or zeta varitation
 % - first version of weight sensitivity for multi contact systems
 % + Edit>Copy/Cut to copy/cut whole packages or all shell objects
+% + View>Sensitivity menu for sensitivity analysis
 
 
 % Known bugs & wishlist

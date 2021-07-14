@@ -338,7 +338,7 @@ function oo = StoreCache(o)            % Store All Caches
    cls(o);
    message(o,'Caches of all objects have been stored!');
 end
-function oo = RecallCache(o)           % Recall All Caches              
+function oo = RecallCache(o)           % Recall All Caches             
    o = pull(o);
    for (i=1:length(o.data))
       oo = o.data{i};
@@ -353,12 +353,12 @@ function oo = RecallCache(o)           % Recall All Caches
    cls(o);
    message(o,'Caches of all objects have been recalled!');
 end
-function o  = ClearCache(o)
+function o  = ClearCache(o)            % Clear All Caches              
    ClearAllCaches(o);
    cls(o);
    message(o,'Caches of all objects have been cleared!');
 end
-function oo = Extras(o)                % Extras Menu Items
+function oo = Extras(o)                % Extras Menu Items             
    setting(o,{'study.menu'},false);    % provide setting
    
    oo = mseek(o,{'Extras'});
@@ -405,6 +405,7 @@ function oo = View(o)                  % View Menu
    ooo = Rloc(oo);                     % add Root Locus menu
    ooo = Weight(oo);                   % add Weight diagram settings menu
    ooo = Stability(oo);                % add Stability settings menu
+   ooo = Sensitivity(oo);              % add Sensitivity settings menu
    
    ooo = mitem(o,'-');
    ooo = Limits(oo);                   % add Limits menu
@@ -669,6 +670,53 @@ function oo = Stability(o)             % Stability Menu
    ooo = mitem(oo,'Color Flip',{},'stability.colorflip');
    choice(ooo,[0:0.1:1],{});
 end
+function oo = Sensitivity(o)           % Sensitivity Settings Menu     
+   setting(o,{'sensitivity.omega.low'},1e2);
+   setting(o,{'sensitivity.omega.high'},1e5);
+   setting(o,{'sensitivity.magnitude.low'},[]);
+   setting(o,{'sensitivity.magnitude.high'},[]);
+   
+   setting(o,{'sensitivity.magnitude.enable'},true);
+   setting(o,{'sensitivity.phase.enable'},false);
+   setting(o,{'sensitivity.omega.points'},1000);
+   
+   oo = mitem(o,'Sensitivity');
+   ooo = mitem(oo,'Lower Frequency',{},'sensitivity.omega.low');
+         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+   ooo = mitem(oo,'Upper Frequency',{},'sensitivity.omega.high');
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Lower Magnitude',{},'sensitivity.magnitude.low');
+         Choice(ooo,[-400,-360,-300,-200,-100:10:-20],{});
+   ooo = mitem(oo,'Upper Magnitude',{},'sensitivity.magnitude.high');
+         Choice(ooo,[20:10:100, 200,300,360,400],{});
+         
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Points',{},'sensitivity.omega.points');
+   choice(ooo,[100,200,500,1000,2000,5000,10000,20000,50000,...
+               1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
+   
+   function Choice(o,values,cblist)    % Choice Menu List With Auto    
+      list = {{'Auto',[]},{}};         % list head
+      
+         % sort values in reverse order
+         
+      values = sort(values);
+      values = values(length(values):-1:1);
+      
+         % add values to choice items
+         
+      for (i=1:length(values))
+         list{end+1} = {sprintf('%g',values(i)),values(i)};
+      end
+      
+         % add choice menu items
+         
+      choice(o,list,cblist);
+   end
+end
+
 function oo = Limits(o)                % Limits Menu                   
    setting(o,{'view.limits'},1);       % limits enabled
    setting(o,{'view.limitstyle'},'c1-.');   % limit style

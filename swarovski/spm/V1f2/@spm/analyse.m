@@ -1761,6 +1761,8 @@ end
 function oo = SensitivityMenu(o)       % Sensitivity Menu
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Live Watch',{@WithSpm,'LiveWatch'});
 end
 function o = SensitivityW(o)           % Weight Sensitivity
 %
@@ -1959,9 +1961,12 @@ watch=1;
       end
    end
 end
+function o = LiveWatch(o)
+   sensitivity(o);
+end
 
 %%%%%%%%%%%%%%%%%% obsolete
-function L0 = CriticalFqr(l0)          % Calculate Critical Fqr
+function L0 = OldCriticalFqr(l0)          % Calculate Critical Fqr
    assert(type(l0,{'fqr'}));
    [m,n] = size(l0.data.matrix);
    assert(n==1);
