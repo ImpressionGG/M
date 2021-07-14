@@ -389,7 +389,7 @@ function o = GoodBode(o)               % Bode Diagram
 end
 function o = NewBode(o)                % Bode Diagram                  
    o = Scaling(o);                     % manage scaling factors
-   critical = opt(o,{'critical',0});   % plot critical frequency ?
+   plotcrit = opt(o,{'plotcrit',0});   % plot critical frequency ?
    
    sub = o.either(arg(o,3),[1 1 1]);
    G = arg(o,2);
@@ -412,7 +412,7 @@ function o = NewBode(o)                % Bode Diagram
    
    bode(G);
    
-   if (critical)
+   if (plotcrit)
       [f0,f180] = cook(o,'f0,f180');
       ylim = get(gca,'ylim');
       hold on;

@@ -1,4 +1,4 @@
-function [modes,dB] = sensitivity(o,omega)
+function [o1,o2,o3] = sensitivity(o,in1,in2)
 %
 % SENSITIVITY Calculate mode sensitivity: analyse all mode numbers with
 %             respect to magnitude sensitivity in the critical frequency 
@@ -6,63 +6,134 @@ function [modes,dB] = sensitivity(o,omega)
 %             by greatest sensitivity.
 %
 %                [modes,dB] = sensitivity(o)
+%
+%             Calculate sensitivity frequency response for given mode
+%             number and omega vector
+%
+%                [skjw,lkjw,l0jw] = sensitivity(o,k,omega)
 %             
+%             Example 1
+%
+%                omega = logspace(2,7,1000);
+%                mode = 5;      % study sensitivity of mode 5
+%                [s5jw,l5jw,l0jw] = sensitivity(cuo,mode,omega);
+%                s5 = fqr(corasim,omega,{s5jw});
+%                l5 = fqr(corasim,omega,{l5jw});
+%                l0 = fqr(corasim,omega,{l0jw});    % original
+%                bode(l0,'r')
+%                bode(l5,'g')
+%                bode(s5,'c');
+%
 %             Copyright(c) Bluenetics 2021
 %
 %             See also: SPM
 %
-   if (nargin < 2)
-      olo = opt(o, {'omega.low',100});
-      ohi = opt(o,{'omega.high',1e5});
-      points = opt(o,{'omega.points',2000});
-
-      omega = logspace(log10(olo),log10(ohi),points);
-   end
-   
-   sys = system(o);
-   [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0');
-   Om = T0*omega;
-   
-      % one way to calculate the lambda frequency response would be 
-      % via system matrice, which, however, we do not chose.
-      
-%  l0jw = lambda(o,A,B_1,B_3,C_3,T0*omega);
-
-      % More over we calculate frequency responbse via psion representa-
-      % tion, sincewe have to do this calculation hundreds of time
-
-   PsiW31 = psion(o,A,B_1,C_3); % to calculate G31(jw)
-   PsiW33 = psion(o,A,B_3,C_3); % to calculate G33(jw)
-   l0jw = lambda(o,PsiW31,PsiW33,Om);
-
- 
-if (nargout == 0)
-   cls(o);
-   oo = Fqr(o,l0jw,Om);
-   bode(oo,'ryyy');
-   hold on;
- end
-   
-   
-   for (i=1:100)
-      l0jwi = lambda(o,PsiW31,PsiW33,Om);
-      oo = Fqr(o,l0jwi,Om);
-      bode(oo,'kw');
-      fprintf('%g\n',i);
-   end
-   
-   modes = l0jw;  dB = l0jwi;
+    if ~type(o,{'spm'})
+       error('SPM typed object expected (arg1)');
+    end
+    
+    if (nargin == 1)
+       [o1,o2] = Sensitivity(o);
+    elseif (nargin == 3)
+       if (nargout > 0)
+          [o1,o2,o3] = Sens(o,in1,in2);
+       else
+          Sens(o,in1,in2);
+       end
+    else
+       error('1 or 3 input args expected');
+    end 
 end
 
 %==========================================================================
-% Helper
+% Calculate Sensitivity Frequency Response
 %==========================================================================
 
-function oo = Fqr(o,Gjw,om)            % create fqr transfer function
-   F = {};
-   for (i=1:size(Gjw,1))
-      F{1,1} = Gjw(i,:);
-      oo = fqr(corasim,om,F);
+function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sens(o,k,omega,l0jw,PsiW31,PsiW33)
+%
+%   SENS  Sensitivity Frequency Response
+%
+%      Example 1: standard call
+%
+%            [skjw,lkjw,l0jw] = Sens(o,k,omega);
+%
+%      Example 2: efficient calculation
+%
+%         [~,~,l0jw,PsiW31,PsiW33] = Sens(o,0,omega)
+%         for (k=1:n)
+%            [skjw,lkjw] = Sens(o,k,omega,l0jw,PsiW31,PsiW33);
+%         end
+%
+%   k (arg2) is the mode number. For k > 0 the weight sensitivity with
+%   respect to mode number k is calculated. For k = 0 the original 
+%   spectrum is returned and the sensitivity is zero
+%
+   if (nargin < 6)
+      [PsiW31,PsiW33,T0] = cook(o,'PsiW31,PsiW33,Tnorm');
+
+          % calculate spectrum and critical spectrum
+
+      L0jw = lambda(o,PsiW31,PsiW33,omega*T0);  % spectrum (n rows)
+      l0jw = lambda(o,L0jw);                    % critical spectrum (1 row)
    end
    
+      % check range of k (mode argument)
+
+   if (length(k) ~= 1 || round(k) ~= k)
+      error('scalar integer expected for mode number (arg2)');
+   end
+
+   [m,n] = size(PsiW31);
+   if (k < 0 || k > m)
+      error('mode number (arg2) of range');
+   end
+      
+      % extract Psi and weight parts from PsiW31 and PsiW33
+      
+   Psi31 = PsiW31(:,1:3);  W31 = PsiW31(:,4:end);
+   Psi33 = PsiW33(:,1:3);  W33 = PsiW33(:,4:end);
+
+      % inactivate mode related weight
+      
+   if (k == 0)                        % for k=0 no inactivation!
+      lkjw = l0jw;  skjw = 0*l0jw;
+      return
+   else
+      W31(k,:) = 0*W31(k,:);  
+      W33(k,:) = 0*W33(k,:);
+   end
+   
+      % refresh PsiW31 and PsiW33 with inactivated weight
+   
+   PsiW31 = [Psi31 W31];
+   PsiW33 = [Psi33 W33];
+
+      % calculate frequency response for inactivated weight
+      
+   Lkjw = lambda(o,PsiW31,PsiW33,omega*T0);
+   lkjw = lambda(o,Lkjw);                      % critical function
+
+      % finally calculate sensitivity frequency response
+
+%  skjw = (lkjw./l0jw) - 1;
+   skjw = max(abs(lkjw ./ l0jw), abs(l0jw ./ lkjw));
+   
+   if (nargout == 0)
+      cls(o);
+      Plot(o,111)
+   end
+   
+   function Plot(o,sub)
+      l0 = fqr(corasim,omega,{l0jw});
+      lk = fqr(corasim,omega,{lkjw});
+      sk = fqr(corasim,omega,{skjw});
+      
+      bode(l0,'ryyyyy3');
+      bode(lk,'r');
+      bode(sk,'c');
+      
+      omk = sqrt(Psi31(k,3))/oscale(o);  fk = omk/2/pi;
+      title(sprintf('sensitivity Study - Mode: #%g @ %g 1/s (%g Hz)',...
+                    k,round(omk),round(fk)));
+   end
 end

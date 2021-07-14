@@ -1,4 +1,4 @@
-function oo = analyse(o,varargin)      % Graphical Analysis            
+function oo = analyse(o,varargin)      % Graphical Analysis
 %
 % ANALYSE   Graphical analysis
 %
@@ -34,7 +34,7 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Analyse Menu            
+function oo = Menu(o)                  % Setup Analyse Menu
    switch type(current(o))
       case 'shell'
          oo = ShellMenu(o);
@@ -50,13 +50,13 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
-function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
+function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
 
    oo = SetupMenu(o);
 end
-function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
+function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = PrincipalMenu(o);              % Add Principal menu
    oo = CriticalMenu(o);               % Add Critical menu
 
@@ -64,42 +64,42 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = StabilityMenu(o);              % add Stability menu
    oo = SetupMenu(o);                  % add Setup menu
    oo = SensitivityMenu(o);            % add Sensitivity menu
-   
-   oo = mitem(o,'-'); 
+
+   oo = mitem(o,'-');
 o = mitem(o,'Legacy');
-   
+
    oo = NumericMenu(o);                % add Numeric menu
 
-   oo = mitem(o,'-'); 
+   oo = mitem(o,'-');
    oo = OpenLoopMenu(o);               % add Open Loop menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
-   oo = mitem(o,'-'); 
+   oo = mitem(o,'-');
    oo = Sensitivity(o);                % add Sensitivity menu
-   
-   oo = mitem(o,'-'); 
+
+   oo = mitem(o,'-');
    oo = Spectrum(o);                   % add Spectrum menu
-   
-   oo = mitem(o,'-'); 
+
+   oo = mitem(o,'-');
    oo = Force(o);                      % add Force menu
    oo = Acceleration(o);               % add Acceleration menu
    oo = Velocity(o);                   % add Velocity menu
    oo = Elongation(o);                 % add Elongation menu
-   
+
    oo = mitem(o,'-');
    %oo = CriticalMenu(o);
    oo = mitem(o,'Normalized System');
    %enable(ooo,type(current(o),types));
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
-   
+
    oo = Precision(o);
 end
 
-function oo = NumericMenu(o)           % Numeric Menu                  
+function oo = NumericMenu(o)           % Numeric Menu
    oo = mitem(o,'Numeric');
    ooo = mitem(oo,'Numeric Quality of G(s)',{@WithSpm,'Numeric'});
 end
-function oo = OpenLoopMenu(o)          % Open Loop Menu                
+function oo = OpenLoopMenu(o)          % Open Loop Menu
    oo = mitem(o,'Open Loop');
    ooo = mitem(oo,'Overview',{@WithCuo,'OpenLoop','Lmu',1,'bcc'});
    ooo = mitem(oo,'Lmu(s)',{@WithCuo,'LmuDisp'});
@@ -113,13 +113,13 @@ function oo = OpenLoopMenu(o)          % Open Loop Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Calculation',{@WithCuo,'Calc','L0',1,'bcc'});
 end
-function oo = ClosedLoopMenu(o)        % Closed Loop Menu              
+function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    oo = mitem(o,'Closed Loop');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
 end
-function oo = Sensitivity(o)           % Sensitivity Menu              
+function oo = Sensitivity(o)           % Sensitivity Menu
    oo = mitem(o,'Sensitivity');
 %  ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
    ooo = mitem(oo,'Frequency Sensitivity',{@WithSpm,'SensitivityF'});
@@ -128,16 +128,16 @@ function oo = Sensitivity(o)           % Sensitivity Menu
    ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
    ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
 end
-function oo = Spectrum(o)              % Spectrum Menu                 
+function oo = Spectrum(o)              % Spectrum Menu
    oo = mitem(o,'Spectrum');
    ooo = mitem(oo,'L0 Magnitude Plots',{@WithSpm,'L0Magni'});
    ooo = mitem(oo,'Lambda Magnitude Plots',{@WithSpm,'LambdaMagni'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lambda Bode Plot',{@WithSpm,'LambdaBode'});
 end
-function oo = Force(o)                 % Closed Loop Force Menu        
+function oo = Force(o)                 % Closed Loop Force Menu
    oo = mitem(o,'Force');
-   sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';  
+   sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';
 
    ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
    ooo = mitem(oo,'-');
@@ -146,7 +146,7 @@ function oo = Force(o)                 % Closed Loop Force Menu
    ooo = mitem(oo,'Tf1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Tf2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Acceleration(o)          % Closed Loop Acceleration Menu 
+function oo = Acceleration(o)          % Closed Loop Acceleration Menu
    oo = mitem(o,'Acceleration');
    sym = 'Ta';  sym1 = 'Ta1';  sym2 = 'Ta2';  col = 'r';
 
@@ -157,9 +157,9 @@ function oo = Acceleration(o)          % Closed Loop Acceleration Menu
    ooo = mitem(oo,'Ta1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Ta2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Velocity(o)              % Closed Loop Velocity Menu     
+function oo = Velocity(o)              % Closed Loop Velocity Menu
    oo = mitem(o,'Velocity');
-   sym = 'Tv';  sym1 = 'Tv1';  sym2 = 'Tv2';  col = 'bc';  
+   sym = 'Tv';  sym1 = 'Tv1';  sym2 = 'Tv2';  col = 'bc';
 
    ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
    ooo = mitem(oo,'-');
@@ -168,9 +168,9 @@ function oo = Velocity(o)              % Closed Loop Velocity Menu
    ooo = mitem(oo,'Tv1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Tv2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Elongation(o)            % Closed Loop Elongation Menu   
+function oo = Elongation(o)            % Closed Loop Elongation Menu
    oo = mitem(o,'Elongation');
-   sym = 'Ts';  sym1 = 'Ts1';  sym2 = 'Ts2';  col = 'g';  
+   sym = 'Ts';  sym1 = 'Ts1';  sym2 = 'Ts2';  col = 'g';
 
    ooo = mitem(oo,'Overview',{@WithCuo,'Overview',sym1,sym2,col});
    ooo = mitem(oo,'-');
@@ -179,7 +179,7 @@ function oo = Elongation(o)            % Closed Loop Elongation Menu
    ooo = mitem(oo,'Ts1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Precision(o)             % Precision Menu                
+function oo = Precision(o)             % Precision Menu
    oo = mitem(o,'Precision');
    ooo = mitem(oo,'Eigenvalues',{@WithCuo,'EigenvalueCheck'});
 end
@@ -188,7 +188,7 @@ end
 % Launch Callbacks
 %==========================================================================
 
-function oo = WithSho(o)               % 'With Shell Object' Callback  
+function oo = WithSho(o)               % 'With Shell Object' Callback
 %
 % WITHSHO General callback for operation on shell object
 %         with refresh function redefinition, screen
@@ -197,7 +197,7 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
 %
    refresh(o,o);                       % remember to refresh here
    cls(o);                             % clear screen
- 
+
    gamma = eval(['@',mfilename]);
    oo = gamma(o);                      % forward to executing method
 
@@ -216,19 +216,19 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
 %
    refresh(o,o);                       % remember to refresh here
    cls(o);                             % clear screen
- 
+
    oo = current(o);                    % get current object
    if ~type(oo,{'spm','shell','pkg'})
       plot(oo,'About');
       return
    end
-   
+
       % refresh caches
-      
+
 %  [oo,bag,rfr] = cache(oo,oo,'trf');  % transfer function cache segment
 %  [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
 %  [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
-   
+
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -240,26 +240,26 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithSpm(o)               % 'With Current Spm Callback    
+function oo = WithSpm(o)               % 'With Current Spm Callback
 %
 % WITHSPM Same as WithCuo but checking if current object is an spm object,
 %         otherwise calling plot(o,'About')
 %
    refresh(o,o);                       % remember to refresh here
    cls(o);                             % clear screen
- 
+
    oo = current(o);                    % get current object
    if ~type(oo,{'spm'})
       plot(oo,'About');
       return
    end
-   
+
       % refresh caches
-      
+
 %  [oo,bag,rfr] = cache(oo,oo,'trf');  % transfer function cache segment
 %  [oo,bag,rfr] = cache(oo,oo,'consd');% constrained trf cache segment
 %  [oo,bag,rfr] = cache(oo,oo,'process'); % process cache segment
-   
+
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -271,9 +271,9 @@ function oo = WithSpm(o)               % 'With Current Spm Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithBsk(o)               % 'With Basket' Callback        
+function oo = WithBsk(o)               % 'With Basket' Callback
 %
-% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
+% WITHBSK  Plot basket, or perform actions on the basket, screen clearing,
 %          current object pulling and forwarding to executing local func-
 %          tion, reporting of irregularities and dark mode support
 %
@@ -282,14 +282,14 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 
    gamma = eval(['@',mfilename]);
    oo = basket(o,gamma);               % perform operation gamma on basket
- 
+
    if ~isempty(oo)                     % irregulars happened?
       message(oo);                     % report irregular
    end
    dark(o);                            % do dark mode actions
 end
 
-function o = Err(o)                    % Error Handler                 
+function o = Err(o)                    % Error Handler
    error('bad mode');
 end
 
@@ -297,7 +297,7 @@ end
 % Principal
 %==========================================================================
 
-function oo = PrincipalMenu(o)         % Principal Menu                
+function oo = PrincipalMenu(o)         % Principal Menu
    oo = mitem(o,'Principal');
    ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
    ooo = mitem(oo,'-');
@@ -307,7 +307,7 @@ end
 
     % callbacks
 
-function o = Principal(o)              % Pricipal Menu Callbacks       
+function o = Principal(o)              % Pricipal Menu Callbacks
    if type(o,{'spm'})
       o = cache(o,o,'critical');
       o = cache(o,o,'spectral');
@@ -315,9 +315,9 @@ function o = Principal(o)              % Pricipal Menu Callbacks
       plot(o,'About');
       return
    end
-   
+
    Heading(o);
-   
+
    mode = arg(o,1);
    switch mode
       case 'Genesis'
@@ -330,12 +330,12 @@ function o = Principal(o)              % Pricipal Menu Callbacks
 end
 function o = PrincipalGenesis(o)
    [l0,g31,g33,g0] = cook(o,'lambda0,g31,g33,g0');
-   
+
    [~,no,~] = size(l0);
    l0 = peek(l0,1);
    g31 = peek(g31,1);
    g33 = peek(g33,no);
-   
+
    MagniChart(o,411,g31);
    MagniChart(o,412,g33);
    MagniChart(o,413,g0);
@@ -347,9 +347,9 @@ function o = PrincipalSpectrum(o,tag)
    sub = [211,212];
    name = get(g,{'name',''});
    idx = o.iif(isequal(name,'g33(s)'),no,1);
-   
+
       % draw magnitudes
-      
+
    for (i=1:no)
       gi = peek(g,i);
       col = Colors(o,gi,i);
@@ -360,9 +360,9 @@ function o = PrincipalSpectrum(o,tag)
    col = [get(gi,'color'),'2'];
    gi = set(gi,'color',col);
    MagniChart(o,sub(1),gi,1);
-   
+
       % draw phases
-      
+
    for (i=1:no)
       gi = peek(g,i);
       col = Colors(o,gi,i);
@@ -376,7 +376,7 @@ function o = PrincipalSpectrum(o,tag)
 end
 
    % legacy
-   
+
 function oldPlotNyquist(o,sub,critical)
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
 
@@ -421,7 +421,7 @@ end
 % Critical
 %==========================================================================
 
-function oo = CriticalMenu(o)          % Critical Menu                 
+function oo = CriticalMenu(o)          % Critical Menu
    oo = mitem(o,'Critical');
    ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
    ooo = mitem(oo,'Bode & Damping',{@WithSpm,'Critical','Combi'});
@@ -439,38 +439,38 @@ function oo = CriticalMenu(o)          % Critical Menu
 end
 
    % callbacks
-   
-function o = Critical(o)               % Calculate Critical Quantities 
+
+function o = Critical(o)               % Calculate Critical Quantities
    if type(o,{'spm'})
       o = cache(o,o,'critical');
    else
       plot(o,'About');
       return
    end
-   
+
    Heading(o);
    o = with(o,{'bode','stability'});
-   
+
    points = opt(o,{'omega.points',10000});
    closeup = opt(o,{'bode.closeup',0});
 
    [f0,K0] = cook(o,'f0,K0');
-   
+
    if (closeup)
        points = max(points,500);
        o = opt(o,'omega.low',2*pi*f0/(1+closeup));
        o = opt(o,'omega.high',2*pi*f0*(1+closeup));
        o = opt(o,'omega.points',points);
    end
-   
+
    mode = arg(o,1);
    switch mode
       case 'Overview'
          critical(o,'Overview',[3211,3221,0]);
          subplot(o,3211);
 
-         PlotNyquist(o,2212,0);   
-         PlotNyquist(o,2222,1);   
+         PlotNyquist(o,2212,0);
+         PlotNyquist(o,2222,1);
          critical(o,'Overview',[0,0,3231]);
       case 'Combi'
          critical(o,'Overview',[3111,3121,3131]);
@@ -483,30 +483,30 @@ function o = Critical(o)               % Calculate Critical Quantities
          critical(o,'Magni',111);
       case 'Phase'
          critical(o,'Phase',111);
-         
+
       case 'Nyquist'
          PlotNyquist(o,111,0);
       case 'Critical'
-         PlotNyquist(o,111,1);   
+         PlotNyquist(o,111,1);
    end
    Heading(o);
-         
+
    function PlotNyquist(o,sub,critical)
       o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
-      
+
       o = with(o,'nyq');
-      
+
       subplot(o,sub);
       l0 = cook(o,'lambda0');
       K = o.iif(critical,K0,1);
-      
+
       if (dark(o))
          colors = {'rk','gk','b','ck','mk','yk','wk'};
       else
          colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
       end
       colors = get(l0,{'colors',colors});
-      
+
       no = length(l0.data.matrix(:));
       for (i=no)
          l0i = peek(l0,i);
@@ -515,31 +515,31 @@ function o = Critical(o)               % Calculate Critical Quantities
          col = colors{1+rem(i,length(colors))};
          nyq(K*l0i,col);
       end
-            
+
       if (critical)
          col = 'r2';
       else
          col = [get(l0,'color'),'2'];
       end
-      
+
       if (critical)
          l00 = peek(l0,1);
          l00jw = l00.data.matrix{1};
-         
+
          for (i=1:no)
             ljw(i,:) = l0.data.matrix{i};
          end
-         
+
          for (j=1:size(ljw,2))
             [~ ,idx] = sort(abs(ljw(:,j)));
             l00jw(j) = ljw(idx(no),j);
          end
-         
+
          nyq(K*l00,col);
 
-         l00.data.matrix{1} = l00jw;   
+         l00.data.matrix{1} = l00jw;
          nyq(K*l00,'r1');
-         
+
          title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       else
          l00 = peek(l0,1);
@@ -554,14 +554,14 @@ end
 % Stability
 %==========================================================================
 
-function oo = StabilityMenu(o)         % Stability Menu                
+function oo = StabilityMenu(o)         % Stability Menu
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilitySummary'});
-   ooo = mitem(oo,'-');   
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
    ooo = mitem(oo,'Nyquist',{@WithCuo,'NyquistStability'});
-   
-   ooo = mitem(oo,'-');   
+
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Legacy');
    oooo = mitem(ooo,'Overview',{@WithCuo,'StabilityOverview'});
    oooo = mitem(ooo,'-');
@@ -572,20 +572,20 @@ function oo = StabilityMenu(o)         % Stability Menu
 end
 
    % callbacks
-   
-function o = StabilitySummary(o)       % Plot Stability Overview       
+
+function o = StabilitySummary(o)       % Plot Stability Overview
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
-   
+
    mu = opt(o,{'process.mu',0.1});
 
    Heading(o);
    NyquistChart(o,1211,mu);
    MarginChart(o,[2212,2222]);
 end
-function o = StabilityMargin(o)        % Plot Stability Margins        
+function o = StabilityMargin(o)        % Plot Stability Margins
    switch o.type
       case 'pkg'
          o = PkgStabilityMargin(o);
@@ -595,17 +595,17 @@ function o = StabilityMargin(o)        % Plot Stability Margins
          plot(o,'About');
    end
 end
-function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin     
+function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin
    o = cache(o,o,'critical');
    Heading(o);
    MarginChart(o,[211,212]);
 end
-function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin     
+function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
    if ~type(o,{'pkg'})
       plot(o,'About');
       return
    end
-   
+
    package = get(o,'package');
    if isempty(package)
       error('no package ID provided');
@@ -616,9 +616,9 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       % - index row 2: Critical Friction
       % - index row 3: Stability Margin
       % - index row 4: Critical Frequency
-      
+
    mode = 3;
-   
+
    if (mode == 2)   % critical quantities
       sub = [   0    0; 2211 2212; 4231 4232; 4241 4242];
    elseif (mode == 3)   % stability margin, setup & critical frequency
@@ -627,49 +627,49 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       sub = [4211 4212; 4221 4222; 4231 4232; 4241 4242];
    end
 
-   
+
    Heading(o);                         % start with heading
-   
+
       % get object list of package
-      % note that first list element is the package object, which has 
+      % note that first list element is the package object, which has
       % to been deleted. calculate stability margin for all data objects
-      
+
 
    o = with(o,{'style','process','stability'});
    [list,n] = children(o);
 
    mu = opt(o,{'process.mu',0.1});
    kmu = opt(o,{'process.kmu',1});
-   
+
    width = [];                         % init in current scope
    x = Axes(o,sub(1,1),mu,'LogMargin');    % get variation range and plot axes
    x = Axes(o,sub(2,1),mu,'Critical');     % get variation range and plot axes
    x = Axes(o,sub(3,1),mu,'Margin');       % get variation range and plot axes
    x = Axes(o,sub(4,1),mu,'Frequency');    % get variation range and plot axes
-   
+
    x = Axes(o,sub(1,2),-mu,'LogMargin');   % get variation range and plot axes
    x = Axes(o,sub(2,2),-mu,'Critical');    % get variation range and plot axes
    x = Axes(o,sub(3,2),-mu,'Margin');      % get variation range and plot axes
    x = Axes(o,sub(4,2),-mu,'Frequency');   % get variation range and plot axes
-  
+
       % calculate stability margin and plot
-   
-   
+
+
    infgreen = o.iif(dark(o),'g|p3','ggk|p3');
    green = o.iif(dark(o),'g|o3','ggk|o3');
    yellow = 'yyyr|o3';
    red = 'r|o3';
-   
+
    legacy = 0;
 
    stop(o,'Enable');
-   for (i=1:n)                         % calc & plot stability margin  
+   for (i=1:n)                         % calc & plot stability margin
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,i/n*100);
-      
+
       oo = list{i};
       oo = inherit(oo,o);
-      
+
       [K0,f0,K180,f180] = cook(oo,'K0,f0,K180,f180');
 
 %     Mu0(i) = mu/K0;
@@ -679,11 +679,11 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       else
          PlotDb(o,x(i),M0(i),sub(1,1));
       end
-      
+
       PlotMucrit(x(i),K0,sub(2,1));
       PlotMargin(x(i),M0(i),sub(3,1));
       PlotFrequency(x(i),f0,sub(4,1));
-      
+
 %     Mu180(i) = mu/K180;
       M180(i) = K180/mu;
       if (legacy)
@@ -694,22 +694,22 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       PlotMucrit(x(i),K180,sub(2,2));
       PlotMargin(x(i),M180(i),sub(3,2));
       PlotFrequency(x(i),f180,sub(4,2));
-      
+
       idle(o);                         % show graphics
       if stop(o)
          break;
       end
    end
    stop(o,'Enable');
-   
+
    progress(o);                        % progress completed
    Heading(o);                         % add heading
-   
+
    function PlotMucrit(xi,mu0,sub)     % Critical Friction Coefficient
       if (sub == 0)
          return
       end
-      
+
       subplot(o,sub);
       if (mu0 > mu*kmu)
          plot(o,xi,mu0,green);
@@ -718,7 +718,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       else
          plot(o,xi,mu0,yellow);
       end
-      
+
       lim = limits(o);
       if o.is(lim)
          set(gca,'ylim',[0 2.2/lim(2)]);
@@ -728,7 +728,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       if (sub == 0)
          return
       end
-      
+
       subplot(o,sub);
       if isinf(marg)
          plot(o,xi,0,infgreen);
@@ -744,7 +744,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       if (sub == 0)
          return
       end
-      
+
       subplot(o,sub);
       if isinf(marg)
          marg = 0;
@@ -762,15 +762,15 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       if (sub == 0)
          return
       end
-      
+
       subplot(o,sub);
       [fcol,bcol,ratio] = Colors(o,marg);
 
       dB = 20*log10(marg);
       X =  0.4*width*[1 1 -1 -1 1];
       Y = dB/2*[1 -1 -1 1 1];
-      
-      
+
+
       if isinf(dB)
          plot(o,xi,0,infgreen);
       else
@@ -782,12 +782,12 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       if (sub == 0)
          return
       end
-      
+
       subplot(o,sub);
       plot(o,xi,f,'Ko|');
    end
-    
-   function x = Axes(o,sub,mu,tit)     % Plot Axes 
+
+   function x = Axes(o,sub,mu,tit)     % Plot Axes
       variation = get(o,'variation');
       for (ii=1:n)
          oi = list{ii};
@@ -797,12 +797,12 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
          else
             x(ii) = ii;
          end
-      end   
-      
+      end
+
       if (sub == 0)
          return
       end
-      
+
       subplot(o,sub);
 
       [lim,col] = limits(o);
@@ -810,13 +810,13 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
       width = (max(x) - min(x))/length(x);
       set(gca,'xlim',[min(x)-width,max(x)+width]);
-      
+
       if o.is(lim)
          kmu = lim(1)/lim(2);
          if isequal(tit,'Critical')
             plot(o,get(gca,'xlim'),[1 1]/lim(1),col);
             plot(o,get(gca,'xlim'),[1 1]/lim(2),col);
-         elseif isequal(tit,'Margin') 
+         elseif isequal(tit,'Margin')
             plot(o,get(gca,'xlim'),[1 1],col);
             plot(o,get(gca,'xlim'),[1 1]*kmu,col);
          elseif isequal(tit,'LogMargin')
@@ -850,46 +850,46 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       subplot(o);                         % subplot complete
    end
 end
-function o = NyquistStability(o)       % Plot Stability Margins        
+function o = NyquistStability(o)       % Plot Stability Margins
    if type(o,{'spm'})
       o = cache(o,o,'critical');
    else
       plot(o,'About');
       return
    end
-   
+
    Heading(o);
-   
+
    mu = opt(o,{'process.mu',0.1});
    NyquistChart(o,111,mu);
 end
 
    % legacy
-   
-function o = Margin(o)                 % Stability Margin              
+
+function o = Margin(o)                 % Stability Margin
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % hard refresh multi cache segment
    end
    oo = with(o,{'process','stability'});
    L0 = cook(o,'Sys0');
    mu = opt(o,{'process.mu',0.1});
-   
+
    subplot(o,211);
    stable(oo,L0,mu);
-   
+
    subplot(o,212);
    stable(oo,L0,-mu);
 
    Heading(o);
 end
-function o = Damping(o)                % Closed Loop Damping           
+function o = Damping(o)                % Closed Loop Damping
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % hard refresh cache segment
    end
-   
+
    o = with(o,'rloc');
    o = with(o,'style');
-   
+
    [L0,K0,f0,K180,f180] = cook(o,'Sys0,K0,f0,K180,f180');
    mu = opt(o,{'process.mu',0.1});
    L0 = inherit(L0,o);
@@ -898,40 +898,40 @@ function o = Damping(o)                % Closed Loop Damping
    Klab = {'0.001->0.01->0.1', '0.1->0.2->0.5->1',...
            '1->2->5->10','10->100->1000'};
    m = size(glim,1);
-   
+
    fmin = opt(o,{'fmin',1});
    fmax = opt(o,{'fmax',1e6});
-   
+
    for (i=1:m)
       subplot(o,[m 2 i 1],'semilogx');
       rlocus(o,L0,-mu,glim(i,:));
       ylim = get(gca,'ylim');
       set(gca,'ylim',[min(-2,max(ylim(1),-20)),0]);
       set(gca,'xlim',[fmin,fmax]);
-      
+
       title(sprintf('K: %s (mu: %g)',Klab{i},-mu));
       ylabel('damping [%]');
    end
    xlabel(sprintf('frequency [Hz] (K0: %g @ %g Hz)',K180/mu,f180));
-   
+
    for (i=1:m)
       subplot(o,[m 2 i 2],'semilogx');
       rlocus(o,L0,mu,glim(i,:));
       ylim = get(gca,'ylim');
       set(gca,'ylim',[min(-2,max(ylim(1),-20)),0]);
       set(gca,'xlim',[fmin,fmax]);
-      
+
       title(sprintf('K: %s (mu: %g)',Klab{i},+mu));
       ylabel('damping [%]');
    end
    xlabel(sprintf('frequency [Hz] (K0: %g @ %g Hz)',K0/mu,f0));
-   
+
    Heading(o);
 end
-function o = OldDamping(o)             % Closed Loop Damping           
+function o = OldDamping(o)             % Closed Loop Damping
    o = with(o,'rloc');
    o = with(o,'style');
-      
+
    subplot(o,111);
 
    L0 = cook(o,'Sys0');
@@ -939,53 +939,53 @@ function o = OldDamping(o)             % Closed Loop Damping
    L0 = inherit(L0,o);
 
    rlocus(o,L0,mu);
-endfunction o = Rloc(o)                   % Root Locus                    
+endfunction o = Rloc(o)                   % Root Locus
    o = with(o,'rloc');
    o = with(o,'style');
-   
+
    sym = 'Sys0';
-   oo = cook(o,sym);   
-   
+   oo = cook(o,sym);
+
    mu = opt(o,{'process.mu',0.1});
    B0 = data(oo,'B');
    oo = data(oo,'B',B0*mu);
-   
+
    oo = inherit(oo,o);
-   
+
    subplot(o,111);
    rloc(oo);
    title(sprintf('Root Locus %s(s) - mu = %g',sym,mu));
-   
+
    heading(o);
 end
-function o = OldRloc(o)                % Root Locus                    
+function o = OldRloc(o)                % Root Locus
    o = with(o,'rloc');
    o = with(o,'style');
-   
+
    sym = 'L1';
-   L1 = cook(o,sym);   
+   L1 = cook(o,sym);
    [num,den] = peek(L1);
-   
+
    mu = opt(o,{'process.mu',0.1});
-   
+
    oo = system(inherit(corasim,o),{-mu*num,den});
-   
+
    subplot(o,111);
    rloc(oo);
    title(sprintf('Root Locus %s(s) - mu = %g',sym,mu));
-   
+
    heading(o);
 end
-function oo = StabilityOverview(o)     % Stability Overview            
+function oo = StabilityOverview(o)     % Stability Overview
    o = with(o,{'style','bode','nyq'});
-   
+
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % hard refresh multi segment
    end
 
    mu = opt(o,{'process.mu',0.1});
    colors = {'bcc','b','c','bw','cd'};
-   
+
    [list,objs,head] = LmuSelect(o);
    for (i=1:length(list))
       col = colors{1+rem(i-1,length(colors))};
@@ -999,29 +999,29 @@ function oo = StabilityOverview(o)     % Stability Overview
 
       Lmu = list{i};
       Sys0 = var(Lmu,'Sys0');
-      
+
       diagram(oo,'Magni','',Lmu,4211);
       xlabel('omega [1/s]');
 
       diagram(oo,'Phase','',Lmu,4221);
       xlabel('omega [1/s]');
-      
+
       diagram(o,'Stability',+mu,Sys0,4231);
       diagram(o,'Stability',-mu,Sys0,4241);
 
       oo = diagram(o,'Nyq','',Lmu,1212);
    end
-   
+
       % plot legend if more than 1 plots
-      
+
    if (length(list) > 1)
       Legend(o,4211,objs);
    end
-   
-   Verbose(o,Lmu);   
+
+   Verbose(o,Lmu);
    Heading(o,head);
 end
-function o = SimpleCalc(o)             % Simple Calculation            
+function o = SimpleCalc(o)             % Simple Calculation
    idx = contact(o,nan);
    if (length(idx) > 1)
       cls(o);
@@ -1031,7 +1031,7 @@ function o = SimpleCalc(o)             % Simple Calculation
 
    message(o,'Simple Calculation of Stability Margin',{'see console ...'});
    idle(o);
-   
+
    Cmd('[A,B_1,B_3,C_3]=cook(cuo,''A,B_1,B_3,C_3'');');
    Cmd('f=0.8:1e-4:1.1;   % search frequency between 0.8 and 1.1kHz');
    Cmd('jw=sqrt(-1)*2*pi*f;');
@@ -1058,17 +1058,17 @@ function o = SimpleCalc(o)             % Simple Calculation
    Cmd('    % calculate critical friction coefficient mu');
    Cmd('');
    Cmd('K0=M33/M31');
-   
+
    function Cmd(cmd)
       fprintf('%s\n',cmd);
       evalin('base',cmd);
    end
 end
-function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
+function [list,objs,head] = LmuSelect(o) % Select Transfer Function
    list = {};                          % empty by default
    objs = {};
    head = heading(o);                  % default heading
-   
+
    if type(o,{'spm'})
       list = {GetLmu(o)};
       objs = {o};
@@ -1077,7 +1077,7 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
       if isempty(pivot)
          return
       end
-      
+
       o = pull(o);                     % refresh shell object
       for (k=1:length(o.data))
          ok = o.data{k};
@@ -1089,7 +1089,7 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
       end
       head = sprintf('Pivot: %g°',pivot);
    end
-   
+
    function Lmu = GetLmu(o)
       [Lmu,Sys0,K0,K180,f0,f180] = cook(o,'Lmu,Sys0,K0,K180,f0,f180');
       Sys0 = var(Sys0,'f0,f180,K0,K180',f0,f180,K0,K180);
@@ -1101,14 +1101,14 @@ end
 % Setup
 %==========================================================================
 
-function oo = SetupMenu(o)             % Setup Menu                    
+function oo = SetupMenu(o)             % Setup Menu
    oo = mitem(o,'Setup');
 
    ooo = mitem(oo,'Stability Margin');
    oooo = mitem(ooo,'Basic Study',{@WithCuo,'SetupAnalysis','basic',3});
    oooo = mitem(ooo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry',3});
    oooo = mitem(ooo,'Sample Study',{@WithCuo,'SetupAnalysis','sample',3});
-   
+
    ooo = mitem(oo,'Critical Quantities');
    oooo = mitem(ooo,'Basic Study',{@WithCuo,'SetupAnalysis','basic',2});
    oooo = mitem(ooo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry',2});
@@ -1116,8 +1116,8 @@ function oo = SetupMenu(o)             % Setup Menu
 end
 
    % callbacks
-   
-function o = SetupAnalysis(o)          % Setup Margin Analysis          
+
+function o = SetupAnalysis(o)          % Setup Margin Analysis
    switch o.type
       case 'shell'
          o = plot(o,'About');
@@ -1132,19 +1132,19 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       plot(o,'About');
       return
    end
-   
+
    flip = 1;
-   
+
    package = get(o,'package');
    if isempty(package)
       error('no package ID provided');
    end
    variation = get(o,'variation');
-      
+
       % get object list of package
-      % note that first list element is the package object, which has 
+      % note that first list element is the package object, which has
       % to been deleted. calculate stability margin for all data objects
-    
+
 %  olist = tree(o);                    % get list of package objects
 %  list = olist{1};                    % pick object list
 %  list(1) = [];                       % delete package object from list
@@ -1158,22 +1158,22 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
    end
 
       % ...
-      
+
    mode = arg(o,1);
-   
+
    C = cook(list{1},'C');
    no = size(C,1)/3;
    n = 2^no-1;
-   
+
    id = Order(no,mode);
    N = length(id);
    x = 1:N;
-   
+
    %[K0K180,f0f180] = cook(o,'K0K180,f0f180');
 
    height = [];                         % let calculate by Axes
    mu = opt(o,{'process.mu',0.1});
-   
+
    if (flip)
       Axes2(o,1311,mu,'Stability Margin'); % get variation range and plot axes
       Axes2(o,1714,[],'Setup');
@@ -1185,32 +1185,32 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
    end
 
       % calculate stability margin and plot
-   
+
    infgreen = o.iif(dark(o),'g|p3','ggk|p3');
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
 
       % plot configurations
-      
-   for (j=1:N)                         % calc & plot stability margin  
-      i = id(j); 
+
+   for (j=1:N)                         % calc & plot stability margin
+      i = id(j);
       cfg = Config(i);
       PlotConfig(o,x(j),cfg,id(j),o.iif(flip,1714,3121));
    end
-   
+
    stop(o,'Enable');                   % enable stop button down function
    for (ii=1:length(list))
       oi = list{ii};
       vi = get(oi,variation);
       [K0K180,f0f180] = cook(oi,'K0K180,f0f180');
-      
+
       fmin = inf;                      % init
       progress(o,N,'calculate stability range');
-      for (j=1:N)                      % calc & plot stability margin  
+      for (j=1:N)                      % calc & plot stability margin
          txt = sprintf('calculate stability range of %s',get(o,'title'));
          progress(o,j);
 
-         i = id(j); 
+         i = id(j);
          cfg = Config(i);
          if isnan(K0K180(i,1))
             [oo,L0,K0,f0,K180,f180] = contact(oi,cfg);
@@ -1227,11 +1227,11 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
 
          Mu0 = mu/K0;  Mu180 = mu/K180;
          if (flip)
-            PlotMargin(o,x(j),vi,1/Mu0,1311);      
-            PlotMargin(o,x(j),vi,1/Mu180,1313);  
+            PlotMargin(o,x(j),vi,1/Mu0,1311);
+            PlotMargin(o,x(j),vi,1/Mu180,1313);
          else
-            PlotMargin(o,x(j),vi,1/Mu0,3111);      
-            PlotMargin(o,x(j),vi,1/Mu180,3131);  
+            PlotMargin(o,x(j),vi,1/Mu0,3111);
+            PlotMargin(o,x(j),vi,1/Mu180,3131);
          end
 
          idle(o);                         % show graphics
@@ -1244,7 +1244,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       end
    end
    stop(o,'Disable');                  % enable stop button down function
-   
+
    if (flip)
       subplot(o,1311);
       pos = get(gca,'position');
@@ -1256,10 +1256,10 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       width = pos(3);
       set(gca,'position',[pos(1)-0.45*width pos(2) 1.45*width pos(4)]);
    end
-   
+
    progress(o);                        % progress completed
    Heading(o);                         % add heading
-   
+
    function idx = Config(N)            % Return Configuration Indices
       kmax = log(n+1)/log(2);
       idx = [];
@@ -1275,7 +1275,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       [fcol,bcol,ratio] = Colors(o,marg);
       X = 0.4*[1 1 -1 -1 1];
       Y = 0.4*height*[1 -1 -1 1 1];
-      
+
       if isinf(marg)
          if (flip)
 %           plot(o,0,xi,infgreen);
@@ -1295,10 +1295,10 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
             patch(xi+ratio*X,yi+ratio*Y,o.color(bcol));
          end
       end
-   end   
+   end
    function PlotConfig(o,xi,cfg,id,sub)
       col = o.iif(dark(o),'w','k');
-      
+
       subplot(o,sub);
       for (k=1:no)
          if (flip)
@@ -1306,7 +1306,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
          else
             plot(o,[xi xi],[1 no],[col,'1']);
          end
-         
+
          if any(cfg==k)
             if (flip)
                plot(o,k,xi,[col,'o']);
@@ -1324,9 +1324,9 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
          set(hdl,'Vertical','bottom','Horizontal','center','fontsize',6);
       end
    end
-   function Axes1(o,sub,mu,tit)        % Plot Axes                     
+   function Axes1(o,sub,mu,tit)        % Plot Axes
       subplot(o,sub);
-      
+
       if isempty(mu)
          for (k=1:no)
             plot(o,x,k*ones(size(x)),'K.');
@@ -1338,14 +1338,14 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
          for (k=1:length(list))
             v(k) = get(list{k},variation);
          end
-         
+
          plot(o,x,0*x,'K.');
          hold on;
-         
+
          height = (max(v)-min(v)) / max(1,length(list)-1);
          set(gca,'ylim',[min(v)-2*height,max(v)+2*height]);
       end
-      
+
       if o.is(mu)
          dir = o.iif(mu>=0,'Forward','Backward');
          title(sprintf('Stability Margin (%s Cutting @ mu: %g)',dir,abs(mu)));
@@ -1358,29 +1358,29 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       set(gca,'xlim',[0.1 length(x)+0.9]);
       subplot(o);                      % subplot complete
    end
-   function Axes2(o,sub,mu,tit)        % Plot Axes                     
+   function Axes2(o,sub,mu,tit)        % Plot Axes
       subplot(o,sub);
-      
+
       if isempty(mu)
          for (k=1:no)
             plot(o,k*ones(size(x)),x,'K.');
             hold on;
          end
-         
+
          set(gca,'xlim',[0 no+0.9]);
       else
          v = [];
          for (k=1:length(list))
             v(k) = get(list{k},variation);
          end
-         
+
          plot(o,0*x,x,'K.');
          hold on;
-         
+
          height = (max(v)-min(v)) / max(1,length(list)-1);
          set(gca,'xlim',[min(v)-2*height,max(v)+2*height]);
       end
-      
+
       if o.is(mu)
          dir = o.iif(mu>=0,'Forward','Backward');
          title(sprintf('Stability Margin (%s Cutting @ mu: %g)',dir,abs(mu)));
@@ -1393,28 +1393,28 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       set(gca,'ylim',[0.1 length(x)+0.9]);
       subplot(o);                      % subplot complete
    end
-   function txt = More(o,mu)           % More Title Text               
+   function txt = More(o,mu)           % More Title Text
       txt = '';  sep = '';
 
       if isempty(mu)
          return
       else
-         txt = sprintf('mu: %g',mu);  
+         txt = sprintf('mu: %g',mu);
          sep = ', ';
       end
-      
+
       vomega = opt(o,{'variation.omega',1});
       if ~isequal(vomega,1)
-         txt = [txt,sep,sprintf('vomega: %g',vomega)]; 
+         txt = [txt,sep,sprintf('vomega: %g',vomega)];
          sep = ', ';
       end
-      
+
       vzeta = opt(o,{'variation.zeta',1});
       if ~isequal(vzeta,1)
          txt = [txt,sep,sprintf('vzeta: %g',vzeta)];
          sep = ', ';
       end
-      
+
       if ~isempty(txt)
          txt = [' (',txt,')'];
       end
@@ -1439,9 +1439,9 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       % - index row 2: Critical Friction
       % - index row 3: Setup
       % - index row 4: Critical Frequency
-      
+
    mode = arg(o,2);
-   
+
    if (mode == 2)   % critical quantities
       sub = [   0    0; 2211 2212; 4231 4232; 4241 4242];
    elseif (mode == 3)   % stability margin, setup & critical frequency
@@ -1451,20 +1451,20 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    end
 
       % let's go
-      
+
    Heading(o);                         % stat with heading
 
    o = with(o,{'style','process','stability','critical'});
    mode = arg(o,1);
-   
+
    C = cook(o,'C');
    no = size(C,1)/3;
    n = 2^no-1;
-   
+
    id = Order(no,mode);
    N = length(id);
    x = 1:N;
-   
+
    [K0K180,f0f180] = cook(o,'K0K180,f0f180');
 
    mu = opt(o,{'process.mu',0.1});
@@ -1482,27 +1482,27 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
    Axes(o,sub(3,2),[],'Setup');
    Axes(o,sub(1,2),-mu,'Stability Margin');
    Axes(o,sub(4,2),nan,'Critical Frequency');
-  
+
       % calculate stability margin and plot
-   
+
    infgreen = o.iif(dark(o),'g|p3','ggk|p3');
    green = o.iif(dark(o),'g|o3','ggk|o3');
    red = 'r|o2';
-   
+
    stop(o,'Enable');                % enable button down function for stop
    fmin = inf;                      % init
-   
-   for (j=1:N)                      % calc & plot stability margin  
+
+   for (j=1:N)                      % calc & plot stability margin
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,j/N*100);
-      
-      i = id(j); 
+
+      i = id(j);
       cfg = Config(i);
       if isnan(K0K180(i,1))
          [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
          K0K180(i,:) = [K0,K180];
          f0f180(i,:) = [f0,f180];
-         
+
          o = cache(o,'setup.K0K180',K0K180);
          o = cache(o,'setup.f0f180',f0f180);
          cache(o,o);
@@ -1510,15 +1510,15 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
          K0 = K0K180(i,1);  K180 = K0K180(i,2);
          f0 = f0f180(i,1);  f180 = f0f180(i,2);
       end
-      
+
       Mu0 = mu/K0;
-      PlotDb(o,x(j),1/Mu0,sub(1,1));      
+      PlotDb(o,x(j),1/Mu0,sub(1,1));
       PlotK(o,x(j),K0,sub(2,1));
       PlotConfig(o,x(j),cfg,id(j),sub(3,1));
 %     PlotMu(o,x(j),Mu0,4211);
-%     PlotMargin(o,x(j),1/Mu0,4231);      
-      PlotFrequency(o,x(j),f0,sub(4,1));      
-      
+%     PlotMargin(o,x(j),1/Mu0,4231);
+      PlotFrequency(o,x(j),f0,sub(4,1));
+
 
       Mu180 = mu/K180;
       PlotDb(o,x(j),1/Mu180,sub(1,2));
@@ -1526,8 +1526,8 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       PlotConfig(o,x(j),cfg,id(j),sub(3,2));
 %     PlotMu(o,x(j),Mu180,4212);
 %     PlotMargin(o,x(j),1/Mu180,4232);
-      PlotFrequency(o,x(j),f180,sub(4,2));      
-      
+      PlotFrequency(o,x(j),f180,sub(4,2));
+
       idle(o);                         % show graphics
       if stop(o)
          break;
@@ -1537,7 +1537,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
 
    progress(o);                        % progress completed
    Heading(o);                         % add heading
-   
+
    function idx = Config(N)            % Return Configuration Indices
       kmax = log(n+1)/log(2);
       idx = [];
@@ -1552,12 +1552,12 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (sub == 0)
          return                        % ignore
       end
-      
+
       subplot(o,sub);
       [fcol,bcol,ratio] = Colors(o,1/mu);
       X =  0.4*[1 1 -1 -1 1];
       Y = mu/2*[1 -1 -1 1 1];
-      
+
       hdl = patch(xi+X,mu/2+Y,o.color(fcol));
       hdl = patch(xi+ratio*X,mu/2+Y,o.color(bcol));
    end
@@ -1565,12 +1565,12 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (sub == 0)
          return                        % ignore
       end
-      
+
       subplot(o,sub);
       [fcol,bcol,ratio] = Colors(o,K/mu);
       X =  0.4*[1 1 -1 -1 1];
       Y = K/2*[1 -1 -1 1 1];
-      
+
       hdl = patch(xi+X,K/2+Y,o.color(fcol));
       hdl = patch(xi+ratio*X,K/2+Y,o.color(bcol));
    end
@@ -1578,14 +1578,14 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (sub == 0)
          return                        % ignore
       end
-      
+
       subplot(o,sub);
       [fcol,bcol,ratio] = Colors(o,marg);
 
       X =  0.4*[1 1 -1 -1 1];
       Y = marg/2*[1 -1 -1 1 1];
-      
-      
+
+
       if isinf(marg)
          plot(o,xi,0,infgreen);
       else
@@ -1594,20 +1594,20 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
 
 %        plot(o,xi,marg,green);
       end
-   end   
+   end
    function PlotDb(o,xi,marg,sub)
       if (sub == 0)
          return                        % ignore
       end
-      
+
       subplot(o,sub);
       [fcol,bcol,ratio] = Colors(o,marg);
 
       dB = 20*log10(marg);
       X =  0.4*[1 1 -1 -1 1];
       Y = dB/2*[1 -1 -1 1 1];
-      
-      
+
+
       if isinf(dB)
          plot(o,xi,0,infgreen);
       else
@@ -1623,21 +1623,21 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (sub == 0)
          return                        % ignore
       end
-      
+
       col = o.iif(dark(o),'w|o','k|o');
       subplot(o,sub);
       plot(o,xi,f0,col);
       hold on
       fmin = min(fmin,f0);
       set(gca,'xlim',[0.1 length(x)+0.9],'ylim',[fmin*0.95,inf]);
-   end   
+   end
    function PlotConfig(o,xi,cfg,id,sub)
       if (sub == 0)
          return                        % ignore
       end
-      
+
       col = o.iif(dark(o),'w','k');
-      
+
       subplot(o,sub);
       for (k=1:no)
          plot(o,[xi xi],[1 no],[col,'1']);
@@ -1653,10 +1653,10 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       if (sub == 0)
          return                        % ignore
       end
-      
+
       subplot(o,sub);
       [lim,col] = limits(o);
-      
+
       if isempty(mu)
          for (k=1:no)
             plot(o,x,k*ones(size(x)),'K.');
@@ -1683,9 +1683,9 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
             plot(o,get(gca,'xlim'),[1 1],'K-.2');
          end
       end
-      
+
       dir = o.iif(mu>=0,'Forward','Backward');
-      
+
       switch tit
          case 'Stability Margin'
             title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
@@ -1708,28 +1708,28 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
       set(gca,'xlim',[0.1 length(x)+0.9]);
       subplot(o);                      % subplot complete
    end
-   function txt = More(o,mu)           % More Title Text               
+   function txt = More(o,mu)           % More Title Text
       txt = '';  sep = '';
 
       if isempty(mu)
          return
       else
-         txt = sprintf('mu: %g',mu);  
+         txt = sprintf('mu: %g',mu);
          sep = ', ';
       end
-      
+
       vomega = opt(o,{'variation.omega',1});
       if ~isequal(vomega,1)
-         txt = [txt,sep,sprintf('vomega: %g',vomega)]; 
+         txt = [txt,sep,sprintf('vomega: %g',vomega)];
          sep = ', ';
       end
-      
+
       vzeta = opt(o,{'variation.zeta',1});
       if ~isequal(vzeta,1)
          txt = [txt,sep,sprintf('vzeta: %g',vzeta)];
          sep = ', ';
       end
-      
+
       if ~isempty(txt)
          txt = [' (',txt,')'];
       end
@@ -1737,7 +1737,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
 end
 
    % local helper
-   
+
 function id = Order(no,mode)
    if (no == 5 && isequal(mode,'symmetry'))
       id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
@@ -1758,11 +1758,11 @@ end
 % Sensitivity
 %==========================================================================
 
-function oo = SensitivityMenu(o)       % Sensitivity Menu              
+function oo = SensitivityMenu(o)       % Sensitivity Menu
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
 end
-function o = SensitivityW(o)           % Weight Sensitivity            
+function o = SensitivityW(o)           % Weight Sensitivity
 %
 % Idea:
 %    - let L0(jw) be the nominal frequency response
@@ -1770,72 +1770,59 @@ function o = SensitivityW(o)           % Weight Sensitivity
 %    - build dL := L0(jw)-Lk(jw)
 %    - Sensitivity S := |dL(jw)| / |L0(jw)|
 %
-   s = [];  modes = [];                % initialize 
+   s = [];  modes = [];                % initialize
    watch = false;                      % don't watch (try to set true!)
 
    col = o.iif(dark(o),'w.','k.');
-%  [L0,f0,W,psi,Lmu] = cook(o,'L0,f0,W,psi,Lmu');
-   [f0,T0,lambda0,PsiW31,PsiW33] = cook(o,'f0,Tnorm,lambda0,PsiW31,PsiW33');
-      
-   [om0,w0] = Omega(o);                % omega range and center frequency
-   L0jw = lambda(o,PsiW31,PsiW33,om0*T0);
-PlotLjw(o,[1 1 1]);   
-   L0 = CriticalL0(lambda0);
-   bode(L0,'r');
-%  L0 = inherit(L0,o);
+
+   o = cache(o,o,'critical');
    
-%  [~,~,dB0] = fqr(L0,om0);
-   dB0 = 20*log10(max(abs(L0jw)));
-plot(o,om0,dB0,'r');
+   [f0,T0] = cook(o,'f0,Tnorm');
+   [lambda0,PsiW31,PsiW33] = cook(o,'lambda0,PsiW31,PsiW33');
 
-      % get phi(om) next to om0
-      
-%  phi0 = psion(L0,psi,om0);           % use L0 to provide oscale option!
-
-   o = opt(o,'critical',1);
-   diagram(o,'Bode','',L0,3211);
-   semilogx(om0,dB0,o.iif(dark(o),'w.','k.'));
-   title(sprintf('om0: %g 1/s (f: %g Hz)',w0,w0/2/pi));
+   [om0,w0] = Omega(o);                % omega range and center frequency
+   
+   L0 = lambda(o,lambda0);             % calculate critical Fqr
+   L0 = inherit(L0,o);                 % inherit bode settings
+   L0 = opt(L0,'color','ryyyyy');
    
       % sensitivity study
-      
-   m = size(psi,1);                    % number of modes
+
+   m = size(PsiW31,1);                 % number of modes
    [~,om] = fqr(with(L0,'bode'));      % get full omega range
-   
+
       % get full range phi(om)
-      
-%  phi = psion(L0,psi,om);             % use L0 to provide oscale option!
 
-      % plot psion calculated frequency response
+   L0jw = lambda(o,PsiW31,PsiW33,om*T0);
+   L0jw0 = lambda(o,PsiW31,PsiW33,om0*T0);
 
-%  L0jw = [W{3,1}*phi] ./ [W{3,3}*phi];
-%  L0jw0 = [W{3,1}*phi0] ./ [W{3,3}*phi0];
-
-
-
-   PlotL0(o,3221);
-   PlotV(o,3221);                      % plot variation
+%  PlotLjw(o,3212);
+   PlotL0(o,3211);
+%  PlotL0(o,3221);
+   PlotV(o,3211,3221);                      % plot variation
    PlotS(o,3231);
-   
+
    [~,idx] = sort(-s);                 % sort from largest to smallest
    for (k=1:5)
-      PlotL0(o,[5,3,k,3]);
-      PlotE(o,[5,3,k,3],idx(k));
-      diagram(o,'Nyq','',Lmu,[5,6,k,4]);
+%     PlotL0(o,[5,3,k,3]);
+%     PlotE(o,[5,3,k,3],idx(k));
+      PlotL0(o,[5,2,k,2]);
+      PlotE(o,[5,2,k,2],idx(k));
+      %diagram(o,'Nyq','',Lmu,[5,6,k,4]);
    end
-   
+
    heading(o);
-   
-   function PlotL0(o,sub)              % Plot L0 (Psion Based)         
+
+   function PlotL0(o,sub)              % Plot L0 (Psion Based)
+      o = opt(o,'plotcrit',1);
+      diagram(o,'Bode','',L0,sub);
+
+%     dB0 = 20*log10(max(abs(L0jw0)));
+%     plot(o,om0,dB0,'K.');
+      title(sprintf('om0: %g 1/s (f: %g Hz)',w0,w0/2/pi));
       subplot(o,sub);
-      hdl = semilogx(om,20*log10(abs(L0jw)),'b');
-      o.color(hdl,'ryyyyy');
-      set(hdl,'linewidth',1);
-      semilogx(om0,20*log10(abs(L0jw0)),col);
-      hold on;
-      subplot(o);
    end
-   function PlotS(o,sub)               % Plot Sensitivity              
+   function PlotS(o,sub)               % Plot Sensitivity
       subplot(o,sub);
       plot(o,1:m,s,[col,'|'], 1:m,s,'ro');
       title('Weight Sensitivity');
@@ -1843,42 +1830,69 @@ plot(o,om0,dB0,'r');
       xlabel('omega [1/s]');
       subplot(o);
    end
-   function PlotV(o,sub)               % plot Variation                
-      subplot(o,sub);
+   function PlotV(o,sub1,sub2)         % plot Variation      
+      subplot(o,sub2);
+      bode(trf(corasim),'W');
+      set(gca,'ylim',[-10,40],'ytick',-10:10:40);
+      
+      Psi31 = PsiW31(:,1:3);  W31 = PsiW31(:,4:end);
+      Psi33 = PsiW33(:,1:3);  W33 = PsiW33(:,4:end);
+      zero = 0;      
+      
+      l0jw = lambda(o,L0jw);
+      l0jw0 = lambda(o,L0jw0);
+            
       for (i=1:m)
-W={}         
-         w31 = W{3,1};  w31(i) = 0;
-         w33 = W{3,3};  w33(i) = 0;
+         w31 = W31;  w31(i,:) = w31(i,:)*zero;  psiw31 = [Psi31 w31];
+         w33 = W33;  w33(i,:) = w33(i,:)*zero;  psiw33 = [Psi33 w33];
 
-         Gjw = [w31*phi] ./ [w33*phi];    % full omega range
-         Gjw0 = [w31*phi0] ./ [w33*phi0]; % omega range next to om0
+         Gjw = lambda(o,psiw31,psiw33,om*T0);    % full omega range
+         Gjw0 = lambda(o,psiw31,psiw33,om0*T0);  % omega range next to om0
 
-            % sensitivity function
+            % calculate critical function
+            
+         gjw = lambda(o,Gjw);
+         gjw0 = lambda(o,Gjw0);
+         
+                % sensitivity function
 
-         Sjw0 = (Gjw0./L0jw0) - 1;
-         S(i) = max(20*log10(abs(Sjw0))); % store max dB value of sensitivity
-         mode = sqrt(psi(i,3))/oscale(o); % mode omega
+         sjw = max(abs(gjw./l0jw),abs(l0jw./gjw));       
+                
+         %Sjw0 = (Gjw0./L0jw0) - 1;
+         sjw0 = max(abs(l0jw0./gjw0),abs(gjw0./l0jw0)); 
+         
+         S(i) = max(20*log10(abs(sjw0))); % store max dB value of sensitivity
+         mode = sqrt(Psi31(i,3))/oscale(o); % mode omega
          modes(i) = mode;
-
+watch=1;
          if (watch)
-            hdl0 = semilogx(om0,20*log10(abs(Gjw0)),'r.');
-            hdl1 = semilogx(om,20*log10(abs(Gjw)),'r');
-            hdl2 = semilogx(om,20*log10(abs(Gjw./L0jw)),'c');
-            hdl3 = semilogx(om0,20*log10(abs(Sjw0)),col);
-            hdl4 = semilogx([mode mode],get(gca,'ylim'),'c');
-            title(sprintf('mode #%g',i));
+            subplot(o,sub1);
+
+            hdl0 = semilogx(om0,20*log10(abs(gjw0)),'r.');
+            hdl1 = semilogx(om,20*log10(abs(gjw)),'r');
+%           hdl2 = semilogx(om,20*log10(abs(gjw./l0jw)),'c');
+
+            subplot(o,sub2);
+            hdl2 = semilogx(om,20*log10(abs(sjw)),'c');
+            hold on;
+            hdl3 = semilogx(om0,20*log10(abs(sjw0)),col);
+            hdl4 = semilogx([mode mode],get(gca,'ylim'),'c-.');
+            title(sprintf('mode #%g: %g dB @ %g 1/s (%g Hz)',...
+                          i,o.rd(S(i),1),mode,mode/2/pi));
+                                              
             idle(o);
             delete([hdl0 hdl1,hdl2,hdl3,hdl4]);
          end
-         
+
          if (rem(i-1,10) == 0)
             progress(o,'analysing sensitivity',(i-1)/m*100);
          end
       end
       progress(o);
-      
+
       S0 = max(S) - 20;
-      s = S - S0;                    % delta sensitivity [dB]
+      %s = S - S0;                    % delta sensitivity [dB]
+      s = S;
       
       idx = find(s >= -20);
       plot(o,modes(idx),s(idx),[col,'|'], modes(idx),s(idx),'ro');
@@ -1890,74 +1904,88 @@ W={}
 
       h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
       set(h,'linewidth',1);
+      
+      ylim = get(gca,'ylim');
+      ylim = [min(ylim(1),min(s(idx))), max(ylim(2),max(s))];
+      set(gca,'ylim',ylim);
+      
       title('Weight Sensitivity @ Frequency');
       subplot(o);
    end
-   function PlotE(o,sub,i)             % plot Example                  
+   function PlotE(o,sub,k)             % plot Example
       subplot(o,sub);
-W={}      
-      w31 = W{3,1};  w31(i) = 0;
-      w33 = W{3,3};  w33(i) = 0;
 
-      Gjw = [w31*phi] ./ [w33*phi];    % full omega range
-      Gjw0 = [w31*phi0] ./ [w33*phi0]; % omega range next to om0
+      [skjw,lkjw,l0jw] = sensitivity(o,k,om);
+      
+      mode = modes(k);                 % mode omega
 
-         % sensitivity function
-
-      Sjw0 = 1 - (Gjw0./L0jw0);
-      mode = modes(i);                 % mode omega
-
-      hdl = semilogx(om,20*log10(abs(Gjw)),'r');
+      hdl = semilogx(om,20*log10(abs(lkjw)),'r');
       hold on
-      hdl = semilogx(om,20*log10(abs(Gjw./L0jw)),'c');
+      hdl = semilogx(om,20*log10(abs(skjw)),'c');
       set(hdl,'linewidth',1);
       title(sprintf('Mode #%g, Omega: %g 1/s (%g Hz), Sensitivity: %g dB',...
-                i,o.rd(modes(i),0),o.rd(modes(i)/2/pi,0),o.rd(s(i),1)));
+                k,o.rd(modes(k),0),o.rd(modes(k)/2/pi,0),o.rd(s(k),1)));
 
       subplot(o);
       h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
       set(h,'linewidth',1);
-      h = semilogx([modes(i),modes(i)],get(gca,'ylim'),'c-.');
+      h = semilogx([modes(k),modes(k)],get(gca,'ylim'),'c-.');
       set(h,'linewidth',1);
+      
+      ylim = get(gca,'ylim');
+      set(gca,'ylim',[ylim(1) max(ylim(2),50)]);
    end
    function PlotLjw(o,sub)             % plot Bode diagram
       subplot(o,sub);
+
+      bode(L0,'r');
+
+      dB0 = 20*log10(max(abs(L0jw0)));
+      plot(o,om0,dB0,'K.');
+      
+      
       [m0,n0] = size(lambda0.data.matrix);
       for (ii=[2:m0,1])                % first row at the end
          L0i = fqr(corasim,lambda0.data.omega,{lambda0.data.matrix{ii,1}});
          colii = o.iif(ii==1,'ryyy','kw');
          bode(L0i,colii);
       end
-      [m0,n0] = size(L0jw);
+      
+      [m0,n0] = size(L0jw0);
       for (ii=[2:m0,1])                % first row at the end
-         L0i = fqr(corasim,om0,{L0jw(ii,:)});
+         L0i = fqr(corasim,om0,{L0jw0(ii,:)});
          colii = o.iif(ii==1,'ryyyo','kwo');
          bode(L0i,colii);
       end
    end
 end
-function L0 = CriticalL0(l0)
+
+%%%%%%%%%%%%%%%%%% obsolete
+function L0 = CriticalFqr(l0)          % Calculate Critical Fqr
    assert(type(l0,{'fqr'}));
    [m,n] = size(l0.data.matrix);
    assert(n==1);
    for (i=1:m)
       l0jw(i,:) = l0.data.matrix{i};
    end
-   
-      % find greatest magnitude
-      
-   [m,n] =size(l0jw);
-   absl0jw = abs(l0jw);
-   for (j=1:n)
-      i = find(absl0jw(:,j)==max(absl0jw(:,j)));
-      L0jw(1,j) = l0jw(i,j);
-   end
-   L0 = fqr(corasim,l0.data.omega,{L0jw});
-end
 
-function o = Contribution(o)           % Modal Contribution            
+      % find greatest magnitude
+
+   [m,n] =size(l0jw);
+   for (j=1:n)
+      mag = abs(l0jw(:,j));
+      idx = find(mag==max(mag));
+      L0jw(1,j) = l0jw(idx(1),j);
+   end
+
+   om = l0.data.omega;
+   L0 = fqr(corasim,om,{L0jw});
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function o = Contribution(o)           % Modal Contribution
 %
-% Idea: 
+% Idea:
 %    - let L0(jw) be the nominal frequency response
 %    - vary w(k) such that L0(jw) -> Lk(jw)
 %    - build dL := L0(jw)-Lk(jw)
@@ -1967,24 +1995,24 @@ function o = Contribution(o)           % Modal Contribution
       plot(o,'About');
       return;
    end
-      
+
    [L0,f0] = cook(o,'L0,f0');
-   
+
    oscale = opt(L0,{'oscale',1});
    om0 = 2*pi*f0;
-   
+
    Ljw = fqr(L0,om0);
    dB = 20*log10(abs(Ljw));
-   
-   o = opt(o,'critical',1);
+
+   o = opt(o,'plotcrit',1);
    diagram(o,'Bode','',L0,211);
    semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
-   
+
    title(sprintf('om0: %g',om0));
-   
+
    Vary(o);
    heading(o);
-   
+
    function dB = Calculate(o)
    %
    % Calculation to perform is:
@@ -2009,18 +2037,18 @@ function o = Contribution(o)           % Modal Contribution
       [W,psi] = cook(o,'W,psi');       % weights and modal parameters
       w31T = W{3,1};
       w33T = W{3,3};
-      
+
 %L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
-[Ljw,omega]=fqr(L0); 
+[Ljw,omega]=fqr(L0);
 Om0=omega*oscale;
 
       phi = psion(L0,psi,om0);         % modal frequency response
       L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
-      
+
       dB = 20*log10(abs(L0jw0));
-      
+
 %hold on;
-%semilogx(omega,dB,'r'); 
+%semilogx(omega,dB,'r');
    end
    function Vary(o)
    %
@@ -2048,30 +2076,30 @@ Om0=omega*oscale;
       w33T = W{3,3};
       m = length(w31T);
       dB0 = zeros(1,m);
-      
-      [Ljw,om]=fqr(L0); 
+
+      [Ljw,om]=fqr(L0);
 
       phi = psion(L0,psi,om);               % modal frequency response
       phi0 = psion(L0,psi,om0);             % modal frequency response
 
       L0jw = (w31T*phi) ./ (w33T*phi);      % L0(jw)
       L0jw0 = (w31T*phi0) ./ (w33T*phi0);   % L0(jw0)
-      
+
       hold on;
       for (k=1:m)
-         w31kT = w31T;  w31kT(k) = 0.5*w31kT(k);  
-         w33kT = w33T;  w33kT(k) = 2*w33kT(k);  
-         
-         L0jwk = (w31kT*phi) ./ (w33kT*phi); 
-         ratio = ((w31kT*phi0) ./ (w33kT*phi0)) ./ L0jw0; 
-         
-         
+         w31kT = w31T;  w31kT(k) = 0.5*w31kT(k);
+         w33kT = w33T;  w33kT(k) = 2*w33kT(k);
+
+         L0jwk = (w31kT*phi) ./ (w33kT*phi);
+         ratio = ((w31kT*phi0) ./ (w33kT*phi0)) ./ L0jw0;
+
+
          dB = 20*log10(abs(L0jwk));
          dB0(k) = 20*log10(abs(ratio));
 
          subplot(o,211);
          hdl = semilogx(om,dB,'r');
-         
+
          subplot(o,212);
          plot(o,1:k,dB0(1:k),'ro|');
          set(gca,'xlim',[0 m]);
@@ -2081,30 +2109,30 @@ Om0=omega*oscale;
       end
    end
 end
-function o = NumericCheck(o)           % Numerical Check               
+function o = NumericCheck(o)           % Numerical Check
    if ~type(o,{'spm'})
       plot(o,'About');
       return;
    end
-      
+
    [L0,f0] = cook(o,'L0,f0');
-   
+
    oscale = opt(L0,{'oscale',1});
    om0 = 2*pi*f0;
    Om0 = om0*oscale;                   % scaled omega
-   
+
    Ljw = fqr(L0,Om0);
    dB = 20*log10(abs(Ljw));
-   
-   o = opt(o,'critical',1);
+
+   o = opt(o,'plotcrit',1);
    diagram(o,'Bode','',L0,1111);
    semilogx(om0,dB,o.iif(dark(o),'wo','ko'));
-   
+
    title(sprintf('om0: %g',om0));
-   
+
    dB = Calculate(o);
    heading(o);
-   
+
    function dB = Calculate(o)
    %
    % Calculation to perform is:
@@ -2129,18 +2157,18 @@ function o = NumericCheck(o)           % Numerical Check
       [W,psi] = cook(o,'W,psi');       % weights and modal parameters
       w31T = W{3,1};
       w33T = W{3,3};
-      
+
 %     L0 = opt(L0,'omega.points',opt(L0,'bode.omega.points'));
-      [Ljw,omega]=fqr(L0); 
+      [Ljw,omega]=fqr(L0);
       Om0=omega*oscale;
 
       phi = psion(L0,psi,omega);       % modal frequency response
       L0jw0 = (w31T*phi) ./ (w33T*phi); % L0(jw0)
-      
+
       dB = 20*log10(abs(L0jw0));
-      
+
       hold on;
-      semilogx(omega,dB,'r'); 
+      semilogx(omega,dB,'r');
    end
 end
 
@@ -2148,19 +2176,19 @@ end
 % Open Loop
 %==========================================================================
 
-function o = OpenLoop(o)               % L(s) Open Loop                
+function o = OpenLoop(o)               % L(s) Open Loop
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
-   
+
    o = with(o,{'bode','simu','rloc'});
 
    sym = arg(o,1);
    idx = arg(o,2);
-   
+
    oo = cook(o,sym);
-   
+
    if (idx == 0)
       diagram(o,'Trf','',oo,111);
    else
@@ -2171,19 +2199,19 @@ function o = OpenLoop(o)               % L(s) Open Loop
       diagram(o,'Bode','',oo,3231);
       diagram(o,'Nyq','',oo,3232);
    end
-   
-   Verbose(o,oo);   
+
+   Verbose(o,oo);
    heading(o);
 end
-function o = Calc(o)                   % Calculation of L(s)           
+function o = Calc(o)                   % Calculation of L(s)
    sym = arg(o,1);
    idx = arg(o,2);
    col = arg(o,3);
-   
+
    G31 = cook(o,'G31');
    G33 = cook(o,'G33');
    L0 = cook(o,'L0');
-   
+
    diagram(o,'Calc','L0(s)',L0,4312);
 
    diagram(o,'Bode','',G31,4321);
@@ -2193,80 +2221,80 @@ function o = Calc(o)                   % Calculation of L(s)
    diagram(o,'Bode','',G33,4331);
    diagram(o,'Step','',G33,4332);
    diagram(o,'Rloc','',G33,4333);
-   
+
    diagram(o,'Bode','',L0,4441);
    diagram(o,'Step','',L0,4342);
    diagram(o,'Rloc','',L0,4343);
-           
+
    heading(o);
 end
 
-function o = LmuDisp(o)                % Display Transfer Function     
+function o = LmuDisp(o)                % Display Transfer Function
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
-   
-   Lmu = cook(o,'Lmu');   
-   diagram(o,'Trf','',Lmu,1111);      
-   
+
+   Lmu = cook(o,'Lmu');
+   diagram(o,'Trf','',Lmu,1111);
+
    Verbose(o,Lmu);
    heading(o);
 end
-function o = LmuRloc(o)                % Poles/Zeros of Lmu(s)         
+function o = LmuRloc(o)                % Poles/Zeros of Lmu(s)
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
-   
-   Lmu = cook(o,'Lmu');         
-   diagram(o,'Rloc','',Lmu,1111);  
-   
-   heading(o);
-end
-function o = LmuStep(o)                % Step Response Plot            
-   if ~type(o,{'spm'})
-      plot(o,'About');
-      return
-   end
-   
-   Lmu = cook(o,'Lmu');         
-   diagram(o,'Step','',Lmu,1111);  
-   
-   heading(o);
-end
-function o = LmuBode(o)                % Bode Plot                     
-   if ~type(o,{'spm'})
-      plot(o,'About');
-      return
-   end
-   
-   Lmu = cook(o,'Lmu');         
-   diagram(o,'Magni','',Lmu,2111);      
-   diagram(o,'Phase','',Lmu,2121);      
-   
-   heading(o);
-end
-function o = LmuNyq(o)                 % Nyquist Plot                  
-   if ~type(o,{'spm'})
-      plot(o,'About');
-      return
-   end
-   
-   Lmu = cook(o,'Lmu');         
-   diagram(o,'Nyq','',Lmu,1111);      
+
+   Lmu = cook(o,'Lmu');
+   diagram(o,'Rloc','',Lmu,1111);
 
    heading(o);
 end
-function o = LmuBodeNyq(o)             % Bode/Nyquist Plot             
+function o = LmuStep(o)                % Step Response Plot
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
-   
-   Lmu = cook(o,'Lmu');         
-   diagram(o,'Bode','',Lmu,1211);      
-   diagram(o,'Nyq','',Lmu,1212);      
+
+   Lmu = cook(o,'Lmu');
+   diagram(o,'Step','',Lmu,1111);
+
+   heading(o);
+end
+function o = LmuBode(o)                % Bode Plot
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+
+   Lmu = cook(o,'Lmu');
+   diagram(o,'Magni','',Lmu,2111);
+   diagram(o,'Phase','',Lmu,2121);
+
+   heading(o);
+end
+function o = LmuNyq(o)                 % Nyquist Plot
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+
+   Lmu = cook(o,'Lmu');
+   diagram(o,'Nyq','',Lmu,1111);
+
+   heading(o);
+end
+function o = LmuBodeNyq(o)             % Bode/Nyquist Plot
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+
+   Lmu = cook(o,'Lmu');
+   diagram(o,'Bode','',Lmu,1211);
+   diagram(o,'Nyq','',Lmu,1212);
 
 
    heading(o);
@@ -2276,36 +2304,36 @@ end
 % Closed Loop
 %==========================================================================
 
-function o = BodePlots(o)              % Closed Loop Bode Plots        
+function o = BodePlots(o)              % Closed Loop Bode Plots
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
-   
+
    o = opt(o,'color','yyr');
    diagram(o,'Bode','Tf1(s)',Tf1,[4 2 1 1]);
    diagram(o,'Bode','Tf2(s)',Tf2,[4 2 1 2]);
 
    [Ts1,Ts2] = cook(o,'Ts1,Ts2');
-   
+
    o = opt(o,'color','g');
    diagram(o,'Bode','Ts1(s)',Ts1,[4 2 2 1]);
    diagram(o,'Bode','Ts2(s)',Ts2,[4 2 2 2]);
-   
+
    [Tv1,Tv2] = cook(o,'Tv1,Tv2');
-   
+
    o = opt(o,'color','bc');
    diagram(o,'Bode','Tv1(s)',Tv1,[4 2 3 1]);
    diagram(o,'Bode','Tv2(s)',Tv2,[4 2 3 2]);
 
    [Ta1,Ta2] = cook(o,'Ta1,Ta2');
-   
+
    o = opt(o,'color','r');
    diagram(o,'Bode','Ta1(s)',Ta1,[4 2 4 1]);
    diagram(o,'Bode','Ta2(s)',Ta2,[4 2 4 2]);
-   
+
    heading(o);
 end
-function o = StepPlots(o)              % Closed Loop Step Plots        
+function o = StepPlots(o)              % Closed Loop Step Plots
    o = with(o,'simu');
-   
+
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
    o = opt(o,'color','yyr');
    diagram(o,'Fstep','Tf1(s)',Tf1,4211);
@@ -2315,23 +2343,23 @@ function o = StepPlots(o)              % Closed Loop Step Plots
    o = opt(o,'color','g');
    diagram(o,'Step','Ts1(s)',Ts1,4221);
    diagram(o,'Step','Ts2(s)',Ts2,4222);
-   
+
    [Tv1,Tv2] = cook(o,'Tv1,Tv2');
    o = opt(o,'color','bc');
    diagram(o,'Vstep','Tv1(s)',Tv1,4231);
    diagram(o,'Vstep','Tv2(s)',Tv2,4232);
-   
-   
+
+
    [Ta1,Ta2] = cook(o,'Ta1,Ta2');
    o = opt(o,'color','r');
    diagram(o,'Astep','Ta1(s)',Ta1,4241);
    diagram(o,'Astep','Ta2(s)',Ta2,4242);
-   
+
    heading(o);
 end
-function o = PolesZeros(o)             % Closed Loop Poles & Zeros     
+function o = PolesZeros(o)             % Closed Loop Poles & Zeros
    o = with(o,'simu');
-   
+
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
    o = opt(o,'color','yyr');
    diagram(o,'Rloc','Tf1(s)',Tf1,4211);
@@ -2341,18 +2369,18 @@ function o = PolesZeros(o)             % Closed Loop Poles & Zeros
    o = opt(o,'color','g');
    diagram(o,'Rloc','Ts1(s)',Ts1,4221);
    diagram(o,'Rloc','Ts2(s)',Ts2,4222);
-   
+
    [Tv1,Tv2] = cook(o,'Tv1,Tv2');
    o = opt(o,'color','bc');
    diagram(o,'Rloc','Tv1(s)',Tv1,4231);
    diagram(o,'Rloc','Tv2(s)',Tv2,4232);
-   
-   
+
+
    [Ta1,Ta2] = cook(o,'Ta1,Ta2');
    o = opt(o,'color','r');
    diagram(o,'Rloc','Ta1(s)',Ta1,4241);
    diagram(o,'Rloc','Ta2(s)',Ta2,4242);
-   
+
    heading(o);
 end
 
@@ -2360,11 +2388,11 @@ end
 % Closed Loop Force
 %==========================================================================
 
-function o = Overview(o)               % Closed Loop Overview          
+function o = Overview(o)               % Closed Loop Overview
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
-   
+
    sym1 = arg(o,1)
    sym2 = arg(o,2)
    col = arg(o,3);
@@ -2372,10 +2400,10 @@ function o = Overview(o)               % Closed Loop Overview
    o = opt(o,'color',col);
    o1 = cook(o,sym1);
    o2 = cook(o,sym2);
-   
+
    sym1 = [sym1,'(s)'];
    sym2 = [sym2,'(s)'];
-   
+
    diagram(o,'Bode',sym1,o1,3211);
    diagram(o,'Bode',sym2,o2,3212);
 
@@ -2387,7 +2415,7 @@ function o = Overview(o)               % Closed Loop Overview
 
    heading(o);
 end
-function o = Trf(o)                    % Transfer Function             
+function o = Trf(o)                    % Transfer Function
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
@@ -2395,12 +2423,12 @@ function o = Trf(o)                    % Transfer Function
    sym = arg(o,1);
    idx = arg(o,2);
    col = arg(o,3);
-   
+
    oo = cook(o,sym);
    o = opt(o,'color',col);
    sym = [sym,'(s)'];
    oo = set(oo,'name',sym);
-   
+
    if (idx == 0)
       diagram(o,'Trf',sym,oo,111);
    else
@@ -2409,7 +2437,7 @@ function o = Trf(o)                    % Transfer Function
       diagram(o,'Rloc',sym,oo,3222);
       diagram(o,'Step',sym,oo,3131);
    end
-   
+
    display(oo);
    heading(o);
 end
@@ -2423,24 +2451,24 @@ function o = NormRamp(o)               % Normalized System's Force Ramp
       plot(o,'About');
       return
    end
-   
+
       % fetch some simulation parameters
-      
+
    index = arg(o,1);                   % get force component index
    Fmax = opt(o,{'Fmax',100});
 
       % transform system
-      
+
    o = brew(o,'Normalize');
    [A,B,C,D]=get(o,'system','A,B,C,D');% for debug
 
    oo = type(corasim(o),'css');        % cast and change type
    t = Time(oo);
    u = RampInput(oo,t,index,Fmax);
-   
+
    oo = sim(oo,u,[],t);
    PlotY(oo);
-   
+
    heading(o,sprintf('Analyse Force Ramp: F%g->y - %s',index,Title(o)));
 end
 
@@ -2448,17 +2476,17 @@ end
 % Spectrum
 %==========================================================================
 
-function o = L0Magni(o)                % L0(i,j) Magnitude Plots       
+function o = L0Magni(o)                % L0(i,j) Magnitude Plots
    if type(o,{'spm'})
       o = cache(o,o,'multi');
       o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
-   %o = opt(o,'critical',1);
-   
+   %o = opt(o,'plotcrit',1);
+
    L0jw = cook(o,'L0jw');
    [~,m,n] = size(L0jw);
-   
+
    Ylim = [+inf,-inf];
    for (i=1:m)
       for(j=1:n)
@@ -2470,9 +2498,9 @@ function o = L0Magni(o)                % L0(i,j) Magnitude Plots
          Ylim(2) = max(Ylim(2),ylim(2));
       end
    end
-   
+
       % set same y-limits for all plots
-      
+
    [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
    for (i=1:m)
       for(j=1:n)
@@ -2483,7 +2511,7 @@ function o = L0Magni(o)                % L0(i,j) Magnitude Plots
          set([hdl1,hdl2],'linewidth',1);
       end
    end
-   
+
    heading(o);
 end
 function o = LambdaMagni(o)
@@ -2491,11 +2519,11 @@ function o = LambdaMagni(o)
       o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
-   
+
    lambda = cook(o,'lambda');
    [~,m,n] = size(lambda);
    m = m*n;
-   
+
    for (i=1:m)
       lambdai = peek(lambda,i);
       lambdai = set(lambdai,'name',sprintf('lambda[%g](s)',i));
@@ -2505,7 +2533,7 @@ function o = LambdaMagni(o)
       diagram(o,'Magni','',lambdai,111);
       hold on
    end
-   
+
    heading(o);
 end
 function o = LambdaMagni2(o)
@@ -2513,17 +2541,17 @@ function o = LambdaMagni2(o)
       o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
-   
+
    lambda = cook(o,'lambda');
    [~,m,n] = size(lambda);
    m = m*n;
-   
+
    for (i=1:m)
       lambdai = peek(lambda,i);
       lambdai = set(lambdai,'name',sprintf('lambda[%g](s)',i));
       diagram(o,'Magni','',lambdai,[m,1,i,1]);
    end
-   
+
    heading(o);
 end
 function o = LambdaBode(o)
@@ -2531,12 +2559,12 @@ function o = LambdaBode(o)
       o = cache(o,o,'spectral');
    end
    o = with(o,'bode');
-   o = opt(o,'critical',1);
-   
+   o = opt(o,'plotcrit',1);
+
    lambda = cook(o,'lambda');
    [~,m,n] = size(lambda);
    m = 1;
-   
+
    for (i=1:m)
       lambdai = peek(lambda,i);
       lambdai = set(lambdai,'name',sprintf('lambda[%g](s)',i));
@@ -2545,18 +2573,18 @@ function o = LambdaBode(o)
       end
       lambdai = opt(lambdai,'color','ry');
       diagram(o,'Magni','',lambdai,211);
-      
+
       [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
       col = o.iif(dark(o),'wo','ko');
       hdl = semilogx(2*pi*f0,20*log10([1/K0]),col);
       xlabel(sprintf('K0: %g @ omega: %g 1/s (f: %g Hz)',o.rd(K0,4),...
              o.rd(2*pi*f0,0),o.rd(f0,1)));
-      
+
       diagram(o,'Phase','',lambdai,212);
       xlabel('omega [1/s]');
       hold on
    end
-   
+
    heading(o);
 end
 
@@ -2582,20 +2610,20 @@ end
 % Checks
 %==========================================================================
 
-function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs  
+function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
    [a0,a1,A] = cook(o,'a0,a1,A');
-      
+
    if Vpa(o)                           % use variable precision arithmetic?
       a1 = vpa(a1);  a0 = vpa(a0);
-      
+
       s1 = -a1/2 + sqrt(a1.*a1-a0);
       s2 = -a1/2 - sqrt(a1.*a1-a0);
       sm = [s1(:);s2(:)];                 % EVs from modal form
-      
+
       A = vpa(A);                      % convert matrix to MPA
       eps = 1e-30;
       s = eig(A);
-      
+
       sm = double(sm);
       s = double(s);                   % convert back to double precision
    else
@@ -2605,25 +2633,25 @@ function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
 
       s = eig(A);
    end
-   
+
       % calculate differences
-      
+
    n = length(s);
    [sm,s] = Sort(o,sm,s);              % sort eigenvalues
    ds = sm - s;
-   
+
    dr = abs(ds);  dx = real(ds);  dy = imag(ds);
-   
+
    PlotE(o,2211);
    PlotS(o,2221);
 
    PlotR(o,3212);
    PlotX(o,3222);
    PlotY(o,3232);
-   
+
    heading(o);
-   
-   function PlotS(o,sub)               % Plot Radial (Absolute) Devi.  
+
+   function PlotS(o,sub)               % Plot Radial (Absolute) Devi.
       subplot(o,sub);
       plot(o,real(s),imag(s),'yyyyyro');
       hold on
@@ -2652,7 +2680,7 @@ function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
       xlabel('Eigenvalue Index');
       subplot(o);                      % subplot complete
    end
-   function PlotX(o,sub)               % Plot Real Deviation           
+   function PlotX(o,sub)               % Plot Real Deviation
       subplot(o,sub);
       maxx = max(abs(dx));
       plot(o,1:n,dx,'bc', 1:n,dx,'Ko');
@@ -2661,9 +2689,9 @@ function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
       xlabel('Eigenvalue Index');
       subplot(o);                      % subplot complete
    end
-   function PlotY(o,sub)               % Plot Imaginary Deviation      
+   function PlotY(o,sub)               % Plot Imaginary Deviation
       subplot(o,sub);
-      
+
       maxy = max(abs(dy));
       plot(o,1:n,dy,'g', 1:n,dy,'Ko');
       title(sprintf('Imaginary Deviation: max %g',maxy));
@@ -2671,7 +2699,7 @@ function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
       xlabel('Eigenvalue Index');
       subplot(o);                      % subplot complete
    end
-   function [sm,s] = Sort(o,sm,s)      % Sort Eigenvalues              
+   function [sm,s] = Sort(o,sm,s)      % Sort Eigenvalues
 
          % first sort by real value
 
@@ -2700,17 +2728,17 @@ function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
             end
          end
       end
-      
+
          % finally sort step by step
-         
+
       for (i=1:n)
          smi = sm(i);
          delta = abs(s-smi);
-         
+
          idx = find(delta == min(delta));
          idx = idx(1);
          err(i) = delta(idx);
-         
+
          ss(i,1) = s(idx);             % sorted s
          s(idx) = [];
       end
@@ -2732,10 +2760,10 @@ end
 % Charts
 %==========================================================================
 
-function BodeChart(o,sub,G)            % Bode Chart                    
+function BodeChart(o,sub,G)            % Bode Chart
    o = with(o,'bode');
 end
-function MagniChart(o,sub,G,critical)  % Magnitude Chart               
+function MagniChart(o,sub,G,critical)  % Magnitude Chart
    o = with(o,'bode');
    if (nargin < 4)
       critical = 1;
@@ -2744,24 +2772,24 @@ function MagniChart(o,sub,G,critical)  % Magnitude Chart
    subplot(o,sub,'semilogx');
    col = get(G,'color');
    magni(G,col);
-   
+
    name = get(G,{'name',''});
-   
+
    if (critical && opt(o,{'view.critical',0}))
       [K0,f0] = cook(o,'K0,f0');
       plot(o,2*pi*[f0 f0],get(gca,'ylim'),'r-.');
-      
+
       if isequal(name,'lambda0(s)')
          plot(o,2*pi*f0,-20*log10(K0),'Ko');
       end
-      
+
       title(sprintf('%s: Magnitude Plot (K0: %g @ %g Hz)',name,K0,f0));
    else
       title(sprintf('%s: Magnitude Plot',name));
    end
    ylabel(sprintf('|%s|  [dB]',name));
 end
-function PhaseChart(o,sub,G,critical)  % Phase Chart                   
+function PhaseChart(o,sub,G,critical)  % Phase Chart
    o = with(o,'bode');
    if (nargin < 4)
       critical = 1;
@@ -2770,13 +2798,13 @@ function PhaseChart(o,sub,G,critical)  % Phase Chart
    subplot(o,sub,'semilogx');
    col = get(G,'color');
    phase(G,col);
-   
+
    name = get(G,{'name',''});
-   
+
    if (critical && opt(o,{'view.critical',0}))
       [K0,f0] = cook(o,'K0,f0');
       plot(o,2*pi*[f0 f0],get(gca,'ylim'),'r-.');
-            
+
       title(sprintf('%s: Phase Plot (K0: %g @ %g Hz)',name,K0,f0));
    else
       title(sprintf('%s: Phase Plot',name));
@@ -2784,7 +2812,7 @@ function PhaseChart(o,sub,G,critical)  % Phase Chart
    ylabel(sprintf('|%s|  [dB]',name));
 end
 
-function NyquistChart(o,sub,mu)        % Nyquist Chart                 
+function NyquistChart(o,sub,mu)        % Nyquist Chart
    o = cache(o,o,'critical');       % hard refresh 'spectral' segment
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
    o = with(o,'nyq');
@@ -2815,25 +2843,25 @@ function NyquistChart(o,sub,mu)        % Nyquist Chart
    [K0,f0] = cook(o,'K0,f0');
    title(sprintf('Nyquist Loci mu*lambda0(jw) - K0: %g @ f0: %g Hz (mu: %g)',K0,f0,mu));
 end
-function MarginChart(o,sub)            % Margin Chart                  
+function MarginChart(o,sub)            % Margin Chart
    if length(sub) < 2
       error('two subplot IDs expected');
    end
-   
+
    o = with(o,{'bode','stability'});
-   
+
    points = opt(o,{'omega.points',10000});
    closeup = opt(o,{'bode.closeup',0});
 
    [f0,K0] = cook(o,'f0,K0');
-   
+
    if (closeup)
        points = max(points,500);
        o = opt(o,'omega.low',2*pi*f0/(1+closeup));
        o = opt(o,'omega.high',2*pi*f0*(1+closeup));
        o = opt(o,'omega.points',points);
    end
-   
+
    mu = opt(o,{'process.mu',0.1});
    o = opt(o,'mu',mu);
    critical(o,'Damping',sub);
@@ -2843,27 +2871,27 @@ end
 % Helper
 %==========================================================================
 
-function title = Title(o)              % Get Object Title              
+function title = Title(o)              % Get Object Title
    title = get(o,{'title',[class(o),' object']});
-   
-   dir = get(o,'dir');   
+
+   dir = get(o,'dir');
    idx = strfind(dir,'@');
    if ~isempty(dir)
       [package,typ,name] = split(o,dir(idx(1):end));
       title = [title,' - [',package,']'];
    end
 end
-function t = Time(o)                   % Get Time Vector               
+function t = Time(o)                   % Get Time Vector
    T = opt(o,{'simu.dt',0.00005});
    tmax = opt(o,{'simu.tmax',0.01});
    t = 0:T:tmax;
 end
-function oo = Corasim(o)               % Convert To Corasim Object     
+function oo = Corasim(o)               % Convert To Corasim Object
    oo = type(cast(o,'corasim'),'css');
    [A,B,C,D] = data(o,'A,B,C,D');
    oo = system(oo,A,B,C,D);
 end
-function u = StepInput(o,t,index,Fmax) % Get Step Input Vector         
+function u = StepInput(o,t,index,Fmax) % Get Step Input Vector
 %
 % STEPINPUT   Get step input vector (and optional time vector)
 %
@@ -2873,7 +2901,7 @@ function u = StepInput(o,t,index,Fmax) % Get Step Input Vector
    if (nargin < 4)
       Fmax = 1;
    end
-   
+
    [~,m] = size(o);                   % number of inputs
 
    if (index > m)
@@ -2887,7 +2915,7 @@ function u = StepInput(o,t,index,Fmax) % Get Step Input Vector
    I = eye(m);
    u = Fmax * I(:,index)*ones(size(t));
 end
-function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector         
+function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
 %
 % RAMPINPUT   Get ramp input vector (and optional time vector)
 %
@@ -2897,9 +2925,9 @@ function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
    if (nargin < 4)
       Fmax = max(t);
    end
-   
+
    [~,m] = size(o);                   % number of inputs
-   
+
    if (index > m)
       title = sprintf('Output #%g not supported!',index);
       comment = {sprintf('number of outputs: %g',m)};
@@ -2907,33 +2935,33 @@ function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
       error(title);
       return
    end
-   
+
    I = eye(m);
    u = I(:,index)*t * Fmax/max(t);
 end
-function Verbose(o,G)                  % Verbose Tracing of TFF        
+function Verbose(o,G)                  % Verbose Tracing of TFF
    if (control(o,'verbose') > 0)
       G = opt(G,'detail',true);
       display(G);
    end
 end
-function Legend(o,sub,objects)         % Plot Legend                   
+function Legend(o,sub,objects)         % Plot Legend
    subplot(o,sub);
-   list = {''};                        % ignore 1st, as some dots plotted 
+   list = {''};                        % ignore 1st, as some dots plotted
    for (i=1:length(objects))
       list{end+1} = get(objects{i},{'package',''});
    end
    hdl = legend(list);
    set(hdl,'color','w');
 end
-function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0           
+function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
 %
 % OMEGA  Omega range near f0
-%       
+%
 %           om = Omega(o,f0,1.05,50)   % om = f0/1.02,..,f0*1.02, 50 points
 %           om = Omega(o,f0)           % same as above
 %           om = Omega(o)              % cook f0
-%         
+%
 %           [om,om0] = Omega(o)        % also return center frequency
 %
    if (nargin < 4)
@@ -2943,15 +2971,15 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
       k = 1.05;
    end
    k1 = 1/k;  k2 = k;
-   
+
    if (nargin < 2)
       [f0,L0] = cook(o,'f0,L0');
    end
-   
+
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
 end
-function Heading(o,head)  
+function Heading(o,head)
    txt = Contact(o);
    [~,phitxt] = getphi(o);
    if (nargin == 1)
@@ -2961,7 +2989,7 @@ function Heading(o,head)
    end
    heading(o,msg);
 end
-function txt = Contact(o)                                              
+function txt = Contact(o)
    contact = opt(o,'process.contact');
    if isempty(contact)
       txt = '';
@@ -2990,10 +3018,10 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-function [fcol,bcol,ratio] = Colors(o,K,i)                             
+function [fcol,bcol,ratio] = Colors(o,K,i)
 %
 % COLORS   Return colors and color ratio of a critical value, where output
-%          arg is the ratio of foreground (fcol) to background (bcol9 color 
+%          arg is the ratio of foreground (fcol) to background (bcol9 color
 %
 %             colors = Colors(o,l0);
 %
@@ -3033,7 +3061,7 @@ function [fcol,bcol,ratio] = Colors(o,K,i)
       Kgreen = kmu;
       Kyellow = sqrt(kmu);
       Kred = 1;
-      
+
       legacy = 0;
       if (legacy)                      % legacy algorithm?
          n = 2;                        % exponent
@@ -3053,13 +3081,13 @@ function [fcol,bcol,ratio] = Colors(o,K,i)
          flip = opt(o,{'stability.colorflip',0.5});
          flip = max(0,min(flip,1));          % limit to interval 0..1
          threshold = 1.0*(1-flip);
-         
+
          if (K > Kgreen)
             fcol = 'ggk';  bcol = 'yyyr';
-            ratio=1 - threshold*(Kgreen/K)^n;            
+            ratio=1 - threshold*(Kgreen/K)^n;
          elseif (K < Kred)
             fcol = 'r';  bcol = 'yyyr';
-            ratio=1 - threshold*(K/Kred)^n;            
+            ratio=1 - threshold*(K/Kred)^n;
          elseif (K < Kyellow)
             fcol = 'yyyr';  bcol = 'r';
             ratio = 1 - threshold*(Kyellow-K)/(Kyellow-Kred);
@@ -3068,8 +3096,7 @@ function [fcol,bcol,ratio] = Colors(o,K,i)
             ratio = 1 - threshold*(Kyellow-K)/(Kyellow-Kgreen);
          end
       end
-         
+
       ratio = 1-ratio;
    end
 end
-    

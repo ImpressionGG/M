@@ -311,6 +311,8 @@ function vers = version(o,arg)         % SPM Class Version
 %
 % - start beta SPM V1F2
 % + clear cache @omega or zeta varitation
+% - first version of weight sensitivity for multi contact systems
+
 
 % Known bugs & wishlist
 % =========================

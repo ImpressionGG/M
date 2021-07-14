@@ -8,6 +8,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
 %            l0 = lambda(o,sys);       % spectral frequency transfer system
 %
 %            l0 = lambda(o);           % implicite call to system(o)
+%            lcrit = lambda(o,l0);     % calculate critical trf
 %
 %            sys = system(o,cdx);      % get contact relevant system
 %            l0 = lambda(o,sys,omega); % calculate spectral FQRs
@@ -77,6 +78,16 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
       sys = system(o);
    else
       sys = varargin{1};
+   end
+
+      % calculate critical lambda TRF
+      
+   if (nargin == 2 && isequal(class(sys),'double'))
+      oo = CritDouble(sys);
+      return;
+   elseif (nargin == 2 && isequal(class(sys),'corasim') && type(sys,{'fqr'}))
+      oo = CritCorasim(sys);
+      return;
    end
    
    if (nargin < 3)
@@ -209,6 +220,39 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
             g33jw(:,k) = g33jwk(idx);
          end
       end
+   end
+end
+
+%==========================================================================
+% Calculate Critical Transfer Function (Max. Magnitude)
+%==========================================================================
+
+function L0 = CritCorasim(l0)          % Calculate Critical Fqr        
+   assert(type(l0,{'fqr'}));
+   [m,n] = size(l0.data.matrix);
+   assert(n==1);
+   for (i=1:m)
+      l0jw(i,:) = l0.data.matrix{i};
+   end
+
+      % find greatest magnitude
+
+   [m,n] =size(l0jw);
+   for (j=1:n)
+      mag = abs(l0jw(:,j));
+      idx = find(mag==max(mag));
+      L0jw(1,j) = l0jw(idx(1),j);
+   end
+
+   om = l0.data.omega;
+   L0 = fqr(corasim,om,{L0jw});
+end
+function L0jw = CritDouble(l0jw)          % Calculate Critical Fqr        
+   [m,n] =size(l0jw);
+   for (j=1:n)
+      mag = abs(l0jw(:,j));
+      idx = find(mag==max(mag));
+      L0jw(1,j) = l0jw(idx(1),j);
    end
 end
 

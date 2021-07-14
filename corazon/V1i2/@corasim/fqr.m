@@ -172,7 +172,17 @@ function [Gjw,om,dB] = fqr(o,om,i,j)   % Frequency Response
             Gjw = o.data.matrix{1,1};
          else
             Gjw = o.data.matrix{1,1};
-            Gjw = interp1(Omega,Gjw,Om);   % interpolate
+            
+                % complex interpolation makes big errors
+                % so we have to do separate interpolation of phase
+                % and magnitude
+                
+%           Gjw = interp1(Omega,Gjw,Om);   % does not work interpolate
+
+            mag = abs(Gjw);  phi = angle(Gjw);
+            mag = interp1(Omega,mag,Om);
+            phi = interp1(Omega,phi,Om);
+            Gjw = mag .* exp(1i*phi);
          end
          
       otherwise
