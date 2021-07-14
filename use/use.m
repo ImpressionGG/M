@@ -31,7 +31,7 @@ function use(tag,version)
 %
    if (nargin < 2)
       version.carabao = 'V1l';
-      version.corazon = 'V1i2';
+      version.corazon = 'V1i';
       version.corinth = 'V2a1';
       version.cordoba = 'V1c';
       version.midi = 'V1a';

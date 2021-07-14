@@ -258,6 +258,15 @@ function vers = version(o,arg)         % SPM Class Version
 %
 % - What's new
 %   + clear cache @omega or zeta varitation
+%   - Edit>Copy and Edit>Cut act now on all objects of shell, if shell
+%     object is selected, or on all objects of a package, if package 
+%     object is selected
+%   - Sensitivity Analysis
+%   - Modified Graphics (Andy's suggestion) for Stability Margin
+%   - Additional Plot graphics for mode frequencies
+%   - Comparison of Packages
+%   - PDF and PNG file creation
+%   - show ID in package
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -312,6 +321,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F2
 % + clear cache @omega or zeta varitation
 % - first version of weight sensitivity for multi contact systems
+% + Edit>Copy/Cut to copy/cut whole packages or all shell objects
 
 
 % Known bugs & wishlist
