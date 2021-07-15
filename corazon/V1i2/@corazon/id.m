@@ -57,7 +57,7 @@ function [ID,number,machine,digits] = id(o,path,dummy)
    elseif (nargin == 2)
       if ischar(path)
          if ( ~isempty(path) && path(1) == '@' )
-            ID = Object(o,path);                 % identify object
+            [ID,number] = Object(o,path);        % identify object
          else
             [ID,number,machine,digits] = Extract(o,path);
          end

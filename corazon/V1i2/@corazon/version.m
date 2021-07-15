@@ -582,6 +582,7 @@ function VersionV1I
 % - Edit>Copy/Cut to copy/cut whole packages or all shell objects
 % - color defaults added to corasim/bode
 % - corazon/id extended to identify object for given ID
+% - bug fix: corazon/id (did not return 2nd arg)
 %
 % Known Bugs / Wishlist
 % - none so far
