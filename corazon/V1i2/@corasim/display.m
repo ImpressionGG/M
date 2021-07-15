@@ -123,7 +123,10 @@ end
 % Display System
 %==========================================================================
 
-function oo = System(o)                % Display System                
+function oo = System(o)                % Display System
+   display(corazon,o);
+   return
+   
    [A,B,C,D,T] = system(o,'A,B,C,D,T');
    fprintf('   [ A | B ]\n');
    fprintf('   [---+---] =\n');

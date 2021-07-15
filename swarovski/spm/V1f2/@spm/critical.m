@@ -322,9 +322,13 @@ function Bode(o,oo,L0,sub)
    idx = min(find(f>=f0));
    M = abs(1 + K0*L0jw(:,idx));
    aprerr = min(M);                    % approximate Nyquist error
-   k0 = min(find(M==aprerr));          % indexing critical characteristics        
-   l0jw = L0jw(k0,:);                  % critical characteristics 
-   phil0 = angle(o,l0jw,kf0);
+   k0 = min(find(M==aprerr));          % indexing critical characteristics
+   
+      % get critical characteristics
+      
+   lk0jw = L0jw(k0,:);                  % critical characteristics 
+   phil0 = angle(o,lk0jw,kf0);
+   l0jw = lambda(o,L0jw);
    
    BodePlot(o,sub(1),sub(2));          % plot intermediate results
    

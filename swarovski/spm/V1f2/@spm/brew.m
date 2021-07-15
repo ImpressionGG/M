@@ -604,7 +604,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 %
 %              L0jw = C*inv(jw*I-A)*B + D
 %
-   o = with(o,{'spectral'});
+   o = with(o,{'spectrum'});
    [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
    
       % calculate characteristic loci lambda0 (a CORASIM FQR system)

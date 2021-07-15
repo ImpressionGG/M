@@ -448,6 +448,8 @@ function o = Critical(o)               % Calculate Critical Quantities
       return
    end
 
+   o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
+
    Heading(o);
    o = with(o,{'bode','stability'});
 
@@ -497,7 +499,7 @@ function o = Critical(o)               % Calculate Critical Quantities
       o = with(o,'nyq');
 
       subplot(o,sub);
-      l0 = cook(o,'lambda0');
+      lambda0 = cook(o,'lambda0');
       K = o.iif(critical,K0,1);
 
       if (dark(o))
@@ -505,11 +507,11 @@ function o = Critical(o)               % Calculate Critical Quantities
       else
          colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
       end
-      colors = get(l0,{'colors',colors});
+      colors = get(lambda0,{'colors',colors});
 
-      no = length(l0.data.matrix(:));
+      no = length(lambda0.data.matrix(:));
       for (i=no)
-         l0i = peek(l0,i);
+         l0i = peek(lambda0,i);
          l0jwi = l0i.data.matrix{1,1};
 
          col = colors{1+rem(i,length(colors))};
@@ -519,15 +521,15 @@ function o = Critical(o)               % Calculate Critical Quantities
       if (critical)
          col = 'r2';
       else
-         col = [get(l0,'color'),'2'];
+         col = [get(lambda0,'color'),'2'];
       end
 
       if (critical)
-         l00 = peek(l0,1);
+         l00 = peek(lambda0,1);
          l00jw = l00.data.matrix{1};
 
          for (i=1:no)
-            ljw(i,:) = l0.data.matrix{i};
+            ljw(i,:) = lambda0.data.matrix{i};
          end
 
          for (j=1:size(ljw,2))
@@ -542,7 +544,8 @@ function o = Critical(o)               % Calculate Critical Quantities
 
          title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
       else
-         l00 = peek(l0,1);
+         l00 = peek(lambda0,1);
+%l00=lambda(o,lambda0);         
          nyq(K*l00,col);
          limits(o,'Nyq');                 % plot nyquist limits
          title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
