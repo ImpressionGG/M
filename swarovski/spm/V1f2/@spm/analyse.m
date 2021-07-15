@@ -1786,7 +1786,16 @@ function o = Sensi(o)                  % Sensi
    watch = false;                      % don't watch (try to set true!)
 
    col = o.iif(dark(o),'w.','k.');
-
+   
+   modus = opt(o,'mode.sensitivity');
+   if isequal(modus,'weight')
+      tit = 'Weight Sensitivity';
+   elseif isequal(modus,'damping')
+      tit = 'Damping Sensitivity';
+   end
+   
+   
+   
    o = with(o,'sensitivity');          % access sensitivity settings
 opts = opt(o,'sensitivity');
 o = opt(o,'bode',opts);
@@ -1840,9 +1849,17 @@ o = opt(o,'bode',opts);
    end
    function PlotS(o,sub)               % Plot Sensitivity
       subplot(o,sub);
+      modus = opt(o,'mode.sensitivity');
+  
       plot(o,1:m,s,[col,'|'], 1:m,s,'ro');
       title('Weight Sensitivity');
-      title('Weight Sensitivity @ Mode Number');
+      if isequal(modus,'weight')
+         title('Weight Sensitivity @ Mode Number');
+      elseif isequal(modus,'damping')
+         what = 'Damping Sensitivity @ Mode Number';
+         vari = opt(o,'sensitivity.variation');
+         title(sprintf('%s (variation: %g)',what,vari));
+      end
       xlabel('omega [1/s]');
       subplot(o);
    end
@@ -1889,6 +1906,8 @@ o = opt(o,'bode',opts);
                 
          %Sjw0 = (Gjw0./L0jw0) - 1;
          sjw0 = max(abs(l0jw0./gjw0),abs(gjw0./l0jw0)); 
+%        sjw0 = l0jw0./gjw0;
+%        sjw0 = gjw0./l0jw0;
          
          S(i) = max(20*log10(abs(sjw0))); % store max dB value of sensitivity
          mode = sqrt(Psi31(i,3))/oscale(o); % mode omega
@@ -1924,10 +1943,14 @@ watch=1;
       %s = S - S0;                    % delta sensitivity [dB]
       s = S;
       
-      idx = find(s >= -20);
-      plot(o,modes(idx),s(idx),[col,'|'], modes(idx),s(idx),'ro');
-      for (k=1:length(idx))
-         hdl = text(modes(idx(k)),s(idx(k)),sprintf('#%g',idx(k)));
+      [~,idx] = sort(-s);
+      
+%      plot(o,modes(idx),s(idx),[col,'|'], modes(idx),s(idx),'ro');
+%     for (k=1:length(idx))
+      for (k=1:min(10,length(idx)))
+         kk = idx(k);
+         plot(o,modes(kk),10*s(kk),[col,'|'], modes(kk),10*s(kk),'ro');
+         hdl = text(modes(kk),10*s(kk),sprintf('#%g',kk));
          set(hdl,'horizontal','center','vertical','top');
          set(hdl,'color',o.iif(dark(o),1,0)*[1 1 1]);
       end
@@ -1939,7 +1962,7 @@ watch=1;
       ylim = [min(ylim(1),min(s(idx))), max(ylim(2),max(s))];
       set(gca,'ylim',ylim);
       
-      title('Weight Sensitivity @ Frequency');
+      title(sprintf('%s @ Frequency',tit));
       subplot(o);
    end
    function PlotE(o,sub,k)             % plot Example

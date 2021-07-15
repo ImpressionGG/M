@@ -143,6 +143,7 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sfqr(o,k,omega,l0jw,PsiW31,PsiW33)
 
 %  skjw = (lkjw./l0jw) - 1;
    skjw = max(abs(lkjw ./ l0jw), abs(l0jw ./ lkjw));
+%  skjw = abs(lkjw ./ l0jw);
    
    if (nargout == 0)
       cls(o);
