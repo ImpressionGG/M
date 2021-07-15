@@ -329,6 +329,7 @@ function vers = version(o,arg)         % SPM Class Version
 % + caching of sensitivity analysis data
 % + weight sensitivity and damping sensitivity analysis
 % - bug fix: spectral settings to be used for spectral segment brewing
+% - use critical FQR l0(jw) and l180(jw) in Critical Overview
 
 
 % Known bugs & wishlist
