@@ -1,25 +1,26 @@
 function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
 %
 % LAMBDA  Calculate spectral frequency responses lambda(s) for an open
-%         loop system. Result is an FQR typed corasim system
+%         loop system. Result is an FQR (frequency response) typed corasim
+%         system.
 %
 %            o = with(o,'critical');  
-%            sys = system(o,cdx);      % contact related system 
-%            l0 = lambda(o,sys);       % spectral frequency transfer system
+%            sys = system(o,cdx);           % contact related system 
+%            lambda0 = lambda(o,sys);       % spectral FQRs
 %
-%            l0 = lambda(o);           % implicite call to system(o)
-%            lcrit = lambda(o,l0);     % calculate critical trf
+%            lambda0 = lambda(o);           % implicite call to system(o)
+%            l0 = lambda(o,lambda0);        % calculate critical TRF
 %
-%            sys = system(o,cdx);      % get contact relevant system
-%            l0 = lambda(o,sys,omega); % calculate spectral FQRs
+%            sys = system(o,cdx);           % get contact relevant system
+%            lambda0 = lambda(o,sys,om);    % calculate spectral FQRs
 %
-%            [l0,g31,g33] = lambda(o,sys,omega);
+%            [lambda0,g31,g33] = lambda(o,sys,omega);
 %
 %         The next two calls return the frequency response (not a CORASIM
 %         system), which enables efficient calculation in some algorithms
 %
-%            ljw = lambda(o,A,B_1,B_3,C_3,T0*omega)
-%            ljw = lambda(o,PsiW31,PsiW33,T0*omega)
+%            lambda0jw = lambda(o,A,B_1,B_3,C_3,T0*omega)
+%            lambda0jw = lambda(o,PsiW31,PsiW33,T0*omega)
 %
 %         Theory:
 %
@@ -36,25 +37,28 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
 %               Pjwk = reshape(Pjw(:,k),m,m)
 %               Qjwk = reshape(Qjw(:,k),m,m)
 %               Ljwk = Pjwk\Qjwk;
-%               ljw(1:m,k) = Sort(ljw,eig(Ljwk))
+%               lambda0jw(1:m,k) = Sort(ljw,eig(Ljwk))
 %            end
 %
 %         Example 1:
 %
 %            sys = system(o,cdx)
 %            [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0')
-%            ljw = lambda(o,A,B_1,B_3,C_3,T0*omega)
+%            lambda0jw = lambda(o,A,B_1,B_3,C_3,T0*omega)
+%            l0jw = lambda(o,lambda0jw);
 %
 %            PsiW31 = psion(o,A,B_1,C_3) % to calculate G31(jw)
 %            PsiW33 = psion(o,A,B_3,C_3) % to calculate G33(jw)
-%            l0jw = lambda(o,PsiW31,PsiW33,T0*omega)
+%            lambda0jw = lambda(o,PsiW31,PsiW33,T0*omega)
+%            l0jw = lambda(o,lambda0jw);
 %
 %         Example 2:
 %
 %            sys = system(o,cdx);      % get contact relevant system
 %            [l0,g31,g33] = lambda(o,sys,omega);
 %            [Psi0W31,Psi0W33] = var(l0,'Psi0W31,Psi0W33');
-%            l0jw = lambda(o,Psi0W31,Psi0W33,omega)
+%            lambda0jw = lambda(o,Psi0W31,Psi0W33,omega)
+%            l0jw = lambda(o,lambda0jw);
 %       
 %         Options:
 %            process.contact   contact indices (default: inf (all))

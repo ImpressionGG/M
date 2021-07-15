@@ -89,7 +89,8 @@ function o = Magnitude(o)              % Plot Magnitude
    
       % plot magnitude
       
-   col = opt(o,{'color','r1'});
+   col = Color(o);                     % retrieve object color   
+   col = opt(o,{'color',col});
    [col,lw,typ] = o.color(col);
    
    hdl = semilogx(om,dB,['r',typ]);
@@ -100,7 +101,21 @@ function o = Magnitude(o)              % Plot Magnitude
    end
    
    Instabilities(o)                    % draw instabilities
-   
+
+   function col = Color(o)             % retrieve objectcolor
+      col = get(o,'color','r1');
+      digit = false;                   % init: contains no digit
+
+      for (ii=1:length(col))
+         c = col(ii);                  % i-th character
+         if ('0' <= c && c <= '9')     % if isdigit(c)
+            digit = true;              % mind: we hav already a digit
+         end
+      end
+      if ~digit
+         col(end+1) = '1';             % set line width 1        
+      end
+   end
    function Instabilities(o)
       if type(o,{'fqr'})
          return                        % ignore for frequency response type

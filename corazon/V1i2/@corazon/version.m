@@ -580,7 +580,7 @@ function VersionV1I
 % + add corazon/children method
 % - bug fix in corasim/bode (axis scaling, axis visibility)
 % - Edit>Copy/Cut to copy/cut whole packages or all shell objects
-%
+% - color defaults added to corasim/bode
 %
 % Known Bugs / Wishlist
 % - none so far

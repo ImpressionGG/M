@@ -631,14 +631,25 @@ function oo = Spectral(o)              % Brew Spectral Quantities
       
    lambda180 = (-1)*lambda0;
    lambda180 = Sort(lambda180,K180,f180);
-   lambda180 = set(lambda180,'name','lambda180(s)','color','yyyr');
+   lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
    lambda180 = var(lambda180,'K,f',K180,f180);
    
+      % critical frequency responses (maximizing |lambda0(jw)|,
+      % |lambda180(jw)|
+      
+   l0 = lambda(o,lambda0);
+   l0 = set(l0,'name','l0(s)','color','yyyr');
+   l180 = lambda(o,lambda180);
+   l180 = set(l180,'name','l180(s)','color','yk');
+      
       % store in cache
    
    oo = o;
    oo = cache(oo,'spectral.lambda0',lambda0);         % store in cache
    oo = cache(oo,'spectral.lambda180',lambda180);     % store in cache
+
+   oo = cache(oo,'spectral.l0',l0);                   % store in cache
+   oo = cache(oo,'spectral.l180',l180);               % store in cache
 
    oo = cache(oo,'spectral.g31',g31);
    oo = cache(oo,'spectral.g33',g33);
