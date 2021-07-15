@@ -581,6 +581,7 @@ function VersionV1I
 % - bug fix in corasim/bode (axis scaling, axis visibility)
 % - Edit>Copy/Cut to copy/cut whole packages or all shell objects
 % - color defaults added to corasim/bode
+% - corazon/id extended to identify object for given ID
 %
 % Known Bugs / Wishlist
 % - none so far

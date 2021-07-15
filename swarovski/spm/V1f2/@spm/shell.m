@@ -847,12 +847,23 @@ end
 function oo = Variation(o)             % Parameter Variation           
    setting(o,{'variation.omega'},1);   % global omega variation
    setting(o,{'variation.zeta'},1);    % global zeta variation
+   setting(o,{'variation.shell'},0);   % specific shell variation
+   setting(o,{'variation.package'},0); % specific package variation
+   setting(o,{'variation.object'},0);  % specific object variation
    
    oo = mhead(o,'Variation');
-   ooo = mitem(oo,'Omega',{},'variation.omega');
+   ooo = mitem(oo,'Omega (Global)',{},'variation.omega');
    charm(ooo,{@OmegaCb});
-   ooo = mitem(oo,'Zeta',{},'variation.zeta');
+   ooo = mitem(oo,'Zeta (Global)',{},'variation.zeta');
    charm(ooo,{@ZetaCb});
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Shell Variation',{},'variation.shell');
+   check(ooo,{@DirtyCb});
+   ooo = mitem(oo,'Package Variation',{},'variation.package');
+   check(ooo,{@DirtyCb});
+   ooo = mitem(oo,'Object Variation',{},'variation.object');
+   check(ooo,{@DirtyCb});
    
    function o = OmegaCb(o)             % On Omega Variation Changes    
       omega = setting(o,'variation.omega');
@@ -870,7 +881,7 @@ function oo = Variation(o)             % Parameter Variation
          
       refresh(pull(o));
    end
-   function o = ZetaCb(o)             % On Zeta Variation Changes    
+   function o = ZetaCb(o)              % On Zeta Variation Changes     
       zeta = setting(o,'variation.zeta');
       
          % make 'trf', 'consd', 'loop' and 'principal' cache segment dirty
@@ -885,6 +896,9 @@ function oo = Variation(o)             % Parameter Variation
          % finally refresh actual drawing
 
       refresh(pull(o));
+   end
+   function o = DirtyCb(o)             % Dirty System - Clear Cache    
+      o = CacheReset(o);               % reset all caches
    end
 end
 function oo = Simu(o)                  % Simulation Parameter Menu     
