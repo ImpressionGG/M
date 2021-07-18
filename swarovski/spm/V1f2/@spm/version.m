@@ -331,6 +331,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix: spectral settings to be used for spectral segment brewing
 % - use critical FQR l0(jw) and l180(jw) in Critical Overview
 % - pimp sensitivity graphics (only pareto modes, titles)
+% - Sensitivity setting split into view settings and select settings
 
 
 % Known bugs & wishlist
