@@ -14,6 +14,7 @@ function varargout = cache(o,varargin) % Cache Method
 %
 %         [oo,bag] = cache(oo,oo,'polar')   % cache refresh (hard)
 %         [oo,bag] = cache(oo,oo,[])        % clear cache (hard)
+%         oo = cache(oo,'polar',[])         % clear 'polar' cache segment
 %
 %         cache(oo,oo)                      % cache storeback to shell
 %
@@ -110,6 +111,11 @@ function varargout = cache(o,varargin) % Cache Method
 %         if isempty(bag)                     
 %            fprintf('polar cache segment is dirty!\n');
 %         end
+%
+%      Example 4: clear specific cache segment and store back to shell
+%
+%         oo = cache(oo,'polar',[]);   % clear polar cache segment
+%         cache(oo,oo);                % cache store back to shell
 %
 %      Options:
 %
@@ -334,6 +340,10 @@ function oo = Set(o,list,tag,value)    % Set Cache Variable
 %         oo = Set(oo,{'pol','Pol'},bag)     % set cache segment's bag
 %         oo = Set(oo,{'pol','Pol'},'r',r)   % set radius in cache
 %
+%      Clear cache segment
+%
+%         oo = Set(oo,{'pol','Pol'},[])
+%
    if ~iscell(list) || length(list) ~= 2
       error('2-list expected (arg2)');
    end
@@ -350,7 +360,11 @@ function oo = Set(o,list,tag,value)    % Set Cache Variable
       
       % dispatch on input arg number
       
-   if (nargin == 3)
+   if (nargin == 3 && isempty(tag))    % means: clear cache segment
+      oo = o;                          % copy to output
+      oo.work.cache = rmfield(oo.work.cache,seg);
+      return
+   elseif (nargin == 3)
       bag = tag;                       % rename arg3
       bag.cache = segment.cache;       % copy cache control part
       segment = bag;                   % store back to segment

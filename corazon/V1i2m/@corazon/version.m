@@ -76,6 +76,9 @@ function CorazonPowerFeatures
 %
 % - rapid toolbox or plugin generation
 %
+% - organisation in shell object, package objects and data objects,
+%   menu functions act differently on different package types
+%
 end
 
 %==========================================================================
@@ -583,6 +586,9 @@ function VersionV1I
 % - color defaults added to corasim/bode
 % - corazon/id extended to identify object for given ID
 % - bug fix: corazon/id (did not return 2nd arg)
+%
+% - starting corazon-v1i2m (beta)
+% - add functionality to corazon/cache() to clear cache segment
 %
 % Known Bugs / Wishlist
 % - none so far
