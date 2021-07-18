@@ -332,7 +332,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - use critical FQR l0(jw) and l180(jw) in Critical Overview
 % - pimp sensitivity graphics (only pareto modes, titles)
 % - Sensitivity setting split into view settings and select settings
-
+% - in spm/system call brewing stuff for system calculation
+% - adopt stability margin plot (linear y-axis instead of dB)
 
 % Known bugs & wishlist
 % =========================

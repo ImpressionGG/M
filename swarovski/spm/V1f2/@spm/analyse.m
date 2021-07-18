@@ -576,7 +576,7 @@ end
 
    % callbacks
 
-function o = StabilitySummary(o)       % Plot Stability Overview
+function o = StabilitySummary(o)       % Plot Stability Overview       
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -588,7 +588,7 @@ function o = StabilitySummary(o)       % Plot Stability Overview
    NyquistChart(o,1211,mu);
    MarginChart(o,[2212,2222]);
 end
-function o = StabilityMargin(o)        % Plot Stability Margins
+function o = StabilityMargin(o)        % Plot Stability Margins        
    switch o.type
       case 'pkg'
          o = PkgStabilityMargin(o);
@@ -598,17 +598,19 @@ function o = StabilityMargin(o)        % Plot Stability Margins
          plot(o,'About');
    end
 end
-function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin
+function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin     
    o = cache(o,o,'critical');
    Heading(o);
    MarginChart(o,[211,212]);
 end
-function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
+function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin     
    if ~type(o,{'pkg'})
       plot(o,'About');
       return
    end
 
+   chartstyle = opt(o,{'stability.chartstyle',1});
+   
    package = get(o,'package');
    if isempty(package)
       error('no package ID provided');
@@ -620,12 +622,16 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       % - index row 3: Stability Margin
       % - index row 4: Critical Frequency
 
-   mode = 3;
-
+   if (chartstyle == 0)
+      mode = 4;                        % old style
+   else
+      mode = 3;                        % new style
+   end
+   
    if (mode == 2)   % critical quantities
       sub = [   0    0; 2211 2212; 4231 4232; 4241 4242];
-   elseif (mode == 3)   % stability margin, setup & critical frequency
-      sub = [2211 2212; 4231 4232;    0    0; 4241 4242];
+   elseif (mode == 3)   % stability margin, critical friction & frequency
+      sub = [0    0;  3211 3212; 3221 3222;  3231 3232];
    else
       sub = [4211 4212; 4221 4222; 4231 4232; 4241 4242];
    end
@@ -644,15 +650,16 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
    mu = opt(o,{'process.mu',0.1});
    kmu = opt(o,{'process.kmu',1});
 
-   width = [];                         % init in current scope
+   width = [];                             % init in current scope
+   
    x = Axes(o,sub(1,1),mu,'LogMargin');    % get variation range and plot axes
-   x = Axes(o,sub(2,1),mu,'Critical');     % get variation range and plot axes
-   x = Axes(o,sub(3,1),mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,sub(2,1),mu,'Margin');       % get variation range and plot axes
+   x = Axes(o,sub(3,1),mu,'Critical');     % get variation range and plot axes
    x = Axes(o,sub(4,1),mu,'Frequency');    % get variation range and plot axes
 
-   x = Axes(o,sub(1,2),-mu,'LogMargin');   % get variation range and plot axes
-   x = Axes(o,sub(2,2),-mu,'Critical');    % get variation range and plot axes
-   x = Axes(o,sub(3,2),-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,sub(1,2),-mu,'LogMargin');% get variation range and plot axes
+   x = Axes(o,sub(2,2),-mu,'Margin');      % get variation range and plot axes
+   x = Axes(o,sub(3,2),-mu,'Critical');    % get variation range and plot axes
    x = Axes(o,sub(4,2),-mu,'Frequency');   % get variation range and plot axes
 
       % calculate stability margin and plot
@@ -662,8 +669,6 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
    green = o.iif(dark(o),'g|o3','ggk|o3');
    yellow = 'yyyr|o3';
    red = 'r|o3';
-
-   legacy = 0;
 
    stop(o,'Enable');
    for (i=1:n)                         % calc & plot stability margin
@@ -675,27 +680,22 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
       [K0,f0,K180,f180] = cook(oo,'K0,f0,K180,f180');
 
-%     Mu0(i) = mu/K0;
-      M0(i) = K0/mu;
-      if (legacy)
-         PlotLogMargin(x(i),M0(i),sub(1,1));
-      else
-         PlotDb(o,x(i),M0(i),sub(1,1));
-      end
-
-      PlotMucrit(x(i),K0,sub(2,1));
-      PlotMargin(x(i),M0(i),sub(3,1));
+%     M0(i) = K0/mu;
+      M0(i) = K0/mu/kmu;
+%     PlotLogMargin(x(i),M0(i),sub(1,1));    % legacy
+      PlotDb(o,x(i),M0(i)*kmu,sub(1,1));         % old style
+%     PlotMargin(x(i),M0(i),sub(1,1));
+      PlotMargin(x(i),M0(i),sub(2,1));
+      PlotMucrit(x(i),K0,sub(3,1));
       PlotFrequency(x(i),f0,sub(4,1));
 
-%     Mu180(i) = mu/K180;
-      M180(i) = K180/mu;
-      if (legacy)
-         PlotLogMargin(x(i),M180(i),sub(1,2));
-      else
-         PlotDb(o,x(i),M180(i),sub(1,2));
-      end
-      PlotMucrit(x(i),K180,sub(2,2));
-      PlotMargin(x(i),M180(i),sub(3,2));
+%     M180(i) = K180/mu;
+      M180(i) = K180/mu/kmu;
+%     PlotLogMargin(x(i),M180(i),sub(1,2));   % legacy
+      PlotDb(o,x(i),M180(i)*kmu,sub(1,2));        % old style
+%     PlotMargin(x(i),M180(i),sub(1,2));
+      PlotMargin(x(i),M180(i),sub(2,2));
+      PlotMucrit(x(i),K180,sub(3,2));
       PlotFrequency(x(i),f180,sub(4,2));
 
       idle(o);                         % show graphics
@@ -724,7 +724,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
       lim = limits(o);
       if o.is(lim)
-         set(gca,'ylim',[0 2.2/lim(2)]);
+%        set(gca,'ylim',[0 2.2/lim(2)]);
       end
    end
    function PlotMargin(xi,marg,sub)
@@ -735,9 +735,11 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       subplot(o,sub);
       if isinf(marg)
          plot(o,xi,0,infgreen);
-      elseif (marg > kmu)
+%     elseif (marg > kmu)
+      elseif (marg > 1)
          plot(o,xi,marg,green);
-      elseif (marg < 1)
+%     elseif (marg < 1)
+      elseif (marg < 1/kmu)
          plot(o,xi,marg,red);
       else
          plot(o,xi,marg,yellow);
@@ -812,16 +814,34 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       plot(o,x,0*x,'K.');
 
       width = (max(x) - min(x))/length(x);
-      set(gca,'xlim',[min(x)-width,max(x)+width]);
+      xlim = [min(x)-width,max(x)+width];
+      ylim = [0 1];
+      set(gca,'xlim',xlim);
+      xxx = [xlim(1) xlim(2) xlim(2) xlim(1) xlim(1)];
+      yyy = [0 0 1 1 0];
 
       if o.is(lim)
          kmu = lim(1)/lim(2);
          if isequal(tit,'Critical')
-            plot(o,get(gca,'xlim'),[1 1]/lim(1),col);
-            plot(o,get(gca,'xlim'),[1 1]/lim(2),col);
+            MU = abs(mu);
+            set(gca,'ylim',ylim);
+            
+            hdl = patch(xxx,yyy*MU,'r');
+            set(hdl,'FaceAlpha',0.2);
+            
+            hdl = patch(xxx,MU+yyy*(kmu-1)*MU,'y');
+            set(hdl,'FaceAlpha',0.2);
+
+            hdl = patch(xxx,MU*kmu+yyy*(ylim(2)-MU*kmu),'g');
+            set(hdl,'FaceAlpha',0.2);
+            
+%           plot(o,get(gca,'xlim'),[1 1]/lim(1),col);
+%           plot(o,get(gca,'xlim'),[1 1]/lim(2),col);
          elseif isequal(tit,'Margin')
+%           plot(o,get(gca,'xlim'),[1 1],col);
+%           plot(o,get(gca,'xlim'),[1 1]*kmu,col);
+            plot(o,get(gca,'xlim'),[1 1]/kmu,col);
             plot(o,get(gca,'xlim'),[1 1],col);
-            plot(o,get(gca,'xlim'),[1 1]*kmu,col);
          elseif isequal(tit,'LogMargin')
             plot(o,get(gca,'xlim'),20*log10([1 1]),col);
             plot(o,get(gca,'xlim'),20*log10([1 1]*kmu),col);
@@ -835,12 +855,15 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       elseif isequal(tit,'Critical')
          title(sprintf('Critical Friction (%s Cutting)',dir));
          ylabel(o.iif(mu>0,'mu0 = K0','mu180 = K180'));
+         set(gca,'ylim',[0 1]);
       elseif isequal(tit,'LogMargin')
          title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
          ylabel('Stability margin [dB]');
       else
-         title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+         title(sprintf('Stability Margin (%s Cutting, mu: %g/%g)',...
+                       dir,abs(mu),kmu*abs(mu)));
          ylabel(sprintf('Stability %s',tit));
+         set(gca,'ylim',[0 10]);
       end
 
 
@@ -853,7 +876,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       subplot(o);                         % subplot complete
    end
 end
-function o = NyquistStability(o)       % Plot Stability Margins
+function o = NyquistStability(o)       % Plot Stability Margins        
    if type(o,{'spm'})
       o = cache(o,o,'critical');
    else

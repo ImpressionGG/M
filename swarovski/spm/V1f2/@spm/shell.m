@@ -670,7 +670,7 @@ function oo = Stability(o)             % Stability Menu
    ooo = mitem(oo,'Color Flip',{},'stability.colorflip');
    choice(ooo,[0:0.1:1],{});
 end
-function oo = Sensitive(o)             % Sensitivity View Settings Menu     
+function oo = Sensitive(o)             % Sensitivity View Settings Menu
    setting(o,{'sensitivity.omega.low'},1e2);
    setting(o,{'sensitivity.omega.high'},1e5);
    setting(o,{'sensitivity.magnitude.low'},[]);
@@ -894,7 +894,7 @@ function oo = Variation(o)             % Parameter Variation
       o = CacheReset(o);               % reset all caches
    end
 end
-function oo = Sensitivity(o)           % Sensitivity Neighborhood         
+function oo = Sensitivity(o)           % Sensitivity Neighborhood      
    setting(o,{'sensitivity.points'},200);
    setting(o,{'sensitivity.window'},1.05);
    setting(o,{'sensitivity.variation'},50);
@@ -913,8 +913,7 @@ function oo = Sensitivity(o)           % Sensitivity Neighborhood
    end
 end
 
-
-function oo = Simu(o)                  % Simulation Parameter Menu
+function oo = Simu(o)                  % Simulation Parameter Menu     
 %
 % SIMU   Add simulation parameter menu items
 %

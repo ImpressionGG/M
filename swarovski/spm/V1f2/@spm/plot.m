@@ -2679,9 +2679,10 @@ function oo = Eigen(o)                 % Calc System Eigenvalues
 %           oo = Eigen(o)
 %           [idx,re,im] = var(oo,'index,real,imag');
 %
+   
    oo = brew(o,'Variation');           % apply system variation
    A = data(oo,'A');
-   
+
    s = eig(A);                         % eigenvalues (EV)
    i = 1:length(s);                    % EV index 
    x = real(s);                        % real value

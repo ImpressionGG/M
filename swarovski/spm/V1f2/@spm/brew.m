@@ -250,6 +250,133 @@ function oo = Transform(o)             % coordinate transformation
 %
 % TRANSFORM Transform coordinates by rotation around 3-axis (=z-axis)
 %             by angle phi_p (process phi) plus phi_o (object specific 
+%             phi depending on how SPM matrices are exported). 
+%
+%                 oo = Transform(o)
+%                 [A,B,C,D] = var(o,'A,B,C,D')
+%
+%             We have:
+%
+%                [F1]   [ cos(phi)  sin(phi)   0]   [Fx]
+%                [F2] = [-sin(phi)  cos(phi)   0] * [Fy]
+%                [F3]   [   0          0       1]   [Fz]
+%
+%             For phi_p = 0 and phi_o = 90 we have phi = 90
+%             and
+%
+%                [F1]   [   0   1   0]   [Fx]   [ Fy]
+%                [F2] = [  -1   0   0] * [Fy] = [-Fx]
+%                [F3]   [   0   0   1]   [Fz]   [ Fz]
+%
+%              Since
+%                 F_123 = T*F_xyz and  y_123 = T*y_xyz
+%
+%                 x`     = A_xyz * x + B_xyz * F_xyz
+%                 y_xyz  = C_xyz * x + D_xyz * F_xyz
+%
+%              we get:
+%
+%                 x´     = A_xyz * x + B_xyz * inv(T)*F_123
+%                 y_123 = T*y_xyz = T*C_xyz * x + T*D_xyz*inv(T) * F_123
+%
+%              Thus we see:
+%                 A_123 = A_xyz
+%                 B_123 = B_xyz * inv(T)
+%                 C_123 = T * C_xyz
+%                 D_123 = T * D_xyz + inv(T)
+%
+   [B,C,D] = var(o,'B,C,D');
+   
+   M = size(B,2)/3;  N = size(C,1)/3;
+   if (M ~= round(M) || N ~= round(N))
+      error('input/output number must be multiple of 3');
+   end
+   if (M ~= N)
+      error('same number of inputs and outputs expected');
+   end
+
+   assert(M==N);             % are the same
+   
+      % build-up total transformation matrix
+      
+   for (k=1:N)
+      Tk = TransMatrix(o,k);
+      
+      idx = (1:3) + (k-1)*3;
+      T(idx,idx) = Tk;
+   end
+   
+      % transform system matrices (note: A is unchanged)
+      
+   invT = inv(T);
+   if (norm(invT-T') == 0)
+      invT = T';                       % no round-off errors!
+   end
+   
+   B = B*invT;
+   C = T*C;
+   D = T*D*invT;
+    
+      % refresh variables
+      
+   oo = var(o,'B,C,D,N',B,C,D,N);
+
+   function T = TransMatrix(o,k)                                 
+   %
+   % TRANSMATRIX Transform coordinates by rotation around 3-axis (=z-axis)
+   %             by angle phi_p (process phi) plus phi_o (object specific 
+   %             phi depending on how SPM matrices are exported). 2nd input
+   %             arg (k) ist the contact index.
+   %
+   %                 T = Treansform(o,k)
+   %
+   %             We have:
+   %
+   %                [F1]   [ cos(phi)  sin(phi)   0]   [Fx]
+   %                [F2] = [-sin(phi)  cos(phi)   0] * [Fy]
+   %                [F3]   [   0          0       1]   [Fz]
+   %
+   %             For phi_p = 0 and phi_o = 90 we have phi = 90
+   %             and
+   %
+   %                [F1]   [   0   1   0]   [Fx]   [ Fy]
+   %                [F2] = [  -1   0   0] * [Fy] = [-Fx]
+   %                [F3]   [   0   0   1]   [Fz]   [ Fz]
+   %
+   %              Since
+   %                 F_123 = T*F_xyz and  y_123 = T*y_xyz
+   %
+   %                 x`     = A_xyz * x + B_xyz * F_xyz
+   %                 y_xyz  = C_xyz * x
+   %
+   %              we get:
+   %
+   %                 x´     = A_xyz * x + B_xyz * inv(T)*F_123
+   %                 y_123 = T*y_xyz = T*C_xyz * x
+   %
+   %              Thus we see:
+   %                 B_123 = B_xyz * inv(T)
+   %                 C_123 = T * C_xyz
+   %  
+      phi = getphi(o);
+      rad = phi(k) * pi/180;           % total phi [rad]
+         
+      T = [
+             cos(rad) sin(rad)  0
+            -sin(rad) cos(rad)  0
+                0        0      1
+          ];
+       
+      if (rem(phi(k),90) == 0)
+         T = round(T);
+      end
+   end
+end
+
+function oo = OldTransform(o)          % coordinate transformation
+%
+% TRANSFORM Transform coordinates by rotation around 3-axis (=z-axis)
+%             by angle phi_p (process phi) plus phi_o (object specific 
 %             phi depending on how SPM matrices are exported). 2nd input
 %             arg (contact) ist the contact index.
 %
@@ -373,7 +500,8 @@ function oo = Transform(o)             % coordinate transformation
       end
    end
 end
-function oo = System(o)                % System Matrices               
+
+function oo = OldSystem(o)             % System Matrices               
    oo = Variation(o);                  % apply system variation
    oo = Normalize(oo);                 % normalize system
    oo = Transform(oo);                 % coordinate transformation
@@ -558,6 +686,15 @@ function oo = System(o)                % System Matrices
       assert(norm(C_1_-C_1)==0);
       assert(norm(C_2_-C_2)==0);
       assert(norm(C_3_-C_3)==0);
+   end
+end
+
+function oo = System(o)
+   old = opt(o,{'oldsystem',0});
+   if (old)
+      oo = OldSystem(o);
+   else
+      oo = system(o);
    end
 end
 
