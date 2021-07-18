@@ -13,7 +13,8 @@ function oo = plot(o,varargin)         % SPM Plot Method
 %        See also: SPM, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                   @WithSpm,@Overview,@About,@Image,@Real,@Imag,@Complex,...
+                   @WithSpm,@Overview,@About,@Image,...
+                   @Real,@Imag,@Complex,@Damping,...
                    @TrfDisp,@TrfRloc,@TrfStep,@TrfBode,@TrfMagni,...
                    @TrfNyq,@TrfWeight,@TrfNumeric,... 
                    @Gs,@Trfr,@GsRloc,@GsStep,@GsBode,@GsWeight,...
@@ -97,6 +98,8 @@ function oo = ModeShapes(o)            % Mode Shapes Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Damping', {@WithCuo,'Damping'});
 end
 function oo = TransferFunction(o)      % Transfer Function Menu        
    oo = mitem(o,'Transfer Function');
@@ -673,6 +676,15 @@ function o = Complex(o,sub)            % Eigenvalues in Complex Plane
    end
    
 %  set(gca,'DataAspectRatio',[1 1 1]);
+   heading(o);
+end
+function o = Damping(o)                % Plot Mode Damping             
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   damping(o);
    heading(o);
 end
 

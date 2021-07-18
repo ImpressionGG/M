@@ -65,7 +65,10 @@ function hax = subplot(o,varargin)
          hax = subplot(m,n,k);
          sub = sub(1:4);
       else
-         hax = subplot(m,n,i);      
+         hax = subplot(m,n,i);
+         if (m == 1 && n == 1)
+            axis on;
+         end
          [m,n,k,sub] = Index([m,n,i]);
       end
       

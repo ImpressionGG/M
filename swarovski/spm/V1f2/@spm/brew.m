@@ -219,6 +219,27 @@ function oo = Variation(o)             % System Variation
    n = floor(length(A)/2);
    i1 = 1:n;  i2 = n+1:2*n;
    
+      % get omegas and zetas
+      
+   a21 = -diag(A(i2,i1));              % a21 = omega^2
+   a22 = -diag(A(i2,i2));              % a22 = 2*zeta*omega
+   
+   omega = sqrt(a21);
+   zeta0 = a22 ./ omega / 2;           % original damping
+
+      % first apply damping table
+      
+   dtab = get(o,'dtable');
+   if ~isempty(dtab)
+      zeta = damping(o);
+      N = norm(zeta-zeta0);
+   
+      a22 = 2*zeta.*omega;
+      A(i2,i2) = -diag(a22);
+   end
+   
+      % damping table applied
+   
    A(i2,i1) = A(i2,i1) * vom;          % omega variation
    A(i2,i2) = A(i2,i2) * vzeta;        % zeta variation
 

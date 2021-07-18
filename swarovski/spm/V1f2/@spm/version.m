@@ -334,6 +334,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - Sensitivity setting split into view settings and select settings
 % - in spm/system call brewing stuff for system calculation
 % - adopt stability margin plot (linear y-axis instead of dB)
+% - implement spm/damping() method & provide basic SPM docu (help spm)
 
 % Known bugs & wishlist
 % =========================
