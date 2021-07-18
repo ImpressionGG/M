@@ -90,6 +90,6 @@ end
 
 function o = StabilityMargin(o)        % Print Figure Stability Margin    
    analyse(o,'WithCuo','StabilityMargin');
-   pdf(o,'Stability Margin');
+   png(o,'Stability Margin');
 end
 

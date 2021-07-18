@@ -335,6 +335,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - in spm/system call brewing stuff for system calculation
 % - adopt stability margin plot (linear y-axis instead of dB)
 % - implement spm/damping() method & provide basic SPM docu (help spm)
+% - implement spm/png function
 
 % Known bugs & wishlist
 % =========================
