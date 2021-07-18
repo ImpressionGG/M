@@ -25,4 +25,9 @@ function obfuscate(tbox,version,class)
       % actual obfuscating ...
       
    pcode(dir,'-inplace');
-end   
+end
+
+function Corazon
+%
+   list = {'cache','call','id','menu','shell','version','with'};
+end

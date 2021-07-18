@@ -587,8 +587,11 @@ function VersionV1I
 % - corazon/id extended to identify object for given ID
 % - bug fix: corazon/id (did not return 2nd arg)
 %
+% Change Log V1i1 (beta):
+%
 % - starting corazon-v1i2m (beta)
 % - add functionality to corazon/cache() to clear cache segment
+% - bug fix corazon/cache() - deal with empty cache on cache segment delete
 %
 % Known Bugs / Wishlist
 % - none so far

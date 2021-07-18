@@ -722,7 +722,18 @@ function oo = Sensitivity(o)           % Sensitivity Settings Menu
       choice(o,list,cblist);
    end
    function o = WindowCb(o)
-      ClearAllCaches(o);               % ??? no need - implicitely dirty
+      o = pull(o);                     % get shell object
+      
+         % clear sensitivity segment of all SPM objects
+         
+      for (i=1:length(o.data))
+         oi = o.data{i};
+         if type(oi,{'spm'})
+            oi = cache(oi,'sensitivity',[]);
+            cache(oi,oi);              % store cache back to shell
+         end
+      end
+      
       refresh(pull(o));                % finally refresh actual drawing
    end
 end
@@ -1413,4 +1424,20 @@ function oo = ClearAllCaches(o)        % Clear All Caches
       oo = o.data{i};
       cache(oo,oo,[]);                 % cache hard reset
    end
+end
+function o = ClearSegments(o,seg)      % Clear Specific Cache Segments 
+   o = pull(o);                        % get shell object
+
+      % clear specific segment of all SPM objects
+
+   for (i=1:length(o.data))
+      oi = o.data{i};
+      if type(oi,{'spm'})
+         oi = cache(oi,seg,[]);        % clear specific cache segment
+         cache(oi,oi);                 % store cache back to shell
+      end
+   end
+
+   o = pull(o);                        % fetch refreshed shell object
+   refresh(o);                         % finally refresh actual drawing
 end

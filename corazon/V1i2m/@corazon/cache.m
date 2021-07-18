@@ -362,6 +362,7 @@ function oo = Set(o,list,tag,value)    % Set Cache Variable
       
    if (nargin == 3 && isempty(tag))    % means: clear cache segment
       oo = o;                          % copy to output
+      oo.work.cache.(seg) = [];         % make sure field exists
       oo.work.cache = rmfield(oo.work.cache,seg);
       return
    elseif (nargin == 3)
