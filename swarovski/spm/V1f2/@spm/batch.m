@@ -108,8 +108,13 @@ end
 % Stability
 %==========================================================================
 
-function o = StabilityOverview(o)      % Stability Overview    
+function o = StabilityOverview(o)      % Stability Overview   
+   mode = dark(o);
+   dark(o,0);
+
    analyse(o,'WithCuo','StabilityMargin');
    png(o,'Stability Margin');
+
+   dark(o,mode);
 end
 

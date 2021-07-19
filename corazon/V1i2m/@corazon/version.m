@@ -594,6 +594,7 @@ function VersionV1I
 % - bug fix corazon/cache() - deal with empty cache on cache segment delete
 % - bug fix corazon/dark: change control.dark settings
 % - bug fix: corazon/subplot - always axis on
+% - add corazon/make method
 %
 % Known Bugs / Wishlist
 % - none so far

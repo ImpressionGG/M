@@ -4,6 +4,10 @@ function make(o,vers)
 %
 %           make(corazon,'V1i2')
 %
+%        Note: make an obfuscated toolbox based on current (active)
+%        toolbox. This means that path settings must be on current CORAZON
+%        toolbox
+%
 %        Copyright(c): Bluenetics 2021
 %
 %        See also: CORAZON, CORAZITO, CORAZITA
@@ -12,18 +16,12 @@ function make(o,vers)
       error('2 input args expected');
    end
    
-   [srcpath,dstpath] = Path(o,vers);
+   [psrc,pdst] = Path(o,vers);
+
+   CopyFiles(o,psrc,pdst);
    
-      % make sure that destination directory does not exist and create
-      % destination directory
-      
-   rv = exist(dstpath);
-   if (rv ~= 0)
-      error(sprintf('*** destination folder must not exist (%s)',dstpath));
-   end
-   mkdir(dstpath);
-   
-   CopyFiles(o,srcpath,dstpath);
+   dir = CopyFiles(o,psrc,pdst,'@corazon');
+   obfuscate(dir);
 end
 
 %==========================================================================
@@ -37,8 +35,26 @@ end
 % Copy Files
 %==========================================================================
 
-function o = CopyFiles(o,from,to)
+function MkDir(o,path)
+   rv = exist(path);
+   if (rv ~= 0)
+      error(sprintf('folder must not exist (%s)',path));
+   end
+
+   ok = mkdir(path);
+   if (~ok)
+      error(sprintf('cannot create directory',path));
+   end
+end
+function dir = CopyFiles(o,from,to,class)
+   if (nargin >= 4)
+      from = [from,'/',class];
+      to = [to,'/',class];
+   end
+   
+   MkDir(o,to);
    copyfile([from,'/*.m'],to);
+   dir = to;                           % return arg
 end
 
 %==========================================================================
