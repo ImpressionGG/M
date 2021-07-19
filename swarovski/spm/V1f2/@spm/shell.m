@@ -830,6 +830,59 @@ function oo = Basket(o)                % Basket Menu
       end
    end
 end
+
+function oo = Coordinates(o)           % Add Coordinates Menu Items    
+   setting(o,{'process.phi'},0);
+   setting(o,{'process.Cphi'},1);
+    
+   oo = mitem(o,'Coordinates');
+   ooo = mitem(oo,'Phi Rotation',{},'process.phi');
+   choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
+   
+   ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
+   choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
+end
+function oo = Contact(o)               % Add Contact Menu Items        
+   setting(o,{'process.contact'},inf); % multi contact
+   
+   oo = current(o);
+   if type(oo,{'spm'})
+      N = round(size(oo.data.B,2)/3);
+   else
+      N = 5;
+   end
+   
+   list = {{'Center',0},{'All',inf},{}};
+
+   if (N == 5)
+      leading =  1:3;
+      trailing = 3:5;
+      triple =   2:4;
+      list = {{'Center',0},{'All',inf},{},{'-o-o-o-x-x-',leading},...
+              {'-x-x-o-o-o-',trailing},...
+              {'-x-o-o-o-x-',triple},{}};
+   elseif (N == 7)
+      list = {{'Center',0},{'All',inf},{},{'-o-o-o-o-x-x-x-',1:4},...
+              {'-x-x-x-o-o-o-o-',4:7},...
+              {'-x-o-x-x-x-o-x-',[2,6]},...
+              {'-x-x-o-x-o-x-x-',[3,5]},...
+              {'-x-o-x-o-x-o-x-',[2,4,6]},...
+              {'-o-x-o-x-o-x-o-',[1,3,5,7]},...
+              {'-x-x-o-o-o-x-x-',3:5},{},...
+              {'-o-o-x-o-x-o-o-',[1:2,4,6:7]},{}};
+   else
+      leading = inf;
+      trailing = inf;
+      triple = inf;
+   end
+   
+   for(i=1:N)
+      list{end+1} = {sprintf('%g',i),i};
+   end
+   
+   oo = mitem(o,'Contact',{},'process.contact');
+   choice(oo,list,{@CacheReset});
+end
 function oo = Friction(o)              % Friction Menu                 
    setting(o,{'process.mu'},0.1);      % Coulomb friction parameter
    setting(o,{'process.kmu'},5);       % Coulomb friction range
@@ -855,9 +908,9 @@ end
 function oo = Variation(o)             % Parameter Variation           
    setting(o,{'variation.omega'},1);   % global omega variation
    setting(o,{'variation.zeta'},1);    % global zeta variation
-   setting(o,{'variation.shell'},0);   % specific shell variation
-   setting(o,{'variation.package'},0); % specific package variation
-   setting(o,{'variation.object'},0);  % specific object variation
+%  setting(o,{'variation.shell'},0);   % specific shell variation
+   setting(o,{'variation.package'},1); % specific package variation
+   setting(o,{'variation.object'},1);  % specific object variation
    
    oo = mhead(o,'Variation');
    ooo = mitem(oo,'Omega (Global)',{},'variation.omega');
@@ -866,8 +919,8 @@ function oo = Variation(o)             % Parameter Variation
    charm(ooo,{@ZetaCb});
    
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Shell Variation',{},'variation.shell');
-   check(ooo,{@DirtyCb});
+%  ooo = mitem(oo,'Shell Variation',{},'variation.shell');
+%  check(ooo,{@DirtyCb});
    ooo = mitem(oo,'Package Variation',{},'variation.package');
    check(ooo,{@DirtyCb});
    ooo = mitem(oo,'Object Variation',{},'variation.object');
@@ -962,30 +1015,6 @@ function oo = Simu(o)                  % Simulation Parameter Menu
    ooo = mitem(oo,'Noise [N]',{},'simu.Nmax');
           choice(ooo,[1 2 5 10 20 50 100 200 500 1000 inf],{});
 end
-function oo = Filter(o)                % Add Filter Menu Items         
-   setting(o,{'filter.mode'},'raw');   % filter mode off
-   setting(o,{'filter.type'},'LowPass2');
-   setting(o,{'filter.bandwidth'},5);
-   setting(o,{'filter.zeta'},0.6);
-   setting(o,{'filter.method'},1);
-
-   oo = mhead(o,'Filter');
-   ooo = mitem(oo,'Mode','','filter.mode');
-   choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Type',{},'filter.type');
-   choice(ooo,{{'Order 2 Low Pass','LowPass2'},...
-                {'Order 2 High Pass','HighPass2'},...
-                {'Order 4 Low Pass','LowPass4'},...
-                {'Order 4 High Pass','HighPass4'}},{});
-   ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
-   charm(ooo,{});
-   ooo = mitem(oo,'Zeta',{},'filter.zeta');
-   charm(ooo,{});
-   ooo = mitem(oo,'Method',{},'filter.method');
-   choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
-end
 function oo = Motion(o)                % Add Motion Menu Items         
    setting(o,{'motion.smax'},10e-6);   % 10 um stroke
    setting(o,{'motion.vmax'},0.15e-3); % 0.15mm/s max velocity
@@ -1003,58 +1032,6 @@ function oo = Motion(o)                % Add Motion Menu Items
         choice(ooo,[1e-3 1e-2 1e-1],{});
    ooo = mitem(oo,'Jerk Time [s]',{},'motion.tj');
         choice(ooo,[0.02 0.01 0.005],{});
-end
-function oo = Contact(o)               % Add Contact Menu Items        
-   setting(o,{'process.contact'},inf); % multi contact
-   
-   oo = current(o);
-   if type(oo,{'spm'})
-      N = round(size(oo.data.B,2)/3);
-   else
-      N = 5;
-   end
-   
-   list = {{'Center',0},{'All',inf},{}};
-
-   if (N == 5)
-      leading =  1:3;
-      trailing = 3:5;
-      triple =   2:4;
-      list = {{'Center',0},{'All',inf},{},{'-o-o-o-x-x-',leading},...
-              {'-x-x-o-o-o-',trailing},...
-              {'-x-o-o-o-x-',triple},{}};
-   elseif (N == 7)
-      list = {{'Center',0},{'All',inf},{},{'-o-o-o-o-x-x-x-',1:4},...
-              {'-x-x-x-o-o-o-o-',4:7},...
-              {'-x-o-x-x-x-o-x-',[2,6]},...
-              {'-x-x-o-x-o-x-x-',[3,5]},...
-              {'-x-o-x-o-x-o-x-',[2,4,6]},...
-              {'-o-x-o-x-o-x-o-',[1,3,5,7]},...
-              {'-x-x-o-o-o-x-x-',3:5},{},...
-              {'-o-o-x-o-x-o-o-',[1:2,4,6:7]},{}};
-   else
-      leading = inf;
-      trailing = inf;
-      triple = inf;
-   end
-   
-   for(i=1:N)
-      list{end+1} = {sprintf('%g',i),i};
-   end
-   
-   oo = mitem(o,'Contact',{},'process.contact');
-   choice(oo,list,{@CacheReset});
-end
-function oo = Coordinates(o)           % Add Coordinates Menu Items    
-   setting(o,{'process.phi'},0);
-   setting(o,{'process.Cphi'},1);
-    
-   oo = mitem(o,'Coordinates');
-   ooo = mitem(oo,'Phi Rotation',{},'process.phi');
-   choice(ooo,{{'-90°',-90},{'0°',0},{'90°',90},{'180°',180}},{@CacheReset});
-   
-   ooo = mitem(oo,'Phi Correction',{},'process.Cphi');
-   choice(ooo,[-2 -1.5 -1:0.2:1 1.5 2],{@CacheReset});
 end
 
 %==========================================================================
@@ -1256,7 +1233,33 @@ function oo = Spectrum(o)              % Spectrum Menu
       choice(o,list,cblist);
    end
 end
-function oo = CacheReset(o)            % Reset All Caches              
+function oo = Filter(o)                % Add Filter Menu Items         
+   setting(o,{'filter.mode'},'raw');   % filter mode off
+   setting(o,{'filter.type'},'LowPass2');
+   setting(o,{'filter.bandwidth'},5);
+   setting(o,{'filter.zeta'},0.6);
+   setting(o,{'filter.method'},1);
+
+   oo = mhead(o,'Filter');
+   ooo = mitem(oo,'Mode','','filter.mode');
+   choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
+                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Type',{},'filter.type');
+   choice(ooo,{{'Order 2 Low Pass','LowPass2'},...
+                {'Order 2 High Pass','HighPass2'},...
+                {'Order 4 Low Pass','LowPass4'},...
+                {'Order 4 High Pass','HighPass4'}},{});
+   ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
+   charm(ooo,{});
+   ooo = mitem(oo,'Zeta',{},'filter.zeta');
+   charm(ooo,{});
+   ooo = mitem(oo,'Method',{},'filter.method');
+   choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
+end
+
+
+function oo = CacheReset(o)            % Reset All Caches
 %  callback = control(o,'refresh');    % save refresh callback
    
    ClearAllCaches(o);

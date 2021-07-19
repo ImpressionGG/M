@@ -85,28 +85,55 @@ function zeta = Damping(o)             % Effective Damping
    zeta0 = zeta;
    
        % zeta holds now the values of the A matrix; if a damping table 
-       % is provided then we override the zeta value according to the
-       % damping table
-      
-   dtab = get(o,'dtable');
-   if ~isempty(dtab)
-      Check(o,dtab);
+       % is provided for the package object then we override the zeta 
+       % value according to the damping table
+
+   if opt(o,{'variation.package',0})
+      po = pkg(o);
+      dtab = get(po,'dtable');            % get dtable from package object
+      if ~isempty(dtab)
+         Check(o,dtab);
+
+         for (i=1:size(dtab,1))
+            from = dtab(i,1);  to = dtab(i,2);  zt = dtab(i,3);
+
+            for (k=from:to)
+               if (k == 0)
+                  zeta = 0*zeta + zt;    % replace all zeta values
+               elseif ( 1 <= k && k <= n)
+                  zeta(k) = zt;
+               end
+            end
+         end
+      end
+   end
+   zeta1 = zeta;                       % zeta1 after package object's dtab
        
-      for (i=1:size(dtab,1))
-         from = dtab(i,1);  to = dtab(i,2);  zt = dtab(i,3);
-          
-         for (k=from:to)
-            if (k == 0)
-               zeta = 0*zeta + zt;    % replace all zeta values
-            elseif ( 1 <= k && k <= n)
-               zeta(k) = zt;
+       % zeta holds now the values of the A matrix modified by the package
+       % info object's damping table. If the data object also provides a 
+       % damping table then we override
+      
+   if opt(o,{'variation.object',0})
+      dtab = get(o,'dtable');
+      if ~isempty(dtab)
+         Check(o,dtab);
+
+         for (i=1:size(dtab,1))
+            from = dtab(i,1);  to = dtab(i,2);  zt = dtab(i,3);
+
+            for (k=from:to)
+               if (k == 0)
+                  zeta = 0*zeta + zt;    % replace all zeta values
+               elseif ( 1 <= k && k <= n)
+                  zeta(k) = zt;
+               end
             end
          end
       end
    end
    
    if (nargout == 0)
-      Plot(o,zeta,zeta0);
+      Plot(o,zeta0,zeta1,zeta);
    end
 end
 
@@ -156,16 +183,17 @@ end
 % Plot Damping
 %==========================================================================
 
-function Plot(o,zeta,zeta0)
+function Plot(o,zeta0,zeta1,zeta)
    sub = opt(o,{'subplot',111});
    subplot(o,sub);
    
    for (i=1:length(zeta))
       col = o.iif(dark(o),'w','k');
       
-      plot([i i],[0 zeta(i)],col);
-      plot([i i],[zeta(i) zeta0(i)],'r');
-      plot(i,zeta0(i),[col,'o'], i,zeta(i),'ro');
+      plot([i i],[0 zeta0(i)],col);
+      plot([i i],[zeta0(i) zeta1(i)],'r');
+      plot([i i],[zeta1(i) zeta(i)],'g');
+      plot(i,zeta0(i),[col,'o'], i,zeta1(i),'ro', i,zeta(i),'go');
    end
    
    N = norm(zeta-zeta0);
