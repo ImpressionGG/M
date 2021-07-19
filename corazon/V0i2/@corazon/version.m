@@ -600,6 +600,7 @@ function VersionV1I
 % - add corazon/make method
 % - bug fix corazon/dark: change control.dark settings
 % - package objects have always zero number parameter
+% - add corazon/pkg method
 %
 % Known Bugs / Wishlist
 % - none so far
