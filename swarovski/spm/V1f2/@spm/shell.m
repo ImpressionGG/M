@@ -83,6 +83,8 @@ function oo = Import(o)                % Import Menu Items
       ext = arg(o,2);                  % file extension
       cast = arg(o,3);                 % cast method
       list = import(cast(o),drv,ext);  % import object from file
+      
+      list = ProvideDtab(list);      
       paste(o,list);
    end
    function o = CollectCb(o)           % Collect All Files of Folder   
@@ -114,6 +116,9 @@ function oo = Import(o)                % Import Menu Items
          end
       end
       
+         % provide damping table for package objects
+         
+      list = ProvideDtab(list);
       paste(o,list);
       
       plot(current(o),'About');
@@ -373,6 +378,16 @@ function oo = Extras(o)                % Extras Menu Items
          rebuild(o);
       end
    end
+end
+
+function list = ProvideDtab(list)      % Provide Damping Table
+   for (i=1:length(list))
+      oo = list{i};
+      if type(oo,{'pkg','spm'})
+         dtab = damping(oo,'');
+         list{i} = set(oo,'dtable',dtab);
+      end
+   end      
 end
 
 %==========================================================================

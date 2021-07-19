@@ -88,7 +88,7 @@ function oo = ReadSpmSpm(o)            % Read Driver for SPM Data
       end
    end
    
-      % read phi-file
+      % read phi-file and dmp-file
       
    oo = ReadPhi(oo,path);
 end
@@ -380,3 +380,4 @@ function oo = ReadPhi(o,path)
    
    fclose(fid);
 end
+

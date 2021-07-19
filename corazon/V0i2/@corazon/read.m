@@ -132,6 +132,7 @@ function oo = ReadPkgPkg(o)            % Read Driver for .pkg File
    [dir,file,ext] = fileparts(path);
    oo.par.file = [file,ext];
    oo.par.dir = dir;
+   oo.par.number = 0;                  % always number 0 for package objs
 end
 
 %==========================================================================

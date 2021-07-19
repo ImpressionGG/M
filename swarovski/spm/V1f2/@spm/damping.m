@@ -49,7 +49,16 @@ function oo = damping(o,dtab)
    elseif (nargin == 1 && nargout == 0)
       Damping(o);
    elseif (nargin == 2)                % store variation in object params
-      Store(o,dtab);
+      if ( ischar(dtab) )
+         file = dtab;                  % rename arg2
+         if (nargout == 0)
+            Load(o,file);
+         else
+            oo = Load(o,file);
+         end
+      else
+         Store(o,dtab);
+      end
    else
       error('bad args');   
    end
@@ -165,4 +174,72 @@ function Plot(o,zeta,zeta0)
    xlabel('mode number');
    
    subplot(o);
+end
+
+%==========================================================================
+% Load Damping Table from File
+%==========================================================================
+
+function dtab = Load(o,file)
+   if isempty(file)
+      if (container(o) )
+         error('loading of damping table not provided for shell object');
+      end
+      
+      number = get(o,'number');
+      if isempty(number)
+         error('empty number');
+      end
+      
+      file = sprintf('#%02d',number);
+   end
+   
+      % provide extension if not yet provided
+      
+   extension = (length(file) >= 4 && isequal(file(end-3:end),'.dmp'));
+   if ~extension
+      file = [file,'.dmp'];            % auto provide extension      
+   end
+   
+      % make full path and open file
+      
+   path = [get(o,'dir'),'/',file];  
+   fid = fopen(path,'r');
+   
+   dtab = [];                          % init dtab
+   
+   if ~isequal(fid,-1)
+      line = fgetl(fid);
+      while (1)
+         if isequal(line,-1);
+            break;
+         end
+
+            % if we have no comment line read 3 double numbers
+
+         if ~(length(line) >= 1 && line(1) == '%')
+            row = eval(['[',line,']'],[]);
+            row = row(:)';
+            if (length(row) ~= 3)
+               error('bad file format');
+            end
+            dtab = [dtab; row];
+         end
+
+         line = fgetl(fid);
+      end
+      fclose(fid);
+   end
+   
+      % if no output args provided then we write dtab directly to the
+      % parameters
+      
+   if (nargout == 0)
+      if (container(o))
+         error('improper calling syntax for shell object');
+      end
+      
+      assert(isempty(dtab) || size(dtab,2)==3);
+      damping(o,dtab);
+   end
 end

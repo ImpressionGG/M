@@ -599,6 +599,7 @@ function VersionV1I
 % - bug fix: corazon/subplot - always axis on
 % - add corazon/make method
 % - bug fix corazon/dark: change control.dark settings
+% - package objects have always zero number parameter
 %
 % Known Bugs / Wishlist
 % - none so far

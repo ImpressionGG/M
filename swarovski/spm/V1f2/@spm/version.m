@@ -337,6 +337,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - implement spm/damping() method & provide basic SPM docu (help spm)
 % - implement spm/png function
 % - batch menu item for stability margin of all packages
+% - reading of damping table during import
+
 
 % Known bugs & wishlist
 % =========================
