@@ -15,6 +15,15 @@ function oo = damping(o,dtab)
 %                zeta = damping(o)   % get effective damping (zeta values)
 %                damping(o)          % plot effective damping
 %
+%             3) read damping table from damping file and store in object
+%                parameters
+%
+%                damping(o,'')               % read & set damping table 
+%                                            % from proper file
+%
+%                dtab = damping(o,'#05.dmp') % read dtab from file #5.dmp
+%                dtab = damping(o,'#05')     % read dtab from file #5.dmp
+%
 %             Example 1:
 %
 %                dtab = ...
@@ -23,6 +32,10 @@ function oo = damping(o,dtab)
 %                   9 12,  0.08     % zeta = 8% for modes 9:12
 %                  15 24,  0.10     % zeta = 10% for modes 15:24 
 %                ];
+%
+%             Example 2:
+%
+%                damping(cuo,'')    % load provided damping table for cuo
 %
 %             Options
 %                subplot:              specify subplot (default 111)
