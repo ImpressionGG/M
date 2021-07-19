@@ -22,9 +22,11 @@ classdef spm < corazon                 % Spm Class Definition
 %          brew:        data brewing method, mainly to calculate cache
 %                       contents
 %
+%          diagram:     plot many of the supported diagrams
+%
 %          damping:     manually override damping values of A-matrix
 %
-%          system:      create a CORASIM system reüpresentation based on
+%          system:      create a CORASIM system representation based on
 %                       original SPM matrices (A,B,C,D) under the following
 %                       modifications:
 %                          - parameter variations (omega,zeta)
@@ -38,6 +40,9 @@ classdef spm < corazon                 % Spm Class Definition
 %                      related quantities (g31,g33,PsiW31,PsiW33)
 %
 %          sensitivity: calculate/plot weight and damping sensitivity
+%
+%          png:        export current figure contents to .png file in
+%                      standard PNG directory
 %
    methods                             % public methods
       function o = spm(arg)            % spm constructor

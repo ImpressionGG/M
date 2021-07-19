@@ -1,28 +1,31 @@
-function oo = batch(o,varargin)        % Batch figure printing
+function oo = spmplug1(o,varargin)    % Spmplug1 Plugin              
 %
-% BATCH Batch figure generation
+% SPMPLUG1  Spmplug1 plugin: Add batch print menu items
 %
-%       oo = batch(o,'Menu')           % setup Batch menu
+%              spmplug1(sho)          % plugin registration
 %
-%       oo = batch(o,func)             % call local batch function
+%              oo = spmplug1(o,func)  % call local spmplug1 function
 %
-%    See also: SPM, PLOT, ANALYSIS
+%           See also: CORAZON, PLUGIN, SAMPLE, SIMPLE
 %
-   [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @StabilityOverview,@ModeShapeOverview);
-   oo = gamma(o);                      % invoke local function
+   [gamma,oo] = manage(o,varargin,@Setup,@Register,@Menu,...
+                       @WithCuo,@WithSho,@WithBsk,...
+                       @Batch1,@Batch2);
+   oo = gamma(oo);
+end              
+
+%==========================================================================
+% Plugin Setup & Registration
+%==========================================================================
+
+function o = Setup(o)                  % Setup Registration            
+   o = Register(o);                    % register plugins
+   rebuild(o);                         % rebuild menu
 end
-
-%==========================================================================
-% Menu Setup & Common Menu Callback
-%==========================================================================
-
-function oo = Menu(o)                  % Setup Study Menu              
-   oo = mitem(o,'Mode Shapes');
-   ooo = mitem(oo,'Overview',{@WithCuo,'ModeShapeOverview'});
-   
-   oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
+function o = Register(o)               % Plugin Registration           
+   tag = class(o);
+   plugin(o,[tag,'/menu/End'],{mfilename,'Menu'});
+   plugin(o,[tag,'/current/Select'],{mfilename,'Menu'});
 end
 
 %==========================================================================
@@ -88,28 +91,77 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 end
 
 %==========================================================================
-% Mode Shapes
+% Plugin Definitions
 %==========================================================================
 
-function o = ModeShapeOverview(o)      % Print Mode Shape Diagrams    
-   mode = dark(o);
-   dark(o,0);
-   
-   plot(o,'WithCuo','Complex');
-   png(o,'Mode Shape Complex');
-
-   plot(o,'WithCuo','Damping');
-   png(o,'Mode Shape Damping');
-   
-   dark(o,mode);
+function o = Menu(o)                   % Setup General Plugin Menus    
+%
+% MENU   Setup general plugin menus. General Plugins can be used to plug-
+%        in menus at any menu location. All it needs to be done is to
+%        locate a menu item by path and to insert a new menu item at this
+%        location.
+%
+   oo = Batch(o);                      % add Batch menu items
 end
 
 %==========================================================================
-% Stability
+% Plot Menu Plugins
 %==========================================================================
 
-function o = StabilityOverview(o)      % Stability Overview    
-   analyse(o,'WithCuo','StabilityMargin');
-   png(o,'Stability Margin');
-end
+function oo = Batch(o)                 % Batch Menu Setup              
+%
+% BATCH   Add some Batch menu items
+%
+   oo = mseek(o,{'#','Batch'});        % find Batch rolldown menu
+   if isempty(oo)
+      return
+   end
+   
+   types = {'shell','spmplug1'};       % supported types
 
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Special');
+         enable(ooo,type(o,{'shell','pkg','cut'}));
+   oooo = mitem(ooo,'Special Batch 1',{@WithCuo,'Batch1'});
+   oooo = mitem(ooo,'Special Batch 2',{@WithCuo,'Batch2'});
+end
+function oo = Batch1(o)                % Process Batch 1               
+   switch o.type
+      case {'spm'}
+         oo = SpmBatch(o);
+      case {'pkg'}
+         oo = PkgBatch(o);
+      otherwise
+         oo = ShellBatch(o);
+   end
+   
+   function o = SpmBatch(o)            % Run Batch for SPM Object   
+      message(o,'Run Batch1 for SPM Object');
+   end
+   function o = PkgBatch(o)            % Run Batch for Package Object   
+      message(o,'Run Batch1 for Package Object');
+   end
+   function o = ShellBatch(o)          % Run Batch for Shell Object   
+      message(o,'Run Batch1 for Shell Object');
+   end
+end
+function oo = Batch2(o)                % Process Batch 2               
+   switch o.type
+      case {'spm'}
+         oo = SpmBatch(o);
+      case {'pkg'}
+         oo = PkgBatch(o);
+      otherwise
+         oo = ShellBatch(o);
+   end
+   
+   function o = SpmBatch(o)            % Run Batch for SPM Object   
+      message(o,'Run Batch2 for SPM Object');
+   end
+   function o = PkgBatch(o)            % Run Batch for Package Object   
+      message(o,'Run Batch2 for Package Object');
+   end
+   function o = ShellBatch(o)          % Run Batch for Shell Object   
+      message(o,'Run Batch2 for Shell Object');
+   end
+end

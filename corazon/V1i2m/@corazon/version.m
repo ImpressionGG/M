@@ -592,6 +592,7 @@ function VersionV1I
 % - starting corazon-v1i2m (beta)
 % - add functionality to corazon/cache() to clear cache segment
 % - bug fix corazon/cache() - deal with empty cache on cache segment delete
+% - bug fix corazon/dark: change control.dark settings
 %
 % Known Bugs / Wishlist
 % - none so far

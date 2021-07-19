@@ -35,8 +35,10 @@ function mode = dark(o,mode)
       return
    end
 
-%   col = o.iif(mode,0.4,0.9)*[1 1 1];  % home background color
-%   setting(o,'control.color',col);
+   control(o,'dark',mode);             % change dark mode settings
+   
+%  col = o.iif(mode,0.4,0.9)*[1 1 1];  % home background color
+%  setting(o,'control.color',col);
    
    if dark(o)
       fig = figure(o);                 % figure handle
