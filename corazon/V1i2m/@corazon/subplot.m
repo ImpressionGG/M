@@ -106,8 +106,9 @@ function hax = subplot(o,varargin)
       dark(o,'Axes');
    end
    
-      % always hold on!
+      % always axis on, hold on!
       
+   axis on;
    hold on;
 end
 

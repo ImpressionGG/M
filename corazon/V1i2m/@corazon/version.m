@@ -587,12 +587,13 @@ function VersionV1I
 % - corazon/id extended to identify object for given ID
 % - bug fix: corazon/id (did not return 2nd arg)
 %
-% Change Log V1i1 (beta):
+% Change Log V1i2 (beta):
 %
 % - starting corazon-v1i2m (beta)
 % - add functionality to corazon/cache() to clear cache segment
 % - bug fix corazon/cache() - deal with empty cache on cache segment delete
 % - bug fix corazon/dark: change control.dark settings
+% - bug fix: corazon/subplot - always axis on
 %
 % Known Bugs / Wishlist
 % - none so far
