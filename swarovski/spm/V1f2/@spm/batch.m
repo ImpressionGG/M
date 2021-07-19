@@ -9,7 +9,8 @@ function oo = batch(o,varargin)        % Batch figure printing
 %    See also: SPM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @StabilityOverview,@ModeShapeOverview);
+                        @StabilityOverview,@ModeShapeOverview,...
+                        @AllStabilityMargin);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -18,6 +19,9 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Study Menu              
+   oo = mitem(o,'All Packages');
+   ooo = mitem(oo,'Stability Margin',{@WithSho,'AllStabilityMargin'});
+
    oo = mitem(o,'Mode Shapes');
    ooo = mitem(oo,'Overview',{@WithCuo,'ModeShapeOverview'});
    
@@ -37,6 +41,11 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
 %         local function, reporting of irregularities, dark mode support
 %
    refresh(o,o);                       % remember to refresh here
+
+   mode = dark(o);
+   dark(o,0);
+   o = dark(o,0);                      % disable dark mode for object o
+   
    cls(o);                             % clear screen
  
    gamma = eval(['@',mfilename]);
@@ -47,7 +56,15 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
    end
-   dark(o);                            % do dark mode actions
+   
+   dark(o,mode);                       % restore dark mode
+   o = dark(o,mode);                   % restore dark mode for object o
+   
+   done = var(oo,'done');
+   if ~isempty(done)
+      cls(o);
+      message(o,done);
+   end
 end
 function oo = WithCuo(o)               % 'With Current Object' Callback
 %
@@ -56,9 +73,20 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
 %         local function, reporting of irregularities, dark mode support
 %
    refresh(o,o);                       % remember to refresh here
+   
+   mode = dark(o);                     % save dark mode
+   dark(o,0);                          % disable dark mode shell setting
+   o = dark(o,0);                      % disable dark mode for object o
+   
    cls(o);                             % clear screen
  
    oo = current(o);                    % get current object
+   
+      % oo = current(o) directly inherits options from shell object,
+      % this we have to set dark mode option also for oo!
+      
+   oo = dark(oo,0);                    % disable dark mode
+   
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -66,42 +94,52 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       oo = set(o,'comment',...
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
-  end
-  dark(o);                            % do dark mode actions
-end
-function oo = WithBsk(o)               % 'With Basket' Callback        
-%
-% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
-%          current object pulling and forwarding to executing local func-
-%          tion, reporting of irregularities and dark mode support
-%
-   refresh(o,o);                       % use this callback for refresh
-   cls(o);                             % clear screen
-
-   gamma = eval(['@',mfilename]);
-   oo = basket(o,gamma);               % perform operation gamma on basket
- 
-   if ~isempty(oo)                     % irregulars happened?
-      message(oo);                     % report irregular
    end
-   dark(o);                            % do dark mode actions
+   
+   dark(o,mode);                       % restore dark mode (shell settings)
+   o = dark(o,mode);                   % restore dark mode for object o
+   
+   done = var(oo,'done');
+   if ~isempty(done)
+      cls(o);
+      message(o,done);
+   end
+end
+
+%==========================================================================
+% For All Packages
+%==========================================================================
+
+function o = AllStabilityMargin(o)
+   fprintf('Batch processing: stability margin for all package objects\n');
+   list = children(o);                 % get list of package objects
+   
+   n = length(list);
+   for (i=1:length(list))
+      oo = list{i};
+      fprintf('   %g of %g: %s\n',i,n,id(oo));
+      cls(oo);
+      
+      fprintf('   plot diagram ...\n');
+      analyse(oo,'StabilityMargin');
+
+      fprintf('   create PNG file ...\n');
+      png(oo,'Stability Margin @ Package');
+   end
+   
+   o = var(o,'done','Batch processing done!');
 end
 
 %==========================================================================
 % Mode Shapes
 %==========================================================================
 
-function o = ModeShapeOverview(o)      % Print Mode Shape Diagrams    
-   mode = dark(o);
-   dark(o,0);
-   
+function o = ModeShapeOverview(o)      % Print Mode Shape Diagrams      
    plot(o,'WithCuo','Complex');
    png(o,'Mode Shape Complex');
 
    plot(o,'WithCuo','Damping');
    png(o,'Mode Shape Damping');
-   
-   dark(o,mode);
 end
 
 %==========================================================================
@@ -109,12 +147,7 @@ end
 %==========================================================================
 
 function o = StabilityOverview(o)      % Stability Overview   
-   mode = dark(o);
-   dark(o,0);
-
    analyse(o,'WithCuo','StabilityMargin');
-   png(o,'Stability Margin');
-
-   dark(o,mode);
+   png(o,sprintf('Stability Margin @ %s',id(o)));
 end
 

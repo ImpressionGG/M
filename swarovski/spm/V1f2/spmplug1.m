@@ -40,6 +40,11 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
 %         local function, reporting of irregularities, dark mode support
 %
    refresh(o,o);                       % remember to refresh here
+
+   mode = dark(o);
+   dark(o,0);
+   o = dark(o,0);                      % disable dark mode for object o
+   
    cls(o);                             % clear screen
  
    gamma = eval(['@',mfilename]);
@@ -50,7 +55,8 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
    end
-   dark(o);                            % do dark mode actions
+   
+   dark(o,mode);                       % restore dark mode
 end
 function oo = WithCuo(o)               % 'With Current Object' Callback
 %
@@ -59,9 +65,20 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
 %         local function, reporting of irregularities, dark mode support
 %
    refresh(o,o);                       % remember to refresh here
+   
+   mode = dark(o);                     % save dark mode
+   dark(o,0);                          % disable dark mode shell setting
+   o = dark(o,0);                      % disable dark mode for object o
+   
    cls(o);                             % clear screen
  
    oo = current(o);                    % get current object
+   
+      % oo = current(o) directly inherits options from shell object,
+      % this we have to set dark mode option also for oo!
+      
+   oo = dark(oo,0);                    % disable dark mode
+   
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -69,25 +86,9 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       oo = set(o,'comment',...
                  {'No idea how to plot object!',get(o,{'title',''})});
       message(oo);                     % report irregular
-  end
-  dark(o);                            % do dark mode actions
-end
-function oo = WithBsk(o)               % 'With Basket' Callback        
-%
-% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
-%          current object pulling and forwarding to executing local func-
-%          tion, reporting of irregularities and dark mode support
-%
-   refresh(o,o);                       % use this callback for refresh
-   cls(o);                             % clear screen
-
-   gamma = eval(['@',mfilename]);
-   oo = basket(o,gamma);               % perform operation gamma on basket
- 
-   if ~isempty(oo)                     % irregulars happened?
-      message(oo);                     % report irregular
    end
-   dark(o);                            % do dark mode actions
+   
+   dark(o,mode);                       % restore dark mode
 end
 
 %==========================================================================

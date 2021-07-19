@@ -5,6 +5,7 @@ function obfuscate(tbox,version,class)
 %
 %                obfuscate(path,exceptions)
 %                obfuscate(path,{'cache','call','id','menu'})
+%                obfuscate(path,{'*'})
 %
 %                obfuscate corazon V1i2 @corazito
 %
@@ -14,7 +15,7 @@ function obfuscate(tbox,version,class)
       dir = tbox;
       exceptions = version;
       
-      fprintf('obfuscating directory %s\n',dir);
+      fprintf('     obfuscating directory %s\n',dir);
       pcode(dir,'-inplace');
       Convert(dir,exceptions);
       return
@@ -56,8 +57,16 @@ function Convert(directory,exceptions)
       isdir = files(i).isdir;
       
       if ( ~isdir )
-         path = [folder,'/',file];
-         Reduce(path);
+         name = Exception(file,exceptions);
+
+         if isempty(name)
+            path = [folder,'/',file];
+            Reduce(path);
+         else
+            fprintf('     providing: %s.m\n',name);
+            path = [folder,'/',name,'.p'];
+            delete(path);
+         end
       end
    end
 end
@@ -117,10 +126,21 @@ function Corazon
    list = {'cache','call','id','menu','shell','version','with'};
 end
 
-function file = Exception(file,exceptions)
+function name = Exception(file,exceptions)
    name = file;
    if (length(name) > 2 && name(end-1) == '.' && name(end) == 'm')
       name = name(1:end-2);
    end
    
+   if isequal(exceptions,{'*'})
+      return
+   end
+   
+   for (i=1:length(exceptions))
+      if isequal(exceptions{i},name)
+         return
+      end
+   end
+   
+   name = '';
 end
