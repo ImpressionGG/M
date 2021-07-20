@@ -601,6 +601,7 @@ function VersionV1I
 % - bug fix corazon/dark: change control.dark settings
 % - package objects have always zero number parameter
 % - add corazon/pkg method
+% - pimp object inheritance of corazon/children and corazon/pkg
 %
 % Known Bugs / Wishlist
 % - none so far
