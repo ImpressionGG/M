@@ -1,4 +1,4 @@
-function oo = damping(o,dtab)
+function oo = damping(o,arg2,arg3)
 %
 % DAMPING     Set specific damping values. This method directly manipulates
 %             the damping table (oo.par.dtable) of an SPM typed object. By
@@ -8,7 +8,12 @@ function oo = damping(o,dtab)
 %             1) set damping according to damping table (dtab)
 %
 %                dtab = [0 0, 0.05; 9 12, 0.08; 15 24, 0.10]
-%                damping(o,dtab)     % store damping according to dtab
+%                damping(o,o,dtab)        % store damping according to dtab
+%                                         % changes in shell and entire
+%                                         % cache is cleared
+%
+%                oo = damping(o,dtab)     % store dtab to oo's parameters
+%                                         % no changes in shell
 %
 %             2) get effective damping or plot effective damping
 %
@@ -49,15 +54,30 @@ function oo = damping(o,dtab)
    elseif (nargin == 1 && nargout == 0)
       Damping(o);
    elseif (nargin == 2)                % store variation in object params
-      if ( ischar(dtab) )
-         file = dtab;                  % rename arg2
+      if ( ischar(arg2) )
+         file = arg2;                  % rename arg2
          if (nargout == 0)
             Load(o,file);
          else
             oo = Load(o,file);
          end
       else
+         dtab = arg2;
+         if (nargout == 0)
+            error('1 output arg expected');
+         else
+            oo = Store(o,dtab);
+         end
+      end
+   elseif (nargin == 3)                % store variation in object params
+      if ~isequal(o,arg2)
+         error('expected arg2 to be a copy of arg1');
+      end
+      dtab = arg3;
+      if (nargout == 0)
          Store(o,dtab);
+      else
+         error('no output arg expected');
       end
    else
       error('bad args');   
@@ -141,7 +161,7 @@ end
 % Store Variation
 %==========================================================================
 
-function Store(o,dtab)
+function oo = Store(o,dtab)
    Check(o,dtab);                      % check consistenccy of dtab
    
    oo = o;                             % rename
@@ -162,8 +182,10 @@ function Store(o,dtab)
       o.data{idx} = oo;
    end
    
-   push(o);                            % push shell object back
-   cache(oo,oo,[]);                    % clear total cache (hard)
+   if (nargout == 0)
+      push(o);                         % push shell object back
+      cache(oo,oo,[]);                 % clear total cache (hard)      
+   end
 end
 
 %==========================================================================

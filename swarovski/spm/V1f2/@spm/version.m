@@ -339,6 +339,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - batch menu item for stability margin of all packages
 % - reading of damping table during import
 % - two step damping variation to be enabled/disabled by menu settings
+% - damping syntax changed for side effect to the shell
 
 % Known bugs & wishlist
 % =========================
