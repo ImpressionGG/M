@@ -15,7 +15,7 @@ function oo = stop(o,value)
 %    Stop flag is cleared by TIMER function
 %    and set by butpress, if butpress properly set to Stop()
 %
-%    Example
+%    Example 1
 %
 %       timer(o,0.1);                  % set timer, clear stop flag
 %       while (~stop(o))
@@ -23,6 +23,17 @@ function oo = stop(o,value)
 %          wait(o);                    % wait for timer
 %       end
 %
+%    Example 2
+%
+%       stop(o,'Enable');              % enable stop functionality
+%       for (i=1:1000)
+%          % ...                       % do something
+%          if stop(o)                  % stop requested by mouse click?
+%             break;
+%          end
+%       end
+%       stop(o,'Disable');             % disable stop functionality
+%   
 %    Copyright(c): Bluenetics 2020 
 %
 %    See also: CORAZITO, TIMER, TERMINATE, WAIT, PROGRESS

@@ -340,6 +340,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - reading of damping table during import
 % - two step damping variation to be enabled/disabled by menu settings
 % - damping syntax changed for side effect to the shell
+% - tag SPM-V1F2 Beta Version SPM @ Corazon V1I2
 
 % Known bugs & wishlist
 % =========================
