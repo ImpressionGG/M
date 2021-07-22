@@ -26,8 +26,9 @@ function use(tag,version)
 %           use cute-v1b3     % Cute V1b3   beta @ 31Aug20
 %           use cute-v1b      % Cute V1b release @ 07Aug20
 %
-%           use spm-v1c       % SPM V1c release @ 12Oct20
+%           use spm-v1c       % SPM V1c  release @ 12Oct20
 %           use minispm-v1e   % MINISPM V1e release @ 
+%           use spm-v1f2      % SPM V1f2    beta @ 20Jul21
 %
    if (nargin < 2)
       version.carabao = 'V1l';
@@ -183,10 +184,12 @@ function use(tag,version)
          CuteV1bRelease;
 
       case 'spm-v1c'
-         SpmV1cRelease;
+         Swarovski('06','Spm','V1c','V1f','Release','12Oct20')
+      case 'spm-v1f2'
+         Swarovski('08','Spm','V1f2','V1i2','Beta','20Jul21')
          
       case 'minispm-v1e'
-         MiniSpmV1eRelease;
+         Swarovski('07','MiniSpm','V1e','V1h','Release','22Feb21')
    end
 end
 
@@ -342,12 +345,21 @@ function CuteV1bRelease                % CuteV1b Release @ 07Sep20
    disp(['   ',pwd]);
 end
 
-function SpmV1cRelease                 % SpmV1c  Release @ 12Oct20     
-   release = 'SpmV1c-Release-12Oct20';
-   dirnum = '06';
-   version.corazon = 'V1f';
-   version.spm = 'V1c';
-   
+function Swarovski(num,tag,vsspm,vscor,kind,date)% Use SPM Release or Beta       
+%
+% SWAROVSKI  Use Swarovski Toolbox Release or Beta
+%
+%          Swarovski('06','Spm','V1c','V1f','Release','12Oct20')
+%          Swarovski('07','MiniSpm','V1e','V1h','Release','22Feb21')
+%          Swarovski('08','Spm','V1f2','V1i2','Beta','20Jul21')
+%
+   release = [tag,vsspm,'-',kind,'-',date]; % e.g. 'SpmV1f2-Beta-20Jul20'
+   dirnum = num;
+   version.corazon = vscor;
+   version.spm = vsspm;
+
+      % all prepared now, let's go!
+      
    fprintf('Setting up for %s\n',release); 
    relpath = [mhome,'/swarovski/@Release/',dirnum,' ',release,'/',release];
 
@@ -359,16 +371,16 @@ function SpmV1cRelease                 % SpmV1c  Release @ 12Oct20
 
       % use spm
 
-   spmpath = [relpath,'/spm/',version.spm];
+   spmpath = [relpath,'/',lower(tag),'/',version.spm];
    addpath(spmpath);
-   fprintf(['   using SPM Toolbox ',version.spm,'\n']);
+   fprintf(['   using %s Toolbox ',tag,version.spm,'\n']);
    
       % show current directory path
       
    disp(['   ',pwd]);
 end
 
-function MiniSpmV1eRelease             % MiniSpmV1e  Release @ 22Feb21     
+function MiniSpmV1eRelease             % MiniSpmV1e  Release @ 22Feb21 
    release = 'MiniSpmV1e-Release-22Feb21';
    dirnum = '07';
    version.corazon = 'V1h';
