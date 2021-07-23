@@ -965,7 +965,7 @@ end
 function oo = Sensitivity(o)           % Sensitivity Neighborhood      
    setting(o,{'sensitivity.points'},200);
    setting(o,{'sensitivity.window'},1.05);
-   setting(o,{'sensitivity.variation'},50);
+   setting(o,{'sensitivity.variation'},2);
    
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Points',{},'sensitivity.points');

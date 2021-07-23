@@ -369,6 +369,7 @@ function vers = version(o,arg)         % SPM Class Version
 % + fix bug: focus thief
 % - display stop request by user in title
 % - react to stop request on deeper levels of spm/critical
+% - default for sensitivity.variation chosen to be 2
 
 % Known bugs & wishlist
 % =========================
