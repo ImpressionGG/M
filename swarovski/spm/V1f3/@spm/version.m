@@ -373,6 +373,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - cleanup Analyse menu: no more Stability Margin
 % - cached sensitivity
 % - Critical Sensitivity utilizing now cache and working pareto driven
+% - batch menu items for all damping sensitivity and critical sensitivity
+
 
 % Known bugs & wishlist
 % =========================

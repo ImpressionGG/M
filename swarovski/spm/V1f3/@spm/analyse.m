@@ -1875,6 +1875,9 @@ o = opt(o,'bode',opts);
       PlotL0(o,[5,2,k,2]);
       PlotE(o,[5,2,k,2],idx(k));
       %diagram(o,'Nyq','',Lmu,[5,6,k,4]);
+      if stop(o)
+         break
+      end
    end
 
    heading(o);

@@ -10,7 +10,8 @@ function oo = batch(o,varargin)        % Batch figure printing
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
                         @StabilityOverview,@ModeShapeOverview,...
-                        @AllStabilityMargin);
+                        @AllStabilityMargin,@AllCriticalSensitivity,...
+                        @AllDampingSensitivity);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -21,6 +22,8 @@ end
 function oo = Menu(o)                  % Setup Study Menu              
    oo = mitem(o,'All Packages');
    ooo = mitem(oo,'Stability Margin',{@WithSho,'AllStabilityMargin'});
+   ooo = mitem(oo,'Damping Sensitivity',{@WithSho,'AllDampingSensitivity'});
+   ooo = mitem(oo,'Critical Sensitivity',{@WithSho,'AllCriticalSensitivity'});
 
    oo = mitem(o,'Mode Shapes');
    ooo = mitem(oo,'Overview',{@WithCuo,'ModeShapeOverview'});
@@ -114,6 +117,7 @@ function o = AllStabilityMargin(o)
    fprintf('Batch processing: stability margin for all package objects\n');
    list = children(o);                 % get list of package objects
    
+   stop(o,'Enable');
    n = length(list);
    for (i=1:length(list))
       oo = list{i};
@@ -125,9 +129,75 @@ function o = AllStabilityMargin(o)
 
       fprintf('   create PNG file ...\n');
       png(oo,'Stability Margin @ Package');
+      
+      if stop(o)
+         break
+      end
    end
+   stop(o,'Disable');
    
    o = var(o,'done','Batch processing done!');
+end
+function o = AllDampingSensitivity(o)
+   assert(container(o));               % we HAVE a shell object!
+   plist = children(o);                % get list of all packages
+   
+   stop(o,'Enable');
+   np = length(plist);                 % number of packages
+   for (i=1:np)
+      po = plist{i};                   % get package object
+      olist = children(po);
+      no = length(olist);              % number of packages
+      for (j=1:no)
+         oo = olist{j};                % fetch SPM object
+         fprintf('   %g/%g of %g/%g: %s\n',i,j,np,no,id(oo));
+         cls(oo);
+
+         fprintf('   damping sensitivity ...\n');
+         analyse(oo,'Sensitive','damping');
+
+         fprintf('   create PNG file ...\n');
+         png(oo,sprintf('Critical Sensitivity %s',id(oo)));
+
+         if stop(o)
+            break
+         end
+      end
+      if stop(o)
+         break
+      end
+   end
+   stop(o,'Disable');
+end
+function o = AllCriticalSensitivity(o)
+   assert(container(o));               % we HAVE a shell object!
+   plist = children(o);                % get list of all packages
+   
+   stop(o,'Enable');
+   np = length(plist);                 % number of packages
+   for (i=1:np)
+      po = plist{i};                   % get package object
+      olist = children(po);
+      no = length(olist);                 % number of packages
+      for (j=1:no)
+         oo = olist{j};                % fetch SPM object
+         fprintf('   %g/%g of %g/%g: %s\n',i,j,np,no,id(oo));
+         cls(oo);
+
+         fprintf('   critical sensitivity ...\n');
+         sensitivity(oo,'Critical');
+
+         fprintf('   create PNG file ...\n');
+         png(oo,sprintf('Critical Sensitivity %s',id(oo)));
+         if stop(o)
+            break
+         end
+      end
+      if stop(o)
+         break
+      end
+   end
+   stop(o,'Disable');
 end
 
 %==========================================================================
