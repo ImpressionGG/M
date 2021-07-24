@@ -18,6 +18,11 @@ function obfuscate(tbox,version,class)
       fprintf('     obfuscating directory %s\n',dir);
       pcode(dir,'-inplace');
       Convert(dir,exceptions);
+      
+         % touch all *.p files so they are younger than *.m files
+         
+      cmd = ['touch ',dir,'/*.p'];
+      system(cmd);
       return
    end
 

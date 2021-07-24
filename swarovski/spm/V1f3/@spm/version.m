@@ -371,7 +371,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - react to stop request on deeper levels of spm/critical
 % - default for sensitivity.variation chosen to be 2
 % - cleanup Analyse menu: no more Stability Margin
-
+% - cached sensitivity
+% - Critical Sensitivity utilizing now cache and working pareto driven
 
 % Known bugs & wishlist
 % =========================

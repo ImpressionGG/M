@@ -433,7 +433,7 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'Phase',{@WithSpm,'Critical','Phase'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nyquist',{@WithSpm,'Critical','Nyquist'});
-   ooo = mitem(oo,'Critical',{@WithSpm,'Critical','Critical'});
+   ooo = mitem(oo,'Critical Loci',{@WithSpm,'Critical','Critical'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
 end
@@ -536,7 +536,7 @@ function o = Critical(o)               % Calculate Critical Quantities
             [~ ,idx] = sort(abs(ljw(:,j)));
             l00jw(j) = ljw(idx(no),j);
          end
-
+         
          nyq(K*l00,col);
 
          l00.data.matrix{1} = l00jw;
@@ -2004,6 +2004,12 @@ watch=1;
       set(gca,'ylim',ylim);
       
       title(sprintf('%s @ Frequency',tit));
+      
+         % store S in cache
+      
+      o = cache(o,'sensitivity.S',S);  % store sensitivity
+      cache(o,o);                      % hard refresh cache
+      
       subplot(o);
    end
    function PlotE(o,sub,k)             % plot Example

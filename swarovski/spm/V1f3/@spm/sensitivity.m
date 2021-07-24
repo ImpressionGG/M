@@ -216,6 +216,10 @@ function o = Critical(o)
    dtab0 = [1:m; 1:m; zeta(:)']';
    vari = opt(o,{'sensitivity.variation',2});
 
+      % now object variation always on
+      
+   o = opt(o,'damping.object',true);  % otherwise pot. inactive variation
+   
       % init plots
       
    PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
@@ -227,7 +231,7 @@ function o = Critical(o)
    PlotK(o,sub2,[1 m],K0);
    title(sprintf('Critical Gain (nominal K0: %g)',o.rd(K0,2)));
    xlabel('mode number [#]');
-   ylabel('K0');
+   ylabel(sprintf('K0 (variation: %g)',vari));
    
       % run through all modes
       
@@ -235,7 +239,26 @@ function o = Critical(o)
 
    stop(o,'Enable');
    terminated = 0;
-   for (k=1:m)
+   
+      % lookup sensitivity in cache
+      
+   S = cache(o,'sensitivity.S');
+   if (~isempty(S) && length(S) == m)
+      [~,idx] = sort(-abs(S));
+   else
+      idx = 1:m;
+   end
+      
+
+   K = cache(o,'sensitivity.Kcrit');
+   l = cache(o,'sensitivity.lcrit');
+   f = cache(o,'sensitivity.fcrit');
+   
+   if isempty(K) || length(K) ~= m
+      K = NaN*ones(1,m);
+   end
+   
+   for (k=idx)
       dtab = dtab0;                    % startig from dtab0
       dtab(k,3) = dtab(k,3)*vari;      % variate damping of mode k
       oo = damping(o,dtab);            % change damping
@@ -246,37 +269,52 @@ function o = Critical(o)
       oo = cache(oo,'spectral',[]);    % clear spectral cache segment
       
       oo = opt(oo,'cache.hard',false); % no hard refresh !!!
-      [lk,Kk,fk] = cook(oo,'l0,K0,f0');
       
-         % plot actual damping
-         
-      subplot(o,sub3);
-      delete(gca);
-      subplot(o,sub3);
-      damping(oo);
- 
-         % plot Bode
-         
-      subplot(o,sub1);
-      delete(gca);
-      subplot(o,sub1);
-      PlotBode(oo,sub1,lk,fk,'r','c-.');   
-      plot(omega(k)*[1 1]/2/pi,get(gca,'ylim'),'g-.');
+      Kk = K(k);
+      if isnan(Kk)
+      
+         [lk,Kk,fk] = cook(oo,'l0,K0,f0');
 
-      PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
-      title(sprintf('Mode: #%g, K0: %g',k,o.rd(Kk,2)));
-      xlabel('omega [1/s]');
-      ylabel('|l0(jw)|');
+            % store results in tables (to be cached)
+            
+         l{k} = lk;
+         K(k) = Kk;
+         f(k) = fk;
+
+            % note that o contains the original cache contents, and it is
+            % not an issue if we cold refresh this cache (but attention:
+            % oo must not be cold refreshed!!!)
+
+         o = cache(o,'sensitivity.Kcrit',K);
+         o = cache(o,'sensitivity.lcrit',l);
+         o = cache(o,'sensitivity.fcrit',f);
+         cache(o,o);                      % cold refresh
+
+            % plot actual damping
+
+         subplot(o,sub3);
+         delete(gca);
+         subplot(o,sub3);
+         damping(oo);
+
+            % plot Bode
+
+         subplot(o,sub1);
+         delete(gca);
+         subplot(o,sub1);
+         PlotBode(oo,sub1,lk,fk,'r','c-.');   
+         plot(omega(k)*[1 1]/2/pi,get(gca,'ylim'),'g-.');
+
+         PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
+         title(sprintf('Mode: #%g, K0: %g',k,o.rd(Kk,2)));
+         xlabel('omega [1/s]');
+         ylabel('|l0(jw)|');
+      end
       
          % Plot K
          
       PlotK(o,sub2,k,Kk);
-      
-      K0tab(k) = Kk;
-      l{k} = lk;
-      K(k) = Kk;
-      f(k) = fk;
-      
+            
       if stop(o)         
          terminated = 1;
          break;
@@ -284,6 +322,7 @@ function o = Critical(o)
    end
    stop(o,'Disable');
    
+   title(sprintf('Critical Gain (nominal K0: %g)',o.rd(K0,2)));
    if (~terminated)
       PlotFavorites(o)
    end
@@ -304,6 +343,8 @@ function o = Critical(o)
       
       col = o.iif(dark(o),'w','k');
       plot([k k],[0 K],col,  k,K,'ro');
+      title(sprintf('Critical Gain K0: %g (nominal K0: %g)',...
+                    o.rd(Kk,3),o.rd(K0,2)));
    end
    function PlotFavorites(o)
       [~,idx] = sort(-K);
