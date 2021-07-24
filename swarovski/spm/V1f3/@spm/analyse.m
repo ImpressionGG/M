@@ -559,9 +559,14 @@ end
 
 function oo = StabilityMenu(o)         % Stability Menu
    oo = mitem(o,'Stability');
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
+   enable(ooo,0);                      % disabled for SPM objects
+   return
+   
+      % rest is all legacy
+      
    ooo = mitem(oo,'Overview',{@WithCuo,'StabilitySummary'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
    ooo = mitem(oo,'Nyquist',{@WithCuo,'NyquistStability'});
 
    ooo = mitem(oo,'-');
@@ -2936,6 +2941,9 @@ function NyquistChart(o,sub,mu)        % Nyquist Chart
    title(sprintf('Nyquist Loci mu*lambda0(jw) - K0: %g @ f0: %g Hz (mu: %g)',K0,f0,mu));
 end
 function MarginChart(o,sub)            % Margin Chart
+   plot(o,'About');
+   return                              % don't support this chart anymore
+
    if length(sub) < 2
       error('two subplot IDs expected');
    end

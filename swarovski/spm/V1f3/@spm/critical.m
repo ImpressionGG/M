@@ -646,6 +646,7 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
    if isempty(mu)
       title(sprintf('Critical Gain (K%s: %g @ f%s: %g Hz)',tag,K0,tag,f0));
    else
+      error('using this plot as stability margin is obsoleted');
       title(sprintf('Stability Margin: %g (%g dB) @ f: %g Hz, omega: %g/s (mu: %g)',...
            o.rd(K0,2),o.rd(20*log10(K0),1), o.rd(f0,1),o.rd(2*pi*f0,1),mu));
    end

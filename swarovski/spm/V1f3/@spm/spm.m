@@ -34,6 +34,9 @@ classdef spm < corazon                 % Spm Class Definition
 %                          - coordinate transformation
 %                          - contact based selection
 %
+%          principal:  calculate principal system L0 as a state space
+%                      representation 
+%
 %          critical:   calculate critical quantities (K0,f0,K180,f180,L0)
 %
 %          lambda:     calculate spectral frequency responses (lambda0) and

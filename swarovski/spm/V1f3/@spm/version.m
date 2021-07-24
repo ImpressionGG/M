@@ -370,6 +370,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - display stop request by user in title
 % - react to stop request on deeper levels of spm/critical
 % - default for sensitivity.variation chosen to be 2
+% - cleanup Analyse menu: no more Stability Margin
+
 
 % Known bugs & wishlist
 % =========================

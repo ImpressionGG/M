@@ -695,7 +695,6 @@ function oo = Sensitive(o)             % Sensitivity View Settings Menu
    setting(o,{'sensitivity.phase.enable'},false);
    setting(o,{'sensitivity.omega.points'},200);
    setting(o,{'sensitivity.omega.window'},50);
-   setting(o,{'sensitivity.variation'},50);
    
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Lower Frequency',{},'sensitivity.omega.low');
