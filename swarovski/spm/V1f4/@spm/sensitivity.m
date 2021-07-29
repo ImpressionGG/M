@@ -14,7 +14,9 @@ function [o1,o2,o3] = sensitivity(o,in1,in2)
 %             
 %             Graphics Generation
 %
-%                sensitivity(o,'Critical')
+%                sensitivity(o,'Critical') % plot/calc critical sensitivity
+%                sensitivity(o,'Damping')  % plot/calc damping sensitivity
+%                sensitivity(o,'Weight')   % plot/calc weight sensitivity
 %
 %             Example 1
 %
@@ -27,6 +29,11 @@ function [o1,o2,o3] = sensitivity(o,in1,in2)
 %                bode(l0,'r')
 %                bode(l5,'g')
 %                bode(s5,'c');
+%
+%             Options
+%                detail      % plot intermediate details of sensitivity
+%                            % calculation for modes 'Damping' and 'weight'
+%                            % (default true)
 %
 %             Copyright(c) Bluenetics 2021
 %
@@ -55,14 +62,20 @@ end
 % Dispatch Mode
 %==========================================================================
 
-function oo = Dispatch(o,mode)
+function oo = Dispatch(o,mode)         % Dispatch Local Function       
    if ~ischar(mode)
       error('character expected for arg2');
    end
    
    switch (mode)
-      case 'Critical'
+      case 'Critical'                  % plot/calc critical sensitivity
          oo = Critical(o);
+      case 'Damping'
+         o = opt(o,'mode.sensitivity','damping');
+         oo = WeightOrDamping(o);      % plot/calc damping sensitivity
+      case 'Weight'
+         o = opt(o,'mode.sensitivity','weight');
+         oo = WeightOrDamping(o);      % plot/calc weight sensitivity
       otherwise
          error('bad mode');
    end
@@ -192,20 +205,26 @@ end
 % Plot/Calculate Critical Sensitivity
 %==========================================================================
 
-function o = Critical(o)
+function o = Critical(o)               % Critical Sensitivity          
    if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
    
-   sub1 = 2211;                        % for bode plot
-   sub2 = 2221;                        % for K plot
-   sub3 = 1212;                        % for damping
+   sub1 = 2212;                        % for bode plot
+   sub2 = 3221;                        % for K plot
+   sub3 = 2222;                        % for damping
+   sub4 = 3211;                        % for damping sensitivity
+   sub5 = 3231;                        % for Percentage plot
    
       % plot nominal damping
       
    subplot(o,sub3);
    damping(o);
+   
+      % plot damping sensitivity
+      
+   PlotS(o,sub4);
    
    [l0,K0,f0] = cook(o,'l0,K0,f0');
    
@@ -229,9 +248,7 @@ function o = Critical(o)
    ylabel('|l0(jw)|');
       
    PlotK(o,sub2,[1 m],K0);
-   title(sprintf('Critical Gain (nominal K0: %g)',o.rd(K0,2)));
-   xlabel('mode number [#]');
-   ylabel(sprintf('K0 (variation: %g)',vari));
+   PlotPercent(o,sub5,[1 m],K0);
    
       % run through all modes
       
@@ -311,9 +328,10 @@ function o = Critical(o)
          ylabel('|l0(jw)|');
       end
       
-         % Plot K
+         % Plot K and percentage
          
-      PlotK(o,sub2,k,Kk);
+      PlotK(o,sub2,k,Kk);         
+      PlotPercent(o,sub5,k,Kk);
             
       if stop(o)         
          terminated = 1;
@@ -338,13 +356,33 @@ function o = Critical(o)
       
       if (length(k) == 2)
          plot(o,k,[K K],'K');
+         title(sprintf('Critical Gain (nominal K0: %g)',o.rd(K0,2)));
+         xlabel('mode number [#]');
+         ylabel(sprintf('K0 (variation: %g)',vari));
          return;
       end
       
       col = o.iif(dark(o),'w','k');
       plot([k k],[0 K],col,  k,K,'ro');
       title(sprintf('Critical Gain K0: %g (nominal K0: %g)',...
-                    o.rd(Kk,3),o.rd(K0,2)));
+                    o.rd(Kk,3),o.rd(K0,3)));
+   end
+   function PlotPercent(o,sub,k,K)
+      subplot(o,sub);
+      
+      p = (K-K0)/K0*100;               % percentage
+      if (length(k) == 2)
+         plot(o,k,[p p],'K');
+         title('Percentual deviation of critical gain');
+         xlabel('mode number [#]');
+         ylabel('percentage');
+         return;
+      end
+      
+      col = o.iif(dark(o),'w','k');
+      plot([k k],[0 p],col,  k,p,'ro');
+      title(sprintf('Percentual deviation of critical gain: %g%%',...
+                    o.rd(p,3)));
    end
    function PlotFavorites(o)
       [~,idx] = sort(-K);
@@ -363,4 +401,290 @@ function o = Critical(o)
          title(sprintf('mode #%g, K0: %g',k,o.rd(K(k),2)));
       end
    end
+end
+
+%==========================================================================
+% Plot/Calculate Damping Sensitivity
+%==========================================================================
+
+function o = WeightOrDamping(o)        % Damping Sensitivity           
+%
+% Idea:
+%    - let L0(jw) be the nominal frequency response
+%    - vary w(k) such that L0(jw) -> Lk(jw)
+%    - build dL := L0(jw)-Lk(jw)
+%    - Sensitivity S := |dL(jw)| / |L0(jw)|
+%
+   s = [];  modes = [];                % initialize
+   watch = false;                      % don't watch (try to set true!)
+
+   col = o.iif(dark(o),'w.','k.');
+   
+   modus = opt(o,'mode.sensitivity');
+   if isequal(modus,'weight')
+      tit = 'Weight Sensitivity';
+   elseif isequal(modus,'damping')
+      tit = 'Damping Sensitivity';
+   end
+   
+      % transfer required options
+   
+   o = with(o,'sensitivity');          % access sensitivity settings
+   opts = opt(o,'sensitivity');
+   o = opt(o,'bode',opts);
+
+      % cold refresh critical cache
+      
+   o = cache(o,o,'critical');
+   o = cache(o,o,'spectral');
+   
+   [f0,T0] = cook(o,'f0,Tnorm');
+   [lambda0,PsiW31,PsiW33] = cook(o,'lambda0,PsiW31,PsiW33');
+
+   [om0,w0] = Omega(o);                % omega range and center frequency
+   
+   L0 = lambda(o,lambda0);             % calculate critical Fqr
+   L0 = inherit(L0,o);                 % inherit bode settings
+   L0 = opt(L0,'color','ryyyyy');      % set plot color
+   
+      % sensitivity study
+
+   m = size(PsiW31,1);                 % number of modes
+   [~,om] = fqr(with(L0,'bode'));      % get full omega range
+
+      % get full range phi(om)
+
+   L0jw = lambda(o,PsiW31,PsiW33,om*T0);
+   L0jw0 = lambda(o,PsiW31,PsiW33,om0*T0);
+
+   PlotL0(o,3211);
+   o = Variation(o,3211,3221);         % run variations
+   PlotS(o,3231);
+
+      % plot FQR for 5 most sensitive modes
+      
+   [~,idx] = sort(-s);                 % sort from largest to smallest
+   for (k=1:5)
+      PlotL0(o,[5,2,k,2]);
+      PlotE(o,[5,2,k,2],idx(k));
+      if stop(o)
+         break
+      end
+   end
+
+   heading(o);
+
+      % done - that's it!
+      
+   function o = Variation(o,sub1,sub2) % run variations                
+      subplot(o,sub2);
+      
+      modus = opt(o,'mode.sensitivity');
+      vari = opt(o,'sensitivity.variation');
+      
+      bode(trf(corasim),'W');
+      set(gca,'ylim',[-10,40],'ytick',-10:10:40);
+      
+      Psi31 = PsiW31(:,1:3);  W31 = PsiW31(:,4:end);
+      Psi33 = PsiW33(:,1:3);  W33 = PsiW33(:,4:end);
+      zero = 0;      
+      
+      l0jw = lambda(o,L0jw);
+      l0jw0 = lambda(o,L0jw0);
+            
+      detail = opt(o,{'detail',1});
+
+      for (i=1:m)
+         switch modus
+            case 'weight'
+               w31 = W31;  w31(i,:) = w31(i,:)*zero;  psiw31 = [Psi31 w31];
+               w33 = W33;  w33(i,:) = w33(i,:)*zero;  psiw33 = [Psi33 w33];
+            case 'damping'
+               k = i;         
+               psiw31 = PsiW31;  psiw31(k,2) = vari*psiw31(k,2);
+               psiw33 = PsiW33;  psiw33(k,2) = vari*psiw33(k,2);
+            otherwise
+               error('bad sensitivity calculation mode')
+         end
+         
+         Gjw = lambda(o,psiw31,psiw33,om*T0);    % full omega range
+         Gjw0 = lambda(o,psiw31,psiw33,om0*T0);  % omega range next to om0
+
+            % calculate critical function
+            
+         gjw = lambda(o,Gjw);
+         gjw0 = lambda(o,Gjw0);
+         
+                % sensitivity function
+
+         sjw = max(abs(gjw./l0jw),abs(l0jw./gjw));       
+                
+         sjw0 = max(abs(l0jw0./gjw0),abs(gjw0./l0jw0)); 
+         
+            % store sensitivity and modal frequency
+
+         S(i) = max(20*log10(abs(sjw0))); % store max dB value of sensitivity
+         mode = sqrt(Psi31(i,3))/oscale(o); % mode omega
+         modes(i) = mode;
+
+         if (detail)
+            subplot(o,sub1);
+
+            hdl0 = semilogx(om0,20*log10(abs(gjw0)),'r.');
+            hdl1 = semilogx(om,20*log10(abs(gjw)),'r');
+
+            subplot(o,sub2);
+            hdl2 = semilogx(om,20*log10(abs(sjw)),'c');
+            hold on;
+            hdl3 = semilogx(om0,20*log10(abs(sjw0)),col);
+            hdl4 = semilogx([mode mode],get(gca,'ylim'),'c-.');
+            title(sprintf('mode #%g: %g dB @ %g 1/s (%g Hz)',...
+                          i,o.rd(S(i),1),mode,mode/2/pi));
+                                              
+            idle(o);
+            delete([hdl0 hdl1,hdl3,hdl4]);
+          end
+
+         if (rem(i-1,10) == 0)
+            progress(o,'analysing sensitivity',(i-1)/m*100);
+         end
+      end
+      progress(o);
+
+         % store sensitivity S and modal frequency f in cache
+      
+      f = modes / (2*pi);
+      o = cache(o,'sensitivity.S',S);         % store sensitivity
+      o = cache(o,'sensitivity.f',f);         % store frequency of mode
+      o = cache(o,'sensitivity.mode',modus);  % store sensitivity mode
+      cache(o,o);                      % hard refresh cache
+
+         % plot FQR for most sensitive modes
+
+      S0 = max(S) - 20;
+      s = S;
+      
+      [~,idx] = sort(-s);
+      
+      for (k=1:min(10,length(idx)))
+         kk = idx(k);
+         plot(o,modes(kk),10*s(kk),[col,'|'], modes(kk),10*s(kk),'ro');
+         hdl = text(modes(kk),10*s(kk),sprintf('#%g',kk));
+         set(hdl,'horizontal','center','vertical','top');
+         set(hdl,'color',o.iif(dark(o),1,0)*[1 1 1]);
+      end
+
+      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
+      set(h,'linewidth',1);
+      
+      ylim = get(gca,'ylim');
+      ylim = [min(ylim(1),min(s(idx))), max(ylim(2),max(s))];
+      set(gca,'ylim',ylim);
+      
+      title(sprintf('%s @ Frequency',tit));
+            
+      subplot(o);
+   end
+   function PlotL0(o,sub)              % Plot L0 (Psion Based)         
+      o = opt(o,'plotcrit',1);
+      diagram(o,'Bode','',L0,sub);
+
+      title(sprintf('om0: %g 1/s (f: %g Hz)',w0,w0/2/pi));
+      subplot(o,sub);
+   end
+   function PlotE(o,sub,k)             % plot Example                  
+      subplot(o,sub);
+
+      [skjw,lkjw,l0jw] = sensitivity(o,k,om);
+      
+      mode = modes(k);                 % mode omega
+
+      hdl = semilogx(om,20*log10(abs(lkjw)),'r');
+      hold on
+      hdl = semilogx(om,20*log10(abs(skjw)),'c');
+      set(hdl,'linewidth',1);
+      title(sprintf('Mode #%g, Omega: %g 1/s (%g Hz), Sensitivity: %g dB',...
+                k,o.rd(modes(k),0),o.rd(modes(k)/2/pi,0),o.rd(s(k),1)));
+
+      subplot(o);
+      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
+      set(h,'linewidth',1);
+      h = semilogx([modes(k),modes(k)],get(gca,'ylim'),'c-.');
+      set(h,'linewidth',1);
+      
+      ylim = get(gca,'ylim');
+      set(gca,'ylim',[ylim(1) max(ylim(2),50)]);
+   end
+   function PlotLjw(o,sub)             % plot Bode diagram             
+      subplot(o,sub);
+
+      bode(L0,'r');
+
+      dB0 = 20*log10(max(abs(L0jw0)));
+      plot(o,om0,dB0,'K.');
+      
+      
+      [m0,n0] = size(lambda0.data.matrix);
+      for (ii=[2:m0,1])                % first row at the end
+         L0i = fqr(corasim,lambda0.data.omega,{lambda0.data.matrix{ii,1}});
+         colii = o.iif(ii==1,'ryyy','kw');
+         bode(L0i,colii);
+      end
+      
+      [m0,n0] = size(L0jw0);
+      for (ii=[2:m0,1])                % first row at the end
+         L0i = fqr(corasim,om0,{L0jw0(ii,:)});
+         colii = o.iif(ii==1,'ryyyo','kwo');
+         bode(L0i,colii);
+      end
+   end
+end
+function PlotS(o,sub)                  % Plot Sensitivity              
+   subplot(o,sub);
+   modus = cache(o,'sensitivity.mode');
+   S = cache(o,'sensitivity.S');
+   m = length(S);
+   col = o.iif(dark(o),'w.','k.');
+   
+   plot(o,1:m,S,[col,'|'], 1:m,S,'ro');
+   title('Weight Sensitivity');
+   if isequal(modus,'weight')
+      title('Weight Sensitivity @ Mode Number');
+   elseif isequal(modus,'damping')
+      what = 'Damping Sensitivity @ Mode Number';
+      vari = opt(o,'sensitivity.variation');
+      title(sprintf('%s (variation: %g)',what,vari));
+   end
+   xlabel('omega [1/s]');
+   subplot(o);
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0           
+%
+% OMEGA  Omega range near f0
+%
+%           om = Omega(o,f0,1.05,50)   % om = f0/1.02,..,f0*1.02, 50 points
+%           om = Omega(o,f0)           % same as above
+%           om = Omega(o)              % cook f0
+%
+%           [om,om0] = Omega(o)        % also return center frequency
+%
+   if (nargin < 4)
+      n = opt(o,{'omega.window',50});
+   end
+   if (nargin < 3)
+      k = 1.05;
+   end
+   k1 = 1/k;  k2 = k;
+
+   if (nargin < 2)
+      [f0,L0] = cook(o,'f0,L0');
+   end
+
+   om0 = 2*pi*f0;
+   om = logspace(log10(om0*k1),log10(om0*k2),n);
 end

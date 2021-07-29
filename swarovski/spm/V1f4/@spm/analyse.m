@@ -1,4 +1,4 @@
-function oo = analyse(o,varargin)      % Graphical Analysis
+function oo = analyse(o,varargin)      % Graphical Analysis            
 %
 % ANALYSE   Graphical analysis
 %
@@ -34,7 +34,7 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Analyse Menu
+function oo = Menu(o)                  % Setup Analyse Menu            
    switch type(current(o))
       case 'shell'
          oo = ShellMenu(o);
@@ -50,13 +50,13 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'Stability');
 %  ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
 end
-function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
+function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
 
    oo = SetupMenu(o);
 end
-function oo = SpmMenu(o)               % Setup SPM Analyse Menu
+function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = PrincipalMenu(o);              % Add Principal menu
    oo = CriticalMenu(o);               % Add Critical menu
 
@@ -95,11 +95,11 @@ o = mitem(o,'Legacy');
    oo = Precision(o);
 end
 
-function oo = NumericMenu(o)           % Numeric Menu
+function oo = NumericMenu(o)           % Numeric Menu                  
    oo = mitem(o,'Numeric');
    ooo = mitem(oo,'Numeric Quality of G(s)',{@WithSpm,'Numeric'});
 end
-function oo = OpenLoopMenu(o)          % Open Loop Menu
+function oo = OpenLoopMenu(o)          % Open Loop Menu                
    oo = mitem(o,'Open Loop');
    ooo = mitem(oo,'Overview',{@WithCuo,'OpenLoop','Lmu',1,'bcc'});
    ooo = mitem(oo,'Lmu(s)',{@WithCuo,'LmuDisp'});
@@ -113,13 +113,13 @@ function oo = OpenLoopMenu(o)          % Open Loop Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Calculation',{@WithCuo,'Calc','L0',1,'bcc'});
 end
-function oo = ClosedLoopMenu(o)        % Closed Loop Menu
+function oo = ClosedLoopMenu(o)        % Closed Loop Menu              
    oo = mitem(o,'Closed Loop');
    ooo = mitem(oo,'Bode Plots',{@WithCuo,'BodePlots'});
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
 end
-function oo = Sensitivity(o)           % Sensitivity Menu
+function oo = Sensitivity(o)           % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
 %  ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
    ooo = mitem(oo,'Frequency Sensitivity',{@WithSpm,'SensitivityF'});
@@ -128,14 +128,14 @@ function oo = Sensitivity(o)           % Sensitivity Menu
    ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
    ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
 end
-function oo = Spectrum(o)              % Spectrum Menu
+function oo = Spectrum(o)              % Spectrum Menu                 
    oo = mitem(o,'Spectrum');
    ooo = mitem(oo,'L0 Magnitude Plots',{@WithSpm,'L0Magni'});
    ooo = mitem(oo,'Lambda Magnitude Plots',{@WithSpm,'LambdaMagni'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lambda Bode Plot',{@WithSpm,'LambdaBode'});
 end
-function oo = Force(o)                 % Closed Loop Force Menu
+function oo = Force(o)                 % Closed Loop Force Menu        
    oo = mitem(o,'Force');
    sym = 'Tf';  sym1 = 'Tf1';  sym2 = 'Tf2';  col = 'yyyr';
 
@@ -146,7 +146,7 @@ function oo = Force(o)                 % Closed Loop Force Menu
    ooo = mitem(oo,'Tf1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Tf2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Acceleration(o)          % Closed Loop Acceleration Menu
+function oo = Acceleration(o)          % Closed Loop Acceleration Menu 
    oo = mitem(o,'Acceleration');
    sym = 'Ta';  sym1 = 'Ta1';  sym2 = 'Ta2';  col = 'r';
 
@@ -157,7 +157,7 @@ function oo = Acceleration(o)          % Closed Loop Acceleration Menu
    ooo = mitem(oo,'Ta1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Ta2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Velocity(o)              % Closed Loop Velocity Menu
+function oo = Velocity(o)              % Closed Loop Velocity Menu     
    oo = mitem(o,'Velocity');
    sym = 'Tv';  sym1 = 'Tv1';  sym2 = 'Tv2';  col = 'bc';
 
@@ -168,7 +168,7 @@ function oo = Velocity(o)              % Closed Loop Velocity Menu
    ooo = mitem(oo,'Tv1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Tv2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Elongation(o)            % Closed Loop Elongation Menu
+function oo = Elongation(o)            % Closed Loop Elongation Menu   
    oo = mitem(o,'Elongation');
    sym = 'Ts';  sym1 = 'Ts1';  sym2 = 'Ts2';  col = 'g';
 
@@ -179,7 +179,7 @@ function oo = Elongation(o)            % Closed Loop Elongation Menu
    ooo = mitem(oo,'Ts1(s)',{@WithCuo,'Trf',sym1,1,col});
    ooo = mitem(oo,'Ts2(s)',{@WithCuo,'Trf',sym2,2,col});
 end
-function oo = Precision(o)             % Precision Menu
+function oo = Precision(o)             % Precision Menu                
    oo = mitem(o,'Precision');
    ooo = mitem(oo,'Eigenvalues',{@WithCuo,'EigenvalueCheck'});
 end
@@ -188,7 +188,7 @@ end
 % Launch Callbacks
 %==========================================================================
 
-function oo = WithSho(o)               % 'With Shell Object' Callback
+function oo = WithSho(o)               % 'With Shell Object' Callback  
 %
 % WITHSHO General callback for operation on shell object
 %         with refresh function redefinition, screen
@@ -240,7 +240,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithSpm(o)               % 'With Current Spm Callback
+function oo = WithSpm(o)               % 'With Current Spm Callback    
 %
 % WITHSPM Same as WithCuo but checking if current object is an spm object,
 %         otherwise calling plot(o,'About')
@@ -271,7 +271,7 @@ function oo = WithSpm(o)               % 'With Current Spm Callback
       dark(oo);                        % do dark mode actions
    end
 end
-function oo = WithBsk(o)               % 'With Basket' Callback
+function oo = WithBsk(o)               % 'With Basket' Callback        
 %
 % WITHBSK  Plot basket, or perform actions on the basket, screen clearing,
 %          current object pulling and forwarding to executing local func-
@@ -289,7 +289,7 @@ function oo = WithBsk(o)               % 'With Basket' Callback
    dark(o);                            % do dark mode actions
 end
 
-function o = Err(o)                    % Error Handler
+function o = Err(o)                    % Error Handler                 
    error('bad mode');
 end
 
@@ -297,7 +297,7 @@ end
 % Principal
 %==========================================================================
 
-function oo = PrincipalMenu(o)         % Principal Menu
+function oo = PrincipalMenu(o)         % Principal Menu                
    oo = mitem(o,'Principal');
    ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
    ooo = mitem(oo,'-');
@@ -307,7 +307,7 @@ end
 
     % callbacks
 
-function o = Principal(o)              % Pricipal Menu Callbacks
+function o = Principal(o)              % Pricipal Menu Callbacks       
    if type(o,{'spm'})
       o = cache(o,o,'critical');
       o = cache(o,o,'spectral');
@@ -328,7 +328,7 @@ function o = Principal(o)              % Pricipal Menu Callbacks
          PrincipalSpectrum(o,'g33');
    end
 end
-function o = PrincipalGenesis(o)
+function o = PrincipalGenesis(o)                                       
    [l0,g31,g33,g0] = cook(o,'lambda0,g31,g33,g0');
 
    [~,no,~] = size(l0);
@@ -341,7 +341,7 @@ function o = PrincipalGenesis(o)
    MagniChart(o,413,g0);
    MagniChart(o,414,l0);
 end
-function o = PrincipalSpectrum(o,tag)
+function o = PrincipalSpectrum(o,tag)                                  
    g = cook(o,tag);
    no = prod(size(g.data.matrix));
    sub = [211,212];
@@ -377,7 +377,7 @@ end
 
    % legacy
 
-function oldPlotNyquist(o,sub,critical)
+function oldPlotNyquist(o,sub,critical)                                
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
 
    o = with(o,'nyq');
@@ -421,7 +421,7 @@ end
 % Critical
 %==========================================================================
 
-function oo = CriticalMenu(o)          % Critical Menu
+function oo = CriticalMenu(o)          % Critical Menu                 
    oo = mitem(o,'Critical');
    ooo = mitem(oo,'Overview',{@WithSpm,'Critical','Overview'});
    ooo = mitem(oo,'Bode & Damping',{@WithSpm,'Critical','Combi'});
@@ -440,7 +440,7 @@ end
 
    % callbacks
 
-function o = Critical(o)               % Calculate Critical Quantities
+function o = Critical(o)               % Calculate Critical Quantities 
    if type(o,{'spm'})
       o = cache(o,o,'critical');
    else
@@ -557,7 +557,7 @@ end
 % Stability
 %==========================================================================
 
-function oo = StabilityMenu(o)         % Stability Menu
+function oo = StabilityMenu(o)         % Stability Menu                
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
    enable(ooo,0);                      % disabled for SPM objects
@@ -897,7 +897,7 @@ end
 
    % legacy
 
-function o = Margin(o)                 % Stability Margin
+function o = Margin(o)                 % Stability Margin              
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % hard refresh multi cache segment
    end
@@ -913,7 +913,7 @@ function o = Margin(o)                 % Stability Margin
 
    Heading(o);
 end
-function o = Damping(o)                % Closed Loop Damping
+function o = Damping(o)                % Closed Loop Damping           
    if type(o,{'spm'})
       o = cache(o,o,'multi');          % hard refresh cache segment
    end
@@ -959,7 +959,7 @@ function o = Damping(o)                % Closed Loop Damping
 
    Heading(o);
 end
-function o = OldDamping(o)             % Closed Loop Damping
+function o = OldDamping(o)             % Closed Loop Damping           
    o = with(o,'rloc');
    o = with(o,'style');
 
@@ -989,7 +989,7 @@ endfunction o = Rloc(o)                   % Root Locus
 
    heading(o);
 end
-function o = OldRloc(o)                % Root Locus
+function o = OldRloc(o)                % Root Locus                    
    o = with(o,'rloc');
    o = with(o,'style');
 
@@ -1007,7 +1007,7 @@ function o = OldRloc(o)                % Root Locus
 
    heading(o);
 end
-function oo = StabilityOverview(o)     % Stability Overview
+function oo = StabilityOverview(o)     % Stability Overview            
    o = with(o,{'style','bode','nyq'});
 
    if type(o,{'spm'})
@@ -1052,7 +1052,7 @@ function oo = StabilityOverview(o)     % Stability Overview
    Verbose(o,Lmu);
    Heading(o,head);
 end
-function o = SimpleCalc(o)             % Simple Calculation
+function o = SimpleCalc(o)             % Simple Calculation            
    idx = contact(o,nan);
    if (length(idx) > 1)
       cls(o);
@@ -1095,7 +1095,7 @@ function o = SimpleCalc(o)             % Simple Calculation
       evalin('base',cmd);
    end
 end
-function [list,objs,head] = LmuSelect(o) % Select Transfer Function
+function [list,objs,head] = LmuSelect(o) % Select Transfer Function    
    list = {};                          % empty by default
    objs = {};
    head = heading(o);                  % default heading
@@ -1129,10 +1129,10 @@ function [list,objs,head] = LmuSelect(o) % Select Transfer Function
 end
 
 %==========================================================================
-% Setup
+% Setup Studies
 %==========================================================================
 
-function oo = SetupMenu(o)             % Setup Menu
+function oo = SetupMenu(o)             % Setup Menu                    
    oo = mitem(o,'Setup');
 
    ooo = mitem(oo,'Stability Margin');
@@ -1148,7 +1148,7 @@ end
 
    % callbacks
 
-function o = SetupAnalysis(o)          % Setup Margin Analysis
+function o = SetupAnalysis(o)          % Setup Margin Analysis         
    switch o.type
       case 'shell'
          o = plot(o,'About');
@@ -1158,7 +1158,7 @@ function o = SetupAnalysis(o)          % Setup Margin Analysis
          o = SpmSetupAnalysis(o);
    end
 end
-function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
+function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin   
    if ~type(o,{'pkg'})
       plot(o,'About');
       return
@@ -1459,7 +1459,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stability Margin
       end
    end
 end
-function o = SpmSetupAnalysis(o)       % Setup Specific Stability Margin
+function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin   
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -1769,7 +1769,7 @@ end
 
    % local helper
 
-function id = Order(no,mode)
+function id = Order(no,mode)           % Order of Setup IDs            
    if (no == 5 && isequal(mode,'symmetry'))
       id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
            [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
@@ -1789,7 +1789,7 @@ end
 % Sensitivity
 %==========================================================================
 
-function oo = SensitivityMenu(o)       % Sensitivity Menu
+function oo = SensitivityMenu(o)       % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Damping Sensitivity',{@WithSpm,'Sensitive','damping'});
    ooo = mitem(oo,'Critical Sensitivity',{@WithSpm,'Sensitive','critical'});
@@ -1798,298 +1798,27 @@ return
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Live Watch',{@WithSpm,'LiveWatch'});
 end
-function oo = Sensitive(o)
+function oo = Sensitive(o)             % Sensitivity Plot/Calc         
    mode = arg(o,1);
    
    switch (mode)
       case 'damping'
-         o = opt(o,'mode.sensitivity','damping');
-         oo = Sensi(o);
+ %       o = opt(o,'mode.sensitivity','damping');
+ %       oo = Sensi(o);
+         oo = sensitivity(o,'Damping');
       case 'critical'
          o = opt(o,'mode.sensitivity','critical');
          oo = sensitivity(o,'Critical');
       case 'weight'
-         o = opt(o,'mode.sensitivity','weight');
-         oo = Sensi(o);
+ %       o = opt(o,'mode.sensitivity','weight');
+         %oo = Sensi(o);
+         oo = sensitivity(o,'Weight');
       otherwise
          error('bad mode');
    end
 end
-function o = Sensi(o)                  % Sensi
-%
-% Idea:
-%    - let L0(jw) be the nominal frequency response
-%    - vary w(k) such that L0(jw) -> Lk(jw)
-%    - build dL := L0(jw)-Lk(jw)
-%    - Sensitivity S := |dL(jw)| / |L0(jw)|
-%
-   s = [];  modes = [];                % initialize
-   watch = false;                      % don't watch (try to set true!)
 
-   col = o.iif(dark(o),'w.','k.');
-   
-   modus = opt(o,'mode.sensitivity');
-   if isequal(modus,'weight')
-      tit = 'Weight Sensitivity';
-   elseif isequal(modus,'damping')
-      tit = 'Damping Sensitivity';
-   end
-   
-   
-   
-   o = with(o,'sensitivity');          % access sensitivity settings
-opts = opt(o,'sensitivity');
-o = opt(o,'bode',opts);
-
-   o = cache(o,o,'critical');
-   
-   [f0,T0] = cook(o,'f0,Tnorm');
-   [lambda0,PsiW31,PsiW33] = cook(o,'lambda0,PsiW31,PsiW33');
-
-   [om0,w0] = Omega(o);                % omega range and center frequency
-   
-   L0 = lambda(o,lambda0);             % calculate critical Fqr
-   L0 = inherit(L0,o);                 % inherit bode settings
-   L0 = opt(L0,'color','ryyyyy');
-   
-      % sensitivity study
-
-   m = size(PsiW31,1);                 % number of modes
-   [~,om] = fqr(with(L0,'bode'));      % get full omega range
-
-      % get full range phi(om)
-
-   L0jw = lambda(o,PsiW31,PsiW33,om*T0);
-   L0jw0 = lambda(o,PsiW31,PsiW33,om0*T0);
-
-%  PlotLjw(o,3212);
-   PlotL0(o,3211);
-%  PlotL0(o,3221);
-   PlotV(o,3211,3221);                      % plot variation
-   PlotS(o,3231);
-
-   [~,idx] = sort(-s);                 % sort from largest to smallest
-   for (k=1:5)
-%     PlotL0(o,[5,3,k,3]);
-%     PlotE(o,[5,3,k,3],idx(k));
-      PlotL0(o,[5,2,k,2]);
-      PlotE(o,[5,2,k,2],idx(k));
-      %diagram(o,'Nyq','',Lmu,[5,6,k,4]);
-      if stop(o)
-         break
-      end
-   end
-
-   heading(o);
-
-   function PlotL0(o,sub)              % Plot L0 (Psion Based)
-      o = opt(o,'plotcrit',1);
-      diagram(o,'Bode','',L0,sub);
-
-%     dB0 = 20*log10(max(abs(L0jw0)));
-%     plot(o,om0,dB0,'K.');
-      title(sprintf('om0: %g 1/s (f: %g Hz)',w0,w0/2/pi));
-      subplot(o,sub);
-   end
-   function PlotS(o,sub)               % Plot Sensitivity
-      subplot(o,sub);
-      modus = opt(o,'mode.sensitivity');
-  
-      plot(o,1:m,s,[col,'|'], 1:m,s,'ro');
-      title('Weight Sensitivity');
-      if isequal(modus,'weight')
-         title('Weight Sensitivity @ Mode Number');
-      elseif isequal(modus,'damping')
-         what = 'Damping Sensitivity @ Mode Number';
-         vari = opt(o,'sensitivity.variation');
-         title(sprintf('%s (variation: %g)',what,vari));
-      end
-      xlabel('omega [1/s]');
-      subplot(o);
-   end
-   function PlotV(o,sub1,sub2)         % plot Variation      
-      subplot(o,sub2);
-      
-      modus = opt(o,'mode.sensitivity');
-      vari = opt(o,'sensitivity.variation');
-      
-      bode(trf(corasim),'W');
-      set(gca,'ylim',[-10,40],'ytick',-10:10:40);
-      
-      Psi31 = PsiW31(:,1:3);  W31 = PsiW31(:,4:end);
-      Psi33 = PsiW33(:,1:3);  W33 = PsiW33(:,4:end);
-      zero = 0;      
-      
-      l0jw = lambda(o,L0jw);
-      l0jw0 = lambda(o,L0jw0);
-            
-      for (i=1:m)
-         switch modus
-            case 'weight'
-               w31 = W31;  w31(i,:) = w31(i,:)*zero;  psiw31 = [Psi31 w31];
-               w33 = W33;  w33(i,:) = w33(i,:)*zero;  psiw33 = [Psi33 w33];
-            case 'damping'
-               k = i;         
-               psiw31 = PsiW31;  psiw31(k,2) = vari*psiw31(k,2);
-               psiw33 = PsiW33;  psiw33(k,2) = vari*psiw33(k,2);
-            otherwise
-               error('bad sensitivity calculation mode')
-         end
-         
-         Gjw = lambda(o,psiw31,psiw33,om*T0);    % full omega range
-         Gjw0 = lambda(o,psiw31,psiw33,om0*T0);  % omega range next to om0
-
-            % calculate critical function
-            
-         gjw = lambda(o,Gjw);
-         gjw0 = lambda(o,Gjw0);
-         
-                % sensitivity function
-
-         sjw = max(abs(gjw./l0jw),abs(l0jw./gjw));       
-                
-         %Sjw0 = (Gjw0./L0jw0) - 1;
-         sjw0 = max(abs(l0jw0./gjw0),abs(gjw0./l0jw0)); 
-%        sjw0 = l0jw0./gjw0;
-%        sjw0 = gjw0./l0jw0;
-         
-         S(i) = max(20*log10(abs(sjw0))); % store max dB value of sensitivity
-         mode = sqrt(Psi31(i,3))/oscale(o); % mode omega
-         modes(i) = mode;
-watch=1;
-         if (watch)
-            subplot(o,sub1);
-
-            hdl0 = semilogx(om0,20*log10(abs(gjw0)),'r.');
-            hdl1 = semilogx(om,20*log10(abs(gjw)),'r');
-%           hdl2 = semilogx(om,20*log10(abs(gjw./l0jw)),'c');
-
-            subplot(o,sub2);
-            hdl2 = semilogx(om,20*log10(abs(sjw)),'c');
-            hold on;
-            hdl3 = semilogx(om0,20*log10(abs(sjw0)),col);
-            hdl4 = semilogx([mode mode],get(gca,'ylim'),'c-.');
-            title(sprintf('mode #%g: %g dB @ %g 1/s (%g Hz)',...
-                          i,o.rd(S(i),1),mode,mode/2/pi));
-                                              
-            idle(o);
-            %delete([hdl0 hdl1,hdl2,hdl3,hdl4]);
-            delete([hdl0 hdl1,hdl3,hdl4]);
-          end
-
-         if (rem(i-1,10) == 0)
-            progress(o,'analysing sensitivity',(i-1)/m*100);
-         end
-      end
-      progress(o);
-
-      S0 = max(S) - 20;
-      %s = S - S0;                    % delta sensitivity [dB]
-      s = S;
-      
-      [~,idx] = sort(-s);
-      
-%      plot(o,modes(idx),s(idx),[col,'|'], modes(idx),s(idx),'ro');
-%     for (k=1:length(idx))
-      for (k=1:min(10,length(idx)))
-         kk = idx(k);
-         plot(o,modes(kk),10*s(kk),[col,'|'], modes(kk),10*s(kk),'ro');
-         hdl = text(modes(kk),10*s(kk),sprintf('#%g',kk));
-         set(hdl,'horizontal','center','vertical','top');
-         set(hdl,'color',o.iif(dark(o),1,0)*[1 1 1]);
-      end
-
-      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
-      set(h,'linewidth',1);
-      
-      ylim = get(gca,'ylim');
-      ylim = [min(ylim(1),min(s(idx))), max(ylim(2),max(s))];
-      set(gca,'ylim',ylim);
-      
-      title(sprintf('%s @ Frequency',tit));
-      
-         % store S in cache
-      
-      o = cache(o,'sensitivity.S',S);  % store sensitivity
-      cache(o,o);                      % hard refresh cache
-      
-      subplot(o);
-   end
-   function PlotE(o,sub,k)             % plot Example
-      subplot(o,sub);
-
-      [skjw,lkjw,l0jw] = sensitivity(o,k,om);
-      
-      mode = modes(k);                 % mode omega
-
-      hdl = semilogx(om,20*log10(abs(lkjw)),'r');
-      hold on
-      hdl = semilogx(om,20*log10(abs(skjw)),'c');
-      set(hdl,'linewidth',1);
-      title(sprintf('Mode #%g, Omega: %g 1/s (%g Hz), Sensitivity: %g dB',...
-                k,o.rd(modes(k),0),o.rd(modes(k)/2/pi,0),o.rd(s(k),1)));
-
-      subplot(o);
-      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
-      set(h,'linewidth',1);
-      h = semilogx([modes(k),modes(k)],get(gca,'ylim'),'c-.');
-      set(h,'linewidth',1);
-      
-      ylim = get(gca,'ylim');
-      set(gca,'ylim',[ylim(1) max(ylim(2),50)]);
-   end
-   function PlotLjw(o,sub)             % plot Bode diagram
-      subplot(o,sub);
-
-      bode(L0,'r');
-
-      dB0 = 20*log10(max(abs(L0jw0)));
-      plot(o,om0,dB0,'K.');
-      
-      
-      [m0,n0] = size(lambda0.data.matrix);
-      for (ii=[2:m0,1])                % first row at the end
-         L0i = fqr(corasim,lambda0.data.omega,{lambda0.data.matrix{ii,1}});
-         colii = o.iif(ii==1,'ryyy','kw');
-         bode(L0i,colii);
-      end
-      
-      [m0,n0] = size(L0jw0);
-      for (ii=[2:m0,1])                % first row at the end
-         L0i = fqr(corasim,om0,{L0jw0(ii,:)});
-         colii = o.iif(ii==1,'ryyyo','kwo');
-         bode(L0i,colii);
-      end
-   end
-end
-function o = LiveWatch(o)
-   sensitivity(o);
-end
-
-%%%%%%%%%%%%%%%%%% obsolete
-function L0 = OldCriticalFqr(l0)       % Calculate Critical Fqr
-   assert(type(l0,{'fqr'}));
-   [m,n] = size(l0.data.matrix);
-   assert(n==1);
-   for (i=1:m)
-      l0jw(i,:) = l0.data.matrix{i};
-   end
-
-      % find greatest magnitude
-
-   [m,n] =size(l0jw);
-   for (j=1:n)
-      mag = abs(l0jw(:,j));
-      idx = find(mag==max(mag));
-      L0jw(1,j) = l0jw(idx(1),j);
-   end
-
-   om = l0.data.omega;
-   L0 = fqr(corasim,om,{L0jw});
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function o = Contribution(o)           % Modal Contribution
+function o = Contribution(o)           % Modal Contribution            
 %
 % Idea:
 %    - let L0(jw) be the nominal frequency response
@@ -2215,7 +1944,7 @@ Om0=omega*oscale;
       end
    end
 end
-function o = NumericCheck(o)           % Numerical Check
+function o = NumericCheck(o)           % Numerical Check               
    if ~type(o,{'spm'})
       plot(o,'About');
       return;
@@ -2282,7 +2011,7 @@ end
 % Open Loop
 %==========================================================================
 
-function o = OpenLoop(o)               % L(s) Open Loop
+function o = OpenLoop(o)               % L(s) Open Loop                
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2309,7 +2038,7 @@ function o = OpenLoop(o)               % L(s) Open Loop
    Verbose(o,oo);
    heading(o);
 end
-function o = Calc(o)                   % Calculation of L(s)
+function o = Calc(o)                   % Calculation of L(s)           
    sym = arg(o,1);
    idx = arg(o,2);
    col = arg(o,3);
@@ -2335,7 +2064,7 @@ function o = Calc(o)                   % Calculation of L(s)
    heading(o);
 end
 
-function o = LmuDisp(o)                % Display Transfer Function
+function o = LmuDisp(o)                % Display Transfer Function     
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2347,7 +2076,7 @@ function o = LmuDisp(o)                % Display Transfer Function
    Verbose(o,Lmu);
    heading(o);
 end
-function o = LmuRloc(o)                % Poles/Zeros of Lmu(s)
+function o = LmuRloc(o)                % Poles/Zeros of Lmu(s)         
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2358,7 +2087,7 @@ function o = LmuRloc(o)                % Poles/Zeros of Lmu(s)
 
    heading(o);
 end
-function o = LmuStep(o)                % Step Response Plot
+function o = LmuStep(o)                % Step Response Plot            
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2369,7 +2098,7 @@ function o = LmuStep(o)                % Step Response Plot
 
    heading(o);
 end
-function o = LmuBode(o)                % Bode Plot
+function o = LmuBode(o)                % Bode Plot                     
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2381,7 +2110,7 @@ function o = LmuBode(o)                % Bode Plot
 
    heading(o);
 end
-function o = LmuNyq(o)                 % Nyquist Plot
+function o = LmuNyq(o)                 % Nyquist Plot                  
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2392,7 +2121,7 @@ function o = LmuNyq(o)                 % Nyquist Plot
 
    heading(o);
 end
-function o = LmuBodeNyq(o)             % Bode/Nyquist Plot
+function o = LmuBodeNyq(o)             % Bode/Nyquist Plot             
    if ~type(o,{'spm'})
       plot(o,'About');
       return
@@ -2410,7 +2139,7 @@ end
 % Closed Loop
 %==========================================================================
 
-function o = BodePlots(o)              % Closed Loop Bode Plots
+function o = BodePlots(o)              % Closed Loop Bode Plots        
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
 
    o = opt(o,'color','yyr');
@@ -2437,7 +2166,7 @@ function o = BodePlots(o)              % Closed Loop Bode Plots
 
    heading(o);
 end
-function o = StepPlots(o)              % Closed Loop Step Plots
+function o = StepPlots(o)              % Closed Loop Step Plots        
    o = with(o,'simu');
 
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
@@ -2463,7 +2192,7 @@ function o = StepPlots(o)              % Closed Loop Step Plots
 
    heading(o);
 end
-function o = PolesZeros(o)             % Closed Loop Poles & Zeros
+function o = PolesZeros(o)             % Closed Loop Poles & Zeros     
    o = with(o,'simu');
 
    [Tf1,Tf2] = cook(o,'Tf1,Tf2');
@@ -2494,7 +2223,7 @@ end
 % Closed Loop Force
 %==========================================================================
 
-function o = Overview(o)               % Closed Loop Overview
+function o = Overview(o)               % Closed Loop Overview          
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
@@ -2521,7 +2250,7 @@ function o = Overview(o)               % Closed Loop Overview
 
    heading(o);
 end
-function o = Trf(o)                    % Transfer Function
+function o = Trf(o)                    % Transfer Function             
    o = with(o,'bode');
    o = with(o,'simu');
    o = with(o,'rloc');
@@ -3063,7 +2792,7 @@ function Legend(o,sub,objects)         % Plot Legend
    hdl = legend(list);
    set(hdl,'color','w');
 end
-function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
+function [om,om0] = OldOmega(o,f0,k,n)    % Omega range near f0
 %
 % OMEGA  Omega range near f0
 %

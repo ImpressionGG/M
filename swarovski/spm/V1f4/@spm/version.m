@@ -290,7 +290,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   - bug: stability margin calculation mistake
 %   - bug: leaves gap after continuing sensitivity calculation
 %   + incorporate package title into standard headings
-%   - bug: sensitivity.S not cached after 1st run of Damping Sensitivity 
+%   + bug: sensitivity.S not cached after 1st run of Damping Sensitivity 
 %   - bug: always same value of K0 for different damping settings
 %   - add Setup Studies in Batch menu
 %   ---------------
@@ -386,7 +386,10 @@ function vers = version(o,arg)         % SPM Class Version
 %
 % - start beta SPM V1F4
 % - incorporate package title into standard headings
-
+% - move Weight/Damping Sensitivity struff to spm/sensitivity method
+% - pimp Critical Sensitivity diagram
+% + bug fix: sensitivity.S not cached after 1st run of Damping Sensitivity 
+% 
 
 % Known bugs & wishlist
 % =========================
