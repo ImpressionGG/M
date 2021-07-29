@@ -389,7 +389,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - move Weight/Damping Sensitivity struff to spm/sensitivity method
 % - pimp Critical Sensitivity diagram
 % + bug fix: sensitivity.S not cached after 1st run of Damping Sensitivity 
-% 
+% - bug fix: Critical Sensitivity diuagram, axis labeling
 
 % Known bugs & wishlist
 % =========================

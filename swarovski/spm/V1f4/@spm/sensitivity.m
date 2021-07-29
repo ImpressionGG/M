@@ -655,7 +655,8 @@ function PlotS(o,sub)                  % Plot Sensitivity
       vari = opt(o,'sensitivity.variation');
       title(sprintf('%s (variation: %g)',what,vari));
    end
-   xlabel('omega [1/s]');
+   xlabel('mode number [#]');
+   ylabel('sensitivity [dB]');
    subplot(o);
 end
 
