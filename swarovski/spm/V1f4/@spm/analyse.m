@@ -2820,10 +2820,12 @@ end
 function Heading(o,head)
    txt = Contact(o);
    [~,phitxt] = getphi(o);
+   [zeta,dvar] = damping(o);
+   dvartxt = o.iif(dvar,sprintf(', dvar: %g%%',o.rd(100*dvar,1)),'');
    if (nargin == 1)
-      msg = [get(o,{'title',''}),' (',id(o),') ',txt,', ',phitxt];
+      msg = [get(o,{'title',''}),' (',id(o),') ',txt,', ',phitxt,dvartxt];
    else
-      msg = [head,' ',txt,', ',phitxt];
+      msg = [head,' ',txt,', ',phitxt,dvartxt];
    end
    heading(o,msg);
 end

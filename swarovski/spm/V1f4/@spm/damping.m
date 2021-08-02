@@ -1,4 +1,4 @@
-function [oo,omega] = damping(o,arg2,arg3)
+function [oo,dvar] = damping(o,arg2,arg3)
 %
 % DAMPING     Set specific damping values. This method directly manipulates
 %             the damping table (oo.par.dtable) of an SPM typed object. By
@@ -17,8 +17,9 @@ function [oo,omega] = damping(o,arg2,arg3)
 %
 %             2) get effective damping or plot effective damping
 %
-%                zeta = damping(o)   % get effective damping (zeta values)
-%                damping(o)          % plot effective damping
+%                [zeta,dvar] = damping(o) % get effective damping/variation
+%                                         % zeta values, norm of variation
+%                damping(o)               % plot effective damping
 %
 %             3) read damping table from damping file and store in object
 %                parameters
@@ -50,7 +51,7 @@ function [oo,omega] = damping(o,arg2,arg3)
 %             See also: SPM, VARIATION, BREW SYSTEM
 %
    if (nargin == 1 && nargout > 0)
-      [oo,omega] = Damping(o);
+      [oo,dvar] = Damping(o);
    elseif (nargin == 1 && nargout == 0)
       Damping(o);
    elseif (nargin == 2)                % store variation in object params
@@ -88,7 +89,7 @@ end
 % Get/Plot Effective Damping
 %==========================================================================
 
-function [zeta,omega] = Damping(o)     % Effective Damping             
+function [zeta,dvar] = Damping(o)      % Effective Damping             
    if ~type(o,{'spm'})
       error('SPM typed object expected');
    end
@@ -102,7 +103,7 @@ function [zeta,omega] = Damping(o)     % Effective Damping
    
    omega = sqrt(a21);
    zeta = a22 ./ omega / 2;
-   zeta0 = zeta;
+   zeta0 = zeta;                       % original damping
    
        % zeta holds now the values of the A matrix; if a damping table 
        % is provided for the package object then we override the zeta 
@@ -152,9 +153,19 @@ function [zeta,omega] = Damping(o)     % Effective Damping
       end
    end
    
+   zeta2 = zeta;
+   
+      % now we have:
+      % - zeta0: original damping
+      % - zeta1: after package object's dtab
+      % - zeta2: after data object's dtab
+      % - zeta:  after global damping variation
+      
    if (nargout == 0)
-      Plot(o,zeta0,zeta1,zeta);
+      Plot(o,zeta0,zeta1,zeta2,zeta);
    end
+   
+   dvar = norm(zeta-zeta0)/norm(zeta0);     % relative damping variation
 end
 
 %==========================================================================
@@ -207,7 +218,7 @@ end
 % Plot Damping
 %==========================================================================
 
-function Plot(o,zeta0,zeta1,zeta)
+function Plot(o,zeta0,zeta1,zeta2,zeta)
 %   sub = opt(o,{'subplot',111});
 %   subplot(o,sub);
    
@@ -221,8 +232,8 @@ function Plot(o,zeta0,zeta1,zeta)
       plot(i,zeta0(i),[col,'o'], i,zeta1(i),'ro', i,zeta(i),'go');
    end
    
-   N = norm(zeta-zeta0);
-   title(sprintf('Mode Damping  (||zeta-zeta0|| = %g)',N));
+   dvar = norm(zeta-zeta0)/norm(zeta0);
+   title(sprintf('Mode Damping  (dvar: %g%%)',o.rd(100*dvar,1)));
    ylabel('zeta');
    xlabel('mode number');
    

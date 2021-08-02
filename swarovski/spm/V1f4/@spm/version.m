@@ -56,6 +56,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - plugin example for extension of batch menu
 % - sensitivity analysis (damping,critical,weight)
 % - accelerated calculation due to invalidation of specific cache segments
+% - better information in diagram titles
 % 
 %--------------------------------------------------------------------------
 %
@@ -390,6 +391,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp Critical Sensitivity diagram
 % + bug fix: sensitivity.S not cached after 1st run of Damping Sensitivity 
 % - bug fix: Critical Sensitivity diuagram, axis labeling
+% - display damping variation in diagram title
+
 
 % Known bugs & wishlist
 % =========================

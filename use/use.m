@@ -18,6 +18,8 @@ function use(tag,version)
 %           use trade
 %           use antenna       % Willy's Antennen Toolbox
 %
+%           use googleearth
+%
 %        Releases
 %
 %           use cute-v1a      % Cute V1a release @ 24Aug20
@@ -116,6 +118,10 @@ function use(tag,version)
          directory(cute,cutpath);
          disp(pwd)
          
+      case 'googleearth'
+         addpath([mhome,'/googleearth']);
+         addpath([mhome,'/googleearth/demo']);
+                  
        case 'kalman'
          use corazon
          addpath([mhome,'/kalman/',version.kalman]);
