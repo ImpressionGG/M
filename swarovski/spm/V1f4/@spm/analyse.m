@@ -452,6 +452,7 @@ function o = Critical(o)               % Calculate Critical Quantities
 
    Heading(o);
    o = with(o,{'bode','stability'});
+o = with(o,{'critical'});
 
    points = opt(o,{'omega.points',10000});
    closeup = opt(o,{'bode.closeup',0});
@@ -2820,8 +2821,14 @@ end
 function Heading(o,head)
    txt = Contact(o);
    [~,phitxt] = getphi(o);
-   [zeta,dvar] = damping(o);
-   dvartxt = o.iif(dvar,sprintf(', dvar: %g%%',o.rd(100*dvar,1)),'');
+   
+   if type(o,{'pkg'})
+      dvartxt = '';
+   else
+      [zeta,dvar] = damping(o);
+      dvartxt = o.iif(dvar,sprintf(', dvar: %g%%',o.rd(100*dvar,1)),'');
+   end
+   
    if (nargin == 1)
       msg = [get(o,{'title',''}),' (',id(o),') ',txt,', ',phitxt,dvartxt];
    else

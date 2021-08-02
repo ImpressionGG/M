@@ -396,6 +396,11 @@ function vers = version(o,arg)         % SPM Class Version
 % - display damping variation in diagram title
 % - damping calculation by spm/damping() method also incorporating global
 %   damping variation (also valid for damping plot)
+% - bug fix in analyse/Critical: missed to set search option properly,
+%   i.e. missing o=with(o,'critical') statement
+% - change critical.search default setting from 50 to 200 search points
+%   to fix calculation error (Andy's mismatch between SPM toolbox and
+%   minispm toolbox
 
 
 % Known bugs & wishlist

@@ -770,7 +770,7 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
    [A0,B0,C0,D0] = data(L0,'A,B,C,D');
 
    kmax = length(K);
-   for (k=1:length(K))
+   for (k=1:kmax)
       if (kmax > 10 && rem(k-1,10) == 0)
          progress(o,sprintf('%g of %g: critical eigenvalues',k,kmax),k/kmax*100);
       end

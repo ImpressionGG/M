@@ -1149,7 +1149,7 @@ function oo = Cancel(o)                % Add Cancel Menu Items
    choice(ooo,[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7],{@CacheReset});
 end
 function oo = Critical(o)              % Critical Menu                 
-   setting(o,{'critical.search'},50);  % number of search points
+   setting(o,{'critical.search'},200); % number of initial search points
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
    setting(o,{'critical.check'},0);    % no check
