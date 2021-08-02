@@ -232,9 +232,9 @@ function oo = Variation(o)             % System Variation
    otab = get(o,'dtable');             % object damping table
    ptab = get(pkg(o),'dtable');        % package damping table
    
-   if (~isempty(otab) || ~isempty(ptab))
+   if (~isempty(otab) || ~isempty(ptab) || vzeta ~= 1)
       zeta = damping(o);
-      N = norm(zeta-zeta0);
+%     N = norm(zeta-zeta0);
    
       a22 = 2*zeta.*omega;
       A(i2,i2) = -diag(a22);
@@ -243,7 +243,7 @@ function oo = Variation(o)             % System Variation
       % damping table applied
    
    A(i2,i1) = A(i2,i1) * vom;          % omega variation
-   A(i2,i2) = A(i2,i2) * vzeta;        % zeta variation
+%  A(i2,i2) = A(i2,i2) * vzeta;        % => moved to spm/damping()
 
    oo = data(o,'A,B,C,D',A,B,C,D);     % modify system
 end

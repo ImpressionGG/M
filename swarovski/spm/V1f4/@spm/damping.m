@@ -144,7 +144,7 @@ function [zeta,dvar] = Damping(o)      % Effective Damping
 
             for (k=from:to)
                if (k == 0)
-                  zeta = 0*zeta + zt;    % replace all zeta values
+                  zeta = 0*zeta + zt;       % replace all zeta values
                elseif ( 1 <= k && k <= n)
                   zeta(k) = zt;
                end
@@ -154,6 +154,9 @@ function [zeta,dvar] = Damping(o)      % Effective Damping
    end
    
    zeta2 = zeta;
+
+   vzeta = opt(o,{'variation.zeta',1});     % omega variation
+   zeta = zeta*vzeta;                       % global damping variation
    
       % now we have:
       % - zeta0: original damping
@@ -228,8 +231,11 @@ function Plot(o,zeta0,zeta1,zeta2,zeta)
       plot([i i],[0 zeta0(i)],col);
       hold on
       plot([i i],[zeta0(i) zeta1(i)],'r');
-      plot([i i],[zeta1(i) zeta(i)],'g');
-      plot(i,zeta0(i),[col,'o'], i,zeta1(i),'ro', i,zeta(i),'go');
+      plot([i i],[zeta1(i) zeta2(i)],'b');
+      plot([i i],[zeta2(i) zeta(i)],'g');
+      
+      plot(i,zeta0(i),[col,'o'], i,zeta1(i),'ro');
+      plot(i,zeta2(i),'bo', i,zeta(i),'go');
    end
    
    dvar = norm(zeta-zeta0)/norm(zeta0);

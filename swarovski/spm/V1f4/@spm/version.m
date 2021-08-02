@@ -57,6 +57,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - sensitivity analysis (damping,critical,weight)
 % - accelerated calculation due to invalidation of specific cache segments
 % - better information in diagram titles
+% - damping variation on package level (via damping file) and object
+%   specific via command shell; graphical damping overview for cross check 
 % 
 %--------------------------------------------------------------------------
 %
@@ -392,6 +394,8 @@ function vers = version(o,arg)         % SPM Class Version
 % + bug fix: sensitivity.S not cached after 1st run of Damping Sensitivity 
 % - bug fix: Critical Sensitivity diuagram, axis labeling
 % - display damping variation in diagram title
+% - damping calculation by spm/damping() method also incorporating global
+%   damping variation (also valid for damping plot)
 
 
 % Known bugs & wishlist
