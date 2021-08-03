@@ -21,7 +21,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
                       @LmuBodeNyq,@Overview,...
                       @Margin,@Rloc,@StabilityOverview,@OpenLoop,@Calc,...
                       @Damping,@Contribution,@NumericCheck,...
-                      @Sensitive,@SensitivityF,@SensitivityD,...
+                      @Sensitivity,@SensitivityF,@SensitivityD,...
                       @AnalyseRamp,@NormRamp,@SimpleCalc,...
                       @BodePlots,@StepPlots,@PolesZeros,...
                       @L0Magni,@LambdaMagni,@LambdaBode,...
@@ -74,8 +74,8 @@ o = mitem(o,'Legacy');
    oo = OpenLoopMenu(o);               % add Open Loop menu
    oo = ClosedLoopMenu(o);             % add Closed Loop menu
 
-   oo = mitem(o,'-');
-   oo = Sensitivity(o);                % add Sensitivity menu
+%  oo = mitem(o,'-');
+%  oo = Sensitivity(o);                % add Sensitivity menu
 
    oo = mitem(o,'-');
    oo = Spectrum(o);                   % add Spectrum menu
@@ -119,7 +119,7 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
 end
-function oo = Sensitivity(o)           % Sensitivity Menu              
+function oo = OldSensitivity(o)        % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
 %  ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
    ooo = mitem(oo,'Frequency Sensitivity',{@WithSpm,'SensitivityF'});
@@ -1792,27 +1792,18 @@ end
 
 function oo = SensitivityMenu(o)       % Sensitivity Menu              
    oo = mitem(o,'Sensitivity');
-   ooo = mitem(oo,'Damping Sensitivity',{@WithSpm,'Sensitive','damping'});
-   ooo = mitem(oo,'Critical Sensitivity',{@WithSpm,'Sensitive','critical'});
-   ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'Sensitive','weight'});
-return
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Live Watch',{@WithSpm,'LiveWatch'});
+   ooo = mitem(oo,'Damping Sensitivity',{@WithSpm,'Sensitivity','damping'});
+   ooo = mitem(oo,'Critical Sensitivity',{@WithSpm,'Sensitivity','critical'});
+   ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'Sensitivity','weight'});
 end
-function oo = Sensitive(o)             % Sensitivity Plot/Calc         
+function oo = Sensitivity(o)           % Sensitivity Plot/Calc         
    mode = arg(o,1);
-   
    switch (mode)
       case 'damping'
- %       o = opt(o,'mode.sensitivity','damping');
- %       oo = Sensi(o);
          oo = sensitivity(o,'Damping');
       case 'critical'
-         o = opt(o,'mode.sensitivity','critical');
          oo = sensitivity(o,'Critical');
       case 'weight'
- %       o = opt(o,'mode.sensitivity','weight');
-         %oo = Sensi(o);
          oo = sensitivity(o,'Weight');
       otherwise
          error('bad mode');

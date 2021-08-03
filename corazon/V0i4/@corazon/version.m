@@ -609,6 +609,13 @@ function VersionV1I
 % - pimp corazito/master to deal with stop requests
 % - pimp corazito/stop
 %
+% Change Log V1i4 (beta):
+%
+% - bugfix in corazon/plot: return NaN (pseudo handle) for empty plot
+%   vectors (otherwise calling function can get irritated because assuming
+%   that the plot is not handled by corazon/plot
+% - adding a confirmation dialog in corazon/stop
+%
 % Known Bugs / Wishlist
 % - none so far
 %

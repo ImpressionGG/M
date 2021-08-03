@@ -450,11 +450,22 @@ function oo = Plot(o)                  % Default Plot
 % PLOT The default Plot function shows how to deal with different object
 %      types. Depending on type a different local plot function is invoked
 %
+   args = arg(o);                      % this is for debug only!
+
+      % arglist could be for corazon/plot, which means that we just call
+      % corazon plot with the syntax plot(corazon,o). If corazon/plot
+      % recognizes a proper arglist it performs the plot call and returns
+      % either the plot handles or NaN, which means that we are done
+      % and return from the function call (with empty out arg)
+      
    oo = plot(corazon,o);               % if arg list is for corazon/plot
    if ~isempty(oo)                     % is oo an array of graph handles?
       oo = []; return                  % in such case we are done - bye!
    end
 
+      % otherwise we have to do the work, which is dispatching the object 
+      % type and call the type specific plot functions
+      
    cls(o);                             % clear screen
    switch o.type
       case 'spm'

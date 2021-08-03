@@ -80,7 +80,10 @@ end
 
 function o = Callback(o)
    fprintf('*** stop by user''s button press\n');
-   stop(o,1);                       % set stop flag
-   Disable(o);
+   button = questdlg('Stop current processing?','Stop', 'Yes','No','No');  
+   if strcmp(button,'Yes')
+      stop(o,1);                       % set stop flag
+      Disable(o);
+   end
 end
 

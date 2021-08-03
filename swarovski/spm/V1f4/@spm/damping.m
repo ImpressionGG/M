@@ -1,4 +1,4 @@
-function [oo,dvar] = damping(o,arg2,arg3)
+function [oo,omega,var] = damping(o,arg2,arg3)
 %
 % DAMPING     Set specific damping values. This method directly manipulates
 %             the damping table (oo.par.dtable) of an SPM typed object. By
@@ -17,7 +17,7 @@ function [oo,dvar] = damping(o,arg2,arg3)
 %
 %             2) get effective damping or plot effective damping
 %
-%                [zeta,dvar] = damping(o) % get effective damping/variation
+%                [zt,om,var] = damping(o) % get effective damping/variation
 %                                         % zeta values, norm of variation
 %                damping(o)               % plot effective damping
 %
@@ -51,7 +51,7 @@ function [oo,dvar] = damping(o,arg2,arg3)
 %             See also: SPM, VARIATION, BREW SYSTEM
 %
    if (nargin == 1 && nargout > 0)
-      [oo,dvar] = Damping(o);
+      [oo,omega,var] = Damping(o);
    elseif (nargin == 1 && nargout == 0)
       Damping(o);
    elseif (nargin == 2)                % store variation in object params
@@ -89,7 +89,7 @@ end
 % Get/Plot Effective Damping
 %==========================================================================
 
-function [zeta,dvar] = Damping(o)      % Effective Damping             
+function [zeta,omega,var] = Damping(o) % Effective Damping             
    if ~type(o,{'spm'})
       error('SPM typed object expected');
    end
@@ -168,7 +168,7 @@ function [zeta,dvar] = Damping(o)      % Effective Damping
       Plot(o,zeta0,zeta1,zeta2,zeta);
    end
    
-   dvar = norm(zeta-zeta0)/norm(zeta0);     % relative damping variation
+   var = norm(zeta-zeta0)/norm(zeta0);      % relative damping variation
 end
 
 %==========================================================================
@@ -222,18 +222,20 @@ end
 %==========================================================================
 
 function Plot(o,zeta0,zeta1,zeta2,zeta)
+   blue = o.color('bc');
+   
    for (i=1:length(zeta))
       col = o.iif(dark(o),'w','k');
       
       plot([i i],[0 zeta0(i)],col);
       hold on
       plot([i i],[zeta0(i) zeta1(i)],'r');
-      plot(o,[i i],[zeta1(i) zeta2(i)],'cb');
+      o.color(plot([i i],[zeta1(i) zeta2(i)]),blue);
       
       plot([i i],[zeta2(i) zeta(i)],'g');
       
       plot(i,zeta0(i),[col,'o'], i,zeta1(i),'ro');
-      plot(o,i,zeta2(i),'cbo');
+      o.color(plot(i,zeta2(i),'o'),blue);
       plot(i,zeta(i),'go');
    end
    

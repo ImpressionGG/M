@@ -289,7 +289,16 @@ function o = Critical(o)               % Critical Sensitivity
       
       Kk = K(k);
       if isnan(Kk)
+
+            % plot actual damping
+
+         subplot(o,sub3);
+         delete(gca);
+         subplot(o,sub3);
+         damping(oo);
       
+            % cook up critical quantities
+            
          [lk,Kk,fk] = cook(oo,'l0,K0,f0');
 
             % store results in tables (to be cached)
@@ -306,13 +315,6 @@ function o = Critical(o)               % Critical Sensitivity
          o = cache(o,'sensitivity.lcrit',l);
          o = cache(o,'sensitivity.fcrit',f);
          cache(o,o);                      % cold refresh
-
-            % plot actual damping
-
-         subplot(o,sub3);
-         delete(gca);
-         subplot(o,sub3);
-         damping(oo);
 
             % plot Bode
 
