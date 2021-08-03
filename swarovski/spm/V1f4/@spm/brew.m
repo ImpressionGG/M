@@ -739,7 +739,7 @@ function oo = Critical(o)              % Brew Critical Quantities
       % cache is not refreshed and we return immediately
       
    oo = o;
-   if stop(o)
+   if stop(o,o)
       return
    end
    

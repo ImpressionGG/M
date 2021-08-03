@@ -1,8 +1,11 @@
 function oo = stop(o,value)
 %
-% STOP   Retrieve stop flag.
+% STOP   Retrieve stop flag, or enable/disable stop callback.
 %
 %           flag = stop(o)             % retrieve stop flag
+%           flag = stop(o,o)           % retrieve stop flag ANDed with
+%                                      % opt(o,{stop,0})
+%
 %           stop(o,value)              % set stop flag to value
 %
 %           stop(o,'Enable')           % enable stop callback for but.press
@@ -34,24 +37,34 @@ function oo = stop(o,value)
 %       end
 %       stop(o,'Disable');             % disable stop functionality
 %   
+%    Options
+%       stop                           % option to be anded with stop flag
+%                                      % for stop(o,o) calls (default 0)
 %    Copyright(c): Bluenetics 2020 
 %
 %    See also: CORAZITO, TIMER, TERMINATE, WAIT, PROGRESS
 %
-   if (nargin == 2 && ischar(value))
-      switch value
-         case {'Enable','on'}
-            oo = Enable(o);            % enable stop for button press
-         case {'Disable','off'}
-            oo = Disable(o);           % disable stop for button press
-         case 'Callback'
-            oo = Callback(o);
-         otherwise
-            error('bad mode');
+   if (nargin == 2)
+      if isobject(value)               % stop(o,o) calling syntax
+         flag = setting(o,{'control.stop',0});
+         oo = flag && opt(o,{'stop',0});
+         return
+      elseif ischar(value)      
+         switch value
+            case {'Enable','on'}
+               oo = Enable(o);            % enable stop for button press
+            case {'Disable','off'}
+               oo = Disable(o);           % disable stop for button press
+            case 'Callback'
+               oo = Callback(o);
+            otherwise
+               error('bad mode');
+         end
+         return
       end
-      return
    elseif (nargin == 1 && isequal(arg(o,1),'Callback'))
       oo = Callback(o);
+      return
    end
    
    if (nargin == 1)

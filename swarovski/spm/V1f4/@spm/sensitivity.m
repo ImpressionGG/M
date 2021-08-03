@@ -292,6 +292,7 @@ function o = Critical(o)               % Critical Sensitivity
       oo = cache(oo,'spectral',[]);    % clear spectral cache segment
       
       oo = opt(oo,'cache.hard',false); % no hard refresh !!!
+      oo = opt(oo,'stop',true);        % can break @ user stop request
       
       Kk = K(k);
       if isnan(Kk)
@@ -303,7 +304,7 @@ function o = Critical(o)               % Critical Sensitivity
          subplot(o,sub3);
          damping(oo);
       
-            % cook up critical quantities
+            % cook up critical quantities (break if user stop request)
             
          [lk,Kk,fk] = cook(oo,'l0,K0,f0');
 

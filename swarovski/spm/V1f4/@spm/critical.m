@@ -14,10 +14,14 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %                critical(o,'Magni',sub);
 %                critical(o,'Phase',sub);
 %
-%             Calculate principal system andcritical qantities 
+%             Calculate principal system and critical qantities 
 %
 %                [K0,f0,K180,f180,L0] = critical(o)
 %                [K0,f0,K180,f180,L0] = critical(o,cdx)  % contact index
+%
+%             Calculate lower boundary of K0
+%
+%                K0min = critical(o,'K0min');
 %
 %             Options:
 %                gain.low         % minimum gain (default: 1e-3)
@@ -34,6 +38,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %                                 % 'fqr': frequency response
 %                                 % 'eig': eigenvalue based
 %                mu               % alternative plots if provided
+%                stop             % stops on user request (default: false)
 %
 %             Copyright(c): Bluenetics 2021
 %
@@ -43,6 +48,13 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
       %o = cache(o,o,'multi');          % refresh multi segment
    else
       error('SPM object expected');
+   end
+   
+      % lower boundary for critical gain
+      
+   if (nargin == 2 && isequal(cdx,'K0min'))
+      K0 = LowerBoundary(o);
+      return
    end
    
       % calculate contact related system (oo) and principal system (L0)
@@ -94,6 +106,8 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
                sub = [111,0];
             end
             Damping(o,oo,L0,sub);      % plot critical parameter overview
+         case 'K0min'
+            K0 = LowerBoundary(o);
      end
    elseif (nargout <= 2)
       [K0,f0] = Calc(o,oo,L0);         % calculate some critical parameters
@@ -172,7 +186,7 @@ end
 function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based    
    [K0,f0] = Stable(o,L0);
     
-   if (nargout > 2)
+   if (nargout > 2 && ~stop(o,o))
       L180 = Negate(L0); 
       [K180,f180] = Stable(o,L180);
    end
@@ -180,9 +194,9 @@ function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based
       % pay attention to a user stop request, which means that all 
       % intermediate results have to be invalidated with immediate return
       
-   if stop(o)
-%     K0 = [];  f0 = [];  K180 = [];  f180 = [];
-%     return
+   if stop(o,o)                        % stop option controlled
+      K0 = [];  f0 = [];  K180 = [];  f180 = [];
+      return
    end
    
       % otherwise continue processing ...
@@ -619,8 +633,9 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
          plot(o,Ki(idx),-real(si(idx))*100,'r.');
       end
       idle(o);                         % give time for graphics refresh
-      if stop(o)
-         break;
+      if stop(o,o)                     % stop option controlled
+         K0 = [];  f0 = [];
+         return;
       end
    end
    stop(o,'Disable');
@@ -679,9 +694,16 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
 %            [K0,f0] = Stable(o,L0)
 %
    if (nargin < 3)
-      low  = opt(o,{'gain.low',1e-3});
-      high = opt(o,{'gain.high',1e3});
-      search = opt(o,{'search',50});
+      low  = opt(o,'gain.low');
+      high = opt(o,'gain.high');
+      search = opt(o,{'search',200});
+      
+      if isempty(low)
+         low = LowerBoundary(o)/2;     % factor 2 safety margin
+      end
+      if isempty(high)
+         high = low*1000;
+      end
       K = logspace(log10(low),log10(high),search);
    end
    iter = opt(o,{'iter',50});
@@ -693,6 +715,10 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
    
    if (nargin < 4)
       s = CritEig(o,L0,K);
+      if stop(o,o)                     % stop option controlled
+         K0 = [];  f0 = [];
+         return
+      end
    end
    
    Klim = Initial(o,L0,K,s);
@@ -706,9 +732,9 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
       % pay attention to the case that user requested a termination
       % in this case return empty values for K0 and f0
       
-   if stop(o)
-%     K0 = [];  f0 = [];
-%     return
+   if stop(o,o)
+      K0 = [];  f0 = [];
+      return
    end
    
    if (real(s(1))>= 0 || real(s(2)) < 0)
@@ -767,9 +793,10 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
       
          % eventually stop
          
-      if stop(o)
-%        progress(o,'Stop request by user');
-%        break
+      if stop(o,o)
+         K0 = inf;  f0 = 0;
+         progress(o);               % done   
+         return
       end
    end
    progress(o);                     % done   
@@ -787,7 +814,7 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
 end
 function s = CritEig(o,L0,K)           % Find critical Eigenvalues     
    [A0,B0,C0,D0] = data(L0,'A,B,C,D');
-
+   
    kmax = length(K);
    for (k=1:kmax)
       if (kmax > 10 && rem(k-1,10) == 0)
@@ -807,8 +834,8 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
       idx = find(re==max(re));
       s(k) = sk(idx(1));
       
-      if stop(o)
-%         break;
+      if stop(o,o)                     % stop option controlled
+         break;
       end
    end
    
@@ -973,4 +1000,49 @@ function [K,Omega,err] = Pass(o,PsiW31,PsiW33,Olim,sgn,tol,iter)
          Olim(1) = Omega;
       end
    end
+end
+function K0min = LowerBoundary(o)
+%
+% K0MIN   Calculate lower boundary of K0:
+%         Let l0jw = [l01(jw),l02(jw),...,l0n(jw)], then we know that for
+%         for critical gain we have
+%
+%             K0*l0i(jw0) = -1         % for some 1 <= i <= n
+%
+%         This implies that K0*|l0i(jw)|= 1 and K0 = 1/|l0i(jw)|. Given now
+%         a boundary condition
+%
+%             |l0i(jw)| <= A           % for all 1 <= i <= n and all w
+%
+%         we can conclude that
+%
+%            K0 >= 1/A
+%
+%         Thus we can calculate K0min as a lower boundary of K0 as
+%
+%            K0 = 1 / max{|l0i(jw)|}  % over i=1..n and all w
+%
+   o = with(o,'spectrum');             % need for omega calculation
+
+      % calculate omega range
+      
+   olo = opt(o,{'omega.low',100});
+   ohi = opt(o,{'omega.high',1e5});
+   points = opt(o,{'omega.points',2000});
+
+   om = logspace(log10(olo),log10(ohi),points);
+
+      % quickest way of spectrum calculation
+      
+   sys = system(o);
+   [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0');
+ 
+   PsiW31 = psion(o,A,B_1,C_3);            % to calculate G31(jw)
+   PsiW33 = psion(o,A,B_3,C_3);            % to calculate G33(jw)
+   lambda0jw = lambda(o,PsiW31,PsiW33,T0*om);
+
+      % calculate upper boundary A
+      
+   A = max(max(abs(lambda0jw)));
+   K0min = 1/A;
 end

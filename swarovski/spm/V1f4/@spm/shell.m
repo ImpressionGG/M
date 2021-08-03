@@ -1154,8 +1154,10 @@ function oo = Critical(o)              % Critical Menu
    setting(o,{'critical.iter'},50);    % iterations
    setting(o,{'critical.check'},0);    % no check
    setting(o,{'critical.algo'},'eig'); % EIG algorithm
-   setting(o,{'critical.gain.low'},1e-3);
-   setting(o,{'critical.gain.high'},1e3);
+%  setting(o,{'critical.gain.low'},1e-3);
+   setting(o,{'critical.gain.low'},[]);
+%  setting(o,{'critical.gain.high'},1e3);
+   setting(o,{'critical.gain.high'},[]);
 
    setting(o,{'stability.algo'},'ss'); % stability algorithm
    setting(o,{'stability.search'},50); % number of search points
@@ -1179,9 +1181,13 @@ function oo = Critical(o)              % Critical Menu
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Lower Gain',{},'critical.gain.low');
-         choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
+%        choice(ooo,[1e-15,1e-10,1e-5,1e-4,1e-3,1e-2],{});
+         choice(ooo,{{'1e-10',1e-10},{'1e-5',1e-5},{'1e-4',1e-4},...
+                     {'1e-3',1e-3},{'1e-2',1e-2},{},{'Auto',[]}},{});
    ooo = mitem(oo,'Upper Gain',{},'critical.gain.high');
-         choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+%        choice(ooo,[1e1,1e2,1e3,1e4,1e5],{});
+         choice(ooo,{{'1e1',1e1},{'1e2',1e2},{'1e3',1e3},...
+                     {'1e4',1e4},{'1e5',1e5},{},{'Auto',[]}},{});
 
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Legacy');

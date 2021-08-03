@@ -409,7 +409,8 @@ function vers = version(o,arg)         % SPM Class Version
 %   minispm toolbox
 % - adding a confirmation dialog in corazon/stop
 % - refreshing damping variation subplot before calculation of critical 
-%   damping sensitivity 
+%   damping sensitivity
+% - bugfix: vertical lines in Critical Gain graphics
 
 % Known bugs & wishlist
 % =========================

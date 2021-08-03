@@ -70,10 +70,18 @@ function [lim,style] = limits(o,mode)
          end
          
       case 'Gain'
-         plot(o,mu*[1 1],get(gca,'ylim'),style);
+         ylim = get(gca,'ylim');
+         ylim(2) = max(ylim(2),abs(ylim(1))/5); 
+         
+         plot(o,mu*[1 1],ylim,style);
          if (kmu ~= 1)
-            plot(o,mu*kmu*[1 1],get(gca,'ylim'),style);
+            plot(o,mu*kmu*[1 1],ylim,style);
          end
+         
+            % sometimes ylim is changed during above operations
+            % below statement undoes such change
+            
+         set(gca,'ylim',ylim);
 
       otherwise
          error('bad mode');

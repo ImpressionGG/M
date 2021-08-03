@@ -474,7 +474,8 @@ o = with(o,{'critical'});
 
          PlotNyquist(o,2212,0);
          PlotNyquist(o,2222,1);
-         critical(o,'Overview',[0,0,3231]);
+%        critical(o,'Overview',[0,0,3231]);
+         critical(o,'Damping',[3231,0]);
       case 'Combi'
          critical(o,'Overview',[3111,3121,3131]);
       case 'Damping'
