@@ -166,7 +166,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
    oo = var(oo,'PsiW31,PsiW33',PsiW31,PsiW33);
 %  oo = var(oo,'Psi0W31,Psi0W33',Psi0W31,Psi0W33);
    
-   if (nargout == 1)
+   if (nargout <= 1)
       return                           % return l0
    else   
       for (i=1:m)

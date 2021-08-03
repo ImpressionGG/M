@@ -177,6 +177,16 @@ function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based
       [K180,f180] = Stable(o,L180);
    end
    
+      % pay attention to a user stop request, which means that all 
+      % intermediate results have to be invalidated with immediate return
+      
+   if stop(o)
+%     K0 = [];  f0 = [];  K180 = [];  f180 = [];
+%     return
+   end
+   
+      % otherwise continue processing ...
+      
    check = opt(o,{'check',2});
    if (check >= 1 )
       tol = opt(o,{'critical.eps',1e-12});
@@ -692,6 +702,15 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
    end
    
    s = CritEig(o,L0,Klim);
+   
+      % pay attention to the case that user requested a termination
+      % in this case return empty values for K0 and f0
+      
+   if stop(o)
+%     K0 = [];  f0 = [];
+%     return
+   end
+   
    if (real(s(1))>= 0 || real(s(2)) < 0)
       error('bad initial data, cannot proceed');
    end
@@ -749,8 +768,8 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
          % eventually stop
          
       if stop(o)
-         progress(o,'Stop request by user');
-         break
+%        progress(o,'Stop request by user');
+%        break
       end
    end
    progress(o);                     % done   
@@ -789,8 +808,7 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
       s(k) = sk(idx(1));
       
       if stop(o)
-%         progress(o,'Stop request by user');
-         break;
+%         break;
       end
    end
    

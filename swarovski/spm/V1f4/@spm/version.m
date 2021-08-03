@@ -90,7 +90,13 @@ function vers = version(o,arg)         % SPM Class Version
 % - state space representation of full blown closed loop dynamical system
 % - comparison of system matrix simulation and transfer function responses
 % - nonlinear transient analysis
-
+% - -----------------
+% - docu: change of default settings
+% - docu: working with plugins
+% - docu: pulling settings from one shell and pushing into another, i.e 
+%         if an object has been stored two month ago, and I want to load
+%         object and update shell with actual default settings
+%
 %--------------------------------------------------------------------------
 %
 % Release Notes SPM/V1C

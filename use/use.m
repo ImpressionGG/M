@@ -156,7 +156,7 @@ function use(tag,version)
       case 'spm'
          use corazon
          addpath([mhome,'/swarovski/spm/',version.spm]);
-         fprintf(['   using SPM toolbox ',version.spm,'\n']);            
+         fprintf(['   using SPM toolbox ',version.spm,'\n']);
          
       case 'minispm'
          use corazon

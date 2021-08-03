@@ -217,6 +217,12 @@ function o = Critical(o)               % Critical Sensitivity
    sub4 = 3211;                        % for damping sensitivity
    sub5 = 3231;                        % for Percentage plot
    
+      % hard refresh of caches
+      
+   o = cache(o,o,'critical');          % hard refresh
+   o = cache(o,o,'spectral');          % hard refresh
+   o = cache(o,o,'sensitivity');       % hard refresh
+   
       % plot nominal damping
       
    subplot(o,sub3);
@@ -301,33 +307,36 @@ function o = Critical(o)               % Critical Sensitivity
             
          [lk,Kk,fk] = cook(oo,'l0,K0,f0');
 
-            % store results in tables (to be cached)
-            
-         l{k} = lk;
-         K(k) = Kk;
-         f(k) = fk;
+            % store results in tables (to be cached). Note that calculated
+            % values are invalid in case of a stop request!
 
-            % note that o contains the original cache contents, and it is
-            % not an issue if we cold refresh this cache (but attention:
-            % oo must not be cold refreshed!!!)
+         if ~stop(o)
+            l{k} = lk;
+            K(k) = Kk;
+            f(k) = fk;
 
-         o = cache(o,'sensitivity.Kcrit',K);
-         o = cache(o,'sensitivity.lcrit',l);
-         o = cache(o,'sensitivity.fcrit',f);
-         cache(o,o);                      % cold refresh
+               % note that o contains the original cache contents, and it is
+               % not an issue if we cold refresh this cache (but attention:
+               % oo must not be cold refreshed!!!)
 
-            % plot Bode
+            o = cache(o,'sensitivity.Kcrit',K);
+            o = cache(o,'sensitivity.lcrit',l);
+            o = cache(o,'sensitivity.fcrit',f);
+            cache(o,o);                      % cold refresh
 
-         subplot(o,sub1);
-         delete(gca);
-         subplot(o,sub1);
-         PlotBode(oo,sub1,lk,fk,'r','c-.');   
-         plot(omega(k)*[1 1]/2/pi,get(gca,'ylim'),'g-.');
+               % plot Bode
 
-         PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
-         title(sprintf('Mode: #%g, K0: %g',k,o.rd(Kk,2)));
-         xlabel('omega [1/s]');
-         ylabel('|l0(jw)|');
+            subplot(o,sub1);
+            delete(gca);
+            subplot(o,sub1);
+            PlotBode(oo,sub1,lk,fk,'r','c-.');   
+            plot(omega(k)*[1 1]/2/pi,get(gca,'ylim'),'g-.');
+
+            PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
+            title(sprintf('Mode: #%g, K0: %g',k,o.rd(Kk,2)));
+            xlabel('omega [1/s]');
+            ylabel('|l0(jw)|');
+         end
       end
       
          % Plot K and percentage

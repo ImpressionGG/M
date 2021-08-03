@@ -2303,7 +2303,7 @@ end
 % Spectrum
 %==========================================================================
 
-function o = L0Magni(o)                % L0(i,j) Magnitude Plots
+function o = L0Magni(o)                % L0(i,j) Magnitude Plots       
    if type(o,{'spm'})
       o = cache(o,o,'multi');
       o = cache(o,o,'spectral');
@@ -2437,7 +2437,7 @@ end
 % Checks
 %==========================================================================
 
-function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs
+function o = EigenvalueCheck(o)        % Check Numeric Quality of EVs  
    [a0,a1,A] = cook(o,'a0,a1,A');
 
    if Vpa(o)                           % use variable precision arithmetic?
@@ -2816,7 +2816,7 @@ function Heading(o,head)
    if type(o,{'pkg'})
       dvartxt = '';
    else
-      [zeta,dvar] = damping(o);
+      [zeta,~,dvar] = damping(o);
       dvartxt = o.iif(dvar,sprintf(', dvar: %g%%',o.rd(100*dvar,1)),'');
    end
    

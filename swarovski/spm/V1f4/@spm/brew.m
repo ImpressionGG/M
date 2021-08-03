@@ -24,11 +24,14 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %           oo = brew(o,'Nyq')         % brew nyquist stuff
 %
-%        The following cache segments are managed by brew:
+%        The following main cache segments are managed by brew:
 %
 %           'critical'                 % critical quantities
 %           'spectral'                 % spectral TRFs
 %           'sensitivity'              % sensitivity frequency response
+%
+%        The following legacy cache segments are managed by brew:
+%
 %           'trf'                      % free system TRFs
 %           'consd'                    % constrained system TRFs
 %           'principal'                % principal transfer functions
@@ -51,10 +54,10 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           H = cache(oo,'consd.H');        % H(s)
 %           L = cache(oo,'consd.L');        % L(s)
 %    
-%           oo = brew(o,'Pricipal');        % brew principal cache segment
-%           P = cache(oo,'pricipal.P')      % P(s)
-%           Q = cache(oo,'pricipal.Q')      % Q(s)
-%           L0 = cache(oo,'pricipal.L0')    % L0(s) := P(s)/Q(s)
+%           oo = brew(o,'Principal');       % brew principal cache segment
+%           P = cache(oo,'principal.P')     % P(s)
+%           Q = cache(oo,'principal.Q')     % Q(s)
+%           L0 = cache(oo,'principal.L0')   % L0(s) := P(s)/Q(s)
 %
 %           oo = brew(o,'Loop');            % brew loop cache segment
 %           Lmu = cache(oo,'loop.Lmu');     % Lmu(s) = mu*L0(s)
@@ -732,6 +735,14 @@ function oo = Critical(o)              % Brew Critical Quantities
       
    [K0,f0,K180,f180,L0] = critical(o);
    
+      % consider that user has issued a stop request which means that 
+      % cache is not refreshed and we return immediately
+      
+   oo = o;
+   if stop(o)
+      return
+   end
+   
       % calculate L180 (a CORASIM state space system)
       
    L180 = L0;
@@ -740,7 +751,6 @@ function oo = Critical(o)              % Brew Critical Quantities
        
       % store in critical cache segment
       
-   oo = o;
    oo = cache(oo,'critical.L0',L0);
    oo = cache(oo,'critical.L180',L180);
    
