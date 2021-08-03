@@ -222,20 +222,19 @@ end
 %==========================================================================
 
 function Plot(o,zeta0,zeta1,zeta2,zeta)
-%   sub = opt(o,{'subplot',111});
-%   subplot(o,sub);
-   
    for (i=1:length(zeta))
       col = o.iif(dark(o),'w','k');
       
       plot([i i],[0 zeta0(i)],col);
       hold on
       plot([i i],[zeta0(i) zeta1(i)],'r');
-      plot([i i],[zeta1(i) zeta2(i)],'b');
+      plot(o,[i i],[zeta1(i) zeta2(i)],'cb');
+      
       plot([i i],[zeta2(i) zeta(i)],'g');
       
       plot(i,zeta0(i),[col,'o'], i,zeta1(i),'ro');
-      plot(i,zeta2(i),'bo', i,zeta(i),'go');
+      plot(o,i,zeta2(i),'cbo');
+      plot(i,zeta(i),'go');
    end
    
    dvar = norm(zeta-zeta0)/norm(zeta0);

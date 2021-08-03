@@ -64,14 +64,14 @@ function vers = version(o,arg)         % SPM Class Version
 %
 % Roadmap
 % =======
-% - fix calculation bug (deviation between MiniSpm and SPM Toolbox)
+% + fix calculation bug (deviation between MiniSpm and SPM Toolbox)
 % - implicite generation of non existing package info files
-% - sensitivity calculation must work independent of settings
-% - pareto controlled calculation of critical sensitivity
+% + sensitivity calculation must work independent of settings
+% + pareto controlled calculation of critical sensitivity
 % - put sensitivity calculation into batch menu
 % - what means red and magenta vertical line?
-% - display actual variation and K-values in title in critical sensitivity
-% - write sensitivity results into cache
+% + display actual variation and K-values in title in critical sensitivity
+% + write sensitivity results into cache
 % - pdf method: append to PDF during batch process
 % + fix focus thief
 % - diagram comparisons
@@ -290,7 +290,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + View>Sensitivity menu for sensitivity analysis
 %   + caching of sensitivity analysis data
 %   ---------------
-%   - bug: stability margin calculation mistake
+%   + bug: stability margin calculation mistake
 %   - bug: leaves gap after continuing sensitivity calculation
 %   + incorporate package title into standard headings
 %   + bug: sensitivity.S not cached after 1st run of Damping Sensitivity 
