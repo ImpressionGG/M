@@ -452,7 +452,7 @@ function o = Critical(o)               % Calculate Critical Quantities
 
    Heading(o);
    o = with(o,{'bode','stability'});
-o = with(o,{'critical'});
+   o = with(o,{'critical'});
 
    points = opt(o,{'omega.points',10000});
    closeup = opt(o,{'bode.closeup',0});
@@ -489,68 +489,67 @@ o = with(o,{'critical'});
          critical(o,'Phase',111);
 
       case 'Nyquist'
-         PlotNyquist(o,111,0);
+         Nyquist(o,[121,122],0);
       case 'Critical'
-         PlotNyquist(o,111,1);
+         Nyquist(o,[121,122],1);
    end
    Heading(o);
 
-   function PlotNyquist(o,sub,critical)
+   function Nyquist(o,sub,critical)
       o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
 
       o = with(o,'nyq');
 
+      if sub(1)
+         lambda0 = cook(o,'lambda0');
+         K = o.iif(critical,K0,1);
+         PlotNyquist(o,sub(1),lambda0,K,f0,critical,'0')
+      end
+      
+      if (length(sub) > 1)
+         [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
+         K = o.iif(critical,K180,1);
+         PlotNyquist(o,sub(2),lambda180,K,f180,critical,'180')
+      end
+   end
+   function PlotNyquist(o,sub,lam,K,f,critical,tag)
       subplot(o,sub);
-      lambda0 = cook(o,'lambda0');
-      K = o.iif(critical,K0,1);
-
+      
       if (dark(o))
          colors = {'rk','gk','b','ck','mk','yk','wk'};
       else
          colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
       end
-      colors = get(lambda0,{'colors',colors});
+      colors = get(lam,{'colors',colors});
 
-      no = length(lambda0.data.matrix(:));
-      for (i=no)
-         l0i = peek(lambda0,i);
-         l0jwi = l0i.data.matrix{1,1};
+      if ~critical
+         no = length(lam.data.matrix(:));
+         for (i=1:no)
+            l0i = peek(lam,i);
+            l0jwi = l0i.data.matrix{1,1};
 
-         col = colors{1+rem(i,length(colors))};
-         nyq(K*l0i,col);
+            col = colors{1+rem(i,length(colors))};
+            nyq(K*l0i,col);
+         end
       end
 
       if (critical)
          col = 'r2';
       else
-         col = [get(lambda0,'color'),'2'];
+         col = [get(lam,'color'),'2'];
       end
 
       if (critical)
-         l00 = peek(lambda0,1);
-         l00jw = l00.data.matrix{1};
-
-         for (i=1:no)
-            ljw(i,:) = lambda0.data.matrix{i};
-         end
-
-         for (j=1:size(ljw,2))
-            [~ ,idx] = sort(abs(ljw(:,j)));
-            l00jw(j) = ljw(idx(no),j);
-         end
-         
-         nyq(K*l00,col);
-
-         l00.data.matrix{1} = l00jw;
-         nyq(K*l00,'r1');
-
-         title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+         l00 = peek(lam,1);         
+         nyq(K*lam,col);
+         title(sprintf('Critical Loci K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                       tag,tag,tag,K,tag,f));
       else
-         l00 = peek(lambda0,1);
-%l00=lambda(o,lambda0);         
-         nyq(K*l00,col);
+         l00 = peek(lam,1);
+         nyq(K*lam,col);
          limits(o,'Nyq');                 % plot nyquist limits
-         title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
+         title(sprintf('Spectrum lambda%s(jw) - K%s %g @ f%s: %g Hz',...
+                       tag,tag,K,tag,f));
       end
    end
 end

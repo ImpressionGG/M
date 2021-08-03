@@ -411,6 +411,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - refreshing damping variation subplot before calculation of critical 
 %   damping sensitivity
 % - bugfix: vertical lines in Critical Gain graphics
+% - Critical Loci & Nyquist for Forward/Backward Cutting
+
 
 % Known bugs & wishlist
 % =========================

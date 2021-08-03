@@ -589,11 +589,17 @@ function oo = Bode(o)                  % Bode Settings Menu
 end
 function oo = Nyquist(o)               % Nyquist Settings Menu         
    maghi = setting(o,'nyq.magnitude.high');
+   setting(o,{'nyq.closeup'},0);
    
    oo = menu(corasim(o),'Nyquist');    % delegate to corasim/menu
    if isempty(maghi)
       choice(o,'nyq.magnitude.high',20);
    end
+   
+   ooo = mitem(oo,'Closeup',{},'nyq.closeup');
+   choice(ooo,{{'Off',0},{},{'500%',5},{'200%',2},{'100%',1},...
+               {'50%',0.5},{'20%',0.2},{'10%',0.1},...
+               {'5%',0.05},{'2%',0.02},{'1%',0.01}},{});
 end
 function oo = Rloc(o)                  % Root Locus Settings Menu      
    setting(o,{'rloc.xlim'},[]);

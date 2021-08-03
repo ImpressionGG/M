@@ -84,7 +84,7 @@ function o = Enable(o)
    set(gcf,'WindowButtonDownFcn',cb);
 end
 function o = Disable(o)
-  set(gcf,'WindowButtonDownFcn',[]);
+   set(gcf,'WindowButtonDownFcn',[]);
 end
 
 %==========================================================================
