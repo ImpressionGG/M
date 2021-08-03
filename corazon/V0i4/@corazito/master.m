@@ -33,7 +33,8 @@ function oo = master(obj,evt,tag,cblist)  % Master Callback
    oo = call(o,cblist,bo,tag);         % invoke master callback
    ready(corazito);                    % change mouse pointer -> ready
    
-   if (stop(o))
-      set(gcf,'name','Stop request by user');
-   end
+%  if (stop(o))
+%     set(gcf,'name','Stop request by user');
+%  end
+   stop(o,'Disable');
 end

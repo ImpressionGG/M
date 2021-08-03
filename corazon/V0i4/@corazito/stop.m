@@ -78,13 +78,20 @@ end
 % Enable/Disable Button Press
 %==========================================================================
 
+function cb = CbList(o)
+   cb = call(o,'corazon',{@stop 'Callback'});
+end
 function o = Enable(o)
    stop(o,0);                          % clear stop flag
-   cb = call(o,'corazon',{@stop 'Callback'});
+   cb = CbList(o);
    set(gcf,'WindowButtonDownFcn',cb);
 end
 function o = Disable(o)
-   set(gcf,'WindowButtonDownFcn',[]);
+   cb0 = CbList(o);
+   cb = get(gcf,'WindowButtonDownFcn');
+   if (iscell(cb) && length(cb) >= 1 && isequal(cb{1},cb0{1}))
+      set(gcf,'WindowButtonDownFcn',[]);
+   end
 end
 
 %==========================================================================
