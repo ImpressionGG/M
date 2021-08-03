@@ -401,7 +401,9 @@ function vers = version(o,arg)         % SPM Class Version
 % - change critical.search default setting from 50 to 200 search points
 %   to fix calculation error (Andy's mismatch between SPM toolbox and
 %   minispm toolbox
-
+% - adding a confirmation dialog in corazon/stop
+% - refreshing damping variation subplot before calculation of critical 
+%   damping sensitivity 
 
 % Known bugs & wishlist
 % =========================
