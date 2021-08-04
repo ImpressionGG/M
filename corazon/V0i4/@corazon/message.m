@@ -104,7 +104,8 @@ function Message(o)                    % Display Screen Message
       % first look at subplot option, if option is empty then fetch
       % current subplot settings with sub = subplot(o)
       
-   sub = opt(o,{'subplot',subplot(o)});
+%  sub = opt(o,{'subplot',subplot(o)});
+   sub = opt(o,'subplot');
    if (isempty(sub) || isequal(sub,[1 1 1 1]))
       cls(o,'off');                    % clear screen, axes off
    else

@@ -42,7 +42,7 @@ function use(tag,version)
       version.midi = 'V1a';
       version.rat = 'V1a';
       version.cut = 'V1b';
-      version.cute = 'V1b';
+      version.cute = 'V1c1';
       version.trf = 'V2a';
       
       version.bluco = 'V1a';
@@ -61,8 +61,8 @@ function use(tag,version)
    
       % path for article database
       
-   artpath = '/users/hux/Documents/Bluenetics/[Database]/@Article';
-   cutpath = '/Users/hux/Documents/Bluenetics/[Database]/[70er-Kugel]';
+   artpath = '/users/hux/Bluenetics/[Database]/@Article';
+   cutpath = '/Users/hux/Bluenetics/[Database]/[70er-Kugel]';
    
       % provide default tag
       

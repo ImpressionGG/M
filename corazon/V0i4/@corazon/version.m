@@ -617,6 +617,7 @@ function VersionV1I
 % - adding a confirmation dialog in corazon/stop
 % - adding corazita/axes method
 % - change output arg semantics of corazon/subplot
+% - bugfix: subplot handling in corazon/message
 %
 % Known Bugs / Wishlist
 % - none so far
