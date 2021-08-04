@@ -81,26 +81,42 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
       
       switch mode
          case 'Overview'
-            if (length(sub) ~= 3)
-               sub = [311,312,313];
+            if (length(sub) < 3)
+               sub = [311,312,313, 0,0,0];
             end
-            Bode(o,oo,L0,sub(1:2));    % plot critical parameter overview
-            Damping(o,oo,L0,sub(3));
+            if (sub(1) || sub(2))
+               Bode(o,oo,L0,sub(1:2),+1);    % plot critical parameter overview
+               Damping(o,oo,L0,sub(3));
+            end
+            if (length(sub) >= 4 && (sub(4) || sub(5)))
+               L180 = Negate(L0);
+               Bode(o,oo,L180,[sub(4:5),0],-1); % plot critical parameter overview
+               Damping(o,oo,L0,[0 sub(6)]);
+            end
          case 'Bode'
-            if (length(sub) ~= 2)
-               sub = [211,212];
+            if (length(sub) < 2)
+               sub = [211,212,0,0];
+            elseif (length(sub) < 4)
+               sub(6) = 0;
             end
-            Bode(o,oo,L0,sub(1:2));    % plot critical parameter overview
+            
+            if (sub(1) || sub(2))
+               Bode(o,oo,L0,sub(1:2),+1);    % plot critical parameter overview
+            end
+            if (sub(4) || sub(5))
+               L180 = Negate(L0);
+               Bode(o,oo,L180,sub([4 5]),-1);  % plot critical parameter overview
+            end
          case 'Magni'
             if (length(sub) ~= 1)
                sub = [111];
             end
-            Bode(o,oo,L0,[sub 0]);     % plot critical parameter overview
+            Bode(o,oo,L0,[sub 0],+1);     % plot critical parameter overview
          case 'Phase'
             if (length(sub) ~= 1)
                sub = [111];
             end
-            Bode(o,oo,L0,[0 sub]);     % plot critical parameter overview
+            Bode(o,oo,L0,[0 sub],+1);     % plot critical parameter overview
          case 'Damping'
             if (length(sub) == 1)
                sub = [111,0];
@@ -176,11 +192,6 @@ function [K0,f0,K180,f180] = CalcFqr(o,oo,L0)    % Frequency Based
             fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);
          end
       end
-   end
-   
-   function L = Negate(L)
-      L.data.B = -L.data.B;
-      L.data.D = -L.data.D;
    end
 end
 function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based    
@@ -264,14 +275,21 @@ function o = Damping(o,oo,L0,sub)
       L.data.D = gain * L.data.D;
    end
 end
-function Bode(o,oo,L0,sub)
-   if (length(sub) ~= 2)
-      sub = [211,212];
+function Bode(o,oo,L0,sub,cutting)
+   if (length(sub) < 2)
+      sub = [211,212,0,0];
    end
-   
-   [K0,f0] = cook(o,'K0,f0');
 
    [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+
+   if (cutting > 0)
+      [K0,f0] = cook(o,'K0,f0');
+      tag = '0';
+   elseif (cutting < 0)
+      [K0,f0] = cook(o,'K180,f180');
+      tag = '180';
+   end
+   
    m = size(C_3,1);
    multi = (m > 1);                 % multi contact
    
@@ -296,38 +314,12 @@ function Bode(o,oo,L0,sub)
 
    i123 = (1:m)';
    kmax = length(om);
-   
-      % transform to Schur form
       
-   [U,AS] = schur(A);
-   BS1 = U'*B_1;  BS3 = U'*B_3;  CS3 = C_3*U;
-   
-   if (0)
-      for(k=1:kmax)
-         if (rem(k-1,round(kmax/10))==0)
-            progress(o,'frequency response calculation',k/kmax*100);
-         end
-
-   %     [L0jw(:,k),G31jw(:,k),G33jw(:,k)] = Lambda(o,AS,BS1,BS3,CS3,Om(k));
-         L0jw(:,k) = lambda(o,A,B_1,B_3,C_3,Om(k));
-            % re-arrange
-
-         if (k > 1)
-            [~,idx] = TailSort(L0jw(:,k-1:k),om(k));
-            L0jw(:,k) = L0jw(idx,k);
-         end
-      end
-      progress(o);
-   else
-      L0jw = lambda(o,A,B_1,B_3,C_3,Om);
-   end
+   L0jw = lambda(o,A,B_1,B_3,C_3,Om);
     
       % calculate phases phi31,phi33 and phi=phi31-phi33
 
-   %phi = angle(L0jw);
-   %phi = mod(phi,2*pi) - 2*pi;           % map into interval -2*pi ... 0
-   kf0 = min(find(f>=f0));
-   
+   kf0 = min(find(f>=f0));   
    phi = angle(o,L0jw,kf0);
          
       % calculate critical frequency response
@@ -349,27 +341,31 @@ function Bode(o,oo,L0,sub)
    k0 = min(find(M==aprerr));          % indexing critical characteristics
    
       % get critical characteristics
-      
-   lk0jw = L0jw(k0,:);                  % critical characteristics 
-   phil0 = angle(o,lk0jw,kf0);
-   l0jw = lambda(o,L0jw);
    
-   BodePlot(o,sub(1),sub(2));          % plot intermediate results
+   if (sub(1) ~= 0 && sub(2) ~= 0)
+      lk0jw = L0jw(k0,:);                 % critical characteristics 
+      phil0 = angle(o,lk0jw,kf0);
+      l0jw = lambda(o,L0jw);
+
+      BodePlot(o,l0jw,sub(1),sub(2));     % plot intermediate results
+
+      M31 = abs(G31jw0(k0));              % coupling gain
+      phi31 = angle(G31jw0(k0));          % coupling phase      
+
+      M33 = abs(G33jw0(k0));              % direct gain
+      phi33 = angle(G33jw0(k0));          % direkt phase      
+
+      ML0 = abs(L0jw0(k0));               % critical gain
+      phi0 = angle(L0jw0(k0));            % critical phase      
+
+      [K0_,f0_] = Stable(o,L0,K0); 
+      Results(o,sub(1),sub(2));           % display results
+   end
    
-   M31 = abs(G31jw0(k0));              % coupling gain
-   phi31 = angle(G31jw0(k0));          % coupling phase      
-
-   M33 = abs(G33jw0(k0));              % direct gain
-   phi33 = angle(G33jw0(k0));          % direkt phase      
-
-   ML0 = abs(L0jw0(k0));               % critical gain
-   phi0 = angle(L0jw0(k0));            % critical phase      
-      
-   [K0_,f0_] = Stable(o,L0,K0); 
-   Results(o,sub(1),sub(2));           % display results
+   
    heading(o);
          
-   function BodePlot(o,sub1,sub2)
+   function BodePlot(o,l0jw,sub1,sub2)
       if dark(o)
          colors = {'rk','gk','b','ck','mk'};
       else
@@ -427,8 +423,8 @@ function Bode(o,oo,L0,sub)
       
       if (sub1)
          subplot(o,sub1);
-         title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K0: ',...
-                        '%g @ %g Hz (EV error: %g)'],K0_,f0_,err));
+         title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K%s: ',...
+                        '%g @ %g Hz (EV error: %g)'],tag,K0_,f0_,err));
 
          txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
                Rd(M31*1e9),Rd(phi31*180/pi),...
@@ -1045,4 +1041,8 @@ function K0min = LowerBoundary(o)
       
    A = max(max(abs(lambda0jw)));
    K0min = 1/A;
+end
+function L = Negate(L)
+   L.data.B = -L.data.B;
+   L.data.D = -L.data.D;
 end

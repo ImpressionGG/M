@@ -412,7 +412,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   damping sensitivity
 % - bugfix: vertical lines in Critical Gain graphics
 % - Critical Loci & Nyquist for Forward/Backward Cutting
-
+% - pimp Analyse/Critical menu items (forward/backward/both cutting)
 
 % Known bugs & wishlist
 % =========================

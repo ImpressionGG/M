@@ -413,6 +413,8 @@ function oo = View(o)                  % View Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Clear Screen',{@Cls});
    ooo = mitem(oo,'-');
+   ooo = Cutting(oo);                  % add cutting mode sub menu
+   ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
    ooo = Scale(oo);                    % add Scale sub-menu
    ooo = Bode(oo);                     % add Bode settings menu
@@ -432,7 +434,13 @@ function oo = View(o)                  % View Menu
       cls(o);
    end
 end
-function oo = Scale(o)                 % Scale Sub-Menu                
+function oo = Cutting(o)               % Cutting Mode Sub-Menu         
+   setting(o,{'view.cutting'},0);      % both cutting modes
+
+   oo = mitem(o,'Cutting',{},'view.cutting');
+   choice(oo,{{'Forward',1},{'Backward',-1},{'Both',0}},{});
+end
+function oo = Scale(o)                  % Scale Sub-Menu                
    setting(o,{'scale.xunit'},'ms');     % time scaling unit
    setting(o,{'scale.xscale'},1e3);     % time scaling factor
    

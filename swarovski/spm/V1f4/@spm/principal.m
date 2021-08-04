@@ -6,7 +6,7 @@ function L0 = principal(o,oo)
 %              L0 = principal(o)     % calc principal system L0
 %              L0 = principal(o,oo)  % calc principal system L0 from oo
 %
-%           The system matrices [A0,B0,C0,D0] of L0 buiold the basis
+%           The system matrices [A0,B0,C0,D0] of L0 build the basis
 %           for closed loop eigenvalue calculation. Given a feedback 
 %           matrix K the closed loop dynamic matrix AK calculates
 %

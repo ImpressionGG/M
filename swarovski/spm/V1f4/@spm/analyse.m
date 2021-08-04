@@ -119,15 +119,6 @@ function oo = ClosedLoopMenu(o)        % Closed Loop Menu
    ooo = mitem(oo,'Step Responses',{@WithCuo,'StepPlots'});
    ooo = mitem(oo,'Poles & Zeros',{@WithCuo,'PolesZeros'});
 end
-function oo = OldSensitivity(o)        % Sensitivity Menu              
-   oo = mitem(o,'Sensitivity');
-%  ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'SensitivityW'});
-   ooo = mitem(oo,'Frequency Sensitivity',{@WithSpm,'SensitivityF'});
-   ooo = mitem(oo,'Damping Sensitivit',{@WithSpm,'SensitivityD'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Modal Contribution',{@WithSpm,'Contribution'});
-   ooo = mitem(oo,'Numerical Check',{@WithSpm,'NumericCheck'});
-end
 function oo = Spectrum(o)              % Spectrum Menu                 
    oo = mitem(o,'Spectrum');
    ooo = mitem(oo,'L0 Magnitude Plots',{@WithSpm,'L0Magni'});
@@ -374,49 +365,7 @@ function o = PrincipalSpectrum(o,tag)
    gi = set(gi,'color',col);
    PhaseChart(o,sub(2),gi,1);
 end
-
-   % legacy
-
-function oldPlotNyquist(o,sub,critical)                                
-   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
-
-   o = with(o,'nyq');
-
-   subplot(o,sub);
-   l0 = cook(o,'lambda0');
-   K = o.iif(critical,K0,1);
-
-   if (dark(o))
-      colors = {'rk','gk','b','ck','mk','yk','wk'};
-   else
-      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
-   end
-   colors = get(l0,{'colors',colors});
-
-   for (i=1:length(l0.data.matrix(:)))
-      l0i = peek(l0,i);
-      l0jwi = l0i.data.matrix{1,1};
-
-      col = colors{1+rem(i,length(colors))};
-      nyq(K*l0i,col);
-   end
-
-   if (critical)
-      col = 'r2';
-   else
-      col = [get(l0,'color'),'2'];
-   end
-
-   l00 = peek(l0,1);
-   nyq(K*l00,col);
-
-   if (critical)
-      title(sprintf('Critical Loci K0*lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
-   else
-      title(sprintf('Spectrum lambda0(jw) - K0: %g @ f0: %g Hz',K0,f0));
-   end
-end
-
+   
 %==========================================================================
 % Critical
 %==========================================================================
@@ -456,6 +405,7 @@ function o = Critical(o)               % Calculate Critical Quantities
 
    points = opt(o,{'omega.points',10000});
    closeup = opt(o,{'bode.closeup',0});
+   cutting = opt(o,{'view.cutting',0});
 
    [f0,K0] = cook(o,'f0,K0');
 
@@ -469,29 +419,66 @@ function o = Critical(o)               % Calculate Critical Quantities
    mode = arg(o,1);
    switch mode
       case 'Overview'
-         critical(o,'Overview',[3211,3221,0]);
-         subplot(o,3211);
-
-         PlotNyquist(o,2212,0);
-         PlotNyquist(o,2222,1);
-%        critical(o,'Overview',[0,0,3231]);
-         critical(o,'Damping',[3231,0]);
+         switch cutting
+            case 0                     % both directions         
+               critical(o,'Overview',[4211,4221,0]);
+               Nyquist(o,[4441 0],0);
+               Nyquist(o,[4442 0],1);
+               critical(o,'Damping',[4231,0]);
+               
+                  % reverse part
+                  
+               critical(o,'Overview',[4212,4222,0, 0,0,0]);
+               Nyquist(o,[0 4444],0);
+               Nyquist(o,[0 4443],1);
+               critical(o,'Damping',[0,4232]);
+                  
+            case 1                     % forward direction
+               critical(o,'Overview',[3211,3221,0]);
+               Nyquist(o,2212,0);
+               Nyquist(o,2222,1);
+               critical(o,'Damping',[3231,0]);
+            case -1                    % backward direction
+               critical(o,'Overview',[0,0,0, 3211,3221,0]);
+               Nyquist(o,[0 2212],0);
+               Nyquist(o,[0 2222],1);
+               critical(o,'Damping',[0 3231]);
+         end
       case 'Combi'
          critical(o,'Overview',[3111,3121,3131]);
       case 'Damping'
-         critical(o,'Damping',[211,212]);
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Damping',[211,212]);
+            case 1                     % forward direction
+               critical(o,'Damping',[111,0]);
+            case -1                    % backward direction
+               critical(o,'Damping',[0,111]);
+         end
       case 'Bode'
-         critical(o,'Bode',[211,212]);
-         subplot(o,211);
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Bode',[2211,2221,2212,2222]);
+            case 1                     % forward direction
+               critical(o,'Bode',[2121,2122,0,0]);
+            case -1                    % backward direction
+               critical(o,'Bode',[0,0,2121,2122]);
+         end
       case 'Magni'
          critical(o,'Magni',111);
       case 'Phase'
          critical(o,'Phase',111);
 
-      case 'Nyquist'
-         Nyquist(o,[121,122],0);
-      case 'Critical'
-         Nyquist(o,[121,122],1);
+      case {'Nyquist','Critical'}
+         crit = o.iif(isequal(mode,'Critical'),1,0);
+         switch cutting
+            case 0                     % both directions
+               Nyquist(o,[121,122],crit);
+            case 1                     % forward direction
+               Nyquist(o,[111,0],crit);
+            case -1                    % backward direction
+               Nyquist(o,[0,111],crit);
+         end
    end
    Heading(o);
 
@@ -502,14 +489,12 @@ function o = Critical(o)               % Calculate Critical Quantities
 
       if sub(1)
          lambda0 = cook(o,'lambda0');
-         K = o.iif(critical,K0,1);
-         PlotNyquist(o,sub(1),lambda0,K,f0,critical,'0')
+         PlotNyquist(o,sub(1),lambda0,K0,f0,critical,'0')
       end
       
-      if (length(sub) > 1)
+      if (length(sub) > 1 && sub(2))
          [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
-         K = o.iif(critical,K180,1);
-         PlotNyquist(o,sub(2),lambda180,K,f180,critical,'180')
+         PlotNyquist(o,sub(2),lambda180,K180,f180,critical,'180')
       end
    end
    function PlotNyquist(o,sub,lam,K,f,critical,tag)
@@ -529,7 +514,7 @@ function o = Critical(o)               % Calculate Critical Quantities
             l0jwi = l0i.data.matrix{1,1};
 
             col = colors{1+rem(i,length(colors))};
-            nyq(K*l0i,col);
+            nyq(l0i,col);
          end
       end
 
@@ -546,9 +531,9 @@ function o = Critical(o)               % Calculate Critical Quantities
                        tag,tag,tag,K,tag,f));
       else
          l00 = peek(lam,1);
-         nyq(K*lam,col);
+         nyq(lam,col);
          limits(o,'Nyq');                 % plot nyquist limits
-         title(sprintf('Spectrum lambda%s(jw) - K%s %g @ f%s: %g Hz',...
+         title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
                        tag,tag,K,tag,f));
       end
    end
