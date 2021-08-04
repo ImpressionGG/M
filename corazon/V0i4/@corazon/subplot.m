@@ -1,20 +1,25 @@
-function hax = subplot(o,varargin)
+function oo = subplot(o,varargin)
 %
 % SUBPLOT   Select subplot - handle dark mode (optional grid), always set
 %           axes hold mode (if hold is not desired, explicitely call hold 
-%           off).
+%           off). Axes handle can be retrieved by hax = axes(oo).
 %
-%              hax = subplot(o,311);
-%              hax = subplot(o,3,1,1);
-%              hax = subplot(o,[3 1 1]);
+%              oo = subplot(o,311);
+%              oo = subplot(o,3,1,1);
+%              oo = subplot(o,[3 1 1]);
+%
+%           Note that in earlier CORAZON versions axes handle has been 
+%           returned directly (hax = subplot(o,...)), while this behavior 
+%           is discontinued with CORAZON V1i, and axes handle is returned 
+%           as part of the returned output object.
 %
 %           The corazon/subplot method handles also a four number indexing
 %           vector, where the latter two have the role of 2-dimensional 
 %           actual subplot indices.
 %
-%              hax = subplot(o,3223);       % same as subplot(326)
-%              hax = subplot(o,3,2,2,1);    % same as subplot([3,2,4])
-%              hax = subplot(o,[3 2 2 1]);  % same as subplot(3,2,4)
+%              oo = subplot(o,3223);        % same as subplot(326)
+%              oo = subplot(o,3,2,2,1);     % same as subplot([3,2,4])
+%              oo = subplot(o,[3 2 2 1]);   % same as subplot(3,2,4)
 %
 %           The conversion formula from (i,j) to k is: k = (i-1)*n + j
 %
@@ -53,6 +58,7 @@ function hax = subplot(o,varargin)
       idle(o);                         % time to refresh graphics
    elseif (nargin == 1 && nargout > 0)
       hax = shelf(o,gca,'subplot');
+      oo = axes(o,hax);
       return
    elseif (nargin == 2 && length(sub) == 1)
       sub = sprintf('%g',sub);
@@ -72,16 +78,18 @@ function hax = subplot(o,varargin)
          [m,n,k,sub] = Index([m,n,i]);
       end
       
+      oo = axes(o,hax);
       shelf(o,hax,'subplot',sub);
       dark(o,'Axes');
    elseif (nargin == 2 && length(sub) >= 3)
       [m,n,k sub] = Index(sub);
       hax = subplot(m,n,k);
+      oo = axes(o,hax);
 
       shelf(o,hax,'subplot',sub);
       dark(o,'Axes');
    elseif (nargin == 3)
-      subplot(o,varargin{1});
+      oo = subplot(o,varargin{1});
       mode = varargin{2};
       
       switch mode
@@ -99,6 +107,7 @@ function hax = subplot(o,varargin)
    elseif (nargin >= 4)
       [m,n,k,sub] = Index(varargin);
       hax = subplot(m,n,k);
+      oo = axes(o,hax);
       
          % store subplot ID in axes' shelf
          

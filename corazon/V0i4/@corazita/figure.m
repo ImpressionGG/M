@@ -7,7 +7,7 @@ function fig = figure(o,fig)
 %
 %          Copyright(c): Bluenetics 2020 
 %
-%          See also: CORAZITA, WORK
+%          See also: CORAZITA, WORK, AXES
 %
    if (nargin == 1) && isfield(o.work,'figure')
       fig = o.work.figure;

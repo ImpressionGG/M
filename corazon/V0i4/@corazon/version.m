@@ -615,6 +615,8 @@ function VersionV1I
 %   vectors (otherwise calling function can get irritated because assuming
 %   that the plot is not handled by corazon/plot
 % - adding a confirmation dialog in corazon/stop
+% - adding corazita/axes method
+% - change output arg semantics of corazon/subplot
 %
 % Known Bugs / Wishlist
 % - none so far
