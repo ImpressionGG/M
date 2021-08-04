@@ -103,9 +103,9 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
             if (sub(1) || sub(2))
                Bode(o,oo,L0,sub(1:2),+1);    % plot critical parameter overview
             end
-            if (sub(4) || sub(5))
+            if (sub(3) || sub(4))
                L180 = Negate(L0);
-               Bode(o,oo,L180,sub([4 5]),-1);  % plot critical parameter overview
+               Bode(o,oo,L180,sub([3 4]),-1);  % plot critical parameter overview
             end
          case 'Magni'
             if (length(sub) ~= 1)
@@ -588,6 +588,8 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
       mu = [];
    end
    
+   cutting = o.iif(isequal(tag,'0'),+1,-1);   % cutting direction
+   
    K0 = nan;  f0 = nan;
    subplot(o,sub,'semilogx');
    set(gca,'visible','on');
@@ -604,29 +606,37 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
    end
    
    K = logspace(log10(low),log10(high),points);
-
+   [o,s] = Cache(o,K,cutting);         % get cached eigenvalues 
+   
       % get L0 system matrices
 
+   rng(1);                             % reset random seed (repeatable)
    [~,ridx] = sort(randn(1,length(K)));
    
-   s = 0*K;
+   %s = 0*K;
    stop(o,'Enable');
    steps = 10;
    for (i=1:steps)
       kdx = i:steps:length(K);
-      Ki = K(ridx(kdx));
-      si = CritEig(o,L0,Ki);
-      s(ridx(kdx)) = si;
-
+      jdx = ridx(kdx);
+      Ki = K(jdx);
+      si = s(jdx);
+      
+      if any(isnan(si))
+         si = CritEig(o,L0,Ki);
+         s(jdx) = si;
+         o = Cache(o,K,cutting,s);     % hard refresh of cache
+      end
+      
          % plot K for stable EV in green and unstable in red
 
       idx = find(real(si)<0);
       if ~isempty(idx)
-         plot(o,Ki(idx),-real(si(idx))*100,'g.');
+         plot(Ki(idx),-real(si(idx))*100,'g.');
       end
       idx = find(real(si)>=0);
       if ~isempty(idx)
-         plot(o,Ki(idx),-real(si(idx))*100,'r.');
+         plot(Ki(idx),-real(si(idx))*100,'r.');
       end
       idle(o);                         % give time for graphics refresh
       if stop(o,o)                     % stop option controlled
@@ -635,10 +645,14 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
       end
    end
    stop(o,'Disable');
+      
+%  [K0,f0] = Stable(o,L0);
+   if (cutting > 0)
+      [K0,f0] = cook(o,'K0,f0');
+   else
+      [K0,f0] = cook(o,'K180,f180');
+   end
    
-%  [K0,f0] = Stable(o,L0,K,s);
-   [K0,f0] = Stable(o,L0);
-
       % plot limits
       
    limits(o,'Gain');
@@ -673,6 +687,49 @@ function [K0,f0] = PlotStability(o,L0,sub,tag,mu)  % Stability Chart
    end
    xlabel('closed loop gain K');
    ylabel('worst damping [%]');
+   
+   function [o,s] = Cache(o,K,cutting,s)    % get cached eigenvalues
+   %
+   % CHACHE  Retrieve/Update cached eigenvalues vor damping plot
+   %
+   %            [o,s] = CachedEig(o,K);     % retrieve eigenvalues
+   %            o = CachedEig(o,K,s)        % store cached eigenvalues
+   %
+      o = cache(o,o,'critical');            % hard refresh cache
+      
+      if (nargin == 4)
+         if (cutting >= 0)                  % forward cutting
+            o = cache(o,'critical.plot_K0',K);
+            o = cache(o,'critical.plot_s0',s);
+         else                               % reverse cutting
+            o = cache(o,'critical.plot_K180',K);
+            o = cache(o,'critical.plot_s180',s);
+         end
+         cache(o,o);                        % hard refresh cache
+      elseif (nargin == 3)
+         if (cutting >= 0)                  % if forward cutting
+            K_ = cache(o,'critical.plot_K0');
+            if isequal(K,K_)
+               s = cache(o,'critical.plot_s0');
+            else
+               s = K*NaN;
+               o = cache(o,'critical.plot_K0',[]);  % invalidate plot data
+               o = cache(o,'critical.plot_s0',[]);  % invalidate plot data
+               cache(o,o);                     % hard refresh cache
+            end
+         else                                  % else reverse cutting
+            K_ = cache(o,'critical.plot_K180');
+            if isequal(K,K_)
+               s = cache(o,'critical.plot_s180');
+            else
+               s = K*NaN;
+               o = cache(o,'critical.plot_K180',[]);  % invalidate plot data
+               o = cache(o,'critical.plot_s180',[]);  % invalidate plot data
+               cache(o,o);                     % hard refresh cache
+            end
+         end
+      end
+   end
 end
 
 %==========================================================================

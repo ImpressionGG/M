@@ -25,7 +25,7 @@ function oo = Menu(o)                  % Setup Plot Menu
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
 %
-   oo = mitem(o,'Overview',{@WithCuo,'Plot'});
+   oo = mitem(o,'Overview',{@WithCuo,'Overview'});
    oo = mitem(o,'-');
    oo = mitem(o,'Bode Plot',{@WithCuo,'Bode'});
    oo = mitem(o,'Step Response',{@WithCuo,'Step'});
@@ -150,35 +150,19 @@ end
 % Local Plot Functions (are checking type)
 %==========================================================================
 
-function oo = Overview(o)              % Plot Overview                 
-   if ~type(o,{'smp','alt'})
-      oo = []; return                  % no idea how to plot this type
-   end
-
-   oo = opt(o,'subplot',[2 2 1]);
-   PlotX(oo);
-
-   oo = opt(oo,'subplot',[2 2 3]);
-   oo = opt(oo,'title',' ');           % prevent from drawing a title
-   PlotY(oo);
-
-   oo = opt(oo,'subplot',[1 2 2]);
-   oo = opt(oo,'title','X/Y-Orbit');   % override title
-   PlotXY(oo);
-
-   heading(o);
+function o = Overview(o)               % Plot Overview                 
+   BodePlot(o,1211);
+   StepPlot(o,2212);
+   ImpulsePlot(o,2222);
 end
 function o = Bode(o)                   % Bode Plot    
-   bode(o.data.sys);
-   subplot(o);
+   BodePlot(o,111);
 end
 function o = Step(o)                   % Step Response
-   step(o.data.sys);
-   subplot(o);
+   StepPlot(o,111);
 end
 function o = Impulse(o)                % Impulse Response              
-   impulse(o.data.sys);
-   subplot(o);
+   ImpulsePlot(o,111);
 end
 
 %==========================================================================
@@ -192,6 +176,11 @@ function BodePlot(o,sub)
 end
 function StepPlot(o,sub)
    subplot(o,sub);
-   bode(o.data.sys);
+   hdl = stepplot(o.data.sys);
+   subplot(o);
+end
+function ImpulsePlot(o,sub)
+   subplot(o,sub);
+   impulse(o.data.sys);
    subplot(o);
 end

@@ -383,8 +383,8 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nyquist',{@WithSpm,'Critical','Nyquist'});
    ooo = mitem(oo,'Critical Loci',{@WithSpm,'Critical','Critical'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
+%  ooo = mitem(oo,'-');
+%  ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
 end
 
    % callbacks
@@ -428,9 +428,9 @@ function o = Critical(o)               % Calculate Critical Quantities
                
                   % reverse part
                   
-               critical(o,'Overview',[4212,4222,0, 0,0,0]);
-               Nyquist(o,[0 4444],0);
-               Nyquist(o,[0 4443],1);
+               critical(o,'Overview',[0,0,0, 4212,4222,0]);
+               Nyquist(o,[0 4443],0);
+               Nyquist(o,[0 4444],1);
                critical(o,'Damping',[0,4232]);
                   
             case 1                     % forward direction
@@ -467,9 +467,9 @@ function o = Critical(o)               % Calculate Critical Quantities
             case 0                     % both directions
                critical(o,'Bode',[2211,2221,2212,2222]);
             case 1                     % forward direction
-               critical(o,'Bode',[2121,2122,0,0]);
+               critical(o,'Bode',[2111,2121,0,0]);
             case -1                    % backward direction
-               critical(o,'Bode',[0,0,2121,2122]);
+               critical(o,'Bode',[0,0,2111,2121]);
          end
       case 'Magni'
          critical(o,'Magni',111);
