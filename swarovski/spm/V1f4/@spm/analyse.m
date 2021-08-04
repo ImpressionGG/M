@@ -445,7 +445,14 @@ function o = Critical(o)               % Calculate Critical Quantities
                critical(o,'Damping',[0 3231]);
          end
       case 'Combi'
-         critical(o,'Overview',[3111,3121,3131]);
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Overview',[3211,3221,3231, 3212,3222,3232]);
+            case 1                     % forward direction
+               critical(o,'Overview',[3111,3121,3131, 0,0,0]);
+            case -1                    % backward direction
+               critical(o,'Overview',[0,0,0, 3111,3121,3131]);
+         end
       case 'Damping'
          switch cutting
             case 0                     % both directions
