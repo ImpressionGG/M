@@ -29,6 +29,11 @@ function make(o,vers)
    MakeCorshito(oo);                   % make @corshito class   
    MakeCorasim(oo);                    % make @corasim class   
    
+      % so far to not provide nichols method with corazon toolbox
+      
+   dst = var(oo,'dst');
+   delete([dst,'/@corasim/nichols.m']);
+   
    fprintf('done!\n');
 end
 

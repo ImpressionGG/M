@@ -67,6 +67,7 @@ function varargout = cook(o,sym)
 %
 %          [lambda0,lambda180] = cook(o,'lambda0,lambda180')
 %          [l0,l180] = cook(o,'l0,l180')
+%          [lambda0jw,lambda180jw] = cook(o,'lambda0jw,lambda180jw')
 %          [Psi0W31,Psi0W33] = cook(p,'Psi0W31,Psi0W33')
 %
 %       Constrained system transfer matrix
@@ -299,8 +300,8 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
          
-      case {'L0jw','lambda0','lambda180','g31','g33','g0',...
-            'PsiW31','PsiW33','Psi0W31','Psi0W33','l0','l180'}
+      case {'L0jw','lambda0','lambda180','PsiW31','PsiW33','Psi0W31',...
+            'Psi0W33','g31','g33','g0','l0','l180','lambda0jw','lambda180jw'}
          oo = cache(o,o,'spectral');
          oo = cache(oo,['spectral.',sym]);
          if isa(oo,'corazon')

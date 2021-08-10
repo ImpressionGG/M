@@ -414,6 +414,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - Critical Loci & Nyquist for Forward/Backward Cutting
 % - pimp Analyse/Critical menu items (forward/backward/both cutting)
 % - caching implemented for critical Bode & Damping
+% - Nichols plot added
 
 % Known bugs & wishlist
 % =========================

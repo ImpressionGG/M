@@ -13,6 +13,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %                critical(o,'Bode',[sub1,sub2]);
 %                critical(o,'Magni',sub);
 %                critical(o,'Phase',sub);
+%                critical(o,'Nichols',sub);
 %
 %             Calculate principal system and critical qantities 
 %
@@ -108,15 +109,35 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
                Bode(o,oo,L180,sub([3 4]),-1);  % plot critical parameter overview
             end
          case 'Magni'
-            if (length(sub) ~= 1)
+            if (length(sub) < 1)
                sub = [111];
             end
-            Bode(o,oo,L0,[sub 0],+1);     % plot critical parameter overview
+            if (length(sub) < 2)
+               sub = [sub 0];
+            end
+            
+            if sub(1)
+               Bode(o,oo,L0,[sub(1) 0],+1);   % plot magnitude (forward)
+            end
+            if sub(2)
+               L180 = Negate(L0);
+               Bode(o,oo,L180,[sub(2) 0],-1); % plot magnitude (revers)
+            end
          case 'Phase'
-            if (length(sub) ~= 1)
+            if (length(sub) < 1)
                sub = [111];
             end
-            Bode(o,oo,L0,[0 sub],+1);     % plot critical parameter overview
+            if (length(sub) < 2)
+               sub = [sub 0];
+            end
+            
+            if sub(1)
+               Bode(o,oo,L0,[0 sub(1)],+1);   % plot magnitude (forward)
+            end
+            if sub(2)
+               L180 = Negate(L0);
+               Bode(o,oo,L180,[0 sub(2)],-1); % plot magnitude (revers)
+            end
          case 'Damping'
             if (length(sub) == 1)
                sub = [111,0];
@@ -124,6 +145,21 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
             Damping(o,oo,L0,sub);      % plot critical parameter overview
          case 'K0min'
             K0 = LowerBoundary(o);
+         case 'Nichols'
+            if (length(sub) < 1)
+               sub = [111];
+            end
+            if (length(sub) < 2)
+               sub = [sub 0];
+            end
+            
+            if sub(1)
+               Nichols(o,oo,L0,[sub(1) 0],+1);   % Nichols plot (forward)
+            end
+            if sub(2)
+               L180 = Negate(L0);
+               Nichols(o,oo,L180,[sub(2) 0],-1); % Nichols plot (revers)
+            end
      end
    elseif (nargout <= 2)
       [K0,f0] = Calc(o,oo,L0);         % calculate some critical parameters
@@ -315,6 +351,8 @@ function Bode(o,oo,L0,sub,cutting)
    i123 = (1:m)';
    kmax = length(om);
       
+%L0jW = cook(o,'lambda0jw');    
+
    L0jw = lambda(o,A,B_1,B_3,C_3,Om);
     
       % calculate phases phi31,phi33 and phi=phi31-phi33
@@ -342,7 +380,7 @@ function Bode(o,oo,L0,sub,cutting)
    
       % get critical characteristics
    
-   if (sub(1) ~= 0 && sub(2) ~= 0)
+   %if (sub(1) ~= 0 && sub(2) ~= 0)
       lk0jw = L0jw(k0,:);                 % critical characteristics 
       phil0 = angle(o,lk0jw,kf0);
       l0jw = lambda(o,L0jw);
@@ -360,7 +398,7 @@ function Bode(o,oo,L0,sub,cutting)
 
       [K0_,f0_] = Stable(o,L0,K0); 
       Results(o,sub(1),sub(2));           % display results
-   end
+   %end
    
    
    heading(o);
@@ -431,6 +469,209 @@ function Bode(o,oo,L0,sub,cutting)
                Rd(M33*1e9),Rd(phi33*180/pi));
          xlabel(txt);
          limits(o,'Magni');
+         subplot(o);
+      end
+      
+      if (sub2)
+         subplot(o,sub2);
+         title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+         xlabel(sprintf('omega [1/s]      (G31(jw0)/G33(jw0): %g @ %g deg)',...
+                o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi)));
+         subplot(o);
+      end
+   end
+
+   function y = Rd(x)                  % round to 1 decimal
+      ooo = corazon;
+      y = ooo.rd(x,1);
+   end
+end
+function Nichols(o,oo,L0,sub,cutting)
+   if (length(sub) < 2)
+      sub = [211,212,0,0];
+   end
+
+   [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+
+   if (cutting > 0)
+      [K0,f0] = cook(o,'K0,f0');
+      tag = '0';
+   elseif (cutting < 0)
+      [K0,f0] = cook(o,'K180,f180');
+      tag = '180';
+      B_1 = -B_1;  B_3 = -B_3;
+   end
+   
+   m = size(C_3,1);
+   multi = (m > 1);                 % multi contact
+   
+   if isequal(K0,inf)
+      set(gca,'ylim',[-5 5]);
+      subplot(o,312);
+      message(o,'No instabilities - skip frequency analysis!');
+      return
+   end
+      
+   olo = opt(o,{'omega.low',100});
+   ohi = opt(o,{'omega.high',1e5});
+   points = opt(o,{'omega.points',2000});
+
+   om = logspace(log10(olo),log10(ohi),points);
+   Om = om*T0;                      % time normalized omega
+   f = om/2/pi;                     % frequency range
+   
+   L0jw = zeros(m,length(om));  G31jw = L0jw;  G33jw = L0jw; 
+
+      % calculate G31(jw), G33(jw) and L0(jw)
+
+   i123 = (1:m)';
+   kmax = length(om);
+      
+%L0jW = cook(o,'lambda0jw');    
+
+   L0jw = lambda(o,A,B_1,B_3,C_3,Om);
+    
+      % calculate phases phi31,phi33 and phi=phi31-phi33
+
+   kf0 = min(find(f>=f0));   
+   phi = angle(o,L0jw,kf0);
+         
+      % calculate critical frequency response
+      
+   [L0jw0,G31jw0,G33jw0] = Lambda(o,A,B_1,B_3,C_3,2*pi*f0*T0);
+   phi0 = mod(angle(L0jw0),2*pi) - 2*pi;
+   
+      % search characteristic frequency response with best matching
+      % |N(jw)| = |1+K0*L0[k](jw0) = 1
+      
+   M = abs(1 + K0*L0jw0);              % magnitude of Nyquist FQR
+   nyqerr = min(M);                    % Nyquist error
+   
+      % now find index k0 that approximates 1 + K0*L0jw =~= 0
+      
+   idx = min(find(f>=f0));
+   M = abs(1 + K0*L0jw(:,idx));
+   aprerr = min(M);                    % approximate Nyquist error
+   k0 = min(find(M==aprerr));          % indexing critical characteristics
+   
+      % get critical characteristics
+   
+   %if (sub(1) ~= 0 && sub(2) ~= 0)
+      lk0jw = L0jw(k0,:);                 % critical characteristics 
+      phil0 = angle(o,lk0jw,kf0);
+      l0jw = lambda(o,L0jw);
+
+      NicholsPlot(o,l0jw,K0,sub(1),sub(2));  % plot intermediate results
+
+      M31 = abs(G31jw0(k0));              % coupling gain
+      phi31 = angle(G31jw0(k0));          % coupling phase      
+
+      M33 = abs(G33jw0(k0));              % direct gain
+      phi33 = angle(G33jw0(k0));          % direkt phase      
+
+      ML0 = abs(L0jw0(k0));               % critical gain
+      phi0 = angle(L0jw0(k0));            % critical phase      
+
+      [K0_,f0_] = Stable(o,L0,K0); 
+      Results(o,sub(1),sub(2));           % display results
+   %end
+   
+   
+   heading(o);
+         
+   function NicholsPlot(o,l0jw,K0,sub1,sub2)
+      if dark(o)
+         colors = {'rk','gk','b','ck','mk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww'};
+      end
+      
+      if (sub1)
+         subplot(o,sub1);
+         set(gca,'visible','on');
+      
+            % magnitude plot  
+      
+         for (ii=1:size(L0jw,1))
+            col = [colors{1+rem(ii-1,length(colors))},'1'];
+            plot(o,phi(ii,:)*180/pi,20*log10(abs(K0*L0jw(ii,:))),col);
+         end
+         if 0
+            plot(o,phil0*180/pi,20*log10(abs(K0*l0jw)),'ryyy2');
+         end
+%        plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+%        plot(o,2*pi*f0,-20*log10(K0),'K1o');
+
+         title(sprintf('L0(s)=G31(s)/G33(s): Nichols Plots (K0: %g @ %g Hz)',...
+                       K0,f0));
+         xlabel('phase [deg]');
+         ylabel('|L0[k](jw)| [dB]');
+         
+            % limit calculation seems complicated, but xlim has 
+            %  irelevant values when graphics is zoomed in
+            
+         plim = [min(phi(:)),max(phi(:))]*180/pi;
+         xlim = get(gca,'xlim');
+         xlim = [min(xlim(1),plim(1)), max(xlim(2),plim(2))];
+         
+            % draw critical points
+
+         phi0 = -180;
+         while (phi0 >= xlim(1))
+            phi0 = phi0 - 360;
+         end
+         for (phi = phi0+360:360:100*180)
+            hdl = plot(phi,0,'p');
+            set(hdl,'color',o.iif(dark(o),'w','k'), 'linewidth',1);
+            if (phi+360>xlim(2))
+               break;
+            end
+         end
+         
+         subplot(o);
+      end
+return
+
+         % phase plot (legacy - keep code during debug phase)
+         
+      if (sub2)
+         subplot(o,sub2,'semilogx');
+         set(gca,'visible','on');
+
+         plot(o,om,0*f-180,'K');
+         for (ii=1:size(L0jw,1))
+            col = colors{1+rem(ii-1,length(colors))};
+            plot(o,om,phi(ii,:)*180/pi,col);
+         end
+
+   %     phil0 = mod(angle(l0jw),2*pi)-2*pi;
+         plot(o,om,phil0*180/pi,'yyyr2');
+         %set(gca,'ytick',-360:45:0);
+
+         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0,-180,'K1o');
+
+         subplot(o);  idle(o);  % give time to refresh graphics
+         xlabel('Omega [1/s]');
+         ylabel('L0[k](jw): Phase [deg]');
+      end
+   end
+   function Results(o,sub1,sub2)
+      s0 = CritEig(o,L0,K0);
+      err = norm([K0-K0_,f0-f0_,real(s0)]);
+      
+      if (sub1)
+         subplot(o,sub1);
+         title(sprintf(['L(s) = K%s*G31(s)/G33(s): Nichols Plot - K%s: ',...
+                        '%g @ %g Hz (EV error: %g)'],tag,tag,K0_,f0_,err));
+
+         txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
+               Rd(M31*1e9),Rd(phi31*180/pi),...
+               Rd(M33*1e9),Rd(phi33*180/pi));
+         xlabel(txt);
+         %limits(o,'Magni');
          subplot(o);
       end
       

@@ -383,6 +383,8 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nyquist',{@WithSpm,'Critical','Nyquist'});
    ooo = mitem(oo,'Critical Loci',{@WithSpm,'Critical','Critical'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Nichols',{@WithSpm,'Critical','Nichols'});
 %  ooo = mitem(oo,'-');
 %  ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
 end
@@ -422,27 +424,27 @@ function o = Critical(o)               % Calculate Critical Quantities
          switch cutting
             case 0                     % both directions         
                critical(o,'Overview',[4211,4221,0]);
+               critical(o,'Damping',[4231,0]);
                Nyquist(o,[4441 0],0);
                Nyquist(o,[4442 0],1);
-               critical(o,'Damping',[4231,0]);
                
                   % reverse part
                   
                critical(o,'Overview',[0,0,0, 4212,4222,0]);
+               critical(o,'Damping',[0,4232]);
                Nyquist(o,[0 4443],0);
                Nyquist(o,[0 4444],1);
-               critical(o,'Damping',[0,4232]);
                   
             case 1                     % forward direction
                critical(o,'Overview',[3211,3221,0]);
+               critical(o,'Damping',[3231,0]);
                Nyquist(o,2212,0);
                Nyquist(o,2222,1);
-               critical(o,'Damping',[3231,0]);
             case -1                    % backward direction
                critical(o,'Overview',[0,0,0, 3211,3221,0]);
+               critical(o,'Damping',[0 3231]);
                Nyquist(o,[0 2212],0);
                Nyquist(o,[0 2222],1);
-               critical(o,'Damping',[0 3231]);
          end
       case 'Combi'
          switch cutting
@@ -472,19 +474,52 @@ function o = Critical(o)               % Calculate Critical Quantities
                critical(o,'Bode',[0,0,2111,2121]);
          end
       case 'Magni'
-         critical(o,'Magni',111);
-      case 'Phase'
-         critical(o,'Phase',111);
-
-      case {'Nyquist','Critical'}
-         crit = o.iif(isequal(mode,'Critical'),1,0);
          switch cutting
             case 0                     % both directions
-               Nyquist(o,[121,122],crit);
+               critical(o,'Magni',[211,212]);
             case 1                     % forward direction
-               Nyquist(o,[111,0],crit);
+               critical(o,'Magni',[111,0]);
             case -1                    % backward direction
-               Nyquist(o,[0,111],crit);
+               critical(o,'Magni',[0,111]);
+         end
+      case 'Phase'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Phase',[211,212]);
+            case 1                     % forward direction
+               critical(o,'Phase',[111,0]);
+            case -1                    % backward direction
+               critical(o,'Phase',[0,111]);
+         end
+
+      case 'Nyquist'
+         switch cutting
+            case 0                     % both directions
+               Nyquist(o,[1211 1212],0);
+            case 1                     % forward direction
+               Nyquist(o,[111 0],0);
+            case -1                    % backward direction
+               Nyquist(o,[0 111],0);
+         end
+         
+      case 'Critical'
+         switch cutting
+            case 0                     % both directions
+               Nyquist(o,[1211 1212],1);
+            case 1                     % forward direction
+               Nyquist(o,[111 0],1);
+            case -1                    % backward direction
+               Nyquist(o,[0 111],1);
+         end
+         
+      case 'Nichols'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Nichols',[211,212]);
+            case 1                     % forward direction
+               critical(o,'Nichols',[111,0]);
+            case -1                    % backward direction
+               critical(o,'Nichols',[0,111]);
          end
    end
    Heading(o);
@@ -540,6 +575,63 @@ function o = Critical(o)               % Calculate Critical Quantities
          l00 = peek(lam,1);
          nyq(lam,col);
          limits(o,'Nyq');                 % plot nyquist limits
+         title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                       tag,tag,K,tag,f));
+      end
+   end
+   function OldNichols(o,sub,critical)
+      o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+
+      o = with(o,'nyq');
+
+      if sub(1)
+         lambda0 = cook(o,'lambda0');
+         PlotNichols(o,sub(1),lambda0,K0,f0,critical,'0')
+      end
+      
+      if (length(sub) > 1 && sub(2))
+         [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
+         PlotNichols(o,sub(2),lambda180,K180,f180,critical,'180')
+      end
+   end
+   function OldPlotNichols(o,sub,lam,K,f,critical,tag)
+      subplot(o,sub);
+      
+      if (dark(o))
+         colors = {'rk','gk','b','ck','mk','yk','wk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+      end
+      colors = get(lam,{'colors',colors});
+
+      if ~critical
+         no = length(lam.data.matrix(:));
+         for (i=1:no)
+            l0i = peek(lam,i);
+            l0jwi = l0i.data.matrix{1,1};
+
+            col = colors{1+rem(i,length(colors))};
+            nichols(l0i,col);
+         end
+      end
+
+      if (critical)
+         col = 'r2';
+      else
+         col = [get(lam,'color'),'2'];
+      end
+
+      if (critical)
+         l00 = peek(lam,1);         
+%        nichols(K*lam,col);
+         nichols(K*l00,col);
+         title(sprintf('Critical Loci K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                       tag,tag,tag,K,tag,f));
+      else
+         l00 = peek(lam,1);
+%        nichols(lam,col);
+         nichols(l00,col);
+         %limits(o,'Nyq');                 % plot nyquist limits
          title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
                        tag,tag,K,tag,f));
       end

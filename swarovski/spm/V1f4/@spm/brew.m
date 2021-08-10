@@ -804,6 +804,15 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
    lambda180 = var(lambda180,'K,f',K180,f180);
    
+      % get frequency responses l0jw and l180jw as a double matrix
+      
+   [m,~] = size(lambda0.data.matrix);
+   n = length(lambda0.data.omega);
+   for (i=1:m)
+      lambda0jw(i,1:n) = lambda0.data.matrix{i};
+      lambda180jw(i,1:n) = lambda180.data.matrix{i};
+   end
+      
       % critical frequency responses (maximizing |lambda0(jw)|,
       % |lambda180(jw)|
       
@@ -820,6 +829,9 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 
    oo = cache(oo,'spectral.l0',l0);                   % store in cache
    oo = cache(oo,'spectral.l180',l180);               % store in cache
+
+   oo = cache(oo,'spectral.lambda0jw',lambda0jw);     % store in cache
+   oo = cache(oo,'spectral.lambda180jw',lambda180jw); % store in cache
 
    oo = cache(oo,'spectral.g31',g31);
    oo = cache(oo,'spectral.g33',g33);
