@@ -297,11 +297,13 @@ function vers = version(o,arg)         % SPM Class Version
 %   + caching of sensitivity analysis data
 %   ---------------
 %   + bug: stability margin calculation mistake
-%   - bug: leaves gap after continuing sensitivity calculation
+%   + bug: leaves gap after continuing sensitivity calculation
 %   + incorporate package title into standard headings
 %   + bug: sensitivity.S not cached after 1st run of Damping Sensitivity 
-%   - bug: always same value of K0 for different damping settings
+%   + bug: always same value of K0 for different damping settings
 %   - add Setup Studies in Batch menu
+%   ---------------
+%   - auto cration of package info file @ import package
 %   ---------------
 %   - Modified Graphics (Andy's suggestion) for Stability Margin
 %   - Additional Plot graphics for mode frequencies
@@ -415,6 +417,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp Analyse/Critical menu items (forward/backward/both cutting)
 % - caching implemented for critical Bode & Damping
 % - Nichols plot added
+% - bug fix in heading
 
 % Known bugs & wishlist
 % =========================

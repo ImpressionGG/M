@@ -33,7 +33,7 @@ function txt = heading(o,txt)
          name = get(po,'title');
          ndx = strfind(name,'.SPM ');
 %        txt = [txt(1:idx), name(ndx(1)+5:end), txt(idx+length(pattern):end)];
-         txt = [name(ndx(1)+5:end), txt(idx+length(pattern):end)];
+         txt = [name(ndx(1)+5:end), txt(idx+1+length(pattern):end)];
       end
    end
     
