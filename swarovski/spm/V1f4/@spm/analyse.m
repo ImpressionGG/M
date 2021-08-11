@@ -290,6 +290,7 @@ end
 
 function oo = PrincipalMenu(o)         % Principal Menu                
    oo = mitem(o,'Principal');
+   ooo = mitem(oo,'Overview',{@WithSpm,'Principal','Overview'});
    ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'G31 Spectrum',{@WithSpm,'Principal','G31'});
@@ -307,12 +308,36 @@ function o = Principal(o)              % Pricipal Menu Callbacks
       return
    end
 
+   o = cache(o,o,'critical');          % hard refresh 'critical' segment
+   o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
+   
+   o = Closeup(o);
    Heading(o);
 
+   cutting = opt(o,{'view.cutting',0});
    mode = arg(o,1);
+
    switch mode
       case 'Genesis'
          PrincipalGenesis(o);
+      case 'Overview'
+         switch cutting
+            case 0                     % both directions         
+               critical(o,'Overview',[4211,4221,0]);
+               Nyquist(o,[2221 0],0);
+               
+                  % reverse part
+                  
+               critical(o,'Overview',[0,0,0, 4212,4222,0]);
+               Nyquist(o,[0 2222],0);
+                  
+            case 1                     % forward direction
+               critical(o,'Overview',[2211,2221,0]);
+               Nyquist(o,[1212 0],0);
+            case -1                    % backward direction
+               critical(o,'Overview',[0,0,0, 2211,2221,0]);
+               Nyquist(o,[0 1212],0);
+         end
       case 'G31'
          PrincipalSpectrum(o,'g31');
       case 'G33'
@@ -320,7 +345,7 @@ function o = Principal(o)              % Pricipal Menu Callbacks
    end
 end
 function o = PrincipalGenesis(o)                                       
-   [l0,g31,g33,g0] = cook(o,'lambda0,g31,g33,g0');
+   [l0,g31,g33,g30] = cook(o,'lambda0,g31,g33,g30');
 
    [~,no,~] = size(l0);
    l0 = peek(l0,1);
@@ -329,7 +354,7 @@ function o = PrincipalGenesis(o)
 
    MagniChart(o,411,g31);
    MagniChart(o,412,g33);
-   MagniChart(o,413,g0);
+   MagniChart(o,413,g30);
    MagniChart(o,414,l0);
 end
 function o = PrincipalSpectrum(o,tag)                                  
@@ -398,27 +423,16 @@ function o = Critical(o)               % Calculate Critical Quantities
       plot(o,'About');
       return
    end
-
+   
+   o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
 
+   o = Closeup(o);
    Heading(o);
-   o = with(o,{'bode','stability'});
-   o = with(o,{'critical'});
 
-   points = opt(o,{'omega.points',10000});
-   closeup = opt(o,{'bode.closeup',0});
    cutting = opt(o,{'view.cutting',0});
-
-   [f0,K0] = cook(o,'f0,K0');
-
-   if (closeup)
-       points = max(points,500);
-       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
-       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
-       o = opt(o,'omega.points',points);
-   end
-
    mode = arg(o,1);
+
    switch mode
       case 'Overview'
          switch cutting
@@ -438,12 +452,12 @@ function o = Critical(o)               % Calculate Critical Quantities
             case 1                     % forward direction
                critical(o,'Overview',[3211,3221,0]);
                critical(o,'Damping',[3231,0]);
-               Nyquist(o,2212,0);
-               Nyquist(o,2222,1);
+               critical(o,'Nichols',[2212,0]);
+               Nyquist(o,[2222 0],1);
             case -1                    % backward direction
                critical(o,'Overview',[0,0,0, 3211,3221,0]);
                critical(o,'Damping',[0 3231]);
-               Nyquist(o,[0 2212],0);
+               critical(o,'Nichols',[0 2212]);
                Nyquist(o,[0 2222],1);
          end
       case 'Combi'
@@ -524,117 +538,75 @@ function o = Critical(o)               % Calculate Critical Quantities
    end
    Heading(o);
 
-   function Nyquist(o,sub,critical)
-      o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+end
+function o = Closeup(o)             % Set Closeup if Activated         
+   o = with(o,{'bode','stability'});
+   o = with(o,{'critical'});
 
-      o = with(o,'nyq');
+   points = opt(o,{'omega.points',10000});
+   closeup = opt(o,{'bode.closeup',0});
 
-      if sub(1)
-         lambda0 = cook(o,'lambda0');
-         PlotNyquist(o,sub(1),lambda0,K0,f0,critical,'0')
-      end
-      
-      if (length(sub) > 1 && sub(2))
-         [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
-         PlotNyquist(o,sub(2),lambda180,K180,f180,critical,'180')
+   f0 = cook(o,'f0');
+
+   if (closeup)
+       points = max(points,500);
+       o = opt(o,'omega.low',2*pi*f0/(1+closeup));
+       o = opt(o,'omega.high',2*pi*f0*(1+closeup));
+       o = opt(o,'omega.points',points);
+   end
+end
+function Nyquist(o,sub,critical)
+   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
+
+   o = with(o,'nyq');
+   if sub(1)
+      [lambda0,K0,f0] = cook(o,'lambda0,K0,f0');
+      PlotNyquist(o,sub(1),lambda0,K0,f0,critical,'0')
+   end
+
+   if (length(sub) > 1 && sub(2))
+      [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
+      PlotNyquist(o,sub(2),lambda180,K180,f180,critical,'180')
+   end
+end
+function PlotNyquist(o,sub,lam,K,f,critical,tag)
+   subplot(o,sub);
+
+   if (dark(o))
+      colors = {'rk','gk','b','ck','mk','yk','wk'};
+   else
+      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+   end
+   colors = get(lam,{'colors',colors});
+
+   if ~critical
+      no = length(lam.data.matrix(:));
+      for (i=1:no)
+         l0i = peek(lam,i);
+         l0jwi = l0i.data.matrix{1,1};
+
+         col = colors{1+rem(i,length(colors))};
+         nyq(l0i,col);
       end
    end
-   function PlotNyquist(o,sub,lam,K,f,critical,tag)
-      subplot(o,sub);
-      
-      if (dark(o))
-         colors = {'rk','gk','b','ck','mk','yk','wk'};
-      else
-         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
-      end
-      colors = get(lam,{'colors',colors});
 
-      if ~critical
-         no = length(lam.data.matrix(:));
-         for (i=1:no)
-            l0i = peek(lam,i);
-            l0jwi = l0i.data.matrix{1,1};
-
-            col = colors{1+rem(i,length(colors))};
-            nyq(l0i,col);
-         end
-      end
-
-      if (critical)
-         col = 'r2';
-      else
-         col = [get(lam,'color'),'2'];
-      end
-
-      if (critical)
-         l00 = peek(lam,1);         
-         nyq(K*lam,col);
-         title(sprintf('Critical Loci K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       tag,tag,tag,K,tag,f));
-      else
-         l00 = peek(lam,1);
-         nyq(lam,col);
-         limits(o,'Nyq');                 % plot nyquist limits
-         title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       tag,tag,K,tag,f));
-      end
+   if (critical)
+      col = 'r2';
+   else
+      col = [get(lam,'color'),'2'];
    end
-   function OldNichols(o,sub,critical)
-      o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
 
-      o = with(o,'nyq');
-
-      if sub(1)
-         lambda0 = cook(o,'lambda0');
-         PlotNichols(o,sub(1),lambda0,K0,f0,critical,'0')
-      end
-      
-      if (length(sub) > 1 && sub(2))
-         [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
-         PlotNichols(o,sub(2),lambda180,K180,f180,critical,'180')
-      end
-   end
-   function OldPlotNichols(o,sub,lam,K,f,critical,tag)
-      subplot(o,sub);
-      
-      if (dark(o))
-         colors = {'rk','gk','b','ck','mk','yk','wk'};
-      else
-         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
-      end
-      colors = get(lam,{'colors',colors});
-
-      if ~critical
-         no = length(lam.data.matrix(:));
-         for (i=1:no)
-            l0i = peek(lam,i);
-            l0jwi = l0i.data.matrix{1,1};
-
-            col = colors{1+rem(i,length(colors))};
-            nichols(l0i,col);
-         end
-      end
-
-      if (critical)
-         col = 'r2';
-      else
-         col = [get(lam,'color'),'2'];
-      end
-
-      if (critical)
-         l00 = peek(lam,1);         
-%        nichols(K*lam,col);
-         nichols(K*l00,col);
-         title(sprintf('Critical Loci K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       tag,tag,tag,K,tag,f));
-      else
-         l00 = peek(lam,1);
-%        nichols(lam,col);
-         nichols(l00,col);
-         %limits(o,'Nyq');                 % plot nyquist limits
-         title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       tag,tag,K,tag,f));
-      end
+   if (critical)
+      l00 = peek(lam,1);         
+      nyq(K*lam,col);
+      title(sprintf('Critical Loci K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                    tag,tag,tag,K,tag,f));
+   else
+      l00 = peek(lam,1);
+      nyq(lam,col);
+      limits(o,'Nyq');                 % plot nyquist limits
+      title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                    tag,tag,K,tag,f));
    end
 end
 

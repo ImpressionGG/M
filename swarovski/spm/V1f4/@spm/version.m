@@ -418,6 +418,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - caching implemented for critical Bode & Damping
 % - Nichols plot added
 % - bug fix in heading
+% - new menu item Analyse/Principal/Overview
 
 % Known bugs & wishlist
 % =========================

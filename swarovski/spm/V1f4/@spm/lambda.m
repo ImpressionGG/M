@@ -1,4 +1,4 @@
-function [oo,g31,g33] = lambda(o,varargin)  % Spectral Frequency Responses
+function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs            
 %
 % LAMBDA  Calculate spectral frequency responses lambda(s) for an open
 %         loop system. Result is an FQR (frequency response) typed corasim
@@ -185,7 +185,7 @@ end
 % Lambda Calculation
 %==========================================================================
 
-function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
+function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)                
    G31jw = psion(o,PsiW31,om);
    G33jw = psion(o,PsiW33,om);
 
@@ -251,7 +251,7 @@ function L0 = CritCorasim(l0)          % Calculate Critical Fqr
    om = l0.data.omega;
    L0 = fqr(corasim,om,{L0jw});
 end
-function L0jw = CritDouble(l0jw)          % Calculate Critical Fqr        
+function L0jw = CritDouble(l0jw)       % Calculate Critical Fqr        
    [m,n] =size(l0jw);
    for (j=1:n)
       mag = abs(l0jw(:,j));
@@ -264,7 +264,7 @@ end
 % Helper
 %==========================================================================
 
-function L = Sort(L)                % Sort Tail of FQR              
+function L = Sort(L)                % Sort Tail of FQR                 
 %
 % TAILSORT    Rearrange characteristic frequency responses in order to
 %             obtain smooth graphs.

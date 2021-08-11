@@ -783,19 +783,27 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    [PsiW31,PsiW33] = var(lambda0,'PsiW31,PsiW33');
    [Psi0W31,Psi0W33] = var(lambda0,'Psi0W31,Psi0W33');
    
+      % principal spectrum
+      
    lambda0 = Sort(lambda0,K0,f0);
    lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
    lambda0 = var(lambda0,'K,f',K0,f0);
+
+      % critical spectrum
    
+   gamma0 = K0*lambda0;   
+   gamma0 = set(gamma0,'name','gamma0(s)','color','r');
+   gamma0 = var(gamma0,'K,f',K0,f0);
+      
       % with l0 = g0 * g31/g33 calculate: g0 = l0 * g33/g31
       
    l0jw = lambda0.data.matrix{1,1};
    g31jw = g31.data.matrix{1,1};
    g33jw = g33.data.matrix{end,1};
    
-   g0jw = l0jw .* g33jw ./ g31jw;
-   g0 = fqr(corasim,lambda0.data.omega,{g0jw});
-   g0 = set(g0,'name','g0(s)','color','m');
+   g30jw = l0jw .* g33jw ./ g31jw;
+   g30 = fqr(corasim,lambda0.data.omega,{g30jw});
+   g30 = set(g30,'name','g30(s)','color','m');
    
       % calculate characteristic loci lambda180 (a CORASIM FQR system)
       
@@ -804,6 +812,12 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
    lambda180 = var(lambda180,'K,f',K180,f180);
    
+      % critical spectrum
+   
+   gamma180 = K180*lambda180;   
+   gamma180 = set(gamma180,'name','gamma180(s)','color','rrk');
+   gamma180 = var(gamma180,'K,f',K180,f180);
+
       % get frequency responses l0jw and l180jw as a double matrix
       
    [m,~] = size(lambda0.data.matrix);
@@ -811,6 +825,8 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    for (i=1:m)
       lambda0jw(i,1:n) = lambda0.data.matrix{i};
       lambda180jw(i,1:n) = lambda180.data.matrix{i};
+      gamma0jw(i,1:n) = gamma0.data.matrix{i};
+      gamma180jw(i,1:n) = gamma180.data.matrix{i};
    end
       
       % critical frequency responses (maximizing |lambda0(jw)|,
@@ -827,15 +843,21 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    oo = cache(oo,'spectral.lambda0',lambda0);         % store in cache
    oo = cache(oo,'spectral.lambda180',lambda180);     % store in cache
 
+   oo = cache(oo,'spectral.gamma0',gamma0);           % store in cache
+   oo = cache(oo,'spectral.gamma180',gamma180);       % store in cache
+
    oo = cache(oo,'spectral.l0',l0);                   % store in cache
    oo = cache(oo,'spectral.l180',l180);               % store in cache
 
    oo = cache(oo,'spectral.lambda0jw',lambda0jw);     % store in cache
    oo = cache(oo,'spectral.lambda180jw',lambda180jw); % store in cache
 
+   oo = cache(oo,'spectral.gamma0jw',gamma0jw);       % store in cache
+   oo = cache(oo,'spectral.gamma180jw',gamma180jw);   % store in cache
+
    oo = cache(oo,'spectral.g31',g31);
    oo = cache(oo,'spectral.g33',g33);
-   oo = cache(oo,'spectral.g0',g0);
+   oo = cache(oo,'spectral.g30',g30);
 
    oo = cache(oo,'spectral.PsiW31',PsiW31);
    oo = cache(oo,'spectral.PsiW33',PsiW33);

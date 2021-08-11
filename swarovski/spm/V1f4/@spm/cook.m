@@ -90,7 +90,21 @@ function varargout = cook(o,sym)
 %
 %          L0jw = cook(o,'L0jw')            % MIMO frequency responses
 %          l0 = cook(o,'l0')                % MIMO spectral functions l0(s)
-%          [g31,g33,g0] = cook(o,'g31,g33,g0')
+%          [g31,g33,g30] = cook(o,'g31,g33,g30')
+%
+%       Principal Spectrum
+%
+%          lambda0 = cook(o,'lambda0')      % principal (forward) spectrum
+%          lambda180 = cook(o,'lambda180')  % principal (reverse) spectrum
+%          lambda0jw = cook(o,'lambda0jw')  % principal (fwd) spectral FQR
+%          lambda180jw = cook(o,'lambda180jw')  % prcp. (rev) spectral FQR
+%
+%       Critical Spectrum (gamma0=K0*lambda0, gamma180=K180*lambda180)
+%
+%          gamma0 = cook(o,'gamma0')        % critical (forward) spectrum
+%          gamma180 = cook(o,'gamma180')    % critical (reverse) spectrum
+%          gamma0jw = cook(o,'gamma0jw')    % critical (fwd) spectral FQR
+%          gamma180jw = cook(o,'gamma180jw')% critical (rev) spectral FQR
 %
 %       Setup
 %
@@ -300,8 +314,10 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
          
-      case {'L0jw','lambda0','lambda180','PsiW31','PsiW33','Psi0W31',...
-            'Psi0W33','g31','g33','g0','l0','l180','lambda0jw','lambda180jw'}
+      case {'L0jw','lambda0','lambda180','gamma0','gamma180',...
+            'PsiW31','PsiW33','Psi0W31','Psi0W33',...
+            'g31','g33','g30','l0','l180',...
+            'lambda0jw','lambda180jw','gamma0jw','gamma180jw'}
          oo = cache(o,o,'spectral');
          oo = cache(oo,['spectral.',sym]);
          if isa(oo,'corazon')

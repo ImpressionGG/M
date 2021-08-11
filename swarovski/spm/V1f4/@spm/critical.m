@@ -1,4 +1,4 @@
-function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
+function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
 %
 %  CRITICAL   Calculate or plot critical stability parameters K0 (critical
 %             open loop gain) and f0 (critical frequency)
@@ -6,14 +6,17 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
 %                critical(o)      % plot critical stability charts
 %                critical(o,cdx)  % plot for specific contact indices
 %
-%             Drawing specific plots
+%             Drawing specific plots. Argument crit specifies whether
+%             principal spectrum lambda0/lambda180 is used for analysis
+%             or critical spectrum gamma0/gamma180, where gamma0 =
+%             K0*lambda0 and gamma180=K180*lambda180
 %
-%                critical(o,'Overview',[sub1,sub2,sub3]);
-%                critical(o,'Damping',[sub0,sub180]);
-%                critical(o,'Bode',[sub1,sub2]);
-%                critical(o,'Magni',sub);
-%                critical(o,'Phase',sub);
-%                critical(o,'Nichols',sub);
+%                critical(o,'Overview',[sub1,sub2,sub3],crit);
+%                critical(o,'Damping',[sub0,sub180],crit);
+%                critical(o,'Bode',[sub1,sub2],crit);
+%                critical(o,'Magni',sub,crit);
+%                critical(o,'Phase',sub,crit);
+%                critical(o,'Nichols',sub,crit);
 %
 %             Calculate principal system and critical qantities 
 %
@@ -49,6 +52,10 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub)
       %o = cache(o,o,'multi');          % refresh multi segment
    else
       error('SPM object expected');
+   end
+   
+   if (nargin < 4)
+      crit = 0;
    end
    
       % lower boundary for critical gain
@@ -624,38 +631,18 @@ function Nichols(o,oo,L0,sub,cutting)
          end
          for (phi = phi0+360:360:100*180)
             hdl = plot(phi,0,'p');
-            set(hdl,'color',o.iif(dark(o),'w','k'), 'linewidth',1);
+            if (phi==-180)
+               set(hdl,'color','r', 'linewidth',1);
+               plot(phi,0,'y.');
+            else
+               set(hdl,'color',o.iif(dark(o),'w','k'), 'linewidth',1);
+            end
             if (phi+360>xlim(2))
                break;
             end
          end
          
          subplot(o);
-      end
-return
-
-         % phase plot (legacy - keep code during debug phase)
-         
-      if (sub2)
-         subplot(o,sub2,'semilogx');
-         set(gca,'visible','on');
-
-         plot(o,om,0*f-180,'K');
-         for (ii=1:size(L0jw,1))
-            col = colors{1+rem(ii-1,length(colors))};
-            plot(o,om,phi(ii,:)*180/pi,col);
-         end
-
-   %     phil0 = mod(angle(l0jw),2*pi)-2*pi;
-         plot(o,om,phil0*180/pi,'yyyr2');
-         %set(gca,'ytick',-360:45:0);
-
-         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-         plot(o,2*pi*f0,-180,'K1o');
-
-         subplot(o);  idle(o);  % give time to refresh graphics
-         xlabel('Omega [1/s]');
-         ylabel('L0[k](jw): Phase [deg]');
       end
    end
    function Results(o,sub1,sub2)
