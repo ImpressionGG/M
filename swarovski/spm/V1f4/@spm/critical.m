@@ -1,4 +1,4 @@
-function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
+function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)               
 %
 %  CRITICAL   Calculate or plot critical stability parameters K0 (critical
 %             open loop gain) and f0 (critical frequency)
@@ -6,10 +6,14 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
 %                critical(o)      % plot critical stability charts
 %                critical(o,cdx)  % plot for specific contact indices
 %
-%             Drawing specific plots. Argument crit specifies whether
-%             principal spectrum lambda0/lambda180 is used for analysis
-%             or critical spectrum gamma0/gamma180, where gamma0 =
-%             K0*lambda0 and gamma180=K180*lambda180
+%             Plotting specific diagrams. Argument crit specifies whether
+%             principal spectrum lambda0|lambda180 is used for analysis
+%             or critical spectrum gamma0|gamma180, where 
+%
+%                gamma0 := K0*lambda0
+%                gamma180 := K180*lambda180
+%
+%             Diagram Plotting
 %
 %                critical(o,'Overview',[sub1,sub2,sub3],crit);
 %                critical(o,'Damping',[sub0,sub180],crit);
@@ -93,12 +97,12 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
                sub = [311,312,313, 0,0,0];
             end
             if (sub(1) || sub(2))
-               Bode(o,oo,L0,sub(1:2),+1);    % plot critical parameter overview
+               Bode(o,oo,L0,sub(1:2),+1,crit);    % plot critical parameter overview
                Damping(o,oo,L0,sub(3));
             end
             if (length(sub) >= 4 && (sub(4) || sub(5)))
                L180 = Negate(L0);
-               Bode(o,oo,L180,[sub(4:5),0],-1); % plot critical parameter overview
+               Bode(o,oo,L180,[sub(4:5),0],-1,crit); % plot critical parameter overview
                Damping(o,oo,L0,[0 sub(6)]);
             end
          case 'Bode'
@@ -109,11 +113,11 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
             end
             
             if (sub(1) || sub(2))
-               Bode(o,oo,L0,sub(1:2),+1);    % plot critical parameter overview
+               Bode(o,oo,L0,sub(1:2),+1,crit); % plot critical parameter overview
             end
             if (sub(3) || sub(4))
                L180 = Negate(L0);
-               Bode(o,oo,L180,sub([3 4]),-1);  % plot critical parameter overview
+               Bode(o,oo,L180,sub([3 4]),-1,crit); % plot critical parameter overview
             end
          case 'Magni'
             if (length(sub) < 1)
@@ -124,11 +128,11 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
             end
             
             if sub(1)
-               Bode(o,oo,L0,[sub(1) 0],+1);   % plot magnitude (forward)
+               Bode(o,oo,L0,[sub(1) 0],+1,crit);   % plot magnitude (forward)
             end
             if sub(2)
                L180 = Negate(L0);
-               Bode(o,oo,L180,[sub(2) 0],-1); % plot magnitude (revers)
+               Bode(o,oo,L180,[sub(2) 0],-1,crit); % plot magnitude (revers)
             end
          case 'Phase'
             if (length(sub) < 1)
@@ -139,11 +143,11 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
             end
             
             if sub(1)
-               Bode(o,oo,L0,[0 sub(1)],+1);   % plot magnitude (forward)
+               Bode(o,oo,L0,[0 sub(1)],+1,crit);   % plot magnitude (forward)
             end
             if sub(2)
                L180 = Negate(L0);
-               Bode(o,oo,L180,[0 sub(2)],-1); % plot magnitude (revers)
+               Bode(o,oo,L180,[0 sub(2)],-1,crit); % plot magnitude (revers)
             end
          case 'Damping'
             if (length(sub) == 1)
@@ -293,7 +297,7 @@ end
 % Plot Overview
 %==========================================================================
 
-function o = Damping(o,oo,L0,sub)
+function o = Damping(o,oo,L0,sub)           % Damping Plot             
    if isempty(sub)
       sub = [211,212];
    end
@@ -318,7 +322,7 @@ function o = Damping(o,oo,L0,sub)
       L.data.D = gain * L.data.D;
    end
 end
-function Bode(o,oo,L0,sub,cutting)
+function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot                
    if (length(sub) < 2)
       sub = [211,212,0,0];
    end
@@ -361,7 +365,7 @@ function Bode(o,oo,L0,sub,cutting)
 %L0jW = cook(o,'lambda0jw');    
 
    L0jw = lambda(o,A,B_1,B_3,C_3,Om);
-    
+   
       % calculate phases phi31,phi33 and phi=phi31-phi33
 
    kf0 = min(find(f>=f0));   
@@ -392,7 +396,7 @@ function Bode(o,oo,L0,sub,cutting)
       phil0 = angle(o,lk0jw,kf0);
       l0jw = lambda(o,L0jw);
 
-      BodePlot(o,l0jw,sub(1),sub(2));     % plot intermediate results
+      BodePlot(o,l0jw,sub(1),sub(2),crit);% plot intermediate results
 
       M31 = abs(G31jw0(k0));              % coupling gain
       phi31 = angle(G31jw0(k0));          % coupling phase      
@@ -410,7 +414,7 @@ function Bode(o,oo,L0,sub,cutting)
    
    heading(o);
          
-   function BodePlot(o,l0jw,sub1,sub2)
+   function BodePlot(o,l0jw,sub1,sub2,crit)
       if dark(o)
          colors = {'rk','gk','b','ck','mk'};
       else
@@ -423,16 +427,20 @@ function Bode(o,oo,L0,sub,cutting)
       
             % magnitude plot  
       
+         K = o.iif(crit,K0,1);
+         
          for (ii=1:size(L0jw,1))
             col = colors{1+rem(ii-1,length(colors))};
-            plot(o,om,20*log10(abs(L0jw(ii,:))),col);
+            plot(o,om,20*log10(abs(K*L0jw(ii,:))),col);
          end
-         plot(o,om,20*log10(abs(l0jw)),'ryyy2');
+         
+         col = o.iif(crit,'r2','ryyy2');
+         plot(o,om,20*log10(abs(K*l0jw)),col);         
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-         plot(o,2*pi*f0,-20*log10(K0),'K1o');
+         plot(o,2*pi*f0,-20*log10(K0/K),'K1o');
 
-         title(sprintf('L0(s)=G31(s)/G33(s): Magnitude Plots (K0: %g @ %g Hz)',...
-                       K0,f0));
+         name = o.iif(crit,'C0(s)=K0*G31(s)/G33(s)','L0(s)=G31(s)/G33(s)');
+         title(sprintf('%s: Magnitude Plots (K0: %g @ %g Hz)',name,K0,f0));
          xlabel('Omega [1/s]');
          ylabel('|L0[k](jw)| [dB]');
          subplot(o);
@@ -450,9 +458,7 @@ function Bode(o,oo,L0,sub,cutting)
             plot(o,om,phi(ii,:)*180/pi,col);
          end
 
-   %     phil0 = mod(angle(l0jw),2*pi)-2*pi;
-         plot(o,om,phil0*180/pi,'yyyr2');
-         %set(gca,'ytick',-360:45:0);
+         plot(o,om,phil0*180/pi,o.iif(crit,'r2','yyyr2'));
 
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
          plot(o,2*pi*f0,-180,'K1o');
@@ -466,22 +472,29 @@ function Bode(o,oo,L0,sub,cutting)
       s0 = CritEig(o,L0,K0);
       err = norm([K0-K0_,f0-f0_,real(s0)]);
       
+      if (crit)
+         name = o.iif(cutting>0,'gamma0(jw)','gamma180(jw)');
+      else
+         name = o.iif(cutting>0,'lambda0(jw)','lambda180(jw)');
+      end
+      
       if (sub1)
          subplot(o,sub1);
-         title(sprintf(['L(s) = G31(s)/G33(s): Magnitude Plot - K%s: ',...
-                        '%g @ %g Hz (EV error: %g)'],tag,K0_,f0_,err));
+         title(sprintf(['%s: Magnitude Plot - K%s: ',...
+                        '%g @ %g Hz (EV error: %g)'],name,tag,K0_,f0_,err));
 
          txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
                Rd(M31*1e9),Rd(phi31*180/pi),...
                Rd(M33*1e9),Rd(phi33*180/pi));
          xlabel(txt);
-         limits(o,'Magni');
+         K = o.iif(crit,K0,1);
+         limits(o,'Magni',K);
          subplot(o);
       end
       
       if (sub2)
          subplot(o,sub2);
-         title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
+         title(sprintf('%s: Phase Plot (Nyquist error: %g)',name,nyqerr));
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
          xlabel(sprintf('omega [1/s]      (G31(jw0)/G33(jw0): %g @ %g deg)',...
@@ -495,7 +508,7 @@ function Bode(o,oo,L0,sub,cutting)
       y = ooo.rd(x,1);
    end
 end
-function Nichols(o,oo,L0,sub,cutting)
+function Nichols(o,oo,L0,sub,cutting)       % Nichols Plot             
    if (length(sub) < 2)
       sub = [211,212,0,0];
    end
@@ -1282,7 +1295,7 @@ function [K,Omega,err] = Pass(o,PsiW31,PsiW33,Olim,sgn,tol,iter)
       end
    end
 end
-function K0min = LowerBoundary(o)
+function K0min = LowerBoundary(o)      % Calc Lower Boundary           
 %
 % K0MIN   Calculate lower boundary of K0:
 %         Let l0jw = [l01(jw),l02(jw),...,l0n(jw)], then we know that for

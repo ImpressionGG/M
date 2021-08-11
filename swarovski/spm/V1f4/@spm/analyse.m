@@ -291,6 +291,13 @@ end
 function oo = PrincipalMenu(o)         % Principal Menu                
    oo = mitem(o,'Principal');
    ooo = mitem(oo,'Overview',{@WithSpm,'Principal','Overview'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Bode',{@WithSpm,'Principal','Bode'});
+   ooo = mitem(oo,'Magnitude',{@WithSpm,'Principal','Magni'});
+   ooo = mitem(oo,'Phase',{@WithSpm,'Principal','Phase'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Nyquist',{@WithSpm,'Principal','Nyquist'});
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'G31 Spectrum',{@WithSpm,'Principal','G31'});
@@ -338,8 +345,50 @@ function o = Principal(o)              % Pricipal Menu Callbacks
                critical(o,'Overview',[0,0,0, 2211,2221,0]);
                Nyquist(o,[0 1212],0);
          end
+         
+      case 'Bode'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Bode',[2211,2221,2212,2222],false);
+            case 1                     % forward direction
+               critical(o,'Bode',[2111,2121,0,0],false);
+            case -1                    % backward direction
+               critical(o,'Bode',[0,0,2111,2121],false);
+         end
+         
+      case 'Magni'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Magni',[211,212],false);
+            case 1                     % forward direction
+               critical(o,'Magni',[111,0],false);
+            case -1                    % backward direction
+               critical(o,'Magni',[0,111],false);
+         end
+         
+      case 'Phase'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Phase',[211,212],false);
+            case 1                     % forward direction
+               critical(o,'Phase',[111,0],false);
+            case -1                    % backward direction
+               critical(o,'Phase',[0,111],false);
+         end
+         
+      case 'Nyquist'
+         switch cutting
+            case 0                     % both directions
+               Nyquist(o,[1211 1212],0);
+            case 1                     % forward direction
+               Nyquist(o,[111 0],0);
+            case -1                    % backward direction
+               Nyquist(o,[0 111],0);
+         end
+         
       case 'G31'
          PrincipalSpectrum(o,'g31');
+      
       case 'G33'
          PrincipalSpectrum(o,'g33');
    end
@@ -407,8 +456,6 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'Phase',{@WithSpm,'Critical','Phase'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nyquist',{@WithSpm,'Critical','Nyquist'});
-   ooo = mitem(oo,'Critical Loci',{@WithSpm,'Critical','Critical'});
-   ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nichols',{@WithSpm,'Critical','Nichols'});
 %  ooo = mitem(oo,'-');
 %  ooo = mitem(oo,'Simple Calculation', {@WithSpm,'SimpleCalc'});
@@ -437,25 +484,24 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Overview'
          switch cutting
             case 0                     % both directions         
-               critical(o,'Overview',[4211,4221,0]);
+               critical(o,'Overview',[4211,4221,0],1);
                critical(o,'Damping',[4231,0]);
                Nyquist(o,[4441 0],0);
                Nyquist(o,[4442 0],1);
                
                   % reverse part
                   
-               critical(o,'Overview',[0,0,0, 4212,4222,0]);
+               critical(o,'Overview',[0,0,0, 4212,4222,0],1);
                critical(o,'Damping',[0,4232]);
                Nyquist(o,[0 4443],0);
                Nyquist(o,[0 4444],1);
-                  
             case 1                     % forward direction
-               critical(o,'Overview',[3211,3221,0]);
+               critical(o,'Overview',[3211,3221,0],1);
                critical(o,'Damping',[3231,0]);
                critical(o,'Nichols',[2212,0]);
                Nyquist(o,[2222 0],1);
             case -1                    % backward direction
-               critical(o,'Overview',[0,0,0, 3211,3221,0]);
+               critical(o,'Overview',[0,0,0, 3211,3221,0],1);
                critical(o,'Damping',[0 3231]);
                critical(o,'Nichols',[0 2212]);
                Nyquist(o,[0 2222],1);
@@ -463,11 +509,11 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Combi'
          switch cutting
             case 0                     % both directions
-               critical(o,'Overview',[3211,3221,3231, 3212,3222,3232]);
+               critical(o,'Overview',[3211,3221,3231, 3212,3222,3232],1);
             case 1                     % forward direction
-               critical(o,'Overview',[3111,3121,3131, 0,0,0]);
+               critical(o,'Overview',[3111,3121,3131, 0,0,0],1);
             case -1                    % backward direction
-               critical(o,'Overview',[0,0,0, 3111,3121,3131]);
+               critical(o,'Overview',[0,0,0, 3111,3121,3131],1);
          end
       case 'Damping'
          switch cutting
@@ -481,42 +527,32 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Bode'
          switch cutting
             case 0                     % both directions
-               critical(o,'Bode',[2211,2221,2212,2222]);
+               critical(o,'Bode',[2211,2221,2212,2222],1);
             case 1                     % forward direction
-               critical(o,'Bode',[2111,2121,0,0]);
+               critical(o,'Bode',[2111,2121,0,0],1);
             case -1                    % backward direction
-               critical(o,'Bode',[0,0,2111,2121]);
+               critical(o,'Bode',[0,0,2111,2121],1);
          end
       case 'Magni'
          switch cutting
             case 0                     % both directions
-               critical(o,'Magni',[211,212]);
+               critical(o,'Magni',[211,212],1);
             case 1                     % forward direction
-               critical(o,'Magni',[111,0]);
+               critical(o,'Magni',[111,0],1);
             case -1                    % backward direction
-               critical(o,'Magni',[0,111]);
+               critical(o,'Magni',[0,111],1);
          end
       case 'Phase'
          switch cutting
             case 0                     % both directions
-               critical(o,'Phase',[211,212]);
+               critical(o,'Phase',[211,212],1);
             case 1                     % forward direction
-               critical(o,'Phase',[111,0]);
+               critical(o,'Phase',[111,0],1);
             case -1                    % backward direction
-               critical(o,'Phase',[0,111]);
+               critical(o,'Phase',[0,111],1);
          end
-
+        
       case 'Nyquist'
-         switch cutting
-            case 0                     % both directions
-               Nyquist(o,[1211 1212],0);
-            case 1                     % forward direction
-               Nyquist(o,[111 0],0);
-            case -1                    % backward direction
-               Nyquist(o,[0 111],0);
-         end
-         
-      case 'Critical'
          switch cutting
             case 0                     % both directions
                Nyquist(o,[1211 1212],1);
@@ -539,7 +575,7 @@ function o = Critical(o)               % Calculate Critical Quantities
    Heading(o);
 
 end
-function o = Closeup(o)             % Set Closeup if Activated         
+function o = Closeup(o)                % Set Closeup if Activated      
    o = with(o,{'bode','stability'});
    o = with(o,{'critical'});
 
@@ -555,7 +591,7 @@ function o = Closeup(o)             % Set Closeup if Activated
        o = opt(o,'omega.points',points);
    end
 end
-function Nyquist(o,sub,critical)
+function Nyquist(o,sub,critical)       % Nyquist Plot                  
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
 
    o = with(o,'nyq');
@@ -568,45 +604,46 @@ function Nyquist(o,sub,critical)
       [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
       PlotNyquist(o,sub(2),lambda180,K180,f180,critical,'180')
    end
-end
-function PlotNyquist(o,sub,lam,K,f,critical,tag)
-   subplot(o,sub);
+   
+   function PlotNyquist(o,sub,lam,K,f,critical,tag)                    
+      subplot(o,sub);
 
-   if (dark(o))
-      colors = {'rk','gk','b','ck','mk','yk','wk'};
-   else
-      colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
-   end
-   colors = get(lam,{'colors',colors});
-
-   if ~critical
-      no = length(lam.data.matrix(:));
-      for (i=1:no)
-         l0i = peek(lam,i);
-         l0jwi = l0i.data.matrix{1,1};
-
-         col = colors{1+rem(i,length(colors))};
-         nyq(l0i,col);
+      if (dark(o))
+         colors = {'rk','gk','b','ck','mk','yk','wk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
       end
-   end
+      colors = get(lam,{'colors',colors});
 
-   if (critical)
-      col = 'r2';
-   else
-      col = [get(lam,'color'),'2'];
-   end
+      if ~critical
+         no = length(lam.data.matrix(:));
+         for (i=1:no)
+            l0i = peek(lam,i);
+            l0jwi = l0i.data.matrix{1,1};
 
-   if (critical)
-      l00 = peek(lam,1);         
-      nyq(K*lam,col);
-      title(sprintf('Critical Loci K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                    tag,tag,tag,K,tag,f));
-   else
-      l00 = peek(lam,1);
-      nyq(lam,col);
-      limits(o,'Nyq');                 % plot nyquist limits
-      title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                    tag,tag,K,tag,f));
+            col = colors{1+rem(i,length(colors))};
+            nyq(l0i,col);
+         end
+      end
+
+      if (critical)
+         col = 'r2';
+      else
+         col = [get(lam,'color'),'2'];
+      end
+
+      if (critical)
+         l00 = peek(lam,1);         
+         nyq(K*lam,col);
+         title(sprintf('%s K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                       'Critical Loci',tag,tag,tag,K,tag,f));
+      else
+         l00 = peek(lam,1);
+         nyq(lam,col);
+         limits(o,'Nyq');                 % plot nyquist limits
+         title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
+                       tag,tag,K,tag,f));
+      end
    end
 end
 

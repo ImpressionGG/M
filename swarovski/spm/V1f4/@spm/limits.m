@@ -1,4 +1,4 @@
-function [lim,style] = limits(o,mode)
+function [lim,style] = limits(o,mode,K)
 %
 % LIMITS    Return limits and color or plot limits for varioius diagrams
 %
@@ -20,6 +20,8 @@ function [lim,style] = limits(o,mode)
 %              limits(o,'Magni')       % for magnitude plot
 %              limits(o,'Gain')        % for stability margin chart
 %
+%              limits(o,'Magni',K)     % multiply limits by K
+%
 %           Options
 %
 %              process.mu              % friction coefficient
@@ -29,6 +31,10 @@ function [lim,style] = limits(o,mode)
 %
 %           See also: SPM, CRITICAL
 %
+   if (nargin < 3)
+      K = 1;
+   end
+   
    mu = opt(o,{'process.mu',0.1});
    kmu = opt(o,{'process.kmu',1});
   
@@ -55,18 +61,18 @@ function [lim,style] = limits(o,mode)
             % that represents a circle
 
          om = 0:pi/100:2*pi;
-         Gs = fqr(corasim,om,{1/mu * exp(1i*om)});  % circle
+         Gs = fqr(corasim,om,{K/mu * exp(1i*om)});  % circle
          Gs = inherit(Gs,o);
 
          nyq(Gs,style);  
          if (kmu ~= 1)
-            nyq((1/kmu)*Gs,style);
+            nyq((K/kmu)*Gs,style);
          end
 
       case 'Magni'
-         plot(o,get(gca,'xlim'),20*log10(1/mu)*[1 1],style);
+         plot(o,get(gca,'xlim'),20*log10(K/mu)*[1 1],style);
          if (kmu ~= 1)
-            plot(o,get(gca,'xlim'),20*log10(1/mu/kmu)*[1 1],style);
+            plot(o,get(gca,'xlim'),20*log10(K/mu/kmu)*[1 1],style);
          end
          
       case 'Gain'
