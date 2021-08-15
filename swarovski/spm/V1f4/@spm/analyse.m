@@ -475,9 +475,7 @@ end
    % callbacks
 
 function o = Critical(o)               % Calculate Critical Quantities 
-   if type(o,{'spm'})
-      o = cache(o,o,'critical');
-   else
+   if ~type(o,{'spm'})
       plot(o,'About');
       return
    end
@@ -1631,16 +1629,16 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
 %  Axes(o,4211,mu,'Critical Friction');
    Axes(o,sub(2,1),mu,'Critical Friction');
 %  Axes(o,4221,[],'Setup');
-   Axes(o,sub(3,1),[],'Setup');
+   Axes(o,sub(3,1),mu,'Setup');
 %  Axes(o,4231,mu,'Stability Margin');
    Axes(o,sub(1,1),mu,'Stability Margin');
-   Axes(o,sub(4,2),nan,'Critical Frequency');
+   Axes(o,sub(4,1),mu,'Critical Frequency');
 
 %  Axes(o,4212,-mu,'Stability Range');
    Axes(o,sub(2,2),-mu,'Critical Friction');
-   Axes(o,sub(3,2),[],'Setup');
+   Axes(o,sub(3,2),-mu,'Setup');
    Axes(o,sub(1,2),-mu,'Stability Margin');
-   Axes(o,sub(4,2),nan,'Critical Frequency');
+   Axes(o,sub(4,2),-mu,'Critical Frequency');
 
       % calculate stability margin and plot
 

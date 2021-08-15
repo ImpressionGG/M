@@ -9,9 +9,10 @@ function oo = batch(o,varargin)        % Batch figure printing
 %    See also: SPM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @RunBatch,@StabilityOverview,@ModeShapeOverview,...
-                        @AllStabilityMargin,@AllCriticalSensitivity,...
-                        @AllDampingSensitivity);
+                        @RunBatch,@About,...
+                        @StabilityMargin,@CriticalOverview,...
+                        @CriticalSensitivity,@DampingSensitivity,...
+                        @SetupStudy);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -19,33 +20,30 @@ end
 % Menu Setup & Common Menu Callback
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Study Menu                
+function oo = Menu(o)                  % Setup Study Menu              
    setting(o,{'batch.stabilitymargin'},1);
    setting(o,{'batch.criticaloverview'},1);
-   setting(o,{'batch.dampingsensitivity'},1);
-   setting(o,{'batch.criticalsensitivity'},1);
-   setting(o,{'batch.setupstudy'},1);
+   setting(o,{'batch.dampingsensitivity'},0);
+   setting(o,{'batch.criticalsensitivity'},0);
+   setting(o,{'batch.setupstudy'},0);
    
    co = current(o);
    
+      % batch config
+      
    oo = mitem(o,'Batch Config');
    ooo = mitem(oo,'Stability Margin',{},'batch.stabilitymargin');
-   check(ooo);
-   enable(ooo,type(co,{'shell','pkg'}));
-   
+         check(ooo,{@Cb});
    ooo = mitem(oo,'Critical Overview',{},'batch.criticaloverview');
-   check(ooo);
-   enable(ooo,type(co,{'spm'}));
-   
+         check(ooo,{@Cb});
+   mitem(oo,'-');
    ooo = mitem(oo,'Damping Sensitivity',{},'batch.dampingsensitivity');
-   check(ooo);
-   
+         check(ooo,{@Cb});
    ooo = mitem(oo,'Critical Sensitivity',{},'batch.criticalsensitivity');
-   check(ooo);
-   
+         check(ooo,{@Cb});
    mitem(oo,'-');
    ooo = mitem(oo,'Setup Study',{},'batch.setupstudy');
-   check(ooo);
+         check(ooo,{@Cb});
 
       % run batch
       
@@ -54,16 +52,46 @@ function oo = Menu(o)                  % Setup Study Menu
       % auxillary menu items
       
    oo = mitem(o,'-');
-   oo = mitem(o,'All Packages');
-   ooo = mitem(oo,'Stability Margin',{@WithSho,'AllStabilityMargin'});
-   ooo = mitem(oo,'Damping Sensitivity',{@WithSho,'AllDampingSensitivity'});
-   ooo = mitem(oo,'Critical Sensitivity',{@WithSho,'AllCriticalSensitivity'});
+   oo = mitem(o,'Stability Margin',{@WithCuo,'StabilityMargin'});
+   oo = mitem(o,'Critical Overview',{@WithCuo,'CriticalOverview'});
+   oo = mitem(o,'-');
+   oo = mitem(o,'Damping Sensitivity',{@WithCuo,'DampingSensitivity'});
+   oo = mitem(o,'Critical Sensitivity',{@WithCuo,'CriticalSensitivity'});
+   oo = mitem(o,'-');
+   oo = mitem(o,'Setup Study',{@WithCuo,'SetupStudy'});
 
-   oo = mitem(o,'Mode Shapes');
-   ooo = mitem(oo,'Overview',{@WithCuo,'ModeShapeOverview'});
+%  oo = mitem(o,'Mode Shapes');
+%  ooo = mitem(oo,'Overview',{@WithCuo,'ModeShapeOverview'});
    
-   oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
+%  oo = mitem(o,'Stability');
+%  ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
+   function o = Cb(o)
+      o = About(o);
+   end
+end
+function o = About(o)                  % About Batch Configuration     
+   refresh(o,o);                       % come here for refresh
+   batch = opt(o,'batch');
+   comment = {};
+
+   if (batch.stabilitymargin)
+      comment{end+1} = 'Stability Margin';
+   end
+   if (batch.criticaloverview)
+      comment{end+1} = 'Critical Overview';
+   end
+   if (batch.dampingsensitivity)
+      comment{end+1} = 'Damping Sensitivity';
+   end
+   if (batch.criticalsensitivity)
+      comment{end+1} = 'Critical Sensitivity';
+   end
+   if (batch.setupstudy)
+      comment{end+1} = 'Setup Study';
+   end
+   
+   cls(o);
+   message(o,'Batch Configuration',comment);
 end
 
 %==========================================================================
@@ -77,7 +105,7 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
 %         clearing, current object pulling and forwarding to executing
 %         local function, reporting of irregularities, dark mode support
 %
-   refresh(o,o);                       % remember to refresh here
+   refresh(o,{@batch,'About'});        % display About message on refresh
 
    mode = dark(o);
    dark(o,0);
@@ -85,6 +113,7 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
    
    cls(o);                             % clear screen
  
+   stop(o,'Enable');
    gamma = eval(['@',mfilename]);
    oo = gamma(o);                      % forward to executing method
 
@@ -109,7 +138,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
 %         clearing, current object pulling and forwarding to executing
 %         local function, reporting of irregularities, dark mode support
 %
-   refresh(o,o);                       % remember to refresh here
+   refresh(o,{@batch,'About'});        % display About message on refresh
    
    mode = dark(o);                     % save dark mode
    dark(o,0);                          % disable dark mode shell setting
@@ -124,6 +153,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
       
    oo = dark(oo,0);                    % disable dark mode
    
+   stop(o,'Enable');
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 
@@ -148,33 +178,60 @@ end
 %==========================================================================
 
 function o = RunBatch(o)
-   switch o.type
-      case 'shell'
-         RunBatchAll(o);
-      case 'pkg'
-         RunBatchPkg(o);
-      case 'spm'
-         RunBatchSpm(o);
-      otherwise
-         error('cannot handle object type');
-   end
-end
-
-function RunBatchSpm(o)
    batch = opt(o,'batch');
-   
+
    if (batch.stabilitymargin)
       StabilityMargin(o);
    end
+   if (batch.criticaloverview)
+      CriticalOverview(o);
+   end
+   if (batch.dampingsensitivity)
+      DampingSensitivity(o);
+   end
+   if (batch.criticalsensitivity)
+      CriticalSensitivity(o);
+   end
+   if (batch.setupstudy)
+      SetupStudy(o);
+   end
    
-   
+      % print/display end message
+      
+   msg = o.iif(stop(o),'batch processing stopped',...
+                       'batch processing complete');
+   message(o,msg);
+   fprintf('%s\n',msg);
 end
 
 %==========================================================================
 % Stability Margin
 %==========================================================================
 
-function o = StabilityMarginPkg(o)
+function o = StabilityMargin(o)        % Dispatcher                    
+   switch o.type
+      case 'shell'
+         StabilityMarginAll(o);
+      case 'pkg'
+         StabilityMarginPkg(o);
+      case 'spm'
+         StabilityMarginSpm(o);
+   end
+end
+function o = StabilityMarginAll(o)                                     
+   assert(type(o,{'shell'}));
+   list = children(o);                  % get list of packages 
+   
+   for (i=1:length(list))
+      oo = list{i};
+      StabilityMarginPkg(oo);
+      if stop(o)
+         break
+      end
+   end
+end
+function o = StabilityMarginPkg(o)                                     
+   assert(type(o,{'pkg'}));
    cls(o);
 
    fprintf('   plot Stability Margin diagram ...\n');
@@ -183,125 +240,270 @@ function o = StabilityMarginPkg(o)
    fprintf('   create PNG file ...\n');
    png(o,'Stability Margin @ Package');
 end
-function o = CriticalOverviewSpm(o)
-   cls(o);
-
-   fprintf('   plot "Critical Overview" diagram ...\n');
-   analyse(o,'CriticalOverview');
-
-   fprintf('   create PNG file ...\n');
-   png(o,'Critical Overview');
+function o = StabilityMarginSpm(o)                                     
+   assert(type(o,{'spm'}));
+   menu(o,'About');
 end
 
 %==========================================================================
-% For All Packages
+% Critical Overview
 %==========================================================================
 
-function o = AllStabilityMargin(o)
-   fprintf('Batch processing: stability margin for all package objects\n');
-   list = children(o);                 % get list of package objects
+function o = CriticalOverview(o)        % Dispatcher                    
+   switch o.type
+      case 'shell'
+         CriticalOverviewAll(o);
+      case 'pkg'
+         CriticalOverviewPkg(o);
+      case 'spm'
+         CriticalOverviewSpm(o);
+   end
+end
+function o = CriticalOverviewAll(o)                                     
+   assert(type(o,{'shell'}));
+   list = children(o);                  % get list of packages 
    
-   stop(o,'Enable');
-   n = length(list);
    for (i=1:length(list))
       oo = list{i};
-      fprintf('   %g of %g: %s\n',i,n,id(oo));
-      cls(oo);
+      CriticalOverviewPkg(oo);
+      if stop(o)
+         break
+      end
+   end
+end
+function o = CriticalOverviewPkg(o)                                     
+   assert(type(o,{'pkg'}));
+   list = children(o);                 % get list of SPM objects 
+   
+   for (i=1:length(list))
+      oo = list{i};
+      CriticalOverviewSpm(oo);
+      if stop(o)
+         break
+      end
+   end
+end
+function o = CriticalOverviewSpm(o)                                     
+   assert(type(o,{'spm'}));
+   
+      % forward cutting
       
-      fprintf('   plot diagram ...\n');
-      analyse(oo,'StabilityMargin');
+   cls(o);
+   tag = sprintf('Critical Overview (Forward) @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+   
+   o = opt(o,'view.cutting',+1);
+   analyse(o,'Critical','Overview');
 
-      fprintf('   create PNG file ...\n');
-      png(oo,'Stability Margin @ Package');
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
+
+      % backward cutting
       
+   cls(o);
+   tag = sprintf('Critical Overview (Backward) @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+
+   o = opt(o,'view.cutting',-1);
+   analyse(o,'Critical','Overview');
+
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
+end
+
+%==========================================================================
+% Damping Sensitivity
+%==========================================================================
+
+function o = DampingSensitivity(o)        % Dispatcher                    
+   switch o.type
+      case 'shell'
+         DampingSensitivityAll(o);
+      case 'pkg'
+         DampingSensitivityPkg(o);
+      case 'spm'
+         DampingSensitivitySpm(o);
+   end
+end
+function o = DampingSensitivityAll(o)                                     
+   assert(type(o,{'shell'}));
+   list = children(o);                  % get list of packages 
+   
+   for (i=1:length(list))
+      oo = list{i};
+      DampingSensitivityPkg(oo);
       if stop(o)
          break
       end
    end
-   stop(o,'Disable');
-   
-   o = var(o,'done','Batch processing done!');
 end
-function o = AllDampingSensitivity(o)
-   assert(container(o));               % we HAVE a shell object!
-   plist = children(o);                % get list of all packages
+function o = DampingSensitivityPkg(o)                                     
+   assert(type(o,{'pkg'}));
+   list = children(o);                 % get list of SPM objects 
    
-   stop(o,'Enable');
-   np = length(plist);                 % number of packages
-   for (i=1:np)
-      po = plist{i};                   % get package object
-      olist = children(po);
-      no = length(olist);              % number of packages
-      for (j=1:no)
-         oo = olist{j};                % fetch SPM object
-         fprintf('   %g/%g of %g/%g: %s\n',i,j,np,no,id(oo));
-         cls(oo);
-
-         fprintf('   damping sensitivity ...\n');
-         analyse(oo,'Sensitive','damping');
-
-         fprintf('   create PNG file ...\n');
-         png(oo,sprintf('Critical Sensitivity %s',id(oo)));
-
-         if stop(o)
-            break
-         end
-      end
+   for (i=1:length(list))
+      oo = list{i};
+      DampingSensitivitySpm(oo);
       if stop(o)
          break
       end
    end
-   stop(o,'Disable');
 end
-function o = AllCriticalSensitivity(o)
-   assert(container(o));               % we HAVE a shell object!
-   plist = children(o);                % get list of all packages
+function o = DampingSensitivitySpm(o)                                     
+   assert(type(o,{'spm'}));
    
-   stop(o,'Enable');
-   np = length(plist);                 % number of packages
-   for (i=1:np)
-      po = plist{i};                   % get package object
-      olist = children(po);
-      no = length(olist);                 % number of packages
-      for (j=1:no)
-         oo = olist{j};                % fetch SPM object
-         fprintf('   %g/%g of %g/%g: %s\n',i,j,np,no,id(oo));
-         cls(oo);
+      % forward cutting
+      
+   cls(o);
+   tag = sprintf('Damping Sensitivity (Forward) @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+   
+   o = opt(o,'view.cutting',+1);
+   sensitivity(o,'Damping');
 
-         fprintf('   critical sensitivity ...\n');
-         sensitivity(oo,'Critical');
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
+return;
 
-         fprintf('   create PNG file ...\n');
-         png(oo,sprintf('Critical Sensitivity %s',id(oo)));
-         if stop(o)
-            break
-         end
-      end
+      % backward cutting
+      
+   cls(o);
+   tag = sprintf('Damping Sensitivity (Backward) @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+
+   o = opt(o,'view.cutting',-1);
+   sensitivity(o,'Damping');
+
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
+end
+
+%==========================================================================
+% Critical Sensitivity
+%==========================================================================
+
+function o = CriticalSensitivity(o)        % Dispatcher                    
+   switch o.type
+      case 'shell'
+         CriticalSensitivityAll(o);
+      case 'pkg'
+         CriticalSensitivityPkg(o);
+      case 'spm'
+         CriticalSensitivitySpm(o);
+   end
+end
+function o = CriticalSensitivityAll(o)                                     
+   assert(type(o,{'shell'}));
+   list = children(o);                  % get list of packages 
+   
+   for (i=1:length(list))
+      oo = list{i};
+      CriticalSensitivityPkg(oo);
       if stop(o)
          break
       end
    end
-   stop(o,'Disable');
+end
+function o = CriticalSensitivityPkg(o)                                     
+   assert(type(o,{'pkg'}));
+   list = children(o);                 % get list of SPM objects 
+   
+   for (i=1:length(list))
+      oo = list{i};
+      CriticalSensitivitySpm(oo);
+      if stop(o)
+         break
+      end
+   end
+end
+function o = CriticalSensitivitySpm(o)                                     
+   assert(type(o,{'spm'}));
+   
+      % forward cutting
+      
+   cls(o);
+   tag = sprintf('Critical Sensitivity (Forward) @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+   
+   o = opt(o,'view.cutting',+1);
+   sensitivity(o,'Critical');
+
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
+return;
+
+      % backward cutting
+      
+   cls(o);
+   tag = sprintf('Critical Sensitivity (Backward) @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+
+   o = opt(o,'view.cutting',-1);
+   sensitivity(o,'Critical');
+
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
 end
 
 %==========================================================================
-% Mode Shapes
+% Setup Study
 %==========================================================================
 
-function o = ModeShapeOverview(o)      % Print Mode Shape Diagrams      
-   plot(o,'WithCuo','Complex');
-   png(o,'Mode Shape Complex');
-
-   plot(o,'WithCuo','Damping');
-   png(o,'Mode Shape Damping');
+function o = SetupStudy(o)        % Dispatcher                    
+   switch o.type
+      case 'shell'
+         SetupStudyAll(o);
+      case 'pkg'
+         SetupStudyPkg(o);
+      case 'spm'
+         SetupStudySpm(o);
+   end
 end
+function o = SetupStudyAll(o)                                     
+   assert(type(o,{'shell'}));
+   list = children(o);                  % get list of packages 
+   
+   for (i=1:length(list))
+      oo = list{i};
+      SetupStudyPkg(oo);
+      if stop(o)
+         break
+      end
+   end
+end
+function o = SetupStudyPkg(o)                                     
+   assert(type(o,{'pkg'}));
+   list = children(o);                 % get list of SPM objects 
+  
+   for (i=1:length(list))
+      oo = list{i};
+      SetupStudySpm(oo);
+      if stop(o)
+         break
+      end
+   end
+   
+      % finally make the setup study for the package
+      
+   cls(o);
+   tag = sprintf('Setup Study @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+   
+   analyse(o,'SetupAnalysis','basic',3);
 
-%==========================================================================
-% Stability
-%==========================================================================
+   fprintf('   create PNG file ...\n');
+   png(o,tag);      
+end
+function o = SetupStudySpm(o)                                     
+   assert(type(o,{'spm'}));
+   
+   cls(o);
+   tag = sprintf('Setup Study @ %s',id(o));
+   fprintf('   plot %s diagram ...\n',tag);
+   
+   analyse(o,'SetupAnalysis','basic',3);
 
-function o = StabilityOverview(o)      % Stability Overview   
-   analyse(o,'WithCuo','StabilityMargin');
-   png(o,sprintf('Stability Margin @ %s',id(o)));
+   fprintf('   create PNG file ...\n');
+   png(o,tag);
 end
 

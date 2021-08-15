@@ -211,6 +211,8 @@ function o = Critical(o)               % Critical Sensitivity
       return
    end
    
+   heading(o);
+   
    sub1 = 2212;                        % for bode plot
    sub2 = 3221;                        % for K plot
    sub3 = 2222;                        % for damping
@@ -427,6 +429,8 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
 %    - build dL := L0(jw)-Lk(jw)
 %    - Sensitivity S := |dL(jw)| / |L0(jw)|
 %
+   heading(o);
+
    s = [];  modes = [];                % initialize
    watch = false;                      % don't watch (try to set true!)
 
