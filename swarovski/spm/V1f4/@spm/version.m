@@ -295,6 +295,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + Sensitivity Analysis
 %   + View>Sensitivity menu for sensitivity analysis
 %   + caching of sensitivity analysis data
+%   + cache saved on File/Save As ... and re-loaded on File/Open
 %   ---------------
 %   + bug: stability margin calculation mistake
 %   + bug: leaves gap after continuing sensitivity calculation
@@ -421,6 +422,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - new menu item Analyse/Principal/Overview
 % - extended Analyse/Principal menu
 % - add Analyse/Principal/Nichols menu item
+% + cache saved on File/Save As ... and re-loaded on File/Open
+   
 
 % Known bugs & wishlist
 % =========================
