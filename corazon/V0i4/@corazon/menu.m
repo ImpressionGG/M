@@ -200,7 +200,8 @@ function oo = Save(o)                  % Add Save Menu Item
    function o = SaveCallback(o)        % Save Callback                 
       o = clean(o);                    % clean object before saving
       try
-         save(corazita,pack(o));        % save object, using CORAZITA save
+%         save(corazita,pack(o));      % save object, using CORAZITA save
+          save(o,pack(o));             % save object
       catch err
          message(o,err,'Error during Save ...');
       end
