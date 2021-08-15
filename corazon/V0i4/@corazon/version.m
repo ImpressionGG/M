@@ -619,6 +619,7 @@ function VersionV1I
 % - change output arg semantics of corazon/subplot
 % - bugfix: subplot handling in corazon/message
 % - corazon/menu/SaveCallback: use corazon/save instead of corazita/save
+% - corazon/clean: do not clean cache
 %
 % Known Bugs / Wishlist
 % - none so far
