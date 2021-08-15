@@ -423,7 +423,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - extended Analyse/Principal menu
 % - add Analyse/Principal/Nichols menu item
 % + cache saved on File/Save As ... and re-loaded on File/Open
-   
+% - speed-up stability margin graphics   
 
 % Known bugs & wishlist
 % =========================

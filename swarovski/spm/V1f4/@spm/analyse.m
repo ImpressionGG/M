@@ -827,13 +827,21 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
       subplot(o,sub);
       if (mu0 > mu*kmu)
-         plot(o,xi,mu0,green);
+%        plot(o,xi,mu0,green);
+         [col,wid,typ] = o.color(green);
       elseif (mu0 < mu)
-         plot(o,xi,mu0,red);
+%        plot(o,xi,mu0,red);
+         [col,wid,typ] = o.color(red);
       else
-         plot(o,xi,mu0,yellow);
+%        plot(o,xi,mu0,yellow);
+         [col,wid,typ] = o.color(yellow);
       end
-
+      
+      hdl = plot([xi xi],[0 mu0],'g');
+      set(hdl,'color',col, 'linewidth',wid);
+      hdl = plot(xi,mu0,'o');
+      set(hdl,'color',col, 'linewidth',1);
+      
       lim = limits(o);
       if o.is(lim)
 %        set(gca,'ylim',[0 2.2/lim(2)]);
@@ -849,13 +857,21 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
          plot(o,xi,0,infgreen);
 %     elseif (marg > kmu)
       elseif (marg > 1)
-         plot(o,xi,marg,green);
+         %plot(o,xi,marg,green);
+         [col,wid,typ] = o.color(green);
 %     elseif (marg < 1)
       elseif (marg < 1/kmu)
-         plot(o,xi,marg,red);
+%        plot(o,xi,marg,red);
+         [col,wid,typ] = o.color(red);
       else
-         plot(o,xi,marg,yellow);
+         %plot(o,xi,marg,yellow);
+         [col,wid,typ] = o.color(yellow);
       end
+      
+      hdl = plot([xi xi],[0 marg],'g');
+      set(hdl,'color',col, 'linewidth',wid);
+      hdl = plot(xi,marg,'o');
+      set(hdl,'color',col, 'linewidth',1);
    end
    function PlotLogMargin(xi,marg,sub)
       if (sub == 0)
@@ -902,6 +918,11 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
       subplot(o,sub);
       plot(o,xi,f,'Ko|');
+      col = o.iif(dark(o),'w','k');
+      hdl = plot([xi xi],[0 f],'k');
+      set(hdl,'color',col, 'linewidth',2);
+      hdl = plot(xi,f,'o');
+      set(hdl,'color',col, 'linewidth',1);
    end
 
    function x = Axes(o,sub,mu,tit)     % Plot Axes
