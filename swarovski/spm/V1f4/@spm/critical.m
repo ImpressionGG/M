@@ -165,11 +165,11 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
             end
             
             if sub(1)
-               Nichols(o,oo,L0,[sub(1) 0],+1);   % Nichols plot (forward)
+               Nichols(o,oo,L0,[sub(1) 0],+1,crit); % Nichols plot (fwd)
             end
             if sub(2)
                L180 = Negate(L0);
-               Nichols(o,oo,L180,[sub(2) 0],-1); % Nichols plot (revers)
+               Nichols(o,oo,L180,[sub(2) 0],-1,crit); % Nichols plot (rev)
             end
      end
    elseif (nargout <= 2)
@@ -508,7 +508,7 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
       y = ooo.rd(x,1);
    end
 end
-function Nichols(o,oo,L0,sub,cutting)       % Nichols Plot             
+function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot             
    if (length(sub) < 2)
       sub = [211,212,0,0];
    end
@@ -662,22 +662,30 @@ function Nichols(o,oo,L0,sub,cutting)       % Nichols Plot
       s0 = CritEig(o,L0,K0);
       err = norm([K0-K0_,f0-f0_,real(s0)]);
       
+      if (crit)
+         name = o.iif(cutting>0,'gamma0(jw)','gamma180(jw)');
+      else
+         name = o.iif(cutting>0,'lambda0(jw)','lambda180(jw)');
+      end
+      
       if (sub1)
          subplot(o,sub1);
-         title(sprintf(['L(s) = K%s*G31(s)/G33(s): Nichols Plot - K%s: ',...
-                        '%g @ %g Hz (EV error: %g)'],tag,tag,K0_,f0_,err));
+         title(sprintf(['%s: Nichols Plot - K%s: ',...
+                   '%g @ %g Hz (EV error: %g)'],name,tag,K0_,f0_,err));
 
          txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
                Rd(M31*1e9),Rd(phi31*180/pi),...
                Rd(M33*1e9),Rd(phi33*180/pi));
          xlabel(txt);
-         %limits(o,'Magni');
+         
+         K = o.iif(crit,K0,1);
+         limits(o,'Magni',K);
          subplot(o);
       end
       
       if (sub2)
          subplot(o,sub2);
-         title(sprintf('L(s) = G31(s)/G33(s): Phase Plot (Nyquist error: %g)',nyqerr));
+         title(sprintf('%s: Phase Plot (Nyquist error: %g)',name,nyqerr));
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
          plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
          xlabel(sprintf('omega [1/s]      (G31(jw0)/G33(jw0): %g @ %g deg)',...

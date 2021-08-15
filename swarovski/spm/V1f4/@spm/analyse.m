@@ -498,12 +498,12 @@ function o = Critical(o)               % Calculate Critical Quantities
             case 1                     % forward direction
                critical(o,'Overview',[3211,3221,0],1);
                critical(o,'Damping',[3231,0]);
-               critical(o,'Nichols',[2212,0]);
+               critical(o,'Nichols',[2212,0],true);
                Nyquist(o,[2222 0],1);
             case -1                    % backward direction
                critical(o,'Overview',[0,0,0, 3211,3221,0],1);
                critical(o,'Damping',[0 3231]);
-               critical(o,'Nichols',[0 2212]);
+               critical(o,'Nichols',[0 2212],true);
                Nyquist(o,[0 2222],1);
          end
       case 'Combi'
@@ -565,11 +565,11 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Nichols'
          switch cutting
             case 0                     % both directions
-               critical(o,'Nichols',[211,212]);
+               critical(o,'Nichols',[211,212],true);
             case 1                     % forward direction
-               critical(o,'Nichols',[111,0]);
+               critical(o,'Nichols',[111,0],true);
             case -1                    % backward direction
-               critical(o,'Nichols',[0,111]);
+               critical(o,'Nichols',[0,111],true);
          end
    end
    Heading(o);
@@ -635,8 +635,8 @@ function Nyquist(o,sub,critical)       % Nyquist Plot
       if (critical)
          l00 = peek(lam,1);         
          nyq(K*lam,col);
-         title(sprintf('%s K%s*lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       'Critical Loci',tag,tag,tag,K,tag,f));
+         title(sprintf('%s gamma%s(jw) - K%s: %g @ f%s: %g Hz',...
+                       'Critical Loci',tag,tag,K,tag,f));
       else
          l00 = peek(lam,1);
          nyq(lam,col);
