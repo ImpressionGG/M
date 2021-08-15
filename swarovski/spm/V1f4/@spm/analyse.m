@@ -297,6 +297,7 @@ function oo = PrincipalMenu(o)         % Principal Menu
    ooo = mitem(oo,'Phase',{@WithSpm,'Principal','Phase'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Nyquist',{@WithSpm,'Principal','Nyquist'});
+   ooo = mitem(oo,'Nichols',{@WithSpm,'Principal','Nichols'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Genesis',{@WithSpm,'Principal','Genesis'});
    ooo = mitem(oo,'-');
@@ -384,6 +385,16 @@ function o = Principal(o)              % Pricipal Menu Callbacks
                Nyquist(o,[111 0],0);
             case -1                    % backward direction
                Nyquist(o,[0 111],0);
+         end
+         
+      case 'Nichols'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'Nichols',[211,212],false);
+            case 1                     % forward direction
+               critical(o,'Nichols',[111,0],false);
+            case -1                    % backward direction
+               critical(o,'Nichols',[0,111],false);
          end
          
       case 'G31'
@@ -485,16 +496,18 @@ function o = Critical(o)               % Calculate Critical Quantities
          switch cutting
             case 0                     % both directions         
                critical(o,'Overview',[4211,4221,0],1);
-               critical(o,'Damping',[4231,0]);
-               Nyquist(o,[4441 0],0);
-               Nyquist(o,[4442 0],1);
+               critical(o,'Nichols',[4231,0],1);
+               critical(o,'Damping',[4341,0]);
+               Nyquist(o,[4643 0],1);
+               title('gamma0(jw)');
                
                   % reverse part
                   
                critical(o,'Overview',[0,0,0, 4212,4222,0],1);
-               critical(o,'Damping',[0,4232]);
-               Nyquist(o,[0 4443],0);
-               Nyquist(o,[0 4444],1);
+               critical(o,'Nichols',[0 4232],1);
+               critical(o,'Damping',[0,4343]);
+               Nyquist(o,[0 4644],1);
+               title('gamma180(jw)');
             case 1                     % forward direction
                critical(o,'Overview',[3211,3221,0],1);
                critical(o,'Damping',[3231,0]);

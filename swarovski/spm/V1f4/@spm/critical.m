@@ -583,7 +583,7 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       phil0 = angle(o,lk0jw,kf0);
       l0jw = lambda(o,L0jw);
 
-      NicholsPlot(o,l0jw,K0,sub(1),sub(2));  % plot intermediate results
+      NicholsPlot(o,l0jw,K0,sub(1),sub(2),crit);% plot intermediate results
 
       M31 = abs(G31jw0(k0));              % coupling gain
       phi31 = angle(G31jw0(k0));          % coupling phase      
@@ -601,12 +601,16 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
    
    heading(o);
          
-   function NicholsPlot(o,l0jw,K0,sub1,sub2)
+   function NicholsPlot(o,l0jw,K0,sub1,sub2,crit)                      
       if dark(o)
          colors = {'rk','gk','b','ck','mk'};
       else
          colors = {'rwww','gwww','bwww','cwww','mwww'};
       end
+      
+      K = o.iif(crit,K0,1);
+      tag = o.iif(cutting>0,'0','180');
+      name = o.iif(crit,'gamma','lambda');
       
       if (sub1)
          subplot(o,sub1);
@@ -616,16 +620,16 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       
          for (ii=1:size(L0jw,1))
             col = [colors{1+rem(ii-1,length(colors))},'1'];
-            plot(o,phi(ii,:)*180/pi,20*log10(abs(K0*L0jw(ii,:))),col);
+            plot(o,phi(ii,:)*180/pi,20*log10(abs(K*L0jw(ii,:))),col);
          end
          if 0
-            plot(o,phil0*180/pi,20*log10(abs(K0*l0jw)),'ryyy2');
+            plot(o,phil0*180/pi,20*log10(abs(K*l0jw)),'ryyy2');
          end
 %        plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
 %        plot(o,2*pi*f0,-20*log10(K0),'K1o');
 
-         title(sprintf('L0(s)=G31(s)/G33(s): Nichols Plots (K0: %g @ %g Hz)',...
-                       K0,f0));
+         title(sprintf('%s%s(jw): Nichols Plots (K0: %g @ %g Hz)',...
+                       name,tag,K0,f0));
          xlabel('phase [deg]');
          ylabel('|L0[k](jw)| [dB]');
          

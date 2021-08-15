@@ -420,6 +420,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix in heading
 % - new menu item Analyse/Principal/Overview
 % - extended Analyse/Principal menu
+% - add Analyse/Principal/Nichols menu item
 
 % Known bugs & wishlist
 % =========================

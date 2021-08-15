@@ -40,7 +40,7 @@ function varargout = cook(o,sym)
 %          omega = cook(o,'omega');         % eigen frequencies
 %          zeta = cook(o,'zeta');           % dampings
 %
-%       Free system transfer matrix and transfer function
+%       Free system transfer matrix and transfer function (legacy)
 %
 %          G = cook(o,'G')                  % free sys transfer matrix G(s)
 %          Gpsi = cook(o,'Gpsi')            % characteristic transfer fcts.
@@ -51,7 +51,11 @@ function varargout = cook(o,sym)
 %          [G21,G22,G23] = cook(o,'G21,G22,G23')   % free system trf
 %          [G31,G32,G33] = cook(o,'G31,G32,G33')   % free system trf
 %
-%       Principal transfer functions
+%       Constrained system transfer matrix (legacy)
+%
+%          H = cook(o,'H')                  % constrained trf matrix H(s)
+%
+%       Principal transfer functions (legacy)
 %
 %          [P,Q] = cook(o,'P,Q')            % principal TRF's P(s),Q(s)
 %          F0 = cook(o,'F0')                % normalizing TRF
@@ -63,30 +67,19 @@ function varargout = cook(o,sym)
 %          S0 = cook(o,'S0')                % closed loop Sensitivity @ K0
 %          T0 = cook(o,'T0')                % total closed loop TRF @ K0 
 %
-%       Spectral TRFs (characteristic loci)
-%
-%          [lambda0,lambda180] = cook(o,'lambda0,lambda180')
-%          [l0,l180] = cook(o,'l0,l180')
-%          [lambda0jw,lambda180jw] = cook(o,'lambda0jw,lambda180jw')
-%          [Psi0W31,Psi0W33] = cook(p,'Psi0W31,Psi0W33')
-%
-%       Constrained system transfer matrix
-%
-%          H = cook(o,'H')                  % constrained trf matrix H(s)
-%
-%       Open loop transfer matrix and open loop transfer function
+%       Open loop transfer matrix and open loop transfer function (legacy)
 %
 %          L = cook(o,'L')                  % open loop trf matrix L(s)
 %          Lmu = cook(o,'Lmu')              % open loop trf L0(s) with mu
 %
-%       Closed Loop Transfer Matrices
+%       Closed Loop Transfer Matrices (legacy)
 %
 %          Tf = cook(o,'Tf')                % Force transfer matrix Tf(s)
 %          Ts = cook(o,'Ts')                % Elongation trf matrix Ts(s)
 %          Tv = cook(o,'Tv')                % Velocity trf matrix Tv(s)
 %          Ta = cook(o,'Ta')                % Acceleration trf matrix Ta(s)
 %
-%       Spectrum
+%       Spectral TRFs (characteristic loci)
 %
 %          L0jw = cook(o,'L0jw')            % MIMO frequency responses
 %          l0 = cook(o,'l0')                % MIMO spectral functions l0(s)
@@ -105,6 +98,10 @@ function varargout = cook(o,sym)
 %          gamma180 = cook(o,'gamma180')    % critical (reverse) spectrum
 %          gamma0jw = cook(o,'gamma0jw')    % critical (fwd) spectral FQR
 %          gamma180jw = cook(o,'gamma180jw')% critical (rev) spectral FQR
+%
+%       Psion functions for spectrum calculation
+%
+%          [Psi0W31,Psi0W33] = cook(p,'Psi0W31,Psi0W33')
 %
 %       Setup
 %
