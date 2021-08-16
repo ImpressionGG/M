@@ -302,7 +302,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + incorporate package title into standard headings
 %   + bug: sensitivity.S not cached after 1st run of Damping Sensitivity 
 %   + bug: always same value of K0 for different damping settings
-%   - add Setup Studies in Batch menu
+%   + add Setup Studies in Batch menu
 %   ---------------
 %   - auto cration of package info file @ import package
 %   ---------------
@@ -425,6 +425,7 @@ function vers = version(o,arg)         % SPM Class Version
 % + cache saved on File/Save As ... and re-loaded on File/Open
 % - speed-up stability margin graphics   
 % + batch processing basics implemented
+% - tag SPM-V1F4 Beta Version SPM @ Corazon V1I4
 
 
 % Known bugs & wishlist
