@@ -430,7 +430,6 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F5 @ beta CORAZON V0i5
 
 
-
 % Known bugs & wishlist
 % =========================
 % - none so far
