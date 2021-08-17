@@ -84,7 +84,15 @@ function oo = Menu(o)                  % New Menu
    oooo = Coupling(ooo);   
    
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Challenge',{@Create 'Challenge'});
+   ooo = mitem(oo,'Challenge #1',{@Create,'Challenge',1});
+   ooo = mitem(oo,'Challenge #2',{@Create,'Challenge',2});
+   ooo = mitem(oo,'Challenge #3',{@Create,'Challenge',3});
+   ooo = mitem(oo,'Challenge #4',{@Create,'Challenge',4});
+   ooo = mitem(oo,'Challenge #5',{@Create,'Challenge',5});
+   ooo = mitem(oo,'Challenge #6',{@Create,'Challenge',6});
+   ooo = mitem(oo,'Challenge #7',{@Create,'Challenge',7});
+   ooo = mitem(oo,'Challenge #8!',{@Create,'Challenge',8});
+   ooo = mitem(oo,'Challenge #9',{@Create,'Challenge',9});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
  
@@ -423,34 +431,39 @@ function oo = Challenge(o)             % A Challenging Sample
 %           challenges in case of FQR calculation
 %
    zeta = [0.01 0.01 0.01]';           % damping coefficients
-   f = [100 11000 10000]';             % eigen frequencies
-   omega = 2*pi*f;                     % circular eigen frequencies
+   f = [100 1000 2000]';             % eigen frequencies
 
-   a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
-   a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
+   kind = arg(o,1);
+   switch kind
+      case 1
+         m = [1 0 0]';
+      case 2
+         m = [0 1 0]';
+      case 3
+         m = [0 0 1]';
+      case 4
+         m = [1 1 0]';
+      case 5
+         m = [0 1 1]';
+      case 6
+         m = [1 0 1]';
+      case 7
+         m = [1 -1 0]';
+      case 8
+         m = [0 -1 1]';
+      case 9
+         zeta = [0.01 0.01 0.01 0.01]';     % damping coefficients
+         f = [100 1000 2000 10000]';        % eigen frequencies
+         m = [1 0 -1]';
+         m = [0 -1 1 0]';
+      otherwise
+         error('bad kind');
+   end
    
-%  M = 1e-3*[-5e-10 -7.0 -2.0e-8; 7.0 -5e-10 2.0e-8; 4.0e-8 -7e-8 0];
-%  M = 1e0 *[1  -10   1;    10  -1   1;   1   -1   1];
-   M = 1e0 *[-1 0 1,  1 -1 1, 1 0 -2
-              0 2 1,  -1 2 0,  1 2 -1
-              1 1 -1,  -1 1 1,  0 -1 1];
-   M = [
-          1  -10   1
-          10  -1   1
-          1   -1   1
-       ];
-
-   M = [
-           0   0   1
-          10   0   1
-           0   0   1
-       ];
-
-   M = [
-           0   0   1
-           0   0   1
-           10   0   1
-       ];
+   omega = 2*pi*f;                     % circular eigen frequencies
+   a0 = omega.*omega;                 % a0 = [7.8e6 47e6 225e6]';  
+   a1 = 2*zeta.*omega;                % a1 = [56 137 300]
+   M = [m, 0*m, 0*m+1];
 
       % calculate system matrices
          
@@ -461,8 +474,9 @@ function oo = Challenge(o)             % A Challenging Sample
    D = 0*C*B;
 
    oo = spm('spm');                    % new spm typed object
-   oo.par.title = 'Challenge #1';
-   oo.par.comment = {'f = [100 1000 100000],  zeta = 0.01'};
+   oo.par.title = sprintf('Challenge #%g',kind);
+   oo.par.comment = {sprintf('f = [%g %g %g]',f(1),f(2),f(3)),...
+                     sprintf('zeta =%g',zeta)};
     
       % finally set data
       

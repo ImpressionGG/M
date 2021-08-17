@@ -429,6 +429,7 @@ function vers = version(o,arg)         % SPM Class Version
 %
 % - start beta SPM V1F5 @ beta CORAZON V0i5
 % - spm/critical method pimped to deal with k0=inf or K190=inf
+% - spm/new extended to support 'Challenge' systems
 
 % Known bugs & wishlist
 % =========================

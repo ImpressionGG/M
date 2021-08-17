@@ -644,8 +644,12 @@ function Nyquist(o,sub,critical)       % Nyquist Plot
       end
 
       if (critical)
-         l00 = peek(lam,1);         
-         nyq(K*lam,col);
+         l00 = peek(lam,1);
+         if isinf(K)
+            nyq(lam,col);
+         else
+            nyq(K*lam,col);
+         end
          title(sprintf('%s gamma%s(jw) - K%s: %g @ f%s: %g Hz',...
                        'Critical Loci',tag,tag,K,tag,f));
       else
