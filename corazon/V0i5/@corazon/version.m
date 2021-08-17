@@ -621,9 +621,13 @@ function VersionV1I
 % - corazon/menu/SaveCallback: use corazon/save instead of corazita/save
 % - corazon/clean: do not clean cache
 %
-% Change Log V1i4 (beta):
+% Change Log V1i5 (beta):
 %
 % - corazon/folder method added
+% - adopt corazita/menu to create uifigure if control.ui otion set
+% - bugfix corazon/pull: set figure handle before fetching settings
+% - many adoptions to use figure handles correctly (based on corazon/figure
+%
 %
 % Known Bugs / Wishlist
 % - none so far

@@ -44,7 +44,17 @@ function oo = Begin(o)                 % Begin Menu
 %     curfig = gcf(o);                 % current figure handle
       curfig = gcf(corazito);          % current figure handle
 
-      fig = figure;                    % open a new figure
+      if control(o,{'ui',0})
+         fig = uifigure;
+         
+            % GUI handle needs to be registered, otherwise master could
+            % never find current figure handle whenb invoked by menu click
+            
+         gcf(o,fig);                   % register GUI handle
+      else
+         fig = figure;                 % open a new figure
+      end
+      
       set(fig,'menubar','none');       % no standard menubar
       set(fig,'numbertitle','off');    % no number titles in figure
       title = get(o,{'title',''});     % get object title
@@ -66,8 +76,8 @@ function oo = Begin(o)                 % Begin Menu
       setting(o,opts);                 % initialize settings with options
       o = push(o);                     % push object into figure
    end
-   %oo = mitem(o);                     % init for top level (figure handle)
-   oo = mitem(o,gcf);                  % init for top level (figure handle)
+   
+   oo = mitem(o,figure(o));            % init for top level (figure handle)
 end  
 function oo = End(o)                   % End Menu Setup                
    if ~var(o,{'rebuild',0})            % if not a menu rebuild process

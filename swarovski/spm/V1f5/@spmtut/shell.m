@@ -20,6 +20,7 @@ function o = Init(o)                   % Init Object
    o = launch(o,mfilename);            % setup launch function
    o = control(o,{'dark'},1);          % run in dark mode
    o = control(o,{'verbose'},0);       % no verbose talking
+   o = control(o,{'ui'},1);            % create UI figure
 
    o = provide(o,'par.title','SPM Tutorial');
    o = provide(o,'par.comment',{});
@@ -34,8 +35,10 @@ end
 %==========================================================================
 
 function o = Show(o)
-   tag = arg(o,1);
-   file = which(tag);
+   file = arg(o,1);
+   docpath = [folder(spm),'/doc'];
+   addpath(docpath);
+   publish(file);
 end
 
 %==========================================================================

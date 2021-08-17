@@ -35,12 +35,12 @@ function oo = pull(o)
       return                           % give up - no way to continue!
    end
 %
+% set the figure handle
+%
+   oo = figure(oo,fig);                % set object's figure handle
+%
 % overwrite options with settings
 %
    settings = setting(oo);
    oo = work(oo,'opt',settings);
-%
-% set another times the figure handle
-%
-   oo = figure(oo,fig);                % set object's figure handle
 end

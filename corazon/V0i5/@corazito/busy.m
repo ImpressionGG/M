@@ -10,9 +10,10 @@ function busy(o,msg)
 %
 %        See also: CORAZITO, READY
 %
-   set(gcf,'pointer','watch');    % change pointer symbol to 'busy' symbol
+   fig = figure(o);
+   set(fig,'pointer','watch');    % change pointer symbol to 'busy' symbol
    if (nargin >= 2)
-      set(figure(o),'name',msg);
+      set(fig,'name',msg);
    end
 end   
    

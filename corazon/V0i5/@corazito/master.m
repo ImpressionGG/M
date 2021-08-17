@@ -28,10 +28,11 @@ function oo = master(obj,evt,tag,cblist)  % Master Callback
    
       % call callback
       
-   busy(corazito);                     % change mouse pointer -> busy
+%  busy(corazito);                     % change mouse pointer -> busy
+   busy(o);                            % change mouse pointer -> busy
    stop(o,0);                          % clear stop flag
    oo = call(o,cblist,bo,tag);         % invoke master callback
-   ready(corazito);                    % change mouse pointer -> ready
+   ready(o);                           % change mouse pointer -> ready
    
 %  if (stop(o))
 %     set(gcf,'name','Stop request by user');

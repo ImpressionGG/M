@@ -88,7 +88,7 @@ function o = Enable(o)
 end
 function o = Disable(o)
    cb0 = CbList(o);
-   cb = get(gcf,'WindowButtonDownFcn');
+   cb = get(gcf(o),'WindowButtonDownFcn');
    if (iscell(cb) && length(cb) >= 1 && isequal(cb{1},cb0{1}))
       set(gcf,'WindowButtonDownFcn',[]);
    end

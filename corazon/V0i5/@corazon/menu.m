@@ -101,7 +101,8 @@ function oo = Begin(o)                 % Begin Menu Build (Overloaded)
       ooo = mhead(oo,list{i});
    end
    
-   Inherit(o);                         % inherit figure handle to children
+%  Inherit(o);                         % inherit figure handle to children
+   Inherit(oo);                        % inherit figure handle to children
    
    function Inherit(o)                 % Inherit Figure Handles        
    %
