@@ -791,7 +791,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 
       % critical spectrum
    
-   gamma0 = K0*lambda0;   
+   gamma0 = o.iif(isinf(K0),1,K0)*lambda0;   
    gamma0 = set(gamma0,'name','gamma0(s)','color','r');
    gamma0 = var(gamma0,'K,f',K0,f0);
       
@@ -814,7 +814,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    
       % critical spectrum
    
-   gamma180 = K180*lambda180;   
+   gamma180 = o.iif(isinf(K180),1,K180)*lambda180;   
    gamma180 = set(gamma180,'name','gamma180(s)','color','rrk');
    gamma180 = var(gamma180,'K,f',K180,f180);
 

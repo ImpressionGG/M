@@ -13,12 +13,14 @@ function oo = new(o,varargin)          % SPM New Method
 %
 %           o = new(spm,'Schleif75')   % Schleifsaal Hypothese 75°
 %
+%           o = new(spm,'Challenge')   % 2x2 @ 3-mode challenging sample
+%
 %           o = new(sho,'Motion')      % motion object
 %
 %       See also: SPM, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Mode2,@Mode3A,@Mode3B,@Mode3C,...
-                       @Academic1,@Academic2,@Schleif,@Order,...
+                       @Academic1,@Academic2,@Schleif,@Order,@Challenge,...
                        @Motion,@Menu);
    oo = gamma(oo);
 end
@@ -81,6 +83,8 @@ function oo = Menu(o)                  % New Menu
    oooo = mitem(ooo,'-');
    oooo = Coupling(ooo);   
    
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Challenge',{@Create 'Challenge'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
  
@@ -404,6 +408,62 @@ function oo = Schleif(o)               % Schleifsaal Hypothese
    oo.par.title = sprintf('Schleifsaal Hypothese Pivot %g° @ Coupling %g',...
                           theta,coupling);
 
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+
+%==========================================================================
+% Challenging Sample
+%==========================================================================
+
+function oo = Challenge(o)             % A Challenging Sample          
+%
+% CHALLENGE setup an 2x2 @ 3-mode system which comes with numerical
+%           challenges in case of FQR calculation
+%
+   zeta = [0.01 0.01 0.01]';           % damping coefficients
+   f = [100 11000 10000]';             % eigen frequencies
+   omega = 2*pi*f;                     % circular eigen frequencies
+
+   a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
+   a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
+   
+%  M = 1e-3*[-5e-10 -7.0 -2.0e-8; 7.0 -5e-10 2.0e-8; 4.0e-8 -7e-8 0];
+%  M = 1e0 *[1  -10   1;    10  -1   1;   1   -1   1];
+   M = 1e0 *[-1 0 1,  1 -1 1, 1 0 -2
+              0 2 1,  -1 2 0,  1 2 -1
+              1 1 -1,  -1 1 1,  0 -1 1];
+   M = [
+          1  -10   1
+          10  -1   1
+          1   -1   1
+       ];
+
+   M = [
+           0   0   1
+          10   0   1
+           0   0   1
+       ];
+
+   M = [
+           0   0   1
+           0   0   1
+           10   0   1
+       ];
+
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M'];
+   D = 0*C*B;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = 'Challenge #1';
+   oo.par.comment = {'f = [100 1000 100000],  zeta = 0.01'};
+    
       % finally set data
       
    oo = data(oo,'A,B,C,D',A,B,C,D);   

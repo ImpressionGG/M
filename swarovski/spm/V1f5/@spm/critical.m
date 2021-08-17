@@ -341,10 +341,10 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
    multi = (m > 1);                 % multi contact
    
    if isequal(K0,inf)
-      set(gca,'ylim',[-5 5]);
-      subplot(o,312);
-      message(o,'No instabilities - skip frequency analysis!');
-      return
+      %o = subplot(o,sub(1));
+      %set(axes(o),'ylim',[-5 5]);
+      %message(o,'No instabilities - skip frequency analysis!');
+      %return
    end
       
    olo = opt(o,{'omega.low',100});
@@ -407,7 +407,11 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
       ML0 = abs(L0jw0(k0));               % critical gain
       phi0 = angle(L0jw0(k0));            % critical phase      
 
-      [K0_,f0_] = Stable(o,L0,K0); 
+      if isinf(K0)
+         K0_ = K0;  f0_ = f0;
+      else
+         [K0_,f0_] = Stable(o,L0,K0); 
+      end
       Results(o,sub(1),sub(2));           % display results
    %end
    
@@ -428,6 +432,7 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
             % magnitude plot  
       
          K = o.iif(crit,K0,1);
+         K = o.iif(isinf(K),1,K);
          
          for (ii=1:size(L0jw,1))
             col = colors{1+rem(ii-1,length(colors))};
@@ -469,7 +474,11 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
       end
    end
    function Results(o,sub1,sub2)
-      s0 = CritEig(o,L0,K0);
+      if isinf(K0)
+         s0 = NaN;
+      else
+         s0 = CritEig(o,L0,K0);
+      end
       err = norm([K0-K0_,f0-f0_,real(s0)]);
       
       if (crit)
@@ -528,10 +537,10 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
    multi = (m > 1);                 % multi contact
    
    if isequal(K0,inf)
-      set(gca,'ylim',[-5 5]);
-      subplot(o,312);
-      message(o,'No instabilities - skip frequency analysis!');
-      return
+   %  set(gca,'ylim',[-5 5]);
+   %  subplot(o,312);
+   %  message(o,'No instabilities - skip frequency analysis!');
+   %  return
    end
       
    olo = opt(o,{'omega.low',100});
@@ -594,7 +603,11 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       ML0 = abs(L0jw0(k0));               % critical gain
       phi0 = angle(L0jw0(k0));            % critical phase      
 
-      [K0_,f0_] = Stable(o,L0,K0); 
+      if isinf(K0)
+         K0_ = inf;  f0_ = f0;
+      else
+         [K0_,f0_] = Stable(o,L0,K0); 
+      end
       Results(o,sub(1),sub(2));           % display results
    %end
    
@@ -609,6 +622,8 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       end
       
       K = o.iif(crit,K0,1);
+      K = o.iif(isinf(K),1,K);
+     
       tag = o.iif(cutting>0,'0','180');
       name = o.iif(crit,'gamma','lambda');
       
@@ -663,7 +678,11 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       end
    end
    function Results(o,sub1,sub2)
-      s0 = CritEig(o,L0,K0);
+      if isinf(K0)
+         s0 = NaN;
+      else
+         s0 = CritEig(o,L0,K0);
+      end
       err = norm([K0-K0_,f0-f0_,real(s0)]);
       
       if (crit)

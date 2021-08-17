@@ -46,8 +46,11 @@ function oo = subplot(o,varargin)
 %
 %           See also: CORAZON, PLOT, CLS, GRID, DARK
 %
+   oo = o;
    if (nargin >= 2)
       sub = varargin{1};               % short hand
+   else
+      sub = [];
    end
    
       % dispatch arg list
@@ -119,6 +122,7 @@ function oo = subplot(o,varargin)
       
    axis on;
    hold on;
+   oo = opt(oo,'subplot',sub);
 end
 
 %==========================================================================

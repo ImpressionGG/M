@@ -11,7 +11,7 @@ function o = Shell(o)                  % Shell Setup
    o = Init(o);                        % init object
 
    o = menu(o,'Begin');                % begin menu setup
-   oo = File(o);                       % add File menu
+%  oo = File(o);                       % add File menu
    oo = Chapter1(o);                   % add chapter 1 menu
    o = menu(o,'End');                  % end menu setup (will refresh)
 end
@@ -38,7 +38,17 @@ function o = Show(o)
    file = arg(o,1);
    docpath = [folder(spm),'/doc'];
    addpath(docpath);
-   publish(file);
+   
+   file = publish(file);
+   
+   cls(o);
+   fig = figure(o);  
+   h = uihtml(fig);
+ 
+   pos = get(fig,'Position');
+   h.Position = [0 0 pos(3:4)];
+   
+   h.HTMLSource = file;
 end
 
 %==========================================================================
