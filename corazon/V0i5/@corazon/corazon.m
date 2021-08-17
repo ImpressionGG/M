@@ -23,6 +23,9 @@ classdef corazon < corazita & corazito % Corazon Class
 %                mitem:                % create a menu item
 %                mhead:                % create a menu header             
 %
+%             Auxillaty Methods:
+%
+%                folder                % get parent folder of class
 %
 %             Copyright(c): Bluenetics 2020 
 %

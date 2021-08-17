@@ -621,6 +621,10 @@ function VersionV1I
 % - corazon/menu/SaveCallback: use corazon/save instead of corazita/save
 % - corazon/clean: do not clean cache
 %
+% Change Log V1i4 (beta):
+%
+% - corazon/folder method added
+%
 % Known Bugs / Wishlist
 % - none so far
 %

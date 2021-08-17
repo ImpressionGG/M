@@ -322,7 +322,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + introduction of 'critical' cache segment to cache L0,L0jw,G31jw,G33jw,
 %     lambda(jw)as well as K0,f0,K180,f180
 %   - pimp ANALYSE>STABILITY>NYQUIST AND Analyse>Stability>Overview  by
-%     plotting 5x characteristic plots and dsplaying nyquist error
+%     plotting 5x characteristic plots and displaying nyquist error
 %   - add menu point Select>Coupling-Path for selection of coupling path
 %   - calculate G(s) depending on selection of coupling path
 %     
