@@ -22,7 +22,11 @@ function oo = cls(o,arg1)
    either = util(o,'either');          % need some utility
    
    if (nargin == 1)
-      fig = either(figure(o),gcf(o)); 
+%     fig = either(figure(o),gcf(o)); 
+      fig = figure(o);
+      if isempty(fig)
+         fig = gcf(o);
+      end
       mode = 'off';
    elseif (nargin == 2)
       if (isstr(arg1))
@@ -35,7 +39,7 @@ function oo = cls(o,arg1)
    end
    
    if strcmp(get(fig,'visible'),'on')
-      figure(fig);
+%     figure(fig);
    end
 %
 % Delete all children

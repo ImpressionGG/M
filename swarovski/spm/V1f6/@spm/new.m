@@ -455,7 +455,7 @@ function oo = Challenge(o)             % A Challenging Sample
          zeta = [0.01 0.01 0.01 0.01]';     % damping coefficients
          f = [100 1000 2000 10000]';        % eigen frequencies
          m = [1 0 -1]';
-         m = [0 -1 1 0]';
+         m = 100*[0 1 -1 0]';
       otherwise
          error('bad kind');
    end

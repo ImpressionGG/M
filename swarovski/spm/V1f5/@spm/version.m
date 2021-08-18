@@ -430,7 +430,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F5 @ beta CORAZON V0i5
 % - bug fix: focus thief in corazon/cls
 % - tag SPM-V1F5 Beta Version SPM @ Corazon V1I5
-
+%
 
 % Known bugs & wishlist
 % =========================

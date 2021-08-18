@@ -428,8 +428,14 @@ function vers = version(o,arg)         % SPM Class Version
 % - tag SPM-V1F4 Beta Version SPM @ Corazon V1I4
 %
 % - start beta SPM V1F5 @ beta CORAZON V0i5
+% - bug fix: focus thief in corazon/cls
+% - tag SPM-V1F5 Beta Version SPM @ Corazon V1I5
+%
+% - start beta SPM V1F6 @ beta CORAZON V0i6
 % - spm/critical method pimped to deal with k0=inf or K190=inf
 % - spm/new extended to support 'Challenge' systems
+% - bugfix in critical/Stable: upper K search bound at least 100
+
 
 % Known bugs & wishlist
 % =========================

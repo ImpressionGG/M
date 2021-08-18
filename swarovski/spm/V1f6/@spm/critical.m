@@ -1027,7 +1027,7 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
          low = LowerBoundary(o)/2;     % factor 2 safety margin
       end
       if isempty(high)
-         high = low*1000;
+         high = max(low*1000,100);
       end
       K = logspace(log10(low),log10(high),search);
    end

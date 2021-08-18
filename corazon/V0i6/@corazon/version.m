@@ -623,6 +623,10 @@ function VersionV1I
 %
 % Change Log V1i5 (beta):
 %
+% - bugfix in corazon/cls: focus thief fixed
+%
+% Change Log V1i6 (beta):
+%
 % - corazon/folder method added
 % - adopt corazita/menu to create uifigure if control.ui otion set
 % - bugfix corazon/pull: set figure handle before fetching settings
