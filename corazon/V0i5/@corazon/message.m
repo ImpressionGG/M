@@ -99,7 +99,7 @@ function Message(o)                    % Display Screen Message
    if isempty(figure(o))
       o = figure(o,gcf(o));            % set figure handle if not set
    end
-   %figure(figure(o));
+   figure(figure(o));
 
       % first look at subplot option, if option is empty then fetch
       % current subplot settings with sub = subplot(o)
@@ -107,14 +107,12 @@ function Message(o)                    % Display Screen Message
 %  sub = opt(o,{'subplot',subplot(o)});
    sub = opt(o,'subplot');
    if (isempty(sub) || isequal(sub,[1 1 1 1]))
-      o = cls(o,'off');                % clear screen, axes off
-      hax = axes(o);                   % get axes handle
+      cls(o,'off');                    % clear screen, axes off
    else
-      o = subplot(o,sub);
-      delete(axes(o));
-      o = subplot(o,sub);
-      hax = axes(o);
-      set(hax,'visible','off');
+      subplot(o,sub);
+      delete(gca);
+      subplot(o,sub);
+      set(gca,'visible','off');
    end
    
    darkmode = dark(o);
@@ -132,7 +130,7 @@ function Message(o)                    % Display Screen Message
        case 'right'
           x = 1.0;
    end
-   htxt = text(hax,x,0.9,uscore(txt));
+   htxt = text(x,0.9,uscore(txt));
    set(htxt,'fontsize',fontsize.title,'horizontalalignment',halign,...
             'verticalalignment',valign)
    if (darkmode)
@@ -153,11 +151,11 @@ function Message(o)                    % Display Screen Message
       for (j=1:size(txt,1))
          txtj = txt(j,:);
          if (length(txtj) >= 2) && strcmp(txtj(1:2),'\r')
-            htxt = text(hax,0,0.85-row*pitch,uscore(txtj(3:end)));
+            htxt = text(0,0.85-row*pitch,uscore(txtj(3:end)));
             set(htxt,'fontsize',fontsize.comment,'horizontalalignment',...
                      'left','verticalalignment',valign)
          else
-            htxt = text(hax,x,0.85-row*pitch,uscore(txtj));
+            htxt = text(x,0.85-row*pitch,uscore(txtj));
             set(htxt,'fontsize',fontsize.comment,'horizontalalignment',...
                      halign,'verticalalignment',valign)
          end

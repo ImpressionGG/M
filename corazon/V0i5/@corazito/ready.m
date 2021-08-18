@@ -9,18 +9,14 @@ function ready(o)
 %
 %        See also: CARABUL, BUSY
 %
-   fig = figure(o);
-   if isempty(fig)
-      fig = gcf(o);
-   end
-   
-   if ~isempty(fig)                    % only if there is an active figure
-      set(fig,'pointer','arrow');      % change pointer symbol to 'ready'
+   current = gcf(o);                   % current figure
+   if ~isempty(current)                % only if there is an active figure
+      set(gcf,'pointer','arrow');      % change pointer symbol to 'ready'
       
       if isequal(class(o),'corazita')
-         fig = figure(o);              % object's figure handle
+         fig = figure(o);                 % object's figure handle
          if isequal(current,fig)
-            menu(o,'Title');           % restore object title
+            menu(o,'Title');              % restore object title
          end
       end
    end

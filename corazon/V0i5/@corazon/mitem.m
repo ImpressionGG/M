@@ -10,7 +10,7 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %    being a string (function name) or a function handle.
 %
 %       mitem(o)                       % display menu item info
-%       bag = mitem(o);                % get menu item stuff
+%       o = mitem(o);                  % set top level handle
 %       oo = mitem(o,'File');
 %       ooo = mitem(oo,'Open',{@Open});
 %       ooo = mitem(oo,'Save',{@Save},userdata);
@@ -24,13 +24,13 @@ function oo = mitem(o,label,clist,userdata,varargin) % Create Menu Item
 %
 %       hdl = mitem(o,inf)             % get graphics handle
 %       o = mitem(o,hdl)               % set graphics handle
-%       o = mitem(o,figure(o))         % set up as a figure root
+%       o = mitem(o,gcf)               % set up as a figure root
 %
 %    Choice functionality:
 %
 %       setting(o,{'view.color'},'b');
 %
-%       o = mitem(o,figure(o));        % set top level handle
+%       o = mitem(o);                  % set top level handle
 %       oo = mitem(o,'View');
 %       ooo = mitem(oo,'Color','view.color');
 %       choice(ooo,{{'Red','r'},{'Blue','b'}}});   % no refresh

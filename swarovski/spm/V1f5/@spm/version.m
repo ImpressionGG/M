@@ -322,7 +322,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + introduction of 'critical' cache segment to cache L0,L0jw,G31jw,G33jw,
 %     lambda(jw)as well as K0,f0,K180,f180
 %   - pimp ANALYSE>STABILITY>NYQUIST AND Analyse>Stability>Overview  by
-%     plotting 5x characteristic plots and displaying nyquist error
+%     plotting 5x characteristic plots and dsplaying nyquist error
 %   - add menu point Select>Coupling-Path for selection of coupling path
 %   - calculate G(s) depending on selection of coupling path
 %     
@@ -428,8 +428,9 @@ function vers = version(o,arg)         % SPM Class Version
 % - tag SPM-V1F4 Beta Version SPM @ Corazon V1I4
 %
 % - start beta SPM V1F5 @ beta CORAZON V0i5
-% - spm/critical method pimped to deal with k0=inf or K190=inf
-% - spm/new extended to support 'Challenge' systems
+% - bug fix: focus thief in corazon/cls
+% - tag SPM-V1F5 Beta Version SPM @ Corazon V1I5
+
 
 % Known bugs & wishlist
 % =========================

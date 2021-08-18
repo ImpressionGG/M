@@ -1,15 +1,14 @@
-function oo = cls(o,arg1)
+function hax = cls(o,arg1)
 %
 % CLS   Clear screen (without destroying menus). Set background color
-%       according to control option control(o,'color'). Also store axes
-%       handle in output arg
+%       according to control option control(o,'color').
 %
 %    Default figure = gcf:
 %
-%       oo = cls(o)              % figure = gcf, axes off
-%       oo = cls(o,'on')         % axes visible
-%       oo = cls(o,'off')        % axes invisible
-%       oo = cls(o,'hold')       % set hold on
+%       cls(o)              % figure = gcf, axes off
+%       cls(o,'on')         % axes visible
+%       cls(o,'off')        % axes invisible
+%       cls(o,'hold')       % set hold on
 %
 %    Remark: if the 'canvas' parameter of the object is non-empty
 %    the 'canvas' value will be used for the canvas (backround) color.
@@ -22,7 +21,11 @@ function oo = cls(o,arg1)
    either = util(o,'either');          % need some utility
    
    if (nargin == 1)
-      fig = either(figure(o),gcf(o)); 
+%     fig = either(figure(o),gcf(o)); 
+      fig = figure(o);
+      if isempty(fig)
+         fig = gcf(o);
+      end
       mode = 'off';
    elseif (nargin == 2)
       if (isstr(arg1))
@@ -35,7 +38,7 @@ function oo = cls(o,arg1)
    end
    
    if strcmp(get(fig,'visible'),'on')
-      figure(fig);
+%     figure(fig);
    end
 %
 % Delete all children
@@ -58,14 +61,12 @@ function oo = cls(o,arg1)
 %
 % Handle mode
 %
-   hax = axes(fig);                    % create axes
-
-   hold(hax,'off');                    % hold off by default
+   hold off                            % hold off by default
    switch mode
       case 'on'
-         set(hax,'visible','on');
+         set(gca,'visible','on');
       case 'off'
-         set(hax,'visible','off');
+         set(gca,'visible','off');
       case 'hold'
          hold on;
       otherwise
@@ -75,8 +76,7 @@ function oo = cls(o,arg1)
 % Clear axes if nargout > 0
 %
    if (nargout > 0)
-%     hax = cla(fig);
-      cla(hax);
+      hax = cla(fig);
    end
 %
 % Set the color according to the 'canvas' parameter and control options
@@ -87,8 +87,4 @@ function oo = cls(o,arg1)
    end
    set(fig,'color',color);
    idle(o);
-   
-      % set axes handle in output object
-      
-   oo = axes(o,hax);
 end
