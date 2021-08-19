@@ -70,10 +70,12 @@ function [lim,style] = limits(o,mode,K)
          end
 
       case 'Magni'
-         plot(o,get(gca,'xlim'),20*log10(K/mu)*[1 1],style);
+         xlim = get(gca,'xlim');
+         plot(o,xlim,20*log10(K/mu)*[1 1],style);
          if (kmu ~= 1)
-            plot(o,get(gca,'xlim'),20*log10(K/mu/kmu)*[1 1],style);
+            plot(o,xlim,20*log10(K/mu/kmu)*[1 1],style);
          end
+         set(gca,'xlim',xlim);
          
       case 'Gain'
          ylim = get(gca,'ylim');

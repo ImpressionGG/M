@@ -362,10 +362,15 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
    i123 = (1:m)';
    kmax = length(om);
       
-%L0jW = cook(o,'lambda0jw');    
+%  L0jW = cook(o,'lambda0jw');    
+%  L0jw = lambda(o,A,B_1,B_3,C_3,Om);
 
-   L0jw = lambda(o,A,B_1,B_3,C_3,Om);
-   
+   if (cutting >= 0)
+      [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om);
+   else
+      [o,L0jw] = GetL180jw(o,A,B_1,B_3,C_3,Om);
+   end
+
       % calculate phases phi31,phi33 and phi=phi31-phi33
 
    kf0 = min(find(f>=f0));   
@@ -419,6 +424,9 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
    heading(o);
          
    function BodePlot(o,l0jw,sub1,sub2,crit)
+      frequency = opt(o,{'frequency',0});
+      fac = o.iif(frequency,2*pi,1);
+      
       if dark(o)
          colors = {'rk','gk','b','ck','mk'};
       else
@@ -436,17 +444,17 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
          
          for (ii=1:size(L0jw,1))
             col = colors{1+rem(ii-1,length(colors))};
-            plot(o,om,20*log10(abs(K*L0jw(ii,:))),col);
+            plot(o,om/fac,20*log10(abs(K*L0jw(ii,:))),col);
          end
          
          col = o.iif(crit,'r2','ryyy2');
-         plot(o,om,20*log10(abs(K*l0jw)),col);         
-         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-         plot(o,2*pi*f0,-20*log10(K0/K),'K1o');
+         plot(o,om/fac,20*log10(abs(K*l0jw)),col);         
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0/fac,-20*log10(K0/K),'K1o');
 
          name = o.iif(crit,'C0(s)=K0*G31(s)/G33(s)','L0(s)=G31(s)/G33(s)');
          title(sprintf('%s: Magnitude Plots (K0: %g @ %g Hz)',name,K0,f0));
-         xlabel('Omega [1/s]');
+         xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
          ylabel('|L0[k](jw)| [dB]');
          subplot(o);
       end
@@ -457,23 +465,26 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
          subplot(o,sub2,'semilogx');
          set(gca,'visible','on');
 
-         plot(o,om,0*f-180,'K');
+         plot(o,om/fac,0*f-180,'K');
          for (ii=1:size(L0jw,1))
             col = colors{1+rem(ii-1,length(colors))};
-            plot(o,om,phi(ii,:)*180/pi,col);
+            plot(o,om/fac,phi(ii,:)*180/pi,col);
          end
 
-         plot(o,om,phil0*180/pi,o.iif(crit,'r2','yyyr2'));
+         plot(o,om/fac,phil0*180/pi,o.iif(crit,'r2','yyyr2'));
 
-         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-         plot(o,2*pi*f0,-180,'K1o');
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0/fac,-180,'K1o');
 
          subplot(o);  idle(o);  % give time to refresh graphics
-         xlabel('Omega [1/s]');
+         xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
          ylabel('L0[k](jw): Phase [deg]');
       end
    end
    function Results(o,sub1,sub2)
+      frequency = opt(o,{'frequency',0});
+      fac = o.iif(frequency,2*pi,1);
+
       if isinf(K0)
          s0 = NaN;
       else
@@ -504,14 +515,14 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
       if (sub2)
          subplot(o,sub2);
          title(sprintf('%s: Phase Plot (Nyquist error: %g)',name,nyqerr));
-         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'r1-.');
-         plot(o,2*pi*f0*[1 1],get(gca,'ylim'),'K1-.');
-         xlabel(sprintf('omega [1/s]      (G31(jw0)/G33(jw0): %g @ %g deg)',...
-                o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi)));
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'r1-.');
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
+         xlab = o.iif(frequency,'Frequency [Hz]','Omega [1/s]');
+         xlabel(sprintf('%s      (G31(jw0)/G33(jw0): %g @ %g deg)',...
+                xlab,o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi)));
          subplot(o);
       end
    end
-
    function y = Rd(x)                  % round to 1 decimal
       ooo = corazon;
       y = ooo.rd(x,1);
@@ -558,9 +569,14 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
    i123 = (1:m)';
    kmax = length(om);
       
-%L0jW = cook(o,'lambda0jw');    
+%  L0jW = cook(o,'lambda0jw');    
+%  L0jw = lambda(o,A,B_1,B_3,C_3,Om);
 
-   L0jw = lambda(o,A,B_1,B_3,C_3,Om);
+   if (cutting >= 0)
+      [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om);
+   else
+      [o,L0jw] = GetL180jw(o,A,B_1,B_3,C_3,Om);
+   end
     
       % calculate phases phi31,phi33 and phi=phi31-phi33
 
@@ -1371,7 +1387,31 @@ function K0min = LowerBoundary(o)      % Calc Lower Boundary
    A = max(max(abs(lambda0jw)));
    K0min = 1/A;
 end
-function L = Negate(L)
+function L = Negate(L)                 % Negate a System               
    L.data.B = -L.data.B;
    L.data.D = -L.data.D;
+end
+function [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om)
+   L0jwOm = cache(o,'spectral.L0jwOm');
+   if ~isempty(L0jwOm) && isequal(L0jwOm.Om,Om)
+      L0jw = L0jwOm.L0jw;
+   else
+      L0jw = lambda(o,A,B_1,B_3,C_3,Om);      % calculate
+      L0jwOm.L0jw = L0jw;
+      L0jwOm.Om = Om;
+      o = cache(o,'spectral.L0jwOm',L0jwOm);  % store in cache
+      cache(o,o);                             % hard refresh cache
+   end
+end
+function [o,L180jw] = GetL180jw(o,A,B_1,B_3,C_3,Om)
+   L180jwOm = cache(o,'spectral.L180jwOm');
+   if ~isempty(L180jwOm) && isequal(L180jwOm.Om,Om)
+      L180jw = L180jwOm.L180jw;
+   else
+      L180jw = lambda(o,A,B_1,B_3,C_3,Om);    % calculate
+      L180jwOm.L180jw = L180jw;
+      L180jwOm.Om = Om;
+      o = cache(o,'spectral.L180jwOm',L180jwOm);  % store in cache
+      cache(o,o);                             % hard refresh cache
+   end
 end

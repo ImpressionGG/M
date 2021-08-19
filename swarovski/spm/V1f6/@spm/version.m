@@ -438,6 +438,9 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix in spm/contact: return B,C,B1,B2,C1,C2 as variables
 % - cook to retrieve actual contact indices and siso status
 % - can select in bode diagram between f and omega
+% - fixing Plot menu
+% - cache based acceleration of Analyse/Principal & Analyse/Critical plots
+
 
 % Known bugs & wishlist
 % =========================
