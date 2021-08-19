@@ -92,6 +92,14 @@ function [oo,L0,K0,f0,K180,f180] = contact(o,idx,A,B,C,D)
    B_1 = B(:,idx1);  B_2 = B(:,idx2);  B_3 = B(:,idx3);
    C_1 = C(idx1,:);  C_2 = C(idx2,:);  C_3 = C(idx3,:);
    oo = var(oo,'B_1,B_2,B_3,C_1,C_2,C_3',B_1,B_2,B_3,C_1,C_2,C_3);
+   
+   n = length(A)/2;  i1 = 1:n;  i2 = i1+n;
+   A11 = A(i1,i1);  A12 = A(i1,i2);  A21 = A(i2,i1); A22 = A(i2,i2);
+   B = [B_1,B_2,B_3];  C = [C_1;C_2;C_3];
+   B1 = B(i1,:);  B2 = B(i2,:);  C1 = C(:,i1);  C2 = C(:,i2);
+   oo = var(oo,'A11,A12,A21,A22,B,B1,B2,C,C1,C2',...
+                A11,A12,A21,A22,B,B1,B2,C,C1,C2);
+   
    oo = var(oo,'contact,index,idx1,idx2,idx3',cdx,kdx,idx1,idx2,idx3);
    
       % finally inherit options from shell

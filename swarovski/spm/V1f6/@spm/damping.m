@@ -259,7 +259,9 @@ function dtab = Load(o,file)
       
       number = get(o,'number');
       if isempty(number)
-         error('empty number');
+         fprintf('empty number: will skip damping table file load\n');
+         dtab = [];
+         return
       end
       
       file = sprintf('#%02d',number);

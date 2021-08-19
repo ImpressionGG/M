@@ -84,15 +84,22 @@ function oo = Menu(o)                  % New Menu
    oooo = Coupling(ooo);   
    
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Challenge #1',{@Create,'Challenge',1});
-   ooo = mitem(oo,'Challenge #2',{@Create,'Challenge',2});
-   ooo = mitem(oo,'Challenge #3',{@Create,'Challenge',3});
-   ooo = mitem(oo,'Challenge #4',{@Create,'Challenge',4});
-   ooo = mitem(oo,'Challenge #5',{@Create,'Challenge',5});
-   ooo = mitem(oo,'Challenge #6',{@Create,'Challenge',6});
-   ooo = mitem(oo,'Challenge #7',{@Create,'Challenge',7});
-   ooo = mitem(oo,'Challenge #8!',{@Create,'Challenge',8});
-   ooo = mitem(oo,'Challenge #9',{@Create,'Challenge',9});
+   ooo = mitem(oo,'Challenge');
+   oooo = mitem(ooo,'Challenge #1',{@Create,'Challenge',1});
+   oooo = mitem(ooo,'Challenge #2',{@Create,'Challenge',2});
+   oooo = mitem(ooo,'Challenge #3',{@Create,'Challenge',3});
+   oooo = mitem(ooo,'Challenge #4',{@Create,'Challenge',4});
+   oooo = mitem(ooo,'Challenge #5',{@Create,'Challenge',5});
+   oooo = mitem(ooo,'Challenge #6',{@Create,'Challenge',6});
+   oooo = mitem(ooo,'Challenge #7',{@Create,'Challenge',7});
+   oooo = mitem(ooo,'Challenge #8!',{@Create,'Challenge',8});
+   oooo = mitem(ooo,'Challenge #9',{@Create,'Challenge',9});
+   oooo = mitem(ooo,'-');
+   oooo = mitem(ooo,'Challenge #10',{@Create,'Challenge',10});
+   oooo = mitem(ooo,'Challenge #11',{@Create,'Challenge',11});
+   oooo = mitem(ooo,'Challenge #12',{@Create,'Challenge',12});
+   oooo = mitem(ooo,'Challenge #13',{@Create,'Challenge',13});
+   
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
  
@@ -430,32 +437,40 @@ function oo = Challenge(o)             % A Challenging Sample
 % CHALLENGE setup an 2x2 @ 3-mode system which comes with numerical
 %           challenges in case of FQR calculation
 %
-   zeta = [0.01 0.01 0.01]';           % damping coefficients
-   f = [100 1000 2000]';             % eigen frequencies
+   f = [100 1000 2000 10000]';         % eigen frequencies
+   one = ones(size(f));                % column with all 1's
+   zeta = 0.01*one;                    % damping coefficients
+   m0 = [0 1 -1 0]';
 
    kind = arg(o,1);
    switch kind
       case 1
-         m = [1 0 0]';
+         m = [1 0 0 0]';
       case 2
-         m = [0 1 0]';
+         m = [0 1 0 0]';
       case 3
-         m = [0 0 1]';
+         m = [0 0 1 0]';
       case 4
-         m = [1 1 0]';
+         m = [1 1 0 0]';
       case 5
-         m = [0 1 1]';
+         m = [0 1 1 0]';
       case 6
-         m = [1 0 1]';
+         m = [1 0 1 0]';
       case 7
-         m = [1 -1 0]';
+         m = [1 -1 0 0]';
       case 8
-         m = [0 -1 1]';
+         m = [0 -1 1 0]';
       case 9
-         zeta = [0.01 0.01 0.01 0.01]';     % damping coefficients
-         f = [100 1000 2000 10000]';        % eigen frequencies
-         m = [1 0 -1]';
          m = 100*[0 1 -1 0]';
+
+      case 10
+         m = 100*m0;
+      case 11
+         m = m0;
+      case 12
+         m = -100*m0;
+      case 13
+         m = [100*m0 m0 -100*m0];
       otherwise
          error('bad kind');
    end
@@ -477,7 +492,8 @@ function oo = Challenge(o)             % A Challenging Sample
    oo.par.title = sprintf('Challenge #%g',kind);
    oo.par.comment = {sprintf('f = [%g %g %g]',f(1),f(2),f(3)),...
                      sprintf('zeta =%g',zeta)};
-    
+   oo.par.number = kind; 
+   
       % finally set data
       
    oo = data(oo,'A,B,C,D',A,B,C,D);   

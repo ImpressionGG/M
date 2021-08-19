@@ -435,7 +435,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/critical method pimped to deal with k0=inf or K190=inf
 % - spm/new extended to support 'Challenge' systems
 % - bugfix in critical/Stable: upper K search bound at least 100
-
+% - bugfix in spm/contact: return B,C,B1,B2,C1,C2 as variables
 
 % Known bugs & wishlist
 % =========================
