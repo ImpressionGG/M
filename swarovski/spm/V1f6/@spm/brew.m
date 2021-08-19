@@ -1196,6 +1196,7 @@ function Gij = CalcGij(o,i,j)
 
       Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
       Gij = opt(Gij,'color','g');
+      Gij = set(Gij,'color','g');
    end
 end
 

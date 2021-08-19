@@ -631,6 +631,7 @@ function VersionV1I
 % - adopt corazita/menu to create uifigure if control.ui otion set
 % - bugfix corazon/pull: set figure handle before fetching settings
 % - many adoptions to use figure handles correctly (based on corazon/figure
+% - can select in bode diagram between f and omega
 %
 %
 % Known Bugs / Wishlist

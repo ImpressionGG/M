@@ -16,7 +16,9 @@ function varargout = cook(o,sym)
 %          [B1,B2]   = cook(o,'B1,B2');     % partial matrices
 %          [C1,C2]   = cook(o,'C1,C2');     % partial matrices
 %
-%          Tnorm = cook(o,'Tnorm');         % normalizing constant 
+%          Tnorm = cook(o,'Tnorm');         % normalizing constant
+%          contact = cook(o,'contact');     % actual contact indices
+%          single = cook(o,'single');       % single contact system?
 %
 %       Input/Output Matrices of Multivariable Systems
 %       note: 
@@ -169,6 +171,15 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = contact(o);              % C_2 = [C(2,:);C(5,:);C(8,:);...]
          oo = var(oo,sym);             % C_3 = [C(3,:);C(6,:);C(9,:);...]
          
+      case {'contact'}                 % actual contact indices
+         oo = contact(o);
+         oo = var(oo,sym);
+
+      case {'single'}                  % single contact system?
+         oo = contact(o);
+         cdx = var(oo,'contact');
+         oo = (length(cdx) == 1);
+
       case 'Sys0'
          oo = cache(o,o,'multi');
          oo = cache(oo,'multi.Sys0');
@@ -266,9 +277,9 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,o,'consd');      % hard refresh consd cache 
          oo = cache(oo,'consd.L');
          
-%     case {'P','Q','F0','L0'}
-%        o = cache(o,o,'principal');   % hard refresh of principal segment
-%        oo = cache(o,['principal.',sym]);
+      case {'P','Q','F0','L0'}
+         o = cache(o,o,'principal');   % hard refresh of principal segment
+         oo = cache(o,['principal.',sym]);
 
       case {'L0','L180','K0','K180','f0','f180'}
          o = cache(o,o,'critical');
@@ -327,6 +338,6 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(oo,['setup.',sym]);
          
       otherwise
-         error('unsupported symbol');
+         error(['unsupported symbol: ',sym]);
    end
 end

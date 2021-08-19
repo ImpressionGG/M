@@ -530,6 +530,7 @@ function oo = Scale(o)                  % Scale Sub-Menu
    end
 end
 function oo = Bode(o)                  % Bode Settings Menu            
+   setting(o,{'bode.frequency'},0);
    setting(o,{'bode.omega.low'},1e2);
    setting(o,{'bode.omega.high'},1e5);
    setting(o,{'bode.magnitude.low'},[]);
@@ -544,6 +545,8 @@ function oo = Bode(o)                  % Bode Settings Menu
    
    
    oo = mitem(o,'Bode');
+   ooo = mitem(oo,'Frequency Axis',{},'bode.frequency');
+         choice(ooo,{{'Frequency [Hz]',1},{'Omega [1/s]',0}},{});
    ooo = mitem(oo,'Lower Frequency',{},'bode.omega.low');
          Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
    ooo = mitem(oo,'Upper Frequency',{},'bode.omega.high');

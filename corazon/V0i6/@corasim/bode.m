@@ -8,6 +8,8 @@ function oo = bode(o,col)              % Corasim Bode Plot
 %        Options:
 %
 %           oscale           omega scaling factor
+%           frequency        plot frequency (f) instead of circular frequ.
+%                            (default 0)
 %           color            color propetty (default: 'r')
 %           omega.low        omega range, low limit (default: 0.1)
 %           omega.low        omega range, high limit (default: 100000)
@@ -64,8 +66,6 @@ function o = Bode(o)                   % Bode Plot
          % set axis ownership
       
    shelf(o,gca,'owner','bode');        % set axis ownership
-
-%  heading(o);
 end
 
 %==========================================================================
@@ -76,7 +76,11 @@ function o = Magnitude(o)              % Plot Magnitude
    points = opt(o,{'omega.points',1000});   
 %  oscale = opt(o,{'oscale',1});       % frequency scaling factor
    
-   xlim = get(gca,'Xlim');
+   if opt(o,{'frequency',0})
+      xlim = get(gca,'Xlim')*2*pi;
+   else
+      xlim = get(gca,'Xlim');
+   end
    ylim = get(gca,'Ylim');
    zlim = get(gca,'Zlim');
    
@@ -93,7 +97,11 @@ function o = Magnitude(o)              % Plot Magnitude
    col = opt(o,{'color',col});
    [col,lw,typ] = o.color(col);
    
-   hdl = semilogx(om,dB,['r',typ]);
+   if opt(o,{'frequency',0})
+      hdl = semilogx(om/2/pi,dB,['r',typ]);
+   else
+      hdl = semilogx(om,dB,['r',typ]);
+   end
    
    set(hdl,'Color',col);
    if o.is(lw)
@@ -137,8 +145,13 @@ function o = Magnitude(o)              % Plot Magnitude
    
                % plot magnitude
       
-            hdl = semilogx(om,dB,'rp');
-            hdl = semilogx(om,dB,'w.');
+            if opt(o,{'frequency',0})
+               hdl = semilogx(om/2/pi,dB,'rp');
+               hdl = semilogx(om/2/pi,dB,'w.');
+            else
+               hdl = semilogx(om,dB,'rp');
+               hdl = semilogx(om,dB,'w.');
+            end
          end
       end
       
@@ -185,7 +198,11 @@ function o = Phase(o)                  % Plot Phase
       % plot phase
       
 %  hdl = semilogx(om,p,'r--');
-   hdl = semilogx(om,p,'r');
+   if opt(o,{'frequency',0})
+      hdl = semilogx(om/2/pi,p,'r');
+   else
+      hdl = semilogx(om,p,'r');
+   end
    col = opt(o,{'color','r--'});
    [col,lw,typ] = o.color(col);
    %lw = [];
@@ -282,6 +299,11 @@ function o = Axes(o)                   % Plot Bode Axes
       hax = gca;
       
       [xlim,ylim,zlim] = Lim(o);
+      
+      if opt(o,{'frequency',0})
+         xlim = xlim/2/pi;
+      end
+      
       set(hax,'xlim',xlim);
       set(hax,'ylim',ylim);
       set(hax,'zlim',zlim);
@@ -299,7 +321,11 @@ function o = Axes(o)                   % Plot Bode Axes
       [omega,magni,phase] = Lim(o);
       
       col = o.iif(dark(o),'k.','w.');
-      semilogx(omega,magni,col);
+      if opt(o,{'frequency',0})
+         semilogx(omega/2/pi,magni,col);
+      else
+         semilogx(omega,magni,col);
+      end
       hold on;
       axis on;
       grid(o);
@@ -317,7 +343,11 @@ function o = Axes(o)                   % Plot Bode Axes
       end
       
       hax = gca;
-      set(hax,'xlim',omega);
+      if opt(o,{'frequency',0})
+         set(hax,'xlim',omega/2/pi);
+      else
+         set(hax,'xlim',omega);
+      end
       set(hax,'ylim',magni);
       set(hax,'zlim',phase);
       set(hax,'ytick',magni(1):dy:magni(2)); 

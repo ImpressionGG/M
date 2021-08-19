@@ -436,6 +436,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/new extended to support 'Challenge' systems
 % - bugfix in critical/Stable: upper K search bound at least 100
 % - bugfix in spm/contact: return B,C,B1,B2,C1,C2 as variables
+% - cook to retrieve actual contact indices and siso status
+% - can select in bode diagram between f and omega
 
 % Known bugs & wishlist
 % =========================

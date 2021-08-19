@@ -64,12 +64,12 @@ function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type
    oo = mitem(o,'Overview',{@WithCuo,'Plot'});
    
    oo = mitem(o,'-');
-   oo = ModeShapes(o);
+   oo = ModeShapesMenu(o);
    oo = TransferFunction(o);           % Transfer Function menu
    
    oo = mitem(o,'-');
-   oo = TransferMatrix(o);             % G(s)
-   oo = ConstrainMatrix(o);            % H(s)
+   oo = FreeSystemMenu(o);             % G(s)
+   oo = ConstrainSystemMenu(o);        % H(s)
 
    oo = mitem(o,'-');
    oo = Principal(o);                  % P(s)/Q(s)
@@ -92,15 +92,94 @@ function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
 end
 
-function oo = ModeShapes(o)            % Mode Shapes Menu              
-   oo = mitem(o,'Mode Shapes');   
-   ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
-   ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Damping', {@WithCuo,'Damping'});
+%==========================================================================
+% Launch Callbacks
+%==========================================================================
+
+function oo = WithSho(o)               % 'With Shell Object' Callback  
+%
+% WITHSHO General callback for operation on shell object
+%         with refresh function redefinition, screen
+%         clearing, current object pulling and forwarding to executing
+%         local function, reporting of irregularities, dark mode support
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+ 
+   gamma = eval(['@',mfilename]);
+   oo = gamma(o);                      % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
 end
+function oo = WithCuo(o)               % 'With Current Object' Callback
+%
+% WITHCUO A general callback with refresh function redefinition, screen
+%         clearing, current object pulling and forwarding to executing
+%         local function, reporting of irregularities, dark mode support
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+ 
+   oo = current(o);                    % get current object
+   gamma = eval(['@',mfilename]);
+   oo = gamma(oo);                     % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
+end
+function oo = WithSpm(o)               % 'With Current SPM Object'     
+%
+% WITHSPM Same as WithCuo but don't invoke callback if not SPM object
+%         but plot(o,'About')
+%
+   refresh(o,o);                       % remember to refresh here
+   cls(o);                             % clear screen
+ 
+   oo = current(o);                    % get current object
+   if ~type(oo,{'spm'})
+      plot(oo,'About');
+      return;
+   end
+   
+      % SPM object: invoke callback
+      
+   gamma = eval(['@',mfilename]);
+   oo = gamma(oo);                     % forward to executing method
+
+   if isempty(oo)                      % irregulars happened?
+      oo = set(o,'comment',...
+                 {'No idea how to plot object!',get(o,{'title',''})});
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
+end
+function oo = WithBsk(o)               % 'With Basket' Callback        
+%
+% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
+%          current object pulling and forwarding to executing local func-
+%          tion, reporting of irregularities and dark mode support
+%
+   refresh(o,o);                       % use this callback for refresh
+   cls(o);                             % clear screen
+
+   gamma = eval(['@',mfilename]);
+   oo = basket(o,gamma);               % perform operation gamma on basket
+ 
+   if ~isempty(oo)                     % irregulars happened?
+      message(oo);                     % report irregular
+   end
+   dark(o);                            % do dark mode actions
+end
+
 function oo = TransferFunction(o)      % Transfer Function Menu        
    oo = mitem(o,'Transfer Function');
    ooo = mitem(oo,'Display',{@WithCuo,'TrfDisp'});
@@ -114,88 +193,6 @@ function oo = TransferFunction(o)      % Transfer Function Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Numeric Quality',{@WithSpm,'TrfNumeric'});
    ooo = mitem(oo,'ZPK Precision',{@WithSpm,'GijPrecision'});
-end
-function oo = TransferMatrix(o)        % Transfer Matrix Menu          
-   oo = current(o);
-   [B2,C1] = cook(oo,'B2,C1');
-   [~,m] = size(B2);
-   [l,~] = size(C1);
-   
-   oo = mhead(o,'Free System');
-   ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'GsRloc'});
-   ooo = mitem(oo,'Step Responses',{@WithSpm,'GsStep'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Bode Plots',{@WithSpm,'GsBode'});
-   ooo = mitem(oo,'Modal Weights',{@WithSpm,'GsWeight'});
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('G(s)'),{@WithSpm,'Gs',0,0});
-   %ooo = Rational(oo);                % Rational submenu
-   
-   ooo = mitem(oo,'-');
-   for (i=1:l)
-      for (j=1:m)
-         ooo = mitem(oo,sprintf('G%g%g(s)',i,j),{@WithCuo,'Gs',i,j});
-      end
-      if (i < l)
-         ooo = mitem(oo,'-');
-      end
-   end
-   
-   function oo = Rational(o)           % Rational Sub Menu               
-      oo = mitem(o,'Rational');
-      ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
-      ooo = mitem(oo,'-');
-      for (i=1:l)
-         for (j=1:m)
-            ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfr',i,j});
-         end
-         if (i < l)
-            ooo = mitem(oo,'-');
-         end
-      end
-   end   
-end
-function oo = ConstrainMatrix(o)       % Transfer Matrix Menu          
-   oo = current(o);
-   [B,C] = data(oo,'B,C');
-   [~,m] = size(B);
-   [l,~] = size(C);
-   
-   oo = mhead(o,'Constrained System');
-   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'HsRloc'});
-   ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Bode Plots',{@WithCuo,'HsBode'});
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Hs',0,0});
-   
-   ooo = mitem(oo,'-');
-   for (i=1:l)
-      for (j=1:m)
-         ooo = mitem(oo,sprintf('H%g%g(s)',i,j),{@WithCuo,'Hs',i,j});
-      end
-      if (i < l)
-         ooo = mitem(oo,'-');
-      end
-   end
-   
-   
-   function oo = Rational(o)           % Rational Submenu              
-      oo = mitem(o,'Rational');
-      enable(oo,false);
-      ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Consr',0,0});
-      ooo = mitem(oo,'-');
-      for (i=1:l)
-         for (j=1:m)
-            ooo = mitem(oo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consr',i,j});
-         end
-         if (i < l)
-            ooo = mitem(oo,'-');
-         end
-      end
-   end
 end
 function oo = Principal(o)             % Pricipal Menu                 
    oo = current(o);
@@ -310,241 +307,23 @@ function oo = ClosedLoopSystem(o)      % Closed Loop System Menu
          ooo = mitem(oo,'-');
       end
    end
- end
-   
-function oo = StepResponse(o)          % Step Response Menu            
-   oo = mitem(o,'Step Response');
-   ooo = mitem(oo,'Force Step Overview',{@WithCuo,'ForceStep'},0);
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Force Step @ F1',{@WithCuo,'ForceStep'},1);
-   ooo = mitem(oo,'Force Step @ F2',{@WithCuo,'ForceStep'},2);
-   ooo = mitem(oo,'Force Step @ F3',{@WithCuo,'ForceStep'},3);    
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F-Step Orbit @ F1',{@WithCuo,'ForceStep'},10);
-   ooo = mitem(oo,'F-Step Orbit @ F2',{@WithCuo,'ForceStep'},20);
-   ooo = mitem(oo,'F-Step Orbit @ F3',{@WithCuo,'ForceStep'},30);    
-end
-function oo = RampResponse(o)          % Ramp Response Menu            
-   oo = mitem(o,'Ramp Response');
-   ooo = mitem(oo,'Force Ramp Overview',{@WithCuo,'ForceRamp'},0);
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Force Ramp @ F1',{@WithCuo,'ForceRamp'},1);
-   ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'ForceRamp'},2);
-   ooo = mitem(oo,'Force Ramp @ F3',{@WithCuo,'ForceRamp'},3);   
-
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'F-Ramp Orbit @ F1',{@WithCuo,'ForceRamp'},10);
-   ooo = mitem(oo,'F-Ramp Orbit @ F2',{@WithCuo,'ForceRamp'},20);
-   ooo = mitem(oo,'F-Ramp Orbit @ F3',{@WithCuo,'ForceRamp'},30);    
-end
-function oo = MotionResponse(o)        % Motion Response Menu          
-   oo = mitem(o,'Motion Response');
-   enable(oo,false);
-   ooo = mitem(oo,'y3 -> y1',{@WithCuo,'MotionRsp',31});
-   ooo = mitem(oo,'y3 -> y2',{@WithCuo,'MotionRsp',32});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'y3 -> F3',{@WithCuo,'MotionRsp',33});
-end
-function oo = NoiseResponse(o)         % Noise Response Menu           
-   oo = mitem(o,'Noise Response');
-   ooo = mitem(oo,'Acceleration',{@WithCuo,'NoiseRsp'});
-end
-
-%==========================================================================
-% Launch Callbacks
-%==========================================================================
-
-function oo = WithSho(o)               % 'With Shell Object' Callback  
-%
-% WITHSHO General callback for operation on shell object
-%         with refresh function redefinition, screen
-%         clearing, current object pulling and forwarding to executing
-%         local function, reporting of irregularities, dark mode support
-%
-   refresh(o,o);                       % remember to refresh here
-   cls(o);                             % clear screen
- 
-   gamma = eval(['@',mfilename]);
-   oo = gamma(o);                      % forward to executing method
-
-   if isempty(oo)                      % irregulars happened?
-      oo = set(o,'comment',...
-                 {'No idea how to plot object!',get(o,{'title',''})});
-      message(oo);                     % report irregular
-   end
-   dark(o);                            % do dark mode actions
-end
-function oo = WithCuo(o)               % 'With Current Object' Callback
-%
-% WITHCUO A general callback with refresh function redefinition, screen
-%         clearing, current object pulling and forwarding to executing
-%         local function, reporting of irregularities, dark mode support
-%
-   refresh(o,o);                       % remember to refresh here
-   cls(o);                             % clear screen
- 
-   oo = current(o);                    % get current object
-   gamma = eval(['@',mfilename]);
-   oo = gamma(oo);                     % forward to executing method
-
-   if isempty(oo)                      % irregulars happened?
-      oo = set(o,'comment',...
-                 {'No idea how to plot object!',get(o,{'title',''})});
-      message(oo);                     % report irregular
-   end
-   dark(o);                            % do dark mode actions
-end
-function oo = WithSpm(o)               % 'With Current SPM Object'     
-%
-% WITHSPM Same as WithCuo but don't invoke callback if not SPM object
-%         but plot(o,'About')
-%
-   refresh(o,o);                       % remember to refresh here
-   cls(o);                             % clear screen
- 
-   oo = current(o);                    % get current object
-   if ~type(oo,{'spm'})
-      plot(oo,'About');
-      return;
-   end
-   
-      % SPM object: invoke callback
-      
-   gamma = eval(['@',mfilename]);
-   oo = gamma(oo);                     % forward to executing method
-
-   if isempty(oo)                      % irregulars happened?
-      oo = set(o,'comment',...
-                 {'No idea how to plot object!',get(o,{'title',''})});
-      message(oo);                     % report irregular
-   end
-   dark(o);                            % do dark mode actions
-end
-function oo = WithBsk(o)               % 'With Basket' Callback        
-%
-% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
-%          current object pulling and forwarding to executing local func-
-%          tion, reporting of irregularities and dark mode support
-%
-   refresh(o,o);                       % use this callback for refresh
-   cls(o);                             % clear screen
-
-   gamma = eval(['@',mfilename]);
-   oo = basket(o,gamma);               % perform operation gamma on basket
- 
-   if ~isempty(oo)                     % irregulars happened?
-      message(oo);                     % report irregular
-   end
-   dark(o);                            % do dark mode actions
-end
-
-%==========================================================================
-% Default Plot Functions
-%==========================================================================
-
-function oo = Plot(o)                  % Default Plot                  
-%
-% PLOT The default Plot function shows how to deal with different object
-%      types. Depending on type a different local plot function is invoked
-%
-   args = arg(o);                      % this is for debug only!
-
-      % arglist could be for corazon/plot, which means that we just call
-      % corazon plot with the syntax plot(corazon,o). If corazon/plot
-      % recognizes a proper arglist it performs the plot call and returns
-      % either the plot handles or NaN, which means that we are done
-      % and return from the function call (with empty out arg)
-      
-   oo = plot(corazon,o);               % if arg list is for corazon/plot
-   if ~isempty(oo)                     % is oo an array of graph handles?
-      oo = []; return                  % in such case we are done - bye!
-   end
-
-      % otherwise we have to do the work, which is dispatching the object 
-      % type and call the type specific plot functions
-      
-   cls(o);                             % clear screen
-   switch o.type
-      case 'spm'
-         oo = Overview(o);
-      otherwise
-         oo = plot(o,'About');         % no idea how to plot
-   end
-end
-
-%==========================================================================
-% Plot Overview and About Object
-%==========================================================================
-
-function o = Overview(o)               % Plot Overview                 
-   if ~type(o,{'spm'})
-      plot(o,'About');
-      return                           % no idea how to plot this type
-   end
-
-   Real(o,[2 2 1]);
-   Imag(o,[2 2 3]);
-   Complex(o,[1 2 2]);
-
-   heading(o);
-end
-function o = About(o)                  % About Object                  
-   switch type(current(o))
-      case 'pkg'
-         o = AboutPkg(o);
-      otherwise
-         cls(o);
-         o = menu(o,'About');          % keep it simple
-   end
-end
-
-%==========================================================================
-% Package Objects
-%==========================================================================
-
-function o = AboutPkg(o)               % About Package                 
-   if ~type(o,{'pkg'})
-      o = plot(o,'About');
-      return
-   end
-   
-   subplot(o,211);
-   message(opt(o,'pitch',2));
-   axis off
-   
-   subplot(o,2322);
-   Image(o);
-   
-     % increase axis width
-     
-   pos = get(gca,'position');
-   w = pos(3);  k = 1.5;               % k: stretch factor
-   pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
-   set(gca,'position',pos);
-   set(gca,'ydir','reverse')
-end
-function o = Image(o)                  % Plot Image                    
-   path = [get(o,'dir'),'/',get(o,'image')];
-   try
-      im = imread(path);
-   catch
-      im = [];
-   end
-   
-   if ~isempty(im)
-      hdl = image(im);
-      axis off
-   else
-      message(o,'cannot display image',{['path: ',path]});
-   end
 end
 
 %==========================================================================
 % Mode Shapes
 %==========================================================================
+
+function oo = ModeShapesMenu(o)        % Mode Shapes Menu              
+   oo = mitem(o,'Mode Shapes');   
+   ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
+   ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Damping', {@WithCuo,'Damping'});
+end
+
+   % callbacks
 
 function o = Real(o,sub)               % Plot Real Part of Eigenvalues 
    if ~type(o,{'spm'})
@@ -697,6 +476,425 @@ function o = Damping(o)                % Plot Mode Damping
    
    damping(o);
    heading(o);
+end
+
+%==========================================================================
+% Free System
+%==========================================================================
+ 
+function oo = FreeSystemMenu(o)        % Free System Menu              
+   oo = current(o);
+   [B2,C1,contact] = cook(oo,'B2,C1,contact');
+   [~,m] = size(B2);
+   [l,~] = size(C1);
+   
+      % we only support 3x3 system
+      
+   m = 3;  l = 3;                      % override
+
+   oo = mhead(o,'Free System');
+   ooo = mitem(oo,'Poles/Zeros',{@WithSpm,'GsRloc'});
+   ooo = mitem(oo,'Step Responses',{@WithSpm,'GsStep'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Bode Plots',{@WithSpm,'GsBode'});
+   ooo = mitem(oo,'Modal Weights',{@WithSpm,'GsWeight'});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('G(s)'),{@WithSpm,'Gs',0,0});
+
+   ooo = mitem(oo,'-');
+   for (i=1:l)
+      for (j=1:m)
+         ooo = mitem(oo,sprintf('G%g%g(s)',i,j),{@WithCuo,'Gs',i,j});
+      end
+      if (i < l)
+         ooo = mitem(oo,'-');
+      end
+   end
+   
+   function oo = Rational(o)           % Rational Sub Menu               
+      oo = mitem(o,'Rational');
+      ooo = mitem(oo,sprintf('G(s)'),{@WithCuo,'Trfr',0,0});
+      ooo = mitem(oo,'-');
+      for (i=1:l)
+         for (j=1:m)
+            ooo = mitem(oo,sprintf('G(%g,%g)',i,j),{@WithCuo,'Trfr',i,j});
+         end
+         if (i < l)
+            ooo = mitem(oo,'-');
+         end
+      end
+   end   
+end
+
+   % callbacks
+   
+function o = Gs(o)                     % Double Transfer Function      
+   o = with(o,'simu');
+   i = arg(o,1);
+   j = arg(o,2);
+
+   G = cook(o,'G');
+   W = cook(o,'W');
+   
+   if opt(o,{'weight.equalize',0})
+      w0 = NominalWeight(o,W);
+   end
+
+   
+   if (i == 0 || j == 0)
+      G = opt(G,'maxlen',200);
+      str = display(G);
+      sym = 'G';
+
+      [m,n] = size(G);
+      for (i=1:n)
+         for (j=1:m)
+            Gij = peek(G,i,j);
+            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
+            display(Gij);
+            fprintf('\n');
+         end
+      end
+      diagram(o,'Trf',sym,G,111);
+   else
+      Gij = peek(G,i,j);
+      sym = [get(Gij,{'name','?'}),'(s)'];
+      symw = sprintf('w%g%g',i,j);
+      Gij = set(Gij,'name',sym);  
+      
+      Gij = opt(Gij,'detail',true);
+      if (control(o,'verbose') > 0)
+         display(Gij);
+      end
+      
+      diagram(o,'Trf',sym,Gij,3111);      
+      diagram(o,'Rloc',sym,Gij,3222);
+
+      if ~isempty(W)
+         wij = W{i,j};
+         if ~opt(o,{'weight.equalize',0})
+            w0 = NominalWeight(o,wij);
+         end
+         if opt(o,{'weight.db',1})
+            wij = wij / w0;
+         end
+         diagram(o,'Weight',symw,wij,3232);
+      end
+
+      o = opt(o,'color','g');
+      
+      if isempty(W)
+         diagram(o,'Step',sym,Gij,3131);
+      else
+         diagram(o,'Step',sym,Gij,3231);
+      end
+      diagram(o,'Bode',sym,Gij,3221);
+   end
+   heading(o);
+end
+function o = GsRloc(o)                 % G(s) Poles/Zeros Overview     
+   G = cook(o,'G');                    % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         diagram(o,'Rloc','',Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = GsStep(o)                 % G(s) Step Response Overview   
+   o = with(o,'simu');
+   G = cook(o,'G');                    % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         diagram(o,'Step','',Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = GsBode(o)                 % G(s) Bode Plot Overview       
+   G = cook(o,'G');                    % G(s)
+   [m,n] = size(G);
+   
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         diagram(o,'Bode','',Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+function o = GsWeight(o)               % G(s) Weight Overview          
+   W = cook(o,'W');                    % weight matrix
+   [m,n] = size(W);
+
+   if opt(o,{'weight.equalize',0})
+      w0 = NominalWeight(o,W);
+   end
+   
+   for (i=1:m)
+      for (j=1:n)
+         if ~isempty(W)
+            wij = W{i,j};
+            if ~opt(o,{'weight.equalize',0})
+               w0 = NominalWeight(o,wij);
+            end
+            if opt(o,{'weight.db',1})
+               wij = wij / w0;
+            end
+            sym = sprintf('w%g%g',i,j);
+            o = opt(o,'weight.nominal',w0);
+            diagram(o,'Weight',sym,wij,[m,n,i,j]);
+         end
+      end
+   end
+   Equalize(o);                        % equalize diagrams
+   
+   heading(o);
+   
+   function Equalize(o)                % Equalize Diagrams             
+      if ~opt(o,{'weight.equalize',0})
+         return                        % bye if equalizing is desabled
+      end
+      
+      ylim = [0 0];                    % asses y-limits
+      for (i=1:m)
+         for (j=1:n)
+            subplot(o,[m,n,i,j]);
+            lim = get(gca,'Ylim');
+            ylim(1) = min(ylim(1),lim(1));
+            ylim(2) = max(ylim(2),lim(2));
+         end
+      end
+      ymax = max(abs(ylim));
+      
+      if ~opt(o,{'weight.db',1})        % show weight in dB
+         ylim = 1.2*[-ymax ymax];
+      else
+         ylim(2) = ylim(2)*1.2;
+      end
+      
+         % now apply y-limit to all diagrams
+
+      for (i=1:m)
+         for (j=1:n)
+            subplot(o,[m,n,i,j]);
+            set(gca,'Ylim',ylim);
+         end
+      end
+   end
+end
+function o = OldGsNumeric(o)           % G(s) Numeric FQR Check        
+   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
+   [m,n] = size(G);
+
+   for (i=1:m)
+      for (j=1:n)
+         Gij = peek(G,i,j);
+         wij = W{i,j};
+%        sym = [get(Gij,{'name','?'}),'(s)'];
+         diagram(o,'Numeric',{psi,wij},Gij,[m,n,i,j]);
+      end
+   end
+   heading(o);
+end
+
+%==========================================================================
+% Constraint System
+%==========================================================================
+
+function oo = ConstrainSystemMenu(o)   % Transfer Matrix Menu          
+   oo = current(o);
+   [B,C] = data(oo,'B,C');
+   [~,m] = size(B);
+   [l,~] = size(C);
+   
+   oo = mhead(o,'Constrained System');
+   ooo = mitem(oo,'Poles/Zeros',{@WithCuo,'HsRloc'});
+   ooo = mitem(oo,'Step Responses',{@WithCuo,'HsStep'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Bode Plots',{@WithCuo,'HsBode'});
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Hs',0,0});
+   
+   ooo = mitem(oo,'-');
+   for (i=1:l)
+      for (j=1:m)
+         ooo = mitem(oo,sprintf('H%g%g(s)',i,j),{@WithCuo,'Hs',i,j});
+      end
+      if (i < l)
+         ooo = mitem(oo,'-');
+      end
+   end
+   
+   
+   function oo = Rational(o)           % Rational Submenu              
+      oo = mitem(o,'Rational');
+      enable(oo,false);
+      ooo = mitem(oo,sprintf('H(s)'),{@WithCuo,'Consr',0,0});
+      ooo = mitem(oo,'-');
+      for (i=1:l)
+         for (j=1:m)
+            ooo = mitem(oo,sprintf('H(%g,%g)',i,j),{@WithCuo,'Consr',i,j});
+         end
+         if (i < l)
+            ooo = mitem(oo,'-');
+         end
+      end
+   end
+end
+
+%==========================================================================
+% Responses Menu
+%==========================================================================
+
+function oo = StepResponse(o)          % Step Response Menu            
+   oo = mitem(o,'Step Response');
+   ooo = mitem(oo,'Force Step Overview',{@WithCuo,'ForceStep'},0);
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Force Step @ F1',{@WithCuo,'ForceStep'},1);
+   ooo = mitem(oo,'Force Step @ F2',{@WithCuo,'ForceStep'},2);
+   ooo = mitem(oo,'Force Step @ F3',{@WithCuo,'ForceStep'},3);    
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F-Step Orbit @ F1',{@WithCuo,'ForceStep'},10);
+   ooo = mitem(oo,'F-Step Orbit @ F2',{@WithCuo,'ForceStep'},20);
+   ooo = mitem(oo,'F-Step Orbit @ F3',{@WithCuo,'ForceStep'},30);    
+end
+function oo = RampResponse(o)          % Ramp Response Menu            
+   oo = mitem(o,'Ramp Response');
+   ooo = mitem(oo,'Force Ramp Overview',{@WithCuo,'ForceRamp'},0);
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Force Ramp @ F1',{@WithCuo,'ForceRamp'},1);
+   ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'ForceRamp'},2);
+   ooo = mitem(oo,'Force Ramp @ F3',{@WithCuo,'ForceRamp'},3);   
+
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'F-Ramp Orbit @ F1',{@WithCuo,'ForceRamp'},10);
+   ooo = mitem(oo,'F-Ramp Orbit @ F2',{@WithCuo,'ForceRamp'},20);
+   ooo = mitem(oo,'F-Ramp Orbit @ F3',{@WithCuo,'ForceRamp'},30);    
+end
+function oo = MotionResponse(o)        % Motion Response Menu          
+   oo = mitem(o,'Motion Response');
+   enable(oo,false);
+   ooo = mitem(oo,'y3 -> y1',{@WithCuo,'MotionRsp',31});
+   ooo = mitem(oo,'y3 -> y2',{@WithCuo,'MotionRsp',32});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'y3 -> F3',{@WithCuo,'MotionRsp',33});
+end
+function oo = NoiseResponse(o)         % Noise Response Menu           
+   oo = mitem(o,'Noise Response');
+   ooo = mitem(oo,'Acceleration',{@WithCuo,'NoiseRsp'});
+end
+
+%==========================================================================
+% Default Plot Functions
+%==========================================================================
+
+function oo = Plot(o)                  % Default Plot                  
+%
+% PLOT The default Plot function shows how to deal with different object
+%      types. Depending on type a different local plot function is invoked
+%
+   args = arg(o);                      % this is for debug only!
+
+      % arglist could be for corazon/plot, which means that we just call
+      % corazon plot with the syntax plot(corazon,o). If corazon/plot
+      % recognizes a proper arglist it performs the plot call and returns
+      % either the plot handles or NaN, which means that we are done
+      % and return from the function call (with empty out arg)
+      
+   oo = plot(corazon,o);               % if arg list is for corazon/plot
+   if ~isempty(oo)                     % is oo an array of graph handles?
+      oo = []; return                  % in such case we are done - bye!
+   end
+
+      % otherwise we have to do the work, which is dispatching the object 
+      % type and call the type specific plot functions
+      
+   cls(o);                             % clear screen
+   switch o.type
+      case 'spm'
+         oo = Overview(o);
+      otherwise
+         oo = plot(o,'About');         % no idea how to plot
+   end
+end
+
+%==========================================================================
+% Plot Overview and About Object
+%==========================================================================
+
+function o = Overview(o)               % Plot Overview                 
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   Real(o,[2 2 1]);
+   Imag(o,[2 2 3]);
+   Complex(o,[1 2 2]);
+
+   heading(o);
+end
+function o = About(o)                  % About Object                  
+   switch type(current(o))
+      case 'pkg'
+         o = AboutPkg(o);
+      otherwise
+         cls(o);
+         o = menu(o,'About');          % keep it simple
+   end
+end
+
+%==========================================================================
+% Package Objects
+%==========================================================================
+
+function o = AboutPkg(o)               % About Package                 
+   if ~type(o,{'pkg'})
+      o = plot(o,'About');
+      return
+   end
+   
+   subplot(o,211);
+   message(opt(o,'pitch',2));
+   axis off
+   
+   subplot(o,2322);
+   Image(o);
+   
+     % increase axis width
+     
+   pos = get(gca,'position');
+   w = pos(3);  k = 1.5;               % k: stretch factor
+   pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
+   set(gca,'position',pos);
+   set(gca,'ydir','reverse')
+end
+function o = Image(o)                  % Plot Image                    
+   path = [get(o,'dir'),'/',get(o,'image')];
+   try
+      im = imread(path);
+   catch
+      im = [];
+   end
+   
+   if ~isempty(im)
+      hdl = image(im);
+      axis off
+   else
+      message(o,'cannot display image',{['path: ',path]});
+   end
 end
 
 %==========================================================================
@@ -1007,186 +1205,6 @@ function CriticalFrequency(o,objs,sub) % Plot Critical Frequencies
       hdl = semilogx(2*pi*f180*[1 1],ylim,'b-.');
       set(hdl,'linewidth',o.iif(i==1,1,2));
    end
-end
-
-%==========================================================================
-% Plot Transfer Matrix G(s)
-%==========================================================================
-
-function o = Gs(o)                     % Double Transfer Function      
-   o = with(o,'simu');
-   i = arg(o,1);
-   j = arg(o,2);
-
-   G = cook(o,'G');
-   W = cook(o,'W');
-   
-   if opt(o,{'weight.equalize',0})
-      w0 = NominalWeight(o,W);
-   end
-
-   
-   if (i == 0 || j == 0)
-      G = opt(G,'maxlen',200);
-      str = display(G);
-      sym = 'G';
-
-      [m,n] = size(G);
-      for (i=1:n)
-         for (j=1:m)
-            Gij = peek(G,i,j);
-            Gij = set(Gij,'name',sprintf('G%g%g(s)',i,j));
-            display(Gij);
-            fprintf('\n');
-         end
-      end
-      diagram(o,'Trf',sym,G,111);
-   else
-      Gij = peek(G,i,j);
-      sym = [get(Gij,{'name','?'}),'(s)'];
-      symw = sprintf('w%g%g',i,j);
-      Gij = set(Gij,'name',sym);  
-      
-      Gij = opt(Gij,'detail',true);
-      if (control(o,'verbose') > 0)
-         display(Gij);
-      end
-      
-      diagram(o,'Trf',sym,Gij,3111);      
-      diagram(o,'Rloc',sym,Gij,3222);
-
-      if ~isempty(W)
-         wij = W{i,j};
-         if ~opt(o,{'weight.equalize',0})
-            w0 = NominalWeight(o,wij);
-         end
-         if opt(o,{'weight.db',1})
-            wij = wij / w0;
-         end
-         diagram(o,'Weight',symw,wij,3232);
-      end
-
-      o = opt(o,'color','g');
-      
-      if isempty(W)
-         diagram(o,'Step',sym,Gij,3131);
-      else
-         diagram(o,'Step',sym,Gij,3231);
-      end
-      diagram(o,'Bode',sym,Gij,3221);
-   end
-   heading(o);
-end
-function o = GsRloc(o)                 % G(s) Poles/Zeros Overview     
-   G = cook(o,'G');                    % G(s)
-   [m,n] = size(G);
-   
-   for (i=1:m)
-      for (j=1:n)
-         Gij = peek(G,i,j);
-         diagram(o,'Rloc','',Gij,[m,n,i,j]);
-      end
-   end
-   heading(o);
-end
-function o = GsStep(o)                 % G(s) Step Response Overview   
-   o = with(o,'simu');
-   G = cook(o,'G');                    % G(s)
-   [m,n] = size(G);
-   
-   for (i=1:m)
-      for (j=1:n)
-         Gij = peek(G,i,j);
-         diagram(o,'Step','',Gij,[m,n,i,j]);
-      end
-   end
-   heading(o);
-end
-function o = GsBode(o)                 % G(s) Bode Plot Overview       
-   G = cook(o,'G');                    % G(s)
-   [m,n] = size(G);
-   
-   for (i=1:m)
-      for (j=1:n)
-         Gij = peek(G,i,j);
-         diagram(o,'Bode','',Gij,[m,n,i,j]);
-      end
-   end
-   heading(o);
-end
-function o = GsWeight(o)               % G(s) Weight Overview          
-   W = cook(o,'W');                    % weight matrix
-   [m,n] = size(W);
-
-   if opt(o,{'weight.equalize',0})
-      w0 = NominalWeight(o,W);
-   end
-   
-   for (i=1:m)
-      for (j=1:n)
-         if ~isempty(W)
-            wij = W{i,j};
-            if ~opt(o,{'weight.equalize',0})
-               w0 = NominalWeight(o,wij);
-            end
-            if opt(o,{'weight.db',1})
-               wij = wij / w0;
-            end
-            sym = sprintf('w%g%g',i,j);
-            o = opt(o,'weight.nominal',w0);
-            diagram(o,'Weight',sym,wij,[m,n,i,j]);
-         end
-      end
-   end
-   Equalize(o);                        % equalize diagrams
-   
-   heading(o);
-   
-   function Equalize(o)                % Equalize Diagrams             
-      if ~opt(o,{'weight.equalize',0})
-         return                        % bye if equalizing is desabled
-      end
-      
-      ylim = [0 0];                    % asses y-limits
-      for (i=1:m)
-         for (j=1:n)
-            subplot(o,[m,n,i,j]);
-            lim = get(gca,'Ylim');
-            ylim(1) = min(ylim(1),lim(1));
-            ylim(2) = max(ylim(2),lim(2));
-         end
-      end
-      ymax = max(abs(ylim));
-      
-      if ~opt(o,{'weight.db',1})        % show weight in dB
-         ylim = 1.2*[-ymax ymax];
-      else
-         ylim(2) = ylim(2)*1.2;
-      end
-      
-         % now apply y-limit to all diagrams
-
-      for (i=1:m)
-         for (j=1:n)
-            subplot(o,[m,n,i,j]);
-            set(gca,'Ylim',ylim);
-         end
-      end
-   end
-end
-function o = OldGsNumeric(o)           % G(s) Numeric FQR Check        
-   [G,psi,W] = cook(o,'G,psi,W');      % G(s), modal param's, weights
-   [m,n] = size(G);
-
-   for (i=1:m)
-      for (j=1:n)
-         Gij = peek(G,i,j);
-         wij = W{i,j};
-%        sym = [get(Gij,{'name','?'}),'(s)'];
-         diagram(o,'Numeric',{psi,wij},Gij,[m,n,i,j]);
-      end
-   end
-   heading(o);
 end
 
 %==========================================================================

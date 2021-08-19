@@ -255,7 +255,12 @@ function [z,p,k] = Ss2zp(o,a,b,c,d,iu,p)
       
    b = b(:,iu);   % + 0*a(1,1);
    c = c + 0*a(1,1);
-      
+     
+   if (all(b==0) && all(c==0))
+      z = [];  p = [];  k = 0;
+      return
+   end
+   
       % if we calculate with VPA arithmetics we have to make sure
       % that d is also of type VPA, otherwise k would result in a double
 
