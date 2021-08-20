@@ -97,16 +97,20 @@ function o = Magnitude(o)              % Plot Magnitude
    col = opt(o,{'color',col});
    [col,lw,typ] = o.color(col);
    
-   if opt(o,{'frequency',0})
+   frequency = opt(o,{'frequency',0});
+   if (frequency)
       hdl = semilogx(om/2/pi,dB,['r',typ]);
+      xlabel('Frequency [Hz]');
    else
       hdl = semilogx(om,dB,['r',typ]);
+      xlabel('Omega [1/s]');
    end
    
    set(hdl,'Color',col);
    if o.is(lw)
       set(hdl,'Linewidth',lw);
    end
+   
    
    Instabilities(o)                    % draw instabilities
 

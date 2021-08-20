@@ -7,6 +7,7 @@ function oo = new(o,varargin)          % SPM New Method
 %           o = new(spm,'Mode3A')      % 3-mode sample, version A
 %           o = new(spm,'Mode3B')      % 3-mode sample, version B
 %           o = new(spm,'Mode3C')      % 3-mode sample, version C
+%           o = new(spm,'Mode3D')      % 3-mode sample, version C
 %
 %           o = new(spm,'Academic1')   % academic sample 1
 %           o = new(spm,'Academic2')   % academic sample 2
@@ -19,7 +20,7 @@ function oo = new(o,varargin)          % SPM New Method
 %
 %       See also: SPM, PLOT, ANALYSIS, STUDY
 %
-   [gamma,oo] = manage(o,varargin,@Mode2,@Mode3A,@Mode3B,@Mode3C,...
+   [gamma,oo] = manage(o,varargin,@Mode2,@Mode3A,@Mode3B,@Mode3C,@Mode3D,...
                        @Academic1,@Academic2,@Schleif,@Order,@Challenge,...
                        @Motion,@Menu);
    oo = gamma(oo);
@@ -39,6 +40,11 @@ function oo = Menu(o)                  % New Menu
 %
 % Menu   Setup New menu items
 %
+   setting(o,{'new.random.seed'},0);
+   setting(o,{'new.random.modes'},3);
+   setting(o,{'new.random.articles'},3);
+   setting(o,{'new.random.kind'},0);
+   
    oo = mitem(o,'-');
    oo = o;  %                          oo = mhead(o,'Spm');
    ooo = mitem(oo,'2-Mode Sample',{@Create 'Mode2'});
@@ -46,6 +52,7 @@ function oo = Menu(o)                  % New Menu
    ooo = mitem(oo,'3-Mode Sample (A)',{@Create 'Mode3A'});
    ooo = mitem(oo,'3-Mode Sample (B)',{@Create 'Mode3B'});
    ooo = mitem(oo,'3-Mode Sample (C)',{@Create 'Mode3C'});
+   ooo = mitem(oo,'3-Mode Sample (D)',{@Create 'Mode3D'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Academic Sample #1',{@Create 'Academic1'});
    ooo = mitem(oo,'Academic Sample #2',{@Create 'Academic2'});
@@ -99,6 +106,8 @@ function oo = Menu(o)                  % New Menu
    oooo = mitem(ooo,'Challenge #11',{@Create,'Challenge',11});
    oooo = mitem(ooo,'Challenge #12',{@Create,'Challenge',12});
    oooo = mitem(ooo,'Challenge #13',{@Create,'Challenge',13});
+
+   ooo = RandomMenu(oo);
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});
@@ -121,6 +130,122 @@ function oo = Coupling(o)              % Coupling Menu
    
    oo = mitem(o,'Coupling',{},'new.coupling');
    choice(oo,[0 0.1 0.2 0.3 0.4 0.5 1 2 5 10]);
+end
+function oo = RandomMenu(o)
+   setting(o,{'new.random.seed'},0);
+   setting(o,{'new.random.modes'},3);
+   setting(o,{'new.random.articles'},3);
+   setting(o,{'new.random.counter'},0);
+
+   oo = mitem(o,'Random System');
+   ooo = mitem(oo,'Create Random',{@Create,0});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Create Random #1',{@Create,1});
+   ooo = mitem(oo,'Create Random #2',{@Create,2});
+   ooo = mitem(oo,'Create Random #3',{@Create,3});
+   ooo = mitem(oo,'Create Random #4',{@Create,4});
+   ooo = mitem(oo,'Create Random #5',{@Create,5});
+   ooo = mitem(oo,'Create Random #6',{@Create,6});
+   ooo = mitem(oo,'Create Random #7',{@Create,7});
+   ooo = mitem(oo,'Create Random #8',{@Create,8});
+   ooo = mitem(oo,'Create Random #9',{@Create,9});
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Seed',{},'new.random.seed');
+         charm(ooo,{@Reset});
+   ooo = mitem(oo,'Modes',{},'new.random.modes');
+         choice(ooo,[2 3 4 5 10 20 50 100],{@Reset});
+   ooo = mitem(oo,'Articles',{},'new.random.articles');
+         choice(ooo,[1 3 5 7],{@Reset});
+         
+   function o = Reset(o)
+      setting(o,'new.random.counter',0);
+   end
+   function o = Create(o)
+      oo = Random(o);                  % create specific object
+      paste(oo);                       % paste into shell
+   end
+end
+
+%==========================================================================
+% Random System
+%==========================================================================
+
+function oo = Random(o)
+   seed = opt(o,'new.random.seed');
+   modes = opt(o,'new.random.modes');
+   articles = opt(o,'new.random.articles');
+   counter = opt(o,'new.random.counter');
+   kind = opt(o,{'new.random.kind',1});
+
+   arg1 = arg(o,1);
+   if (arg1 > 0)
+      kind = arg1;
+      counter = 0;
+      rng(seed+kind+1);
+   end
+   run = sprintf('%g.%g',seed+kind,counter);
+   txt = sprintf('seed: %g, instance: %g',seed+kind+1,counter);
+   
+   setting(o,'new.random.counter',counter+1);
+   setting(o,'new.random.kind',kind);
+
+   switch modes
+      case 2
+         f = [100 10000]';
+      case 3
+         f = [100 1000 10000]';
+      case 4
+         f = [100 1000 2000 10000]';
+      case 5
+         f = [100 200 1000 2000 10000]';
+      case 10
+         f = [100 200 500 800 1000 1200 2000 5000 8000 10000]';
+      case 20
+         f = logspace(log10(100),log10(10000),modes)';
+      case 50
+         f = logspace(log10(100),log10(10000),modes)';
+      case 100
+         f = logspace(log10(100),log10(10000),modes)';
+      otherwise
+         error('bad number of modes');
+   end
+   
+   one = ones(size(f));                % column with all 1's
+   zeta = 0.01*one;                    % damping coefficients
+   
+   omega = 2*pi*f;                     % circular eigen frequencies
+   a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
+   a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
+
+      % input/output core
+      
+   M = randn(length(f),3*articles);
+   M = o.rd(M,2);
+   
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M'];
+   D = 0*C*B;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = sprintf('Random System #%s (%g modes, %g article%s)',...
+                          run,modes,articles,o.iif(articles>1,'s',''));
+                       
+   freq = ''; sep = '';
+   for (i=1:length(f))
+      freq = [freq,sep,sprintf('%g',f(i))];  sep = ',';
+   end
+   
+   oo.par.comment = {sprintf('f = [%s]',freq),sprintf('zeta =%g',zeta),txt};
+   %oo.par.number = kind; 
+   
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
 end
 
 %==========================================================================
@@ -229,6 +354,38 @@ function oo = Mode3C(o)                % 3-Mode Sample, Version C
    a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
    
 %  M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
+   M = [-5e-10 -7.0 -2.0e-8; 7.0 -5e-10 2.0e-8; 4.0e-8 -7e-8 0];
+  
+      % calculate system matrices
+         
+   n = length(a0);
+   A = [zeros(n) eye(n); -diag(a0) -diag(a1)];
+   B = [0*M; M];
+   C = [M' 0*M'];
+   D = 0*C*B;
+
+   oo = spm('spm');                    % new spm typed object
+   oo.par.title = '3-Mode Sample C';
+    
+      % finally set data
+      
+   oo = data(oo,'A,B,C,D',A,B,C,D);   
+end
+function oo = Mode3D(o)                % 3-Mode Sample, Version D      
+%
+% MODE3D setup an 3-mode system according to the simulated sample
+%        exported from ANSYS. Version D has varied eigen frequencies and 
+%        rounded M matrix
+%
+   zeta = [0.01 0.01 0.01]';           % damping coefficients
+%  f = [444 1091 2387]';               % eigen frequencies
+   omega = [3000 7000 15000]';         % circular eigen frequencies
+
+   a0 = omega.*omega;                  % a0 = [7.8e6 47e6 225e6]';  
+   a1 = 2*zeta.*omega;                 % a1 = [56 137 300]
+   
+%  M = [-5e-10 -7.2 -2.3e-8; 7.1 -5e-10 1.8e-8; 4.2e-8 -7e-8 0];
+%  M = [-5e-10 -7.0 -2.0e-8; 7.0 -5e-10 2.0e-8; 4.0e-8 -7e-8 0];
    M = [-5e-10 -7.0 -2.0e-8; 7.0 -5e-10 2.0e-8; 4.0e-8 -7e-8 0];
   
       % calculate system matrices
@@ -442,6 +599,7 @@ function oo = Challenge(o)             % A Challenging Sample
    zeta = 0.01*one;                    % damping coefficients
    m0 = [0 1 -1 0]';
 
+M=[];   
    kind = arg(o,1);
    switch kind
       case 1
@@ -470,7 +628,10 @@ function oo = Challenge(o)             % A Challenging Sample
       case 12
          m = -100*m0;
       case 13
-         m = [100*m0 m0 -100*m0];
+         m1 = 100*[0.1 1 -1 0.1]';
+         m2 =   1*[1 0.1 0.2 -1]';
+         m3 = 100*[0.3 -1 2 0.3]';
+         m = [m1 m2 -m3];
       otherwise
          error('bad kind');
    end
@@ -478,8 +639,16 @@ function oo = Challenge(o)             % A Challenging Sample
    omega = 2*pi*f;                     % circular eigen frequencies
    a0 = omega.*omega;                 % a0 = [7.8e6 47e6 225e6]';  
    a1 = 2*zeta.*omega;                % a1 = [56 137 300]
-   M = [m, 0*m, 0*m+1];
-
+   
+   M = [m, 0.1*m, 0.01*m+1];
+   rng(kind);                          % seed pseudo random generator
+   
+   if (kind < 10)
+      M = randn(4,3);
+   else
+      M = randn(4,9);
+   end
+   
       % calculate system matrices
          
    n = length(a0);

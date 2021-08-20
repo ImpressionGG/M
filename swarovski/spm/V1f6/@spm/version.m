@@ -440,7 +440,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - can select in bode diagram between f and omega
 % - fixing Plot menu
 % - cache based acceleration of Analyse/Principal & Analyse/Critical plots
-
+% - spm/new: random systems added
 
 % Known bugs & wishlist
 % =========================

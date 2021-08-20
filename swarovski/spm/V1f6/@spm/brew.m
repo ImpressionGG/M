@@ -398,8 +398,18 @@ function oo = Transform(o)             % coordinate transformation
       end
    end
 end
+function oo = System(o)                % Brew System Matrices          
+   old = opt(o,{'oldsystem',0});
+   if (old)
+      oo = OldSystem(o);
+   else
+      oo = system(o);
+   end
+end
 
-function oo = OldTransform(o)          % coordinate transformation
+   % old stuff (keep for code studies)
+   
+function oo = OldTransform(o)          % Coordinate Transformation     
 %
 % TRANSFORM Transform coordinates by rotation around 3-axis (=z-axis)
 %             by angle phi_p (process phi) plus phi_o (object specific 
@@ -526,7 +536,6 @@ function oo = OldTransform(o)          % coordinate transformation
       end
    end
 end
-
 function oo = OldSystem(o)             % System Matrices               
    oo = Variation(o);                  % apply system variation
    oo = Normalize(oo);                 % normalize system
@@ -712,15 +721,6 @@ function oo = OldSystem(o)             % System Matrices
       assert(norm(C_1_-C_1)==0);
       assert(norm(C_2_-C_2)==0);
       assert(norm(C_3_-C_3)==0);
-   end
-end
-
-function oo = System(o)
-   old = opt(o,{'oldsystem',0});
-   if (old)
-      oo = OldSystem(o);
-   else
-      oo = system(o);
    end
 end
 
