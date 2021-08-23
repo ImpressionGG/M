@@ -40,13 +40,11 @@ function oo = Menu(o)                  % New Menu
 %
 % Menu   Setup New menu items
 %
-   setting(o,{'new.random.seed'},0);
-   setting(o,{'new.random.modes'},3);
-   setting(o,{'new.random.articles'},3);
-   setting(o,{'new.random.kind'},0);
-   
    oo = mitem(o,'-');
    oo = o;  %                          oo = mhead(o,'Spm');
+   ooo = RandomMenu(oo);
+
+   ooo = mitem(oo,'-');
    ooo = mitem(oo,'2-Mode Sample',{@Create 'Mode2'});
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'3-Mode Sample (A)',{@Create 'Mode3A'});
@@ -106,8 +104,6 @@ function oo = Menu(o)                  % New Menu
    oooo = mitem(ooo,'Challenge #11',{@Create,'Challenge',11});
    oooo = mitem(ooo,'Challenge #12',{@Create,'Challenge',12});
    oooo = mitem(ooo,'Challenge #13',{@Create,'Challenge',13});
-
-   ooo = RandomMenu(oo);
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Motion Object',{@Create 'Motion'});

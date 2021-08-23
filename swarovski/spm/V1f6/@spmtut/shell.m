@@ -11,7 +11,7 @@ function o = Shell(o)                  % Shell Setup
    o = Init(o);                        % init object
 
    o = menu(o,'Begin');                % begin menu setup
-%  oo = File(o);                       % add File menu
+   oo = File(o);                       % add File menu
    oo = Chapter1(o);                   % add chapter 1 menu
    o = menu(o,'End');                  % end menu setup (will refresh)
 end
@@ -65,7 +65,8 @@ end
 
 function oo = Chapter1(o)                     
    oo = mhead(o,'Chapter 1');          % add roll down header menu item
-   ooo = mitem(oo,'1.1 A Sample System',{@Show 'c1_1_sample_system'});
+   ooo = mitem(oo,'1.1 Oscillator',{@Show 'c1_1_oscillator'});
+   ooo = mitem(oo,'1.2 A Sample System',{@Show 'c1_2_sample_system'});
 end
 
 %==========================================================================

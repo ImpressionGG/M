@@ -11,6 +11,14 @@ function varargout = cook(o,sym)
 %
 %          [A,B,C,D] = cook(o,'A,B,C,D');   % system matrices
 %
+%          n = length(cook(o,'A'))/2
+%          m = length(cook(o,'contact'))
+%
+%       Remarks: Let N=2*n with n being the number of mode shapes, M=3*m
+%       with m being the number of articles in cutting contact, then
+%       A: NxN, B: NxM, C: M*N, D:MxM, A11|A12|A21|A22: nxn, B1|B2: n*M,
+%       C1|C2: M*n
+%
 %          [A11,A12] = cook(o,'A11,A12');   % partial matrices
 %          [A21,A22] = cook(o,'A21,A22');   % partial matrices
 %          [B1,B2]   = cook(o,'B1,B2');     % partial matrices
@@ -27,6 +35,24 @@ function varargout = cook(o,sym)
 %
 %          [B_1,B_2,B_3] = cook(o,'B_1,B_2,B_3');
 %          [C_1,C_2,C_3] = cook(o,'C_1,C_2,C_3');
+%
+%       Meaning: Consider a setup with 5 articles, and all 5 articles
+%       are in contact with the cutting disk. Let N = 2*n with n being
+%       the number of modes, then
+%
+%          B_1: Nx5-matrix, with column B_1(:,j) responsible for excitation
+%               of article j in 1-direction (cutting direction)
+%          B_2: Nx5-matrix, with column B_2(:,j) responsible for excitation
+%               of article j in 2-direction (cross direction)
+%          B_3: Nx5-matrix, with column B_3(:,j) responsible for excitation
+%               of article j in 3-direction (normal direction)
+%
+%          C_1: 5xN-matrix, with row C_1(i,:) responsible for elongation
+%               of article i in 1-direction (cutting direction)
+%          C_2: 5xN-matrix, with row C_2(i,:) responsible for elongation
+%               of article i in 2-direction (cross direction)
+%          C_3: 5xN-matrix, with row C_3(i,:) responsible for elongation
+%               of article i in 3-direction (normal direction)
 %
 %       System 0
 %
