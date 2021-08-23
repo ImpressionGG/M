@@ -8,6 +8,7 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
 %          [PsiW,Idx] = psion(o,A,B,C);% get psion representation
 %
 %          Gjw = psion(o,PsiW,omega)   % calculate frequency responses
+%          [Gjw,Phi] = psion(o,PsiW,omega)   % return internal Phi matrix
 %
 %       Output arg PsiW is the psion matrix, while Idx (an indexing matrix)
 %       is for looking up weight vectors wij, i.e. wij = PsiW(:,Idx(i,j)) 
@@ -144,7 +145,7 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
       [oo,Idx] = Psion(o);             % calculate Psion representation
    elseif (nargin == 3)
       PsiW = varargin{1};  omega = varargin{2};
-      oo = Fqr(o,PsiW,omega);
+      [oo,Idx] = Fqr(o,PsiW,omega);
    elseif (nargin == 4)
       A = varargin{1};  B = varargin{2};   C = varargin{3};
       o = data(o,'A,B,C,D',A,B,C,0*C*B);
@@ -164,7 +165,8 @@ end
 function [PsiW,Idx] = Psion(o,T0)
    [a0,a1,B2,C1] = Modal(o);           % get modal form parameters
    
-   Psi = [1+0*a0,a1*T0,a0*T0*T0];
+%  Psi = [1+0*a0,a1*T0,a0*T0*T0];
+   Psi = [(1+0*a0)*T0*T0,a1*T0,a0];
    
    n = length(a0);  m = size(B2,2);  l = size(C1,1);
    W = zeros(n,l*m);  Idx = zeros(l,m);
@@ -186,7 +188,7 @@ end
 % Frequency Response
 %==========================================================================
 
-function Gjw = Fqr(o,PsiW,omega)
+function [Gjw,Phi] = Fqr(o,PsiW,omega)
    jw = 1i*omega(:).';                 % imaginary circular frequency
 
    Psi = PsiW(:,1:3);
@@ -206,7 +208,8 @@ function Gjw = Fqr(o,PsiW,omega)
       % calculate psion response:
       % phi(jw) = 1 / (jw*jw + a1*jw + a0)
       
-   Phi = 1 ./ (ones(m,1)*(jw.*jw) + Psi(:,2)*jw + Psi(:,3)*ones(1,n));
+%  Phi = 1 ./ (ones(m,1)*(jw.*jw) + Psi(:,2)*jw + Psi(:,3)*ones(1,n));
+   Phi = 1 ./ (Psi(:,1)*(jw.*jw) + Psi(:,2)*jw + Psi(:,3)*ones(1,n));
    
    Gjw = W'*Phi;
 end
@@ -233,7 +236,8 @@ function Stuff(o)
       % calculate psion response:
       % phi(jw) = 1 / (jw*jw + a1*jw + a0)
       
-   phi = 1 ./ (ones(m,1)*(jw.*jw) + psi(:,2)*jw + psi(:,3)*ones(1,n));
+%  phi = 1 ./ (ones(m,1)*(jw.*jw) + psi(:,2)*jw + psi(:,3)*ones(1,n));
+   phi = 1 ./ (psi(:,1)*(jw.*jw) + psi(:,2)*jw + psi(:,3)*ones(1,n));
    
       % for 3 input args we are done by returning phi
       
