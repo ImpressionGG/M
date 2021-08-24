@@ -582,7 +582,13 @@ function o = MagniCheck(o)             % Magnitude Check
 end
 function o = PsionCheck(o)             % Check Normalisation in Psion  
    T_0 = [1 1e-1 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8 1e-9];
-   om = [1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7 1e8];
+   
+   o = with(o,'bode');
+   low = opt(o,'omega.low'); 
+   high = opt(o,'omega.high'); 
+   points = opt(o,'omega.points'); 
+   om = logspace(log10(low),log10(high),points);
+   %om = [1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7 1e8];
    
    for (i=1:length(T_0))
       o = opt(o,'brew.T0',T_0(i));
@@ -615,12 +621,18 @@ function o = PsionCheck(o)             % Check Normalisation in Psion
    
    o = subplot(o,211,'semilogx');
    o = opt(o,'subplot',[]);
-   plot(o,T_0,dB(1,:),'r1o-');   
+   plot(o,T_0,dB(1,:),'r1o-'); 
+   title('Deviation of G31jw calculation with 2 Psion-methods in dB');
+   ylabel('err [dB]');
    subplot(o);
 
    o = subplot(o,212,'semilogx');
-   plot(o,T_0,dB(2,:),'r1o-');   
+   plot(o,T_0,dB(2,:),'r1');   
+   title('Deviation of G33jw calculation with 2 Psion-methods in dB');
+   ylabel('err [dB]');
    subplot(o);
+   
+   heading(o);
 end
 function o = MakeSeven(o)              % Make 7-Article System         
     oo = current(o);

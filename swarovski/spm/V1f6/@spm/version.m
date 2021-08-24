@@ -443,7 +443,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/new: random systems added
 % - two bugfixes in spm/psion
 % - study/PsionCheck added
-
+% - verification that both psion methods are working well
 
 % Known bugs & wishlist
 % =========================
