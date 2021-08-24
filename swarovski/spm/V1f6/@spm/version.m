@@ -444,6 +444,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - two bugfixes in spm/psion
 % - study/PsionCheck added
 % - verification that both psion methods are working well
+% - spm/new: changed parameters of 2-Mode system
+%
 
 % Known bugs & wishlist
 % =========================
