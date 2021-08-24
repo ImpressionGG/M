@@ -588,7 +588,6 @@ function o = PsionCheck(o)             % Check Normalisation in Psion
    high = opt(o,'omega.high'); 
    points = opt(o,'omega.points'); 
    om = logspace(log10(low),log10(high),points);
-   %om = [1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7 1e8];
    
    for (i=1:length(T_0))
       o = opt(o,'brew.T0',T_0(i));
@@ -601,20 +600,20 @@ function o = PsionCheck(o)             % Check Normalisation in Psion
       PsiW31 = psion(o,A,B_1,C_3);
       G31jw = psion(o,PsiW31,om*T0);
 
-      Psi0W31 = psion(o,A,B_1,C_3,T0);
-      G31jw0 = psion(o,Psi0W31,om);
+      psiW31 = psion(o,A,B_1,C_3,T0);
+      g31jw  = psion(o,psiW31,om);
       
-      err(1,i) = norm(G31jw-G31jw0);
+      err(1,i) = norm(G31jw-g31jw);
 
          % G33jw
          
       PsiW33 = psion(o,A,B_3,C_3);
       G33jw = psion(o,PsiW33,om*T0);
 
-      Psi0W33 = psion(o,A,B_3,C_3,T0);
-      G33jw0 = psion(o,Psi0W33,om);
+      psiW33 = psion(o,A,B_3,C_3,T0);
+      g33jw  = psion(o,psiW33,om);
       
-      err(2,i) = norm(G33jw-G33jw0);
+      err(2,i) = norm(G33jw-g33jw);
    end
    
    dB = 20*log10(err);

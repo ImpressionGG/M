@@ -1,19 +1,28 @@
 function [oo,Idx] = psion(o,varargin)  % psion representation
 %
-% PSION Get either psion representation of a transfwr system in modal
+% PSION Get either psion representation of a transfer system in modal
 %       form or calculate frequency response for psion representation.
 %
-%          oo = system(o,cdx);         % get contact relevant system
-%          [PsiW,Idx] = psion(o,oo);   % get psion representation
-%          [PsiW,Idx] = psion(o,A,B,C);% get psion representation
+%          oo = system(o,cdx);              % get contact relevant system
+%          [PsiW,Idx] = psion(o,oo);        % get psion representation
+%          [PsiW,Idx] = psion(o,A,B,C);     % get psion representation
+%          [psiW,Idx] = psion(o,A,B,C,T0);  % get unnormalized psion repr.
 %
-%          Gjw = psion(o,PsiW,omega)   % calculate frequency responses
-%          [Gjw,Phi] = psion(o,PsiW,omega)   % return internal Phi matrix
+%          Gjw = psion(o,PsiW,omega)        % calculate FQR
+%          [Gjw,Phi] = psion(o,PsiW,omega)  % return internal Phi matrix
 %
 %       Output arg PsiW is the psion matrix, while Idx (an indexing matrix)
-%       is for looking up weight vectors wij, i.e. wij = PsiW(:,Idx(i,j)) 
+%       is for looking up weight vectors wij, i.e. wij = PsiW(:,Idx(i,j)).
 %
-%       Given a modal system
+%       Upercase PsiW means time normalized psion representation which
+%       requires normalized omega (Om = T0*om) for FQR calculation (see
+%       example 1).
+%
+%       Lowercase psiW means unnormalized psion representation which
+%       requires unnormalized omega (om) for FQR calculation (see example
+%       2).
+%
+%       Given a modal, time normalized system by T0
 %
 %          x´= v
 %          v´= A21*x + A22*v + B2*u    % A21 = -diag(a0), A22 = -diag(a1)
@@ -23,9 +32,15 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
 %
 %          wij = C1(i,:)'.*B2(:,j)
 %
-%       the psion representation is defined by the nx(3+l*m) matrix
+%       the time normalized psion representation is defined by the 
+%       nx(3+l*m) matrix
 %
 %          PsiW := [one,a1,a0, w11:wl1, w12:wl2,...,w1m:wlm]
+%
+%       while the unnormalized psion representation is defined by the 
+%       nx(3+l*m) matrix
+%
+%          psiW := [one*T0*T0,a1*T0,a0, w11:wl1, w12:wl2,...,w1m:wlm]
 %
 %       Example 1:
 %
@@ -41,12 +56,14 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
 %
 %          oo = system(o,cdx)
 %          [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0')
-%          Psi0W31 = psion(o,A,B_1,C_3,T0)      % to calculate G31(jw)
-%          Psi0W33 = psion(o,A,B_3,C_3,T0)      % to calculate G33(jw)
+%          psiW31 = psion(o,A,B_1,C_3,T0)       % to calculate G31(jw)
+%          psiW33 = psion(o,A,B_3,C_3,T0)       % to calculate G33(jw)
 %
-%          G31jw = psion(o,Psi0W31,om)  // no multiplication of om with T0
-%          G33jw = psion(o,Psi0W33,om)  // no multiplication of om with T0
+%          G31jw = psion(o,psiW31,om)  % no multiplication of om with T0
+%          G33jw = psion(o,psiW33,om)  % no multiplication of om with T0
 %
+%       Remark:
+%          
 %       Copyright(c): Bluenetics 2021
 %
 %       See also: SPM, SYSTEM, LAMBDA

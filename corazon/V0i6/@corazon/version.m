@@ -633,6 +633,8 @@ function VersionV1I
 % - many adoptions to use figure handles correctly (based on corazon/figure
 % - can select in bode diagram between f and omega
 % - bugfix corazon/plot: inherit axes and deal with subplot
+% - bugfix in corazito/ready: exception handler for File/Exit case
+%
 %
 % Known Bugs / Wishlist
 % - none so far
