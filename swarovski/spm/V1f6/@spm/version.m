@@ -449,7 +449,7 @@ function vers = version(o,arg)         % SPM Class Version
 
 % Known bugs & wishlist
 % =========================
-% - none so far
+% - bug: Nichols plot of reverse 2-Mode system not correct
 %
 %--------------------------------------------------------------------------
 %
