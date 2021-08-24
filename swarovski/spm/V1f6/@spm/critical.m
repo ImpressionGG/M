@@ -335,6 +335,7 @@ function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot
    elseif (cutting < 0)
       [K0,f0] = cook(o,'K180,f180');
       tag = '180';
+B_1 = -B_1;  B_3 = -B_3;
    end
    
    m = size(C_3,1);

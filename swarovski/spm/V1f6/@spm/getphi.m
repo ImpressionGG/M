@@ -6,7 +6,7 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
 %
 %         More detail data
 %
-%            [phi,txt,phi_p,phi_o]
+%            [phi,txt,phi_p,phi_o] = getphi(o)
 %
 %         phi:    row vector of individual angles
 %         phi_o:  object specific phi rotation (scalar or vector)
@@ -18,7 +18,7 @@ function [phi,txt,phi_p,phi_o] = getphi(o)
 %         See also: SPM
 %
    phi_p = opt(o,{'process.phi',0});   % process phi [°]
-   phi_o = get(o,{'phi',0});        % object phi [°]
+   phi_o = get(o,{'phi',0});           % object phi [°]
    Cphi = opt(o,{'process.Cphi',0});
 
    if type(o,{'pkg'})
