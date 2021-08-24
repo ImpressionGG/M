@@ -13,7 +13,7 @@ function oo = study(o,varargin)        % Do Some Studies
                        @PhiDouble,@PhiRational,...
                        @TrfmDouble,@TrfmRational,@TrfmInversion,...
                        @Quick,@Modal1,@Modal2,@Modal3,@Bilinear,...
-                       @MagniCheck,@MakeSeven,@StabilityMargin,...
+                       @MagniCheck,@PsionCheck,@MakeSeven,@StabilityMargin,...
                        @MotionOverview,@MotionProfile,@MotionPaste);
    oo = gamma(o);                   % invoke local function
 end
@@ -56,6 +56,7 @@ function oo = Menu(o)                  % Setup Study Menu
 
    oo = mitem(o,'Normalizing');
    ooo = mitem(oo,'Magnitude Check',{@WithCuo,'MagniCheck'});
+   ooo = mitem(oo,'Psion Check',{@WithCuo,'PsionCheck'});
 
    oo = mitem(o,'7 Artices');
    ooo = mitem(oo,'Make 7',{@WithCuo,'MakeSeven'});
@@ -579,7 +580,49 @@ function o = MagniCheck(o)             % Magnitude Check
       subplot(o);
    end
 end
-function o = MakeSeven(o)              % Make 7-Article System
+function o = PsionCheck(o)             % Check Normalisation in Psion  
+   T_0 = [1 1e-1 1e-2 1e-3 1e-4 1e-5 1e-6 1e-7 1e-8 1e-9];
+   om = [1e0 1e1 1e2 1e3 1e4 1e5 1e6 1e7 1e8];
+   
+   for (i=1:length(T_0))
+      o = opt(o,'brew.T0',T_0(i));
+      
+      oo = system(o);
+      [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+
+         % G31jw
+         
+      PsiW31 = psion(o,A,B_1,C_3);
+      G31jw = psion(o,PsiW31,om*T0);
+
+      Psi0W31 = psion(o,A,B_1,C_3,T0);
+      G31jw0 = psion(o,Psi0W31,om);
+      
+      err(1,i) = norm(G31jw-G31jw0);
+
+         % G33jw
+         
+      PsiW33 = psion(o,A,B_3,C_3);
+      G33jw = psion(o,PsiW33,om*T0);
+
+      Psi0W33 = psion(o,A,B_3,C_3,T0);
+      G33jw0 = psion(o,Psi0W33,om);
+      
+      err(2,i) = norm(G33jw-G33jw0);
+   end
+   
+   dB = 20*log10(err);
+   
+   o = subplot(o,211,'semilogx');
+   o = opt(o,'subplot',[]);
+   plot(o,T_0,dB(1,:),'r1o-');   
+   subplot(o);
+
+   o = subplot(o,212,'semilogx');
+   plot(o,T_0,dB(2,:),'r1o-');   
+   subplot(o);
+end
+function o = MakeSeven(o)              % Make 7-Article System         
     oo = current(o);
     if ~type(oo,{'spm'})
        return

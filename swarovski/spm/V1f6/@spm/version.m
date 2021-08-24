@@ -442,6 +442,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - cache based acceleration of Analyse/Principal & Analyse/Critical plots
 % - spm/new: random systems added
 % - two bugfixes in spm/psion
+% - study/PsionCheck added
 
 
 % Known bugs & wishlist

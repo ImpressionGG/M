@@ -207,6 +207,7 @@ function oo = Plot(o)                  % Default Plot Function
          return                        
       end
       o = inherit(o,oo);               % inherit opts from arg2 object
+      o = axes(o,axes(oo));            % inherit axes from oo
    else
       ilist = arg(o);                  % the normal way of getting args
    end
@@ -245,10 +246,15 @@ function oo = Plot(o)                  % Default Plot Function
       %   error('subplot option must be 3-vector!');
       %end
       %hax = subplot(sub(1),sub(2),sub(3));
-      hax = subplot(o,sub);
+      %hax = subplot(o,sub);
+      o = subplot(o,sub);
+      hax = axes(o);
       set(hax,'color',o.iif(dark(o),0,1)*[1 1 1]);
    else                                % manage canvas color
-      hax = gca;
+      hax = axes(o);
+      if isempty(hax)
+         hax = gca;
+      end
       axcol = get(hax,'color');
       if (dark(o) && all(axcol==[1 1 1]))
          axcol = [0 0 0];

@@ -632,7 +632,7 @@ function VersionV1I
 % - bugfix corazon/pull: set figure handle before fetching settings
 % - many adoptions to use figure handles correctly (based on corazon/figure
 % - can select in bode diagram between f and omega
-%
+% - bugfix corazon/plot: inherit axes and deal with subplot
 %
 % Known Bugs / Wishlist
 % - none so far
