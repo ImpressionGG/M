@@ -775,7 +775,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 %              L0jw = C*inv(jw*I-A)*B + D
 %
    o = with(o,{'spectrum'});
-   [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
+%  [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
    
       % calculate characteristic loci lambda0 (a CORASIM FQR system)
       
@@ -783,9 +783,13 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    [PsiW31,PsiW33] = var(lambda0,'PsiW31,PsiW33');
    [Psi0W31,Psi0W33] = var(lambda0,'Psi0W31,Psi0W33');
    
+      % fetch critical quantities
+      
+   [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
+
       % principal spectrum
       
-   lambda0 = Sort(lambda0,K0,f0);
+   lambda0 = Sort(o,lambda0,K0,f0);
    lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
    lambda0 = var(lambda0,'K,f',K0,f0);
 
@@ -808,7 +812,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
       % calculate characteristic loci lambda180 (a CORASIM FQR system)
       
    lambda180 = (-1)*lambda0;
-   lambda180 = Sort(lambda180,K180,f180);
+   lambda180 = Sort(o,lambda180,K180,f180);
    lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
    lambda180 = var(lambda180,'K,f',K180,f180);
    
@@ -868,7 +872,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
       
    cache(oo,oo);                       % hard refresh of spectral segment
    
-   function L = Sort(L,K,f)            % sort rows of lambda(jw)       
+   function L = Sort(o,L,K,f)            % sort rows of lambda(jw)       
       matrix = L.data.matrix;
       n = prod(size(matrix));
       

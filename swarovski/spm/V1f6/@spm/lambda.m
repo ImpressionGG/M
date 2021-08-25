@@ -70,9 +70,11 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
 %         See also: SPM, SYSTEM, PRINCIPAL, LAMBDA
 %
+   o.profiler('lambda',1);
    if (nargin == 4)                    % calculate as fast as possible
       PsiW31 = varargin{1};  PsiW33 = varargin{2};  om = varargin{3};  
       oo = Lambda(o,PsiW31,PsiW33,om);
+      o.profiler('lambda',0);
       return
    end
    
@@ -88,9 +90,11 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
       
    if (nargin == 2 && isequal(class(sys),'double'))
       oo = CritDouble(sys);
+      o.profiler('lambda',0);
       return;
    elseif (nargin == 2 && isequal(class(sys),'corasim') && type(sys,{'fqr'}))
       oo = CritCorasim(sys);
+      o.profiler('lambda',0);
       return;
    end
    
@@ -136,6 +140,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %assert(norm(ljw-ljw_)==0);
 
       oo = ljw;
+      o.profiler('lambda',0);
       return
    elseif (nargout > 1)
       [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,Om);
@@ -167,6 +172,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %  oo = var(oo,'Psi0W31,Psi0W33',Psi0W31,Psi0W33);
    
    if (nargout <= 1)
+      o.profiler('lambda',0);
       return                           % return l0
    else   
       for (i=1:m)
@@ -179,6 +185,8 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
       g33 = fqr(corasim,om,g33);       % FQR typed CORASIM system
       g33 = set(g33,'name','g33(s)','color','g');
    end
+   
+   o.profiler('lambda',0);
 end
 
 %==========================================================================
@@ -186,6 +194,8 @@ end
 %==========================================================================
 
 function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)                
+   o.profiler('Lambda',1);
+
    G31jw = psion(o,PsiW31,om);
    G33jw = psion(o,PsiW33,om);
 
@@ -198,7 +208,8 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
          g31jw = G31jw;  g33jw = G33jw;
       end
    else
-      ljw = zeros(m,length(om));
+      ljw = zeros(m,length(om));       % init
+      phi = ljw;                       % init
 
       kmax = size(G31jw,2);
       for (k=1:kmax)
@@ -208,7 +219,7 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
 
          ljw(:,k) = eig(Ljwk);
          if (k > 1)
-            ljw(:,k-1:k) = Sort(ljw(:,k-1:k));
+            ljw(:,k-1:k) = Sort(o,ljw(:,k-1:k));
          end
          
             % optionally calculate g31(jw), g33(jw)
@@ -225,6 +236,7 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
          end
       end
    end
+   o.profiler('Lambda',0);
 end
 
 %==========================================================================
@@ -264,7 +276,7 @@ end
 % Helper
 %==========================================================================
 
-function L = Sort(L)                % Sort Tail of FQR                 
+function L = Sort(o,L)        % Sort Tail of FQR                 
 %
 % TAILSORT    Rearrange characteristic frequency responses in order to
 %             obtain smooth graphs.
@@ -275,6 +287,7 @@ function L = Sort(L)                % Sort Tail of FQR
       return                        % nothing to sort
    end
    
+   o.profiler('Sort',1);
    one = ones(m,1);
    void = one*inf;
    
@@ -293,9 +306,14 @@ function L = Sort(L)                % Sort Tail of FQR
    idx = void;
    for (l=1:m)
       row = min(D);
-      j = min(find(row==min(row))); % target index
+      [~,j] = min(row);
+jj = min(find(row==min(row))); % target index
+assert(j==jj);
+ 
       col = D(:,j);
-      i = min(find(col==min(col))); % source index
+      [~,i] = min(col);
+ii = min(find(col==min(col))); % source index
+assert(ii==i);
 
          % note: i-th element moves to j-th position
 
@@ -304,5 +322,10 @@ function L = Sort(L)                % Sort Tail of FQR
       D(:,j) = void;                % jth column out of game
     end
     L(:,end) = L(idx,end);
+    
+    if any(idx~=(1:m)')
+       'debug';
+    end
+    o.profiler('Sort',0);
 end
 

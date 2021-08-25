@@ -77,7 +77,7 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
       oo = system(o,cdx);
    end
    L0 = principal(o,oo);               % calc L0 from oo
-
+ 
       % handle plot modes
       
    if (nargout == 0)
@@ -199,6 +199,13 @@ function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Crit.Val's
             [K0,f0] = CalcEig(o,oo,L0);
          else
             [K0,f0,K180,f180] = CalcEig(o,oo,L0);
+         end
+         
+      case 'lambda'
+         if (nargout <= 2)
+            [K0,f0] = CalcLambda(o,oo,L0);
+         else
+            [K0,f0,K180,f180] = CalcLambda(o,oo,L0);
          end
          
       otherwise
@@ -1392,7 +1399,7 @@ function L = Negate(L)                 % Negate a System
    L.data.B = -L.data.B;
    L.data.D = -L.data.D;
 end
-function [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om)
+function [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om)                        
    L0jwOm = cache(o,'spectral.L0jwOm');
    if ~isempty(L0jwOm) && isequal(L0jwOm.Om,Om)
       L0jw = L0jwOm.L0jw;
@@ -1404,7 +1411,7 @@ function [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om)
       cache(o,o);                             % hard refresh cache
    end
 end
-function [o,L180jw] = GetL180jw(o,A,B_1,B_3,C_3,Om)
+function [o,L180jw] = GetL180jw(o,A,B_1,B_3,C_3,Om)                    
    L180jwOm = cache(o,'spectral.L180jwOm');
    if ~isempty(L180jwOm) && isequal(L180jwOm.Om,Om)
       L180jw = L180jwOm.L180jw;
@@ -1415,4 +1422,8 @@ function [o,L180jw] = GetL180jw(o,A,B_1,B_3,C_3,Om)
       o = cache(o,'spectral.L180jwOm',L180jwOm);  % store in cache
       cache(o,o);                             % hard refresh cache
    end
+end
+function [sys,L0] = Principal(o,cdx)   % Get Principal System          
+   sys = system(o,cdx);
+   L0 = principal(o,sys);
 end

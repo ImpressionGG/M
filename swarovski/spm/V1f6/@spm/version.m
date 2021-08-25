@@ -304,6 +304,9 @@ function vers = version(o,arg)         % SPM Class Version
 %   + bug: always same value of K0 for different damping settings
 %   + add Setup Studies in Batch menu
 %   ---------------
+%   - bug: Critical/Bode: bad phase for 180°
+%   - bug: critical sensitivity: upper left diagram empty
+%   - performance slow down during batch processing
 %   - auto cration of package info file @ import package
 %   ---------------
 %   - Modified Graphics (Andy's suggestion) for Stability Margin
@@ -446,6 +449,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - verification that both psion methods are working well
 % - spm/new: changed parameters of 2-Mode system
 % - spm/getphi: comments fixed
+% - profiling added for spm/lambda
 
 % Known bugs & wishlist
 % =========================
