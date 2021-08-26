@@ -1,8 +1,9 @@
 function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs            
 %
 % LAMBDA  Calculate spectral frequency responses lambda(s) for an open
-%         loop system. Result is an FQR (frequency response) typed corasim
-%         system.
+%         loop system. Result is an mx1 MIMO FQR (frequency response) typed
+%         corasim system consisting of m spectral functions which are
+%         ordered by highest magnitude.
 %
 %            o = with(o,'critical');  
 %            sys = system(o,cdx);           % contact related system 
@@ -21,6 +22,12 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
 %            lambda0jw = lambda(o,A,B_1,B_3,C_3,T0*omega)
 %            lambda0jw = lambda(o,PsiW31,PsiW33,T0*omega)
+%
+%         Calculate critical quantities K0 and f0 for given omega interval
+%         [om1,om2] assuming in given omega interval one of the spectral
+%         functions has a continuous phase crossing of pi+2*k*pi:
+%
+%            [K0,f0,lambda0jw] = lambda(o,psiW31,psiW33,om1,om2)
 %
 %         Theory:
 %
@@ -42,6 +49,16 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
 %         Example 1:
 %
+%            sys = system(o,cdx);      % get contact relevant system
+%            [l0,g31,g33] = lambda(o,sys,omega);
+%            [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0')
+%            psiW31 = psion(o,A,B_1,C_3,T0) % to calculate G31(jw)
+%            psiW33 = psion(o,A,B_3,C_3,T0) % to calculate G33(jw)
+%            lambda0jw = lambda(o,psiW31,psiW33,omega)
+%            l0jw = lambda(o,lambda0jw);
+%
+%         Example 2:
+%
 %            sys = system(o,cdx)
 %            [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0')
 %            lambda0jw = lambda(o,A,B_1,B_3,C_3,T0*omega)
@@ -51,20 +68,25 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %            PsiW33 = psion(o,A,B_3,C_3) % to calculate G33(jw)
 %            lambda0jw = lambda(o,PsiW31,PsiW33,T0*omega)
 %            l0jw = lambda(o,lambda0jw);
-%
-%         Example 2:
-%
-%            sys = system(o,cdx);      % get contact relevant system
-%            [l0,g31,g33] = lambda(o,sys,omega);
-%            [Psi0W31,Psi0W33] = var(l0,'Psi0W31,Psi0W33');
-%            lambda0jw = lambda(o,Psi0W31,Psi0W33,omega)
-%            l0jw = lambda(o,lambda0jw);
 %       
+%         Example 3:  find critical gain in interval [om1,om2]
+%
+%            sys = system(o,cdx);                % contact relevant system
+%            [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0')
+%            psiW31 = psion(o,A,B_1,C_3,T0)      % to calculate G31(jw)
+%            psiW33 = psion(o,A,B_3,C_3,T0)      % to calculate G33(jw)
+%            [lambda0jw,om0] = lambda(o,psiW31,psiW33,om1,om2)
+%            l0jw = lambda(o,lambda0jw);
+%
 %         Options:
 %            process.contact   contact indices (default: inf (all))
 %            omega.low         lower omega (default: 100)
 %            omega.high        higher omega (default 1e5)
 %            omega.points      number of omega points (default 2000)
+%            eps               numerical epsilon for zero phase crossing
+%                              search (default: 1e-10)
+%            iter              number of iterations for zero phase
+%                              crossing search (default: 50)
 %
 %         Copyright(c): Bluenetics 2021
 %
@@ -74,6 +96,12 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
    if (nargin == 4)                    % calculate as fast as possible
       PsiW31 = varargin{1};  PsiW33 = varargin{2};  om = varargin{3};  
       oo = Lambda(o,PsiW31,PsiW33,om);
+      o.profiler('lambda',0);
+      return
+   elseif (nargin == 5)                % zero cross search
+      PsiW31 = varargin{1};  PsiW33 = varargin{2};  
+      om1 = varargin{3};  om2 = varargin{4};  
+      [oo,g31,g33] = Critical(o,PsiW31,PsiW33,om1,om2);
       o.profiler('lambda',0);
       return
    end
@@ -235,6 +263,16 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
             g33jw(:,k) = g33jwk(idx);
          end
       end
+         
+         % order by maximum magnitude
+      
+      if (kmax > 1)
+         Gmax = max(abs(ljw)');
+      else
+         Gmax = abs(ljw);
+      end
+      [Gmax,idx] = sort(Gmax,'descend');    % sort by descending order
+      ljw = ljw(idx,:);                     % reorder
    end
    o.profiler('Lambda',0);
 end
@@ -270,6 +308,79 @@ function L0jw = CritDouble(l0jw)       % Calculate Critical Fqr
       idx = find(mag==max(mag));
       L0jw(1,j) = l0jw(idx(1),j);
    end
+end
+
+%==========================================================================
+% Zero Cross Search
+%==========================================================================
+
+function [K0,f0,l0jw] = Critical(o,psiW31,psiW33,om1,om2)
+   if (om1 > om2)
+      tmp = om1;  om1 = om2; om2 = tmp;     % swap
+   end
+   
+      % calculate spectrum at points om1 and om2 and phase of negative
+      % spectrum, as we investigate zero crosses (not pi crosses)
+      
+   ljw = Lambda(o,psiW31,psiW33,[om1 om2]); 
+   phi1 = angle(-ljw(:,1));  phi2 = angle(-ljw(:,2));
+   dphi = phi1 - phi2;
+   
+      % now find first index where phi has no discontinuous jumps
+      % and is at the same time zero crossing
+      
+   idx = find(abs(dphi) < pi & sign(phi1).*sign(phi2) <= 0); 
+   if isempty(idx)
+      error('no continuous phase crossing in givem omega interval');
+   end
+   k = idx(1);
+   
+      % get phase values at om1 and om2 and verify that sign of phases is
+      % changing or one of the phase values is zero
+      
+   p1 = phi1(k);  p2 = phi2(k);
+   assert(sign(p1)*sign(p2) <= 0);     % no sign change of phase values
+   assert(abs(p2-p1) < pi);
+   
+      % interval search ...
+      
+   iter = max(1,opt(o,{'iter',50}));
+   eps = max(0,opt(o,{'eps',1e-10}));
+   
+   for (i=1:iter)
+      width = om2-om1;                 % interval width
+      if (width == 0 || p1 == p2 )     % avoid deadlock or division by zero
+         om0 = mean([om1 om2]);  p0 = mean([p1 p2]);
+         break;                        % terminate iterations
+      end
+      
+         % determine om0 by linear interpolation
+         
+      om0 = mean([om1 om2]);
+      assert(om1<=om0 && om0 <= om2);
+      
+         % calculate spectrum at om0 and phase of negative spectrum,
+         % as we investigate zero crosses (not pi crosses)
+         
+      l0jw = Lambda(o,psiW31,psiW33,om0);
+      p0 = angle(-l0jw(k));
+      
+         % tighten interval
+         
+      if (abs(p0) <= eps)
+         break;
+      elseif sign(p0) == sign(p1)
+         om1 = om0;  p1 = p0;
+      else
+         om2 = om0;  p2 = p0;
+      end
+   end
+   
+      % get critical magnitude and critical gain
+      
+   mag = abs(l0jw(k));                 % critical magnitude  
+   K0 = 1/mag;                         % critical gain
+   f0 = om0/2/pi;                      % critical frequency
 end
 
 %==========================================================================

@@ -451,6 +451,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/getphi: comments fixed
 % - profiling added for spm/lambda
 % - spm/critical: begin lambda algorithm
+% - spm/lambda: lambda algorith for critical quantities completed
 
 % Known bugs & wishlist
 % =========================

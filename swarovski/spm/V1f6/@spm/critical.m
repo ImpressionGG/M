@@ -190,7 +190,7 @@ end
 % Calculate
 %==========================================================================
 
-function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calculate Crit.Val's  
+function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
    algo = opt(o,{'algo','fqr'});
    
    switch algo
@@ -309,29 +309,64 @@ function [L0,K0,f0,K180,f180] = CalcEig(o,cdx)    % Eigenvalue Based
    end
 end
 function [L0,K0,f0,K180,f180] = CalcLambda(o,cdx) % Lambda Based       
-   [sys,L0] = Principal(o,cdx);
-   lambda0 = lambda(o,sys);
+   o = with(o,'spectrum');
+   reverse = (nargout > 3);
+   
+   if (reverse)
+      [sys0,L0,sys180] = Principal(o,cdx);
+   else
+      [sys0,L0] = Principal(o,cdx);
+   end
+   lambda0 = lambda(o,sys0);
    
    om = lambda0.data.omega;
    [m,n] = size(lambda0.data.matrix);
-   
-   tic;
-   crosses = [];
+
+      % buildup mandatory zero cross table zc0 for forward cutting and
+      % optional zero cross table zc180 for reverse cutting
+
+   zc0 = [];  zc180 = [];
    for (kk=1:m)
-      Gjw = lambda0.data.matrix{kk};    % i-th FQR
-      cr = Crosses(o,om,Gjw,kk);
-      crosses = [crosses;cr];
+      Gjw0 = lambda0.data.matrix{kk};    % i-th FQR
+      Gjw180 = -Gjw0;
+      
+         % buildup zero cross table for forward cutting
+         
+      cr = ZeroCross(o,om,Gjw0,kk);
+      zc0 = [zc0;cr];
+
+         % buildup zero cross table for reverse cutting
+         
+      if (reverse)
+         cr = ZeroCross(o,om,Gjw180,kk);
+         zc180 = [zc180;cr];
+      end
+   end
+      
+      % continue with precise zero cross search
+      
+   [K0,f0,nyqerr] = Search(o,sys0,zc0);
+   L0 = var(L0,'K0,f0,nyqerr0',K0,f0,nyqerr);
+   
+   if (reverse)
+      [K180,f180,nyqerr] = Search(o,sys180,zc180);
+      L0 = var(L0,'K180,f180,nyqerr180',K180,f180,nyqerr);
    end
    
-   GmaX = max(crosses(:,7:8)')';
-   [Gmax,k] = max(GmaX);
-   K0 = 1/Gmax;
+      % that's it - bye!
    
-   toc
-
-   'done';
-   
-   function crosses = Crosses(o,om,Gjw,k)
+   function zc = ZeroCross(o,om,Gjw,k)      % Find Zero Crosses        
+   %
+   % ZEROCROSS  Find all zero cross intervals and return a table with
+   %            characteristic quantities of all zero crosses
+   %
+   %    crosses table is built as follows
+   %    [
+   %      :   :    :     :      :        :        :       :
+   %      k  i1   i2  om(i1)  om(i2)  phi(i1)  phi(i2) max(|G(jw(idx))|)
+   %      :   :    :     :      :        :        :       :
+   %    ]
+   %
       Gjw = -Gjw;
       
          % critical phases for lambda0 are at -pi +k*2*pi. If we map
@@ -368,22 +403,17 @@ function [L0,K0,f0,K180,f180] = CalcLambda(o,cdx) % Lambda Based
          % which we detect by |diff(p)| > pi
          
       N = length(tdx)-1;
-      crosses = [];                   % init crosses table
+      zc = [];                         % init zero cross table
       
-         % crosses table is built as follows
-         % [
-         %   :   :    :     :      :        :        :       :
-         %   k  i1   i2  om(i1)  om(i2)  phi(i1)  phi(i2) max(|G(jw(idx))|)
-         %   :   :    :     :      :        :        :       :
-         % ]
+         % find zero crosses and fill zerocross table
          
       for (i=1:N)
          i1 = tdx(i);  i2 = tdx(i+1);
          idx = i1:i2;
          p = phi(idx);  pmin = min(p);  pmax = max(p);
          
-         zc = (sign(pmin)*sign(pmax) <= 0);
-         if (zc)
+         crossing = (sign(pmin)*sign(pmax) <= 0);
+         if (crossing)
             if ~any(abs(diff(p)) > pi)       % no phi jumps?
                zdx = find(p==0);
                if ~isempty(zdx)
@@ -402,7 +432,8 @@ function [L0,K0,f0,K180,f180] = CalcLambda(o,cdx) % Lambda Based
                   Gmax = max(abs(Gjw(i1:i2)));
                end
                i1i2 = [i1 i2];
-               crosses(end+1,:) = [k,i1,i2,om(i1i2),phi(i1i2),Gmax];
+               assert(abs(diff(phi(i1i2))) <= pi);
+               zc(end+1,:) = [k,i1,i2,om(i1i2),phi(i1i2),Gmax];
             end
          end
       end
@@ -424,6 +455,25 @@ if (0)
       end
       subplot(o);
 end      
+   end
+   function [K0,f0,err] = Search(o,sys,zc)  % Iterative Search         
+      GmaX = max(zc(:,7:8)')';
+      [Mag,k] = max(GmaX);                % maximum magnitude
+      K0 = 1/Mag;
+      om1 = zc(k,4);  om2 = zc(k,5);  K_ = 1/max(zc(k,8));
+
+      [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0');
+      psiW31 = psion(o,A,B_1,C_3,T0);
+      psiW33 = psion(o,A,B_3,C_3,T0);
+      
+         % calculate critical quantities K0 and f0
+         
+      [K0,f0,lambda0jw] = lambda(o,psiW31,psiW33,om1,om2);
+      
+         % calculate Nyquist error
+         
+      G0jw = 1 + K0*lambda0jw;
+      err = min(abs(G0jw));            % Nyquist error
    end
 end
 
@@ -1550,7 +1600,13 @@ function [o,L180jw] = GetL180jw(o,A,B_1,B_3,C_3,Om)
       cache(o,o);                             % hard refresh cache
    end
 end
-function [sys,L0] = Principal(o,cdx)   % Get Principal System          
-   sys = system(o,cdx);
-   L0 = principal(o,sys);
+function [sys0,L0,sys180] = Principal(o,cdx)   % Get Principal System          
+   sys0 = system(o,cdx);
+   L0 = principal(o,sys0);
+   
+   if (nargout > 2)
+      phi = opt(o,'process.phi');
+      o = opt(o,'process.phi',phi+180);
+      sys180 = system(o,cdx);
+   end
 end

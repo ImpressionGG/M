@@ -1191,7 +1191,8 @@ function oo = Critical(o)              % Critical Menu
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
 
    ooo = mitem(oo,'Algorithm',{},'critical.algo');
-   choice(ooo,{{'Frequency Response','fqr'},{'Eigenvalue','eig'}},{@ClearCache});
+   choice(ooo,{{'Frequency Response','fqr'},{'Eigenvalue','eig'},...
+               {'Lambda Algorithm','lambda'}},{@ClearCache});
 
    ooo = mitem(oo,'Check',{},'critical.check');
    choice(ooo,{{'Off',0},{'Weak',1},{'Strong',2}},{});
@@ -1227,14 +1228,15 @@ function oo = Spectrum(o)              % Spectrum Menu
    
    oo = mitem(o,'Spectrum');
    ooo = mitem(oo,'Lower Frequency',{},'spectrum.omega.low');
-         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{});
+         Choice(ooo,[1e-2,1e-1,1e0,1e1,1e2,1e3],{@ClearCache});
    ooo = mitem(oo,'Upper Frequency',{},'spectrum.omega.high');
-         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],{});
+         Choice(ooo,[1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10],...
+                    {@ClearCache});
          
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'spectrum.omega.points');
    choice(ooo,[100,500,1000,2000,5000,10000,20000,50000,...
-               1e5,2e5],{});
+               1e5,2e5],{@ClearCache});
 
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head
