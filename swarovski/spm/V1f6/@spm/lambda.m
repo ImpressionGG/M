@@ -126,7 +126,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
    
    om = om(:)';
    Om = om * T0;                        % time normalize
-   ljw = Lambda(o,PsiW31,PsiW33,Om);
+%  ljw = Lambda(o,PsiW31,PsiW33,Om);
 
       % for nargin >= 4 we are done
       

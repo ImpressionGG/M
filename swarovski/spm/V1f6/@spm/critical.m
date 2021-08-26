@@ -68,19 +68,17 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
       K0 = LowerBoundary(o);
       return
    end
-   
-      % calculate contact related system (oo) and principal system (L0)
-      
-   if (nargout == 0 || nargin == 1)
-      oo = system(o);
-   elseif (nargout > 0)
-      oo = system(o,cdx);
-   end
-   L0 = principal(o,oo);               % calc L0 from oo
- 
+    
       % handle plot modes
       
    if (nargout == 0)
+      if (nargout == 0 || nargin == 1)
+         oo = system(o);
+      elseif (nargout > 0)
+         oo = system(o,cdx);
+      end
+      L0 = principal(o,oo);               % calc L0 from oo
+
       if (nargin < 2)
          mode = 'Overview';
       else
@@ -171,11 +169,20 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
                L180 = Negate(L0);
                Nichols(o,oo,L180,[sub(2) 0],-1,crit); % Nichols plot (rev)
             end
-     end
-   elseif (nargout <= 2)
-      [K0,f0] = Calc(o,oo,L0);         % calculate some critical parameters
+      end
+      return
+   end
+   
+      % handle nargout > 0
+   
+   if (nargin < 2)
+      cdx = contact(o,nan);
+   end
+      
+   if (nargout <= 2)
+      [L0,K0,f0] = Calc(o,cdx);           % calculate some critical parameters
    else
-      [K0,f0,K180,f180]=Calc(o,oo,L0); % calculate all critical parameters
+      [L0,K0,f0,K180,f180]=Calc(o,cdx);   % calculate all critical parameters
    end
 end
 
@@ -183,41 +190,42 @@ end
 % Calculate
 %==========================================================================
 
-function [K0,f0,K180,f180] = Calc(o,oo,L0)       % Calculate Crit.Val's
+function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calculate Crit.Val's  
    algo = opt(o,{'algo','fqr'});
    
    switch algo
       case 'fqr'
-         if (nargout <= 2)
-            [K0,f0] = CalcFqr(o,oo,L0);
+         if (nargout <= 3)
+            [L0,K0,f0] = CalcFqr(o,cdx);
          else
-            [K0,f0,K180,f180] = CalcFqr(o,oo,L0);
+            [L0,K0,f0,K180,f180] = CalcFqr(o,cdx);
          end
          
       case 'eig'
-         if (nargout <= 2)
-            [K0,f0] = CalcEig(o,oo,L0);
+         if (nargout <= 3)
+            [L0,K0,f0] = CalcEig(o,cdx);
          else
-            [K0,f0,K180,f180] = CalcEig(o,oo,L0);
+            [L0,K0,f0,K180,f180] = CalcEig(o,cdx);
          end
          
       case 'lambda'
-         if (nargout <= 2)
-            [K0,f0] = CalcLambda(o,oo,L0);
+         if (nargout <= 3)
+            [L0,K0,f0] = CalcLambda(o,cdx);
          else
-            [K0,f0,K180,f180] = CalcLambda(o,oo,L0);
+            [L0,K0,f0,K180,f180] = CalcLambda(o,cdx);
          end
          
       otherwise
          fprintf('*** bad algo => using EIG algorithm\n');
          if (nargout <= 2)
-            [K0,f0] = CalcEig(o,oo,L0);
+            [K0,f0] = CalcEig(o,cdx);
          else
-            [K0,f0,K180,f180] = CalcEig(o,oo,L0);
+            [K0,f0,K180,f180] = CalcEig(o,cdx);
          end
    end
 end
-function [K0,f0,K180,f180] = CalcFqr(o,oo,L0)    % Frequency Based     
+function [L0,K0,f0,K180,f180] = CalcFqr(o,cdx)    % Frequency Based    
+   [oo,L0] = Principal(o,cdx)
    [K0,f0,K180,f180,err] = Critical(o,oo);
    
    check = opt(o,{'check',2});
@@ -248,7 +256,8 @@ function [K0,f0,K180,f180] = CalcFqr(o,oo,L0)    % Frequency Based
       end
    end
 end
-function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based    
+function [L0,K0,f0,K180,f180] = CalcEig(o,cdx)    % Eigenvalue Based   
+   [oo,L0] = Principal(o,cdx)
    [K0,f0] = Stable(o,L0);
     
    if (nargout > 2 && ~stop(o,o))
@@ -297,6 +306,124 @@ function [K0,f0,K180,f180] = CalcEig(o,oo,L0)    % Eigenvalue Based
    function L = Negate(L)
       L.data.B = -L.data.B;
       L.data.D = -L.data.D;
+   end
+end
+function [L0,K0,f0,K180,f180] = CalcLambda(o,cdx) % Lambda Based       
+   [sys,L0] = Principal(o,cdx);
+   lambda0 = lambda(o,sys);
+   
+   om = lambda0.data.omega;
+   [m,n] = size(lambda0.data.matrix);
+   
+   tic;
+   crosses = [];
+   for (kk=1:m)
+      Gjw = lambda0.data.matrix{kk};    % i-th FQR
+      cr = Crosses(o,om,Gjw,kk);
+      crosses = [crosses;cr];
+   end
+   
+   GmaX = max(crosses(:,7:8)')';
+   [Gmax,k] = max(GmaX);
+   K0 = 1/Gmax;
+   
+   toc
+
+   'done';
+   
+   function crosses = Crosses(o,om,Gjw,k)
+      Gjw = -Gjw;
+      
+         % critical phases for lambda0 are at -pi +k*2*pi. If we map
+         % G = -lambda0 then critical phases of G are at 0 + 2*k*pi
+      
+      phi = angle(Gjw);
+      delta = diff([phi(2) phi phi(end-1)]);
+      bwd = sign(delta(1:end-1));      % backward indicator
+      fwd = sign(delta(2:end));        % forward indicator
+      
+         % calculate total indicator ind = bwd + fwd
+         % > 0: increase point (1-1-2 or 1-2-2 or 1-2-3)
+         % = 0: turning point  (3-2-3 or 2-2-2 or 1-2-1)
+         % < 0: decrease point (3-2-1 or 3-2-2 or 3-3-2)
+
+      ind = bwd + fwd;                 % total indicator
+         
+         % find all discontinuities of phi
+         
+      dis = (abs(delta(1:end-1)) > pi) | (abs(delta(2:end)) > pi);
+      
+         % find all turning points; note that first and last point must
+         % be turning points by our construction
+      
+      assert(ind(1)==0);              % first: by our construction
+      assert(ind(end)==0);            % last: by our construction
+      tdx = find((ind == 0) | dis);   % turning point or jump indices
+      
+         % so we got N = length(tdx)-1 intervals; next we seek all N
+         % intervals for zero crosses. To do so build the maximum phase
+         % (pmax) and the minimum phase (pmin) of each interval, then
+         % we conclude a zero cross if zc = (sign(pmin)*sign(pmax) <= 0).
+         % Note that we must exclude and intervals with discontinuities,
+         % which we detect by |diff(p)| > pi
+         
+      N = length(tdx)-1;
+      crosses = [];                   % init crosses table
+      
+         % crosses table is built as follows
+         % [
+         %   :   :    :     :      :        :        :       :
+         %   k  i1   i2  om(i1)  om(i2)  phi(i1)  phi(i2) max(|G(jw(idx))|)
+         %   :   :    :     :      :        :        :       :
+         % ]
+         
+      for (i=1:N)
+         i1 = tdx(i);  i2 = tdx(i+1);
+         idx = i1:i2;
+         p = phi(idx);  pmin = min(p);  pmax = max(p);
+         
+         zc = (sign(pmin)*sign(pmax) <= 0);
+         if (zc)
+            if ~any(abs(diff(p)) > pi)       % no phi jumps?
+               zdx = find(p==0);
+               if ~isempty(zdx)
+                  idx = idx(zdx);            % update idx            
+                  [Gmax,i1] = max(abs(Gjw(idx)));
+                  i2 = i1;
+               elseif (p(1) > 0)
+                  zdx = find(p<0);
+                  i2 = min(idx(zdx));
+                  i1 = i2-1;
+                  Gmax = max(abs(Gjw(i1:i2)));
+               else  % p(1) < 0
+                  zdx = find(p>0);
+                  i2 = min(idx(zdx));
+                  i1 = i2-1;
+                  Gmax = max(abs(Gjw(i1:i2)));
+               end
+               i1i2 = [i1 i2];
+               crosses(end+1,:) = [k,i1,i2,om(i1i2),phi(i1i2),Gmax];
+            end
+         end
+      end
+      
+if (0)
+      o = subplot(o,211);
+      plot(o,om,abs(Gjw),'r1');
+      for (i=1:size(crosses,1))
+         i1 = crosses(i,2);  i2 = crosses(i,3);
+         plot(o,crosses(i,4:5),abs(Gjw([i1 i2])),'co');
+      end
+      subplot(o);
+      
+      o = subplot(o,212);
+      plot(o,om,phi,'g1');
+      for (i=1:size(crosses,1))
+         i1 = crosses(i,2);  i2 = crosses(i,3);
+         plot(o,crosses(i,4:5),phi([i1 i2]),'mo');
+      end
+      subplot(o);
+end      
    end
 end
 

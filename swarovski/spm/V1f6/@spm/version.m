@@ -450,6 +450,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/new: changed parameters of 2-Mode system
 % - spm/getphi: comments fixed
 % - profiling added for spm/lambda
+% - spm/critical: begin lambda algorithm
 
 % Known bugs & wishlist
 % =========================
