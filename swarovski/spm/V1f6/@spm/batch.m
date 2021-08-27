@@ -12,7 +12,7 @@ function oo = batch(o,varargin)        % Batch figure printing
                         @RunAll,@About,...
                         @StabilityMargin,@CriticalOverview,...
                         @CriticalSensitivity,@DampingSensitivity,...
-                        @SetupStudy);
+                        @SetupStudy,@ClearAllCaches);
    oo = gamma(o);                      % invoke local function
 end
 
@@ -203,7 +203,7 @@ function o = RunPkg(o)                 % Run a Single Package
       % individual package specific plots
 
    if (batch.stabilitymargin)
-      StabilityMarginPkg(oo);
+      StabilityMarginPkg(o);
       if stop(o)
          return
       end
@@ -240,6 +240,8 @@ function o = RunPkg(o)                 % Run a Single Package
          if stop(o)
             return
          end
+         ID = id(oo);
+         oo = id(oo,ID);               % refresh object with updated cache
       end
       
          % critical sensitivity
@@ -263,7 +265,12 @@ function o = RunPkg(o)                 % Run a Single Package
          % cache cleanup
          
       if (batch.cleanup)
-         cache(o,o,[]);                % cache hard clear
+         %cache(o,o,[]);                % cache hard clear
+         ClearAllCaches(o);
+         if (i < length(list))
+            ID = id(list{i+1});
+            list{i+1} = id(oo,ID);      % refresh object with updated cache
+         end
       end
    end
    
@@ -586,3 +593,14 @@ function o = SetupStudySpm(o)
    png(o,tag);
 end
 
+%==========================================================================
+% Helper
+%==========================================================================
+
+function o = ClearAllCaches(o)
+   o = pull(o);
+   for (i=1:length(o.data))
+      oo = o.data{i};
+      cache(oo,oo,[]);
+   end
+end

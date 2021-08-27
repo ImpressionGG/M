@@ -243,7 +243,8 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
       for (k=1:kmax)
          G31jwk = reshape(G31jw(:,k),m,m);
          G33jwk = reshape(G33jw(:,k),m,m);
-         Ljwk = G33jwk\G31jwk;
+         
+         Ljwk = G33jwk\G31jwk;         % needs about 7ms for 5x5 matrix
 
          ljw(:,k) = eig(Ljwk);
          if (k > 1)
@@ -263,7 +264,7 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
             g33jw(:,k) = g33jwk(idx);
          end
       end
-         
+        
          % order by maximum magnitude
       
       if (kmax > 1)

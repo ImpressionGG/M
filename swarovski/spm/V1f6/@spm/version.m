@@ -454,6 +454,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/lambda: lambda algorith for critical quantities completed
 % - critical sensitivity with pareto processing
 % - pimp damping sensitivity diagrams
+% - spm/spectrum implemented
+
 
 % Known bugs & wishlist
 % =========================

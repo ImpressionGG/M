@@ -175,14 +175,18 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
    
       % handle nargout > 0
    
-   if (nargin < 2)
-      cdx = contact(o,nan);
-   end
-      
    if (nargout <= 2)
-      [L0,K0,f0] = Calc(o,cdx);           % calculate some critical parameters
+      if (nargin < 2)
+         [L0,K0,f0] = Calc(o);              % calc some critical parameters
+      else
+         [L0,K0,f0] = Calc(o,cdx);          % calc some critical parameters
+      end
    else
-      [L0,K0,f0,K180,f180]=Calc(o,cdx);   % calculate all critical parameters
+      if (nargin < 2)
+         [L0,K0,f0,K180,f180] = Calc(o);    % calc all critical parameters
+      else
+         [L0,K0,f0,K180,f180] = Calc(o,cdx);% calc all critical parameters
+      end
    end
 end
 
@@ -195,13 +199,19 @@ function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
    
    switch algo
       case 'fqr'
-         if (nargout <= 3)
+          if (nargin < 2)
+             cdx = contact(o,nan);
+          end
+          if (nargout <= 3)
             [L0,K0,f0] = CalcFqr(o,cdx);
          else
             [L0,K0,f0,K180,f180] = CalcFqr(o,cdx);
          end
          
       case 'eig'
+         if (nargin < 2)
+            cdx = contact(o,nan);
+         end
          if (nargout <= 3)
             [L0,K0,f0] = CalcEig(o,cdx);
          else
@@ -210,9 +220,17 @@ function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
          
       case 'lambda'
          if (nargout <= 3)
-            [L0,K0,f0] = CalcLambda(o,cdx);
+            if (nargin < 2)
+               [L0,K0,f0] = CalcLambda(o);
+            else
+               [L0,K0,f0] = CalcLambda(o,cdx);
+            end
          else
-            [L0,K0,f0,K180,f180] = CalcLambda(o,cdx);
+            if (nargin < 2)
+               [L0,K0,f0,K180,f180] = CalcLambda(o);
+            else
+               [L0,K0,f0,K180,f180] = CalcLambda(o,cdx);
+            end
          end
          
       otherwise
@@ -309,6 +327,9 @@ function [L0,K0,f0,K180,f180] = CalcEig(o,cdx)    % Eigenvalue Based
    end
 end
 function [L0,K0,f0,K180,f180] = CalcLambda(o,cdx) % Lambda Based       
+   if (nargin < 2)
+      cdx = contact(o,nan);
+   end
    o = with(o,'spectrum');
    reverse = (nargout > 3);
    
@@ -600,7 +621,15 @@ B_1 = -B_1;  B_3 = -B_3;
       if isinf(K0)
          K0_ = K0;  f0_ = f0;
       else
-         [K0_,f0_] = Stable(o,L0,K0); 
+         try
+            [K0_,f0_] = Stable(o,L0,K0);
+         catch
+            if (cutting >= 0)
+               [K0_,f0_] = cook(o,'K0,f0');
+            else
+               [K0_,f0_] = cook(o,'K180,f180');
+            end
+         end
       end
       Results(o,sub(1),sub(2));           % display results
    %end
@@ -807,7 +836,15 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       if isinf(K0)
          K0_ = inf;  f0_ = f0;
       else
-         [K0_,f0_] = Stable(o,L0,K0); 
+         try
+            [K0_,f0_] = Stable(o,L0,K0);
+         catch
+            if (cutting >= 0)
+               [K0_,f0_] = cook(o,'K0,f0');
+            else
+               [K0_,f0_] = cook(o,'K180,f180');
+            end
+         end
       end
       Results(o,sub(1),sub(2));           % display results
    %end

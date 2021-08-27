@@ -79,7 +79,7 @@ function [oo,idx] = Object(o,ID)       % Identify Object
    o = pull(o);                        % fetch shell object
    
    for (i=1:length(o.data))
-      oo = o.data{i};
+      oo = inherit(o.data{i},o);
       oid = id(oo);
       if isequal(oid,ID)
          idx = i;

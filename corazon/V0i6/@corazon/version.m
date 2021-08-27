@@ -636,6 +636,7 @@ function VersionV1I
 % - bugfix in corazito/ready: exception handler for File/Exit case
 % - cache(o,o,[]) - cache hard clear syntax supported
 % - menu rebuild clears refresh callback and ends with a done-message
+% - bugfix in corazon/id: need to inherit options from shell objects
 %
 % Known Bugs / Wishlist
 % - none so far

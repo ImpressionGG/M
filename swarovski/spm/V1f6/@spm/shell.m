@@ -713,7 +713,7 @@ function oo = Sensitive(o)             % Sensitivity View Settings Menu
    setting(o,{'sensitivity.phase.enable'},false);
    setting(o,{'sensitivity.omega.points'},200);
    setting(o,{'sensitivity.omega.window'},50);
-   setting(o,{'sensitivity.timing'},0);
+   setting(o,{'sensitivity.timing'},1);
    
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Lower Frequency',{},'sensitivity.omega.low');
@@ -1179,7 +1179,7 @@ function oo = Critical(o)              % Critical Menu
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
    setting(o,{'critical.check'},0);    % no check
-   setting(o,{'critical.algo'},'eig'); % EIG algorithm
+   setting(o,{'critical.algo'},'lambda'); % EIG algorithm
 %  setting(o,{'critical.gain.low'},1e-3);
    setting(o,{'critical.gain.low'},[]);
 %  setting(o,{'critical.gain.high'},1e3);

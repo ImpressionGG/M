@@ -213,8 +213,12 @@ function o = Critical(o)               % Critical Sensitivity
       return
    end
    
+   tstart = tic;                       % start tic/toc
    timing = opt(o,{'sensitivity.timing',0});
    pareto = opt(o,{'pareto',1.0});
+   frequency = opt(o,{'bode.frequency',0});
+   Kf = o.iif(frequency,2*pi,1);
+   blue = o.color('cb');
    
    heading(o);
    
@@ -348,11 +352,18 @@ function o = Critical(o)               % Critical Sensitivity
             subplot(o,sub1);
             delete(gca);
             subplot(o,sub1);
-            PlotBode(oo,sub1,lk,fk,'r','c-.');   
-            plot(omega(k)*[1 1]/2/pi,get(gca,'ylim'),'g-.');
-
+            PlotBode(oo,sub1,lk,fk,'r','g-.');              
             PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
-            title(sprintf('Mode: #%g, K0: %g',k,o.rd(Kk,2)));
+            hdl = plot(f0*2*pi*[1 1]/Kf,get(gca,'ylim'),'r.');
+            hdl = plot(fk*2*pi*[1 1]/Kf,get(gca,'ylim'),'g-.');
+            
+               % calculate and plot sensitivity
+
+            sk = Sensi(l0,lk);
+            PlotBode(o,sub1,sk,omega(k)/2/pi,'cb','c-.');
+            
+            title(sprintf('Mode: #%g, K0: %g, f%g: %g Hz',...
+                          k,o.rd(Kk,2),k,o.rd(omega(k)/2/pi,0)));
             xlabel('omega [1/s]');
             ylabel('|l0(jw)|');
          end
@@ -383,8 +394,12 @@ function o = Critical(o)               % Critical Sensitivity
    function PlotBode(o,sub,l0,f0,col1,col2)                            
       subplot(o,sub1);
 
+      l0 = opt(l0,'frequency',frequency);        % inherit
       bode(l0,col1);
-      plot(2*pi*[f0 f0],get(gca,'ylim'),col2);
+      hdl = plot(2*pi/Kf*[f0 f0],get(gca,'ylim'),col2);
+      if any(col2=='c')
+         set(hdl,'color',o.color('cb'));
+      end
    end
    function PlotK(o,sub,k,K)                                           
       subplot(o,sub);
@@ -399,6 +414,13 @@ function o = Critical(o)               % Critical Sensitivity
       
       col = o.iif(dark(o),'w','k');
       plot([k k],[0 K],col,  k,K,'ro');
+      
+      if (K > 5*K0)
+         ylim = get(gca,'ylim');
+         ylim(2) = 5*K0;
+         set(gca,'ylim',ylim);
+      end
+      
       title(sprintf('Critical Gain K0: %g (nominal K0: %g)',...
                     o.rd(Kk,3),o.rd(K0,3)));
    end
@@ -416,6 +438,12 @@ function o = Critical(o)               % Critical Sensitivity
       
       col = o.iif(dark(o),'w','k');
       plot([k k],[0 p],col,  k,p,'ro');
+      if (p > 500)
+         ylim = get(gca,'ylim');
+         ylim(2) = 500;
+         set(gca,'ylim',ylim);
+      end
+      
       title(sprintf('Percentual deviation of critical gain: %g%%',...
                     o.rd(p,3)));
    end
@@ -426,14 +454,25 @@ function o = Critical(o)               % Critical Sensitivity
          subplot(o,[n 2 i 2]);
          k = idx(i);
          
+         l0 = opt(l0,'frequency',frequency);
          bode(l0,'ryyyyy');
-         bode(l{k},'r');
+         lk = opt(l{k},'frequency',frequency);
+         bode(lk,'r');
+         
+            % calculate and plot sensitivity
+
+         sk = Sensi(l0,lk);
+         bode(sk,'cb');
+         
+            % plot frequency locations
+            
          ylim = get(gca,'ylim');
          
-         plot(2*pi*[f0 f0],ylim,'r-.');
-         plot(2*pi*[f(k) f(k)],ylim,'c-.');
+         plot(2*pi*[f(k) f(k)]/Kf,ylim,'r-.', 2*pi*[f0 f0]/Kf,ylim,'r.');
+         plot([omega(k) omega(k)]/Kf,ylim,'g-.');
          
-         title(sprintf('mode #%g, K0: %g',k,o.rd(K(k),2)));
+         title(sprintf('mode #%g @ %g Hz, K0: %g @ %g Hz',...
+                       k,o.rd(omega(k)/2/pi,1), o.rd(K(k),2),o.rd(f(k),1)));
          if (i < n)
             xlabel('');                % no xlabel except last plot
          end
@@ -455,13 +494,18 @@ function o = Critical(o)               % Critical Sensitivity
          edx = find(elapse>threshold);
 
          if isempty(edx)
-            plot(domain,elapse,'co');
+            hdl = plot(domain,elapse,'c', domain,elapse,'co');
          else
-            plot(domain(edx),elapse(edx),'co');
+            hdl = plot(domain(edx),elapse(edx),'c', ...
+                       domain(edx),elapse(edx),'co');
          end
+         set(hdl,'color',blue);
          
-         title('Calculation Time [s]');
+         tot = toc(tstart);            % total elapsed time
+         title(sprintf('Calculation Time [s] (Total: %g s)',o.rd(tot,1)));
          shelf(o,figure(o),'elapse',elapse);
+         
+         subplot(o);
       end
    end
 end
@@ -765,4 +809,12 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
 
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
+end
+function sk = Sensi(l0,lk) 
+   l0jw = l0.data.matrix{1};
+   lkjw = lk.data.matrix{1};
+   skjw = lkjw./l0jw;
+
+   sk = set(l0,'name','lk(s)');
+   sk.data.matrix = {skjw};
 end

@@ -13,6 +13,11 @@ function oo = minus(o1,o2)
 %
 %          See also: CORASIM, PLUS, MINUS, MTIMES, MRDIVIDE
 %
+   if type(o1,{'fqr'}) && type(o2,{'fqr'})
+      oo = FqrSub(o1,o2);
+      return
+   end
+
    [o1,o2] = Comply(o1,o2);            % make compliant to each other
    
       % now we are sure to deal with CORASIM objects only
@@ -31,7 +36,7 @@ function oo = minus(o1,o2)
 end
 
 %==========================================================================
-% Add
+% Sub
 %==========================================================================
 
 function oo = Sub(o1,o2)               % Subtract Two Objects          
@@ -79,6 +84,38 @@ function o = Subtraction(o,s)          % Subtr. of Matrix and Scalar
       end
    end
    o.data.matrix = M;
+end
+
+%==========================================================================
+% Subtraction of FQR Typed Objects
+%==========================================================================
+
+function oo = FqrSub(o1,o2)
+    M1 = o1.data.matrix;
+    M2 = o2.data.matrix;
+    
+   [m1,n1] = size(M1);  
+   [m2,n2] = size(M2);
+   l1 = length(o1.data.omega);
+   l2 = length(o2.data.omega);
+   
+   if (l1~=l2 || m1~=m2 || n1~=n2)
+      error('incompatible sizes');
+   end
+   
+      % subtract data
+      
+   M = M1;
+   for (i=1:m1)
+      for (j=1:n1)
+         M{i,j} = M1{i,j} - M2{i,j};
+      end
+   end
+   
+      % store result to out arg
+      
+   oo = o1;
+   oo.data.matrix = M;
 end
 
 %==========================================================================
