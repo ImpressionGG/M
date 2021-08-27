@@ -13,7 +13,7 @@ function varargout = cache(o,varargin) % Cache Method
 %       arg2) to clearly visualize a hard operation!
 %
 %         [oo,bag] = cache(oo,oo,'polar')   % cache refresh (hard)
-%         [oo,bag] = cache(oo,oo,[])        % clear cache (hard)
+%         oo = cache(oo,oo,[])              % clear cache (hard)
 %         oo = cache(oo,'polar',[])         % clear 'polar' cache segment
 %
 %         [oo,bag] = cache(o,'polar')       % soft refresh & get bag
@@ -224,12 +224,17 @@ function varargout = cache(o,varargin) % Cache Method
 % 6) [oo,bag] = cache(oo,oo,[])        % clear cache (hard) 
 %
    while (nargin == 3)                 % 3 input args                  
-      if isobject(varargin{1})         % 5) [oo,bag,rfr] = cache(oo,oo,'polar')
-                                       % 6) [oo,bag,rfr] = cache(oo,oo,[]) 
-         [oo,bag,rfr] = HardRefresh(o,varargin{2});
-         varargout{1} = oo; 
-         varargout{2} = bag;
-         varargout{3} = rfr;
+      if isobject(varargin{1})         % 5) [oo,bag,rfr] = cache(oo,oo,'polar')                                        
+         if isempty(varargin{2})       % 6) [oo,bag,rfr] = cache(oo,oo,[])
+            o = cache(o,[]);           % clear cache
+            cache(o,o);                % hard cache refresh
+            bag = [];  rfr = 0;
+         else
+            [oo,bag,rfr] = HardRefresh(o,varargin{2});
+            varargout{1} = oo; 
+            varargout{2} = bag;
+            varargout{3} = rfr;
+         end
          return
       end
       

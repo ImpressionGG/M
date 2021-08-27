@@ -52,7 +52,7 @@ function oo = Menu(o)                  % Setup Study Menu
 
       % run batch
       
-   oo = mitem(o,'Run Batch',{@WithCuo,'RunBatch'});
+   oo = mitem(o,'Run Batch',{@WithCuo,'RunAll'});
    
       % auxillary menu items
       
@@ -177,23 +177,16 @@ end
 % Run Batch
 %==========================================================================
 
-function o = RunBatch(o)
-   batch = opt(o,'batch');
+function o = RunAll(o)
+   assert(type(o,{'shell'}));
 
-   if (batch.stabilitymargin)
-      StabilityMargin(o);
-   end
-   if (batch.criticaloverview)
-      CriticalOverview(o);
-   end
-   if (batch.dampingsensitivity)
-      DampingSensitivity(o);
-   end
-   if (batch.criticalsensitivity)
-      CriticalSensitivity(o);
-   end
-   if (batch.setupstudy)
-      SetupStudy(o);
+   list = children(o);                 % get list of SPM objects 
+   for (i=1:length(list))
+      oo = list{i};
+      RunPkg(oo);
+      if stop(o)
+         break;
+      end
    end
    
       % print/display end message
@@ -202,6 +195,87 @@ function o = RunBatch(o)
                        'batch processing complete');
    message(o,msg);
    fprintf('%s\n',msg);
+end
+function o = RunPkg(o)
+   assert(type(o,{'pkg'}));
+   batch = opt(o,'batch');
+
+      % individual package specific plots
+
+   if (batch.stabilitymargin)
+      StabilityMarginPkg(oo);
+      if stop(o)
+         return
+      end
+   end
+   
+      % individual SPM specific plots
+    
+   list = children(o);                 % get list of SPM objects 
+   for (i=1:length(list))
+      oo = list{i};
+
+         % stability margin
+         
+      if (batch.stabilitymargin)
+         StabilityMarginSpm(oo);
+         if stop(o)
+            return
+         end
+      end
+      
+         % critical overview
+         
+      if (batch.criticaloverview)
+         CriticalOverviewSpm(oo);
+         if stop(o)
+            return
+         end
+      end
+      
+         % damping sensitivity
+         
+      if (batch.dampingsensitivity)
+         DampingSensitivitySpm(oo);
+         if stop(o)
+            return
+         end
+      end
+      
+         % critical sensitivity
+         
+      if (batch.criticalsensitivity)
+         CriticalSensitivitySpm(oo);
+         if stop(o)
+            return
+         end
+      end
+      
+         % setup study
+         
+      if (batch.setupstudy)
+         SetupStudySpm(oo);
+         if stop(o)
+            return
+         end
+      end
+      
+         % cache cleanup
+         
+      if (batch.cleanup)
+         o = cache(o,o,[]);
+         cache(o,o);
+      end
+   end
+   
+      % setup overview for the package
+      
+   if (batch.setupstudy)
+      SetupStudyPackageOnly(o);
+      if stop(o)
+         return
+      end
+   end      
 end
 
 %==========================================================================
@@ -238,7 +312,7 @@ function o = StabilityMarginPkg(o)
    analyse(o,'StabilityMargin');
 
    fprintf('   create PNG file ...\n');
-   png(o,'Stability Margin @ Package');
+   png(o,sprintf('Stability Margin @ %s',id(o)));
 end
 function o = StabilityMarginSpm(o)                                     
    assert(type(o,{'spm'}));
@@ -422,7 +496,7 @@ function o = CriticalSensitivitySpm(o)
       % forward cutting
       
    cls(o);
-   tag = sprintf('Critical Sensitivity (Forward) @ %s',id(o));
+   tag = sprintf('Critical Sensitivity (Forward) - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
    
    o = opt(o,'view.cutting',+1);
@@ -436,10 +510,11 @@ return;
       % backward cutting
       
    cls(o);
-   tag = sprintf('Critical Sensitivity (Backward) @ %s',id(o));
+   tag = sprintf('Critical Sensitivity (Backward) - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
 
    o = opt(o,'view.cutting',-1);
+   o = opt(o,'pareto',opt(o,{'sensitivity.pareto',1.0}));
    sensitivity(o,'Critical');
 
    fprintf('   create PNG file ...\n');
@@ -486,8 +561,12 @@ function o = SetupStudyPkg(o)
    
       % finally make the setup study for the package
       
+   SetupStudyPkgOnly(o);
+end
+function o = SetupStudyPkgOnly(o)                                     
+   assert(type(o,{'pkg'}));
    cls(o);
-   tag = sprintf('Setup Study @ %s',id(o));
+   tag = sprintf('Setup Study - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
    
    analyse(o,'SetupAnalysis','basic',3);

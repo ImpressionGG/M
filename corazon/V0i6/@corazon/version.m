@@ -634,6 +634,7 @@ function VersionV1I
 % - can select in bode diagram between f and omega
 % - bugfix corazon/plot: inherit axes and deal with subplot
 % - bugfix in corazito/ready: exception handler for File/Exit case
+% - cache(o,o,[]) - cache hard clear syntax supported
 %
 %
 % Known Bugs / Wishlist
