@@ -9,7 +9,7 @@ function oo = batch(o,varargin)        % Batch figure printing
 %    See also: SPM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @RunBatch,@About,...
+                        @RunAll,@About,...
                         @StabilityMargin,@CriticalOverview,...
                         @CriticalSensitivity,@DampingSensitivity,...
                         @SetupStudy);
@@ -177,7 +177,7 @@ end
 % Run Batch
 %==========================================================================
 
-function o = RunAll(o)
+function o = RunAll(o)                 % Run All Configured Batch Items
    assert(type(o,{'shell'}));
 
    list = children(o);                 % get list of SPM objects 
@@ -196,7 +196,7 @@ function o = RunAll(o)
    message(o,msg);
    fprintf('%s\n',msg);
 end
-function o = RunPkg(o)
+function o = RunPkg(o)                 % Run a Single Package          
    assert(type(o,{'pkg'}));
    batch = opt(o,'batch');
 
@@ -263,8 +263,7 @@ function o = RunPkg(o)
          % cache cleanup
          
       if (batch.cleanup)
-         o = cache(o,o,[]);
-         cache(o,o);
+         cache(o,o,[]);                % cache hard clear
       end
    end
    
@@ -312,7 +311,7 @@ function o = StabilityMarginPkg(o)
    analyse(o,'StabilityMargin');
 
    fprintf('   create PNG file ...\n');
-   png(o,sprintf('Stability Margin @ %s',id(o)));
+   png(o,sprintf('Stability Margin - %s',id(o)));
 end
 function o = StabilityMarginSpm(o)                                     
    assert(type(o,{'spm'}));
@@ -323,7 +322,7 @@ end
 % Critical Overview
 %==========================================================================
 
-function o = CriticalOverview(o)        % Dispatcher                    
+function o = CriticalOverview(o)       % Dispatcher                    
    switch o.type
       case 'shell'
          CriticalOverviewAll(o);
@@ -333,7 +332,7 @@ function o = CriticalOverview(o)        % Dispatcher
          CriticalOverviewSpm(o);
    end
 end
-function o = CriticalOverviewAll(o)                                     
+function o = CriticalOverviewAll(o)                                    
    assert(type(o,{'shell'}));
    list = children(o);                  % get list of packages 
    
@@ -345,7 +344,7 @@ function o = CriticalOverviewAll(o)
       end
    end
 end
-function o = CriticalOverviewPkg(o)                                     
+function o = CriticalOverviewPkg(o)                                    
    assert(type(o,{'pkg'}));
    list = children(o);                 % get list of SPM objects 
    
@@ -357,13 +356,13 @@ function o = CriticalOverviewPkg(o)
       end
    end
 end
-function o = CriticalOverviewSpm(o)                                     
+function o = CriticalOverviewSpm(o)                                    
    assert(type(o,{'spm'}));
    
       % forward cutting
       
    cls(o);
-   tag = sprintf('Critical Overview (Forward) @ %s',id(o));
+   tag = sprintf('Critical Overview (Forward) - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
    
    o = opt(o,'view.cutting',+1);
@@ -375,7 +374,7 @@ function o = CriticalOverviewSpm(o)
       % backward cutting
       
    cls(o);
-   tag = sprintf('Critical Overview (Backward) @ %s',id(o));
+   tag = sprintf('Critical Overview (Backward) - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
 
    o = opt(o,'view.cutting',-1);
@@ -389,7 +388,7 @@ end
 % Damping Sensitivity
 %==========================================================================
 
-function o = DampingSensitivity(o)        % Dispatcher                    
+function o = DampingSensitivity(o)     % Dispatcher                    
    switch o.type
       case 'shell'
          DampingSensitivityAll(o);
@@ -399,7 +398,7 @@ function o = DampingSensitivity(o)        % Dispatcher
          DampingSensitivitySpm(o);
    end
 end
-function o = DampingSensitivityAll(o)                                     
+function o = DampingSensitivityAll(o)                                  
    assert(type(o,{'shell'}));
    list = children(o);                  % get list of packages 
    
@@ -411,7 +410,7 @@ function o = DampingSensitivityAll(o)
       end
    end
 end
-function o = DampingSensitivityPkg(o)                                     
+function o = DampingSensitivityPkg(o)                                  
    assert(type(o,{'pkg'}));
    list = children(o);                 % get list of SPM objects 
    
@@ -423,13 +422,13 @@ function o = DampingSensitivityPkg(o)
       end
    end
 end
-function o = DampingSensitivitySpm(o)                                     
+function o = DampingSensitivitySpm(o)                                  
    assert(type(o,{'spm'}));
    
       % forward cutting
       
    cls(o);
-   tag = sprintf('Damping Sensitivity (Forward) @ %s',id(o));
+   tag = sprintf('Damping Sensitivity (Forward) - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
    
    o = opt(o,'view.cutting',+1);
@@ -442,7 +441,7 @@ return;
       % backward cutting
       
    cls(o);
-   tag = sprintf('Damping Sensitivity (Backward) @ %s',id(o));
+   tag = sprintf('Damping Sensitivity (Backward) - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
 
    o = opt(o,'view.cutting',-1);
@@ -456,7 +455,7 @@ end
 % Critical Sensitivity
 %==========================================================================
 
-function o = CriticalSensitivity(o)        % Dispatcher                    
+function o = CriticalSensitivity(o)    % Dispatcher                    
    switch o.type
       case 'shell'
          CriticalSensitivityAll(o);
@@ -466,7 +465,7 @@ function o = CriticalSensitivity(o)        % Dispatcher
          CriticalSensitivitySpm(o);
    end
 end
-function o = CriticalSensitivityAll(o)                                     
+function o = CriticalSensitivityAll(o)                                 
    assert(type(o,{'shell'}));
    list = children(o);                  % get list of packages 
    
@@ -478,7 +477,7 @@ function o = CriticalSensitivityAll(o)
       end
    end
 end
-function o = CriticalSensitivityPkg(o)                                     
+function o = CriticalSensitivityPkg(o)                                 
    assert(type(o,{'pkg'}));
    list = children(o);                 % get list of SPM objects 
    
@@ -490,7 +489,7 @@ function o = CriticalSensitivityPkg(o)
       end
    end
 end
-function o = CriticalSensitivitySpm(o)                                     
+function o = CriticalSensitivitySpm(o)                                 
    assert(type(o,{'spm'}));
    
       % forward cutting
@@ -525,7 +524,7 @@ end
 % Setup Study
 %==========================================================================
 
-function o = SetupStudy(o)        % Dispatcher                    
+function o = SetupStudy(o)             % Dispatcher                    
    switch o.type
       case 'shell'
          SetupStudyAll(o);
@@ -535,7 +534,7 @@ function o = SetupStudy(o)        % Dispatcher
          SetupStudySpm(o);
    end
 end
-function o = SetupStudyAll(o)                                     
+function o = SetupStudyAll(o)                                          
    assert(type(o,{'shell'}));
    list = children(o);                  % get list of packages 
    
@@ -547,7 +546,7 @@ function o = SetupStudyAll(o)
       end
    end
 end
-function o = SetupStudyPkg(o)                                     
+function o = SetupStudyPkg(o)                                          
    assert(type(o,{'pkg'}));
    list = children(o);                 % get list of SPM objects 
   
@@ -563,7 +562,7 @@ function o = SetupStudyPkg(o)
       
    SetupStudyPkgOnly(o);
 end
-function o = SetupStudyPkgOnly(o)                                     
+function o = SetupStudyPkgOnly(o)                                      
    assert(type(o,{'pkg'}));
    cls(o);
    tag = sprintf('Setup Study - %s',id(o));
@@ -574,11 +573,11 @@ function o = SetupStudyPkgOnly(o)
    fprintf('   create PNG file ...\n');
    png(o,tag);      
 end
-function o = SetupStudySpm(o)                                     
+function o = SetupStudySpm(o)                                          
    assert(type(o,{'spm'}));
    
    cls(o);
-   tag = sprintf('Setup Study @ %s',id(o));
+   tag = sprintf('Setup Study - %s',id(o));
    fprintf('   plot %s diagram ...\n',tag);
    
    analyse(o,'SetupAnalysis','basic',3);

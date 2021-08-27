@@ -44,7 +44,7 @@ function oo = Begin(o)                 % Begin Menu
 %     curfig = gcf(o);                 % current figure handle
       curfig = gcf(corazito);          % current figure handle
 
-      if control(o,{'ui',0})
+      if opt(o,{'control.ui',0})
          fig = uifigure;
          
             % GUI handle needs to be registered, otherwise master could
@@ -177,7 +177,14 @@ function oo = Rebuild(o)               % Add Rebuild Menu Item
    return
    
    function o = RebuildCb(o)           % Rebuild Callback          
+      refresh(o,{});                   % clear refresh callback 
+      o = pull(o);                     % refresh shell object
       rebuild(o);                      % rebuild menu structure
+      try
+         message(o,'Menu rebuilt!');
+      catch
+         'catched';                    % corazita/message does not exist
+      end
    end
 end
 function oo = Close(o)                 % Add Close Menu Item           
