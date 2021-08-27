@@ -52,7 +52,7 @@ function oo = Menu(o)                  % Setup Study Menu
 
       % run batch
       
-   oo = mitem(o,'Run Batch',{@WithCuo,'RunAll'});
+   oo = mitem(o,'Run Batch',{@WithSho,'RunAll'});
    
       % auxillary menu items
       

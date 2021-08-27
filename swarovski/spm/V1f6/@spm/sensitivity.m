@@ -434,6 +434,9 @@ function o = Critical(o)               % Critical Sensitivity
          plot(2*pi*[f(k) f(k)],ylim,'c-.');
          
          title(sprintf('mode #%g, K0: %g',k,o.rd(K(k),2)));
+         if (i < n)
+            xlabel('');                % no xlabel except last plot
+         end
       end
    end
    function PlotTiming(o,sub,elapse)                                   
@@ -476,7 +479,10 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
 %    - Sensitivity S := |dL(jw)| / |L0(jw)|
 %
    heading(o);
-
+   frequency = opt(o,{'bode.frequency',0});
+   Kf = o.iif(frequency,2*pi,1);
+   blue = o.color('cb');
+   
    s = [];  modes = [];                % initialize
    watch = false;                      % don't watch (try to set true!)
 
@@ -493,6 +499,7 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
    
    o = with(o,'sensitivity');          % access sensitivity settings
    opts = opt(o,'sensitivity');
+   opts.frequency = opt(o,'bode.frequency');
    o = opt(o,'bode',opts);
 
       % cold refresh critical cache
@@ -526,9 +533,13 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       % plot FQR for 5 most sensitive modes
       
    [~,idx] = sort(-s);                 % sort from largest to smallest
-   for (k=1:5)                                                         
+   n = 5;                              % 5 bode plots
+   for (k=1:n)                                                         
       PlotL0(o,[5,2,k,2]);
       PlotE(o,[5,2,k,2],idx(k));
+      if (k < n)
+         xlabel('');                   % no xlabel except last plot
+      end
       if stop(o)
          break
       end
@@ -556,6 +567,9 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
             
       detail = opt(o,{'detail',1});
 
+      S = zeros(1,m);                  % init
+      modes = zeros(1,m);              % init
+      
       for (i=1:m)
          switch modus
             case 'weight'
@@ -592,16 +606,17 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
          if (detail)
             subplot(o,sub1);
 
-            hdl0 = semilogx(om0,20*log10(abs(gjw0)),'r.');
-            hdl1 = semilogx(om,20*log10(abs(gjw)),'r');
+            hdl0 = semilogx(om0/Kf,20*log10(abs(gjw0)),'r.');
+            hdl1 = semilogx(om/Kf,20*log10(abs(gjw)),'r');
 
             subplot(o,sub2);
-            hdl2 = semilogx(om,20*log10(abs(sjw)),'c');
+            hdl2 = semilogx(om/Kf,20*log10(abs(sjw)),'c');
             hold on;
-            hdl3 = semilogx(om0,20*log10(abs(sjw0)),col);
-            hdl4 = semilogx([mode mode],get(gca,'ylim'),'c-.');
+            hdl3 = semilogx(om0/Kf,20*log10(abs(sjw0)),col);
+            hdl4 = semilogx([mode mode]/Kf,get(gca,'ylim'),'c-.');
             title(sprintf('mode #%g: %g dB @ %g 1/s (%g Hz)',...
                           i,o.rd(S(i),1),mode,mode/2/pi));
+            set([hdl2,hdl4],'color',blue);
                                               
             idle(o);
             delete([hdl0 hdl1,hdl3,hdl4]);
@@ -630,13 +645,13 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       
       for (k=1:min(10,length(idx)))
          kk = idx(k);
-         plot(o,modes(kk),10*s(kk),[col,'|'], modes(kk),10*s(kk),'ro');
-         hdl = text(modes(kk),10*s(kk),sprintf('#%g',kk));
+         plot(o,modes(kk)/Kf,10*s(kk),[col,'|'], modes(kk),10*s(kk),'ro');
+         hdl = text(modes(kk)/Kf,10*s(kk),sprintf('#%g',kk));
          set(hdl,'horizontal','center','vertical','top');
          set(hdl,'color',o.iif(dark(o),1,0)*[1 1 1]);
       end
 
-      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
+      h = semilogx([w0 w0]/Kf,get(gca,'ylim'),'r-.');
       set(h,'linewidth',1);
       
       ylim = get(gca,'ylim');
@@ -651,7 +666,7 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       o = opt(o,'plotcrit',1);
       diagram(o,'Bode','',L0,sub);
 
-      title(sprintf('om0: %g 1/s (f: %g Hz)',w0,w0/2/pi));
+      title(sprintf('om0: %g 1/s (f0: %g Hz)',w0,w0/2/pi));
       subplot(o,sub);
    end
    function PlotE(o,sub,k)             % plot Example                  
@@ -661,18 +676,18 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       
       mode = modes(k);                 % mode omega
 
-      hdl = semilogx(om,20*log10(abs(lkjw)),'r');
+      hdl = semilogx(om/Kf,20*log10(abs(lkjw)),'r');
       hold on
-      hdl = semilogx(om,20*log10(abs(skjw)),'c');
-      set(hdl,'linewidth',1);
+      hdl = semilogx(om/Kf,20*log10(abs(skjw)),'c');
+      set(hdl,'linewidth',1,'color',blue);
       title(sprintf('Mode #%g, Omega: %g 1/s (%g Hz), Sensitivity: %g dB',...
                 k,o.rd(modes(k),0),o.rd(modes(k)/2/pi,0),o.rd(s(k),1)));
 
       subplot(o);
-      h = semilogx([w0 w0],get(gca,'ylim'),'r-.');
+      h = semilogx([w0 w0]/Kf,get(gca,'ylim'),'r-.');
       set(h,'linewidth',1);
-      h = semilogx([modes(k),modes(k)],get(gca,'ylim'),'c-.');
-      set(h,'linewidth',1);
+      h = semilogx([modes(k),modes(k)]/Kf,get(gca,'ylim'),'c-.');
+      set(h,'linewidth',1,'color',blue);
       
       ylim = get(gca,'ylim');
       set(gca,'ylim',[ylim(1) max(ylim(2),50)]);

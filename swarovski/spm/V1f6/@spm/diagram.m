@@ -388,6 +388,9 @@ function o = GoodBode(o)               % Bode Diagram
    subplot(o);                         % subplot done!
 end
 function o = NewBode(o)                % Bode Diagram                  
+   frequency = opt(o,{'bode.frequency',0});
+   Kf = o.iif(frequency,1,2*pi);
+
    o = Scaling(o);                     % manage scaling factors
    plotcrit = opt(o,{'plotcrit',0});   % plot critical frequency ?
    
@@ -410,15 +413,16 @@ function o = NewBode(o)                % Bode Diagram
       G = opt(G,'omega.low',2*pi*f0/fac,'omega.high',2*pi*f0*fac);
    end
    
+   G = opt(G,'frequency',frequency);
    bode(G);
    
    if (plotcrit)
       [f0,f180] = cook(o,'f0,f180');
       ylim = get(gca,'ylim');
       hold on;
-      hdl = semilogx(2*pi*f0*[1 1],ylim,'r-.');
+      hdl = semilogx(Kf*f0*[1 1],ylim,'r-.');
       set(hdl,'linewidth',1);
-      hdl = semilogx(2*pi*f180*[1 1],ylim,o.iif(dark(o),'m-.','b-.'));
+      hdl = semilogx(Kf*f180*[1 1],ylim,o.iif(dark(o),'m-.','b-.'));
       set(hdl,'linewidth',1);
    end
    
