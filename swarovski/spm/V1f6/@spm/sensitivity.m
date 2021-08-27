@@ -34,6 +34,8 @@ function [o1,o2,o3] = sensitivity(o,in1,in2)
 %                detail      % plot intermediate details of sensitivity
 %                            % calculation for modes 'Damping' and 'weight'
 %                            % (default true)
+%                pareto      % only pareto percentage of critical sensiti-
+%                            % vity is being processed (default 1.0 (100%))
 %
 %             Copyright(c) Bluenetics 2021
 %
@@ -211,13 +213,17 @@ function o = Critical(o)               % Critical Sensitivity
       return
    end
    
+   timing = opt(o,{'sensitivity.timing',0});
+   pareto = opt(o,{'pareto',1.0});
+   
    heading(o);
    
    sub1 = 2212;                        % for bode plot
-   sub2 = 3221;                        % for K plot
+   sub2 = o.iif(timing,4221,3221);     % for K plot
    sub3 = 2222;                        % for damping
-   sub4 = 3211;                        % for damping sensitivity
-   sub5 = 3231;                        % for Percentage plot
+   sub4 = o.iif(timing,4211,3211);     % for damping sensitivity
+   sub5 = o.iif(timing,4231,3231);     % for Percentage plot
+   sub6 = 4241;                        % for timing plot
    
       % hard refresh of caches
       
@@ -227,7 +233,7 @@ function o = Critical(o)               % Critical Sensitivity
    
       % plot nominal damping
       
-   subplot(o,sub3);
+   subplot(o,sub3);                    % damping chart
    damping(o);
    
       % plot damping sensitivity
@@ -272,6 +278,7 @@ function o = Critical(o)               % Critical Sensitivity
       [~,idx] = sort(-abs(S));
    else
       idx = 1:m;
+      pareto = 1.0;                    % set pareto to 100%
    end
       
 
@@ -283,8 +290,17 @@ function o = Critical(o)               % Critical Sensitivity
       K = NaN*ones(1,m);
    end
    
-   for (k=idx)
-      dtab = dtab0;                    % startig from dtab0
+   index = idx;
+   elapse = NaN*index;
+
+   for (ii=1:length(index))
+      if (ii/length(index) > pareto)
+         break;
+      end
+      k = index(ii);
+      tic
+      
+      dtab = dtab0;                    % starting from dtab0
       dtab(k,3) = dtab(k,3)*vari;      % variate damping of mode k
       oo = damping(o,dtab);            % change damping
       
@@ -341,12 +357,16 @@ function o = Critical(o)               % Critical Sensitivity
             ylabel('|l0(jw)|');
          end
       end
+      idle(o);
       
-         % Plot K and percentage
+      elapse(ii) = toc;
+
+         % Plot K, percentage and timing
          
       PlotK(o,sub2,k,Kk);         
       PlotPercent(o,sub5,k,Kk);
-            
+      PlotTiming(o,sub6,elapse);
+      
       if stop(o)         
          terminated = 1;
          break;
@@ -356,16 +376,17 @@ function o = Critical(o)               % Critical Sensitivity
    
    title(sprintf('Critical Gain (nominal K0: %g)',o.rd(K0,2)));
    if (~terminated)
-      PlotFavorites(o)
+      PlotTiming(o,sub6,elapse);
+      PlotFavorites(o);
    end
    
-   function PlotBode(o,sub,l0,f0,col1,col2)
+   function PlotBode(o,sub,l0,f0,col1,col2)                            
       subplot(o,sub1);
 
       bode(l0,col1);
       plot(2*pi*[f0 f0],get(gca,'ylim'),col2);
    end
-   function PlotK(o,sub,k,K)
+   function PlotK(o,sub,k,K)                                           
       subplot(o,sub);
       
       if (length(k) == 2)
@@ -381,7 +402,7 @@ function o = Critical(o)               % Critical Sensitivity
       title(sprintf('Critical Gain K0: %g (nominal K0: %g)',...
                     o.rd(Kk,3),o.rd(K0,3)));
    end
-   function PlotPercent(o,sub,k,K)
+   function PlotPercent(o,sub,k,K)                                     
       subplot(o,sub);
       
       p = (K-K0)/K0*100;               % percentage
@@ -398,7 +419,7 @@ function o = Critical(o)               % Critical Sensitivity
       title(sprintf('Percentual deviation of critical gain: %g%%',...
                     o.rd(p,3)));
    end
-   function PlotFavorites(o)
+   function PlotFavorites(o)                                           
       [~,idx] = sort(-K);
       n = 5;
       for (i=1:n)
@@ -413,6 +434,31 @@ function o = Critical(o)               % Critical Sensitivity
          plot(2*pi*[f(k) f(k)],ylim,'c-.');
          
          title(sprintf('mode #%g, K0: %g',k,o.rd(K(k),2)));
+      end
+   end
+   function PlotTiming(o,sub,elapse)                                   
+      if control(o,'verbose') >= 1
+         fprintf('(%g) calc time for critical sensitivity, #%g s\n',...
+                 ii,o.rd(elapse(ii),1)); 
+      end
+      
+      if (timing)
+         oo = subplot(o,sub);
+         delete(axes(oo));
+         oo = subplot(o,sub);
+         
+         domain = 1:length(index);
+         threshold = 2;
+         edx = find(elapse>threshold);
+
+         if isempty(edx)
+            plot(domain,elapse,'co');
+         else
+            plot(domain(edx),elapse(edx),'co');
+         end
+         
+         title('Calculation Time [s]');
+         shelf(o,figure(o),'elapse',elapse);
       end
    end
 end
@@ -480,7 +526,7 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       % plot FQR for 5 most sensitive modes
       
    [~,idx] = sort(-s);                 % sort from largest to smallest
-   for (k=1:5)
+   for (k=1:5)                                                         
       PlotL0(o,[5,2,k,2]);
       PlotE(o,[5,2,k,2],idx(k));
       if stop(o)
@@ -699,7 +745,7 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
    k1 = 1/k;  k2 = k;
 
    if (nargin < 2)
-      [f0,L0] = cook(o,'f0,L0');
+      f0 = cook(o,'f0');
    end
 
    om0 = 2*pi*f0;

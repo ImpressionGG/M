@@ -96,7 +96,23 @@ function [V,lambda] = ZpkGain(o)       % Calculation of Gain and Lambda
       p(idx) = [];
    end
    
-   V = k*prod(-z)/prod(-p);
+      % next to calculate is: V = k*prod(-z)/prod(-p), but for lot's
+      % of zeros and poles this statement numerically crashes. So we
+      % have to use a smarter method
+   
+   nz = length(z);  np = length(p);
+   V = k;                              % that's how we start
+   for (i=1:max(np,nz))
+      if (i <= np)
+         V = -V/p(i);
+      end
+      if (i <= nz)
+         V = -V*z(i);
+      end
+   end
+      
+      % finally we trim to a real value if it is close to
+      
    if (abs(imag(V)/real(V)) < eps)
       V = real(V);
    end

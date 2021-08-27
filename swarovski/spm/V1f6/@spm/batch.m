@@ -26,6 +26,7 @@ function oo = Menu(o)                  % Setup Study Menu
    setting(o,{'batch.dampingsensitivity'},0);
    setting(o,{'batch.criticalsensitivity'},0);
    setting(o,{'batch.setupstudy'},0);
+   setting(o,{'batch.cleanup'},0);     % cache cleanup
    
    co = current(o);
    
@@ -45,6 +46,10 @@ function oo = Menu(o)                  % Setup Study Menu
    ooo = mitem(oo,'Setup Study',{},'batch.setupstudy');
          check(ooo,{@Cb});
 
+   mitem(oo,'-');
+   ooo = mitem(oo,'Cache Cleanup',{},'batch.cleanup');
+        choice(ooo,{{'Off',0},{'On',1}});
+
       % run batch
       
    oo = mitem(o,'Run Batch',{@WithCuo,'RunBatch'});
@@ -59,12 +64,7 @@ function oo = Menu(o)                  % Setup Study Menu
    oo = mitem(o,'Critical Sensitivity',{@WithCuo,'CriticalSensitivity'});
    oo = mitem(o,'-');
    oo = mitem(o,'Setup Study',{@WithCuo,'SetupStudy'});
-
-%  oo = mitem(o,'Mode Shapes');
-%  ooo = mitem(oo,'Overview',{@WithCuo,'ModeShapeOverview'});
-   
-%  oo = mitem(o,'Stability');
-%  ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
+        
    function o = Cb(o)
       o = About(o);
    end
@@ -426,6 +426,7 @@ function o = CriticalSensitivitySpm(o)
    fprintf('   plot %s diagram ...\n',tag);
    
    o = opt(o,'view.cutting',+1);
+   o = opt(o,'pareto',opt(o,{'sensitivity.pareto',1.0}));
    sensitivity(o,'Critical');
 
    fprintf('   create PNG file ...\n');

@@ -206,7 +206,7 @@ function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
             [L0,K0,f0] = CalcEig(o,cdx);
          else
             [L0,K0,f0,K180,f180] = CalcEig(o,cdx);
-         end
+         ;end
          
       case 'lambda'
          if (nargout <= 3)
@@ -225,7 +225,7 @@ function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
    end
 end
 function [L0,K0,f0,K180,f180] = CalcFqr(o,cdx)    % Frequency Based    
-   [oo,L0] = Principal(o,cdx)
+   [oo,L0] = Principal(o,cdx);
    [K0,f0,K180,f180,err] = Critical(o,oo);
    
    check = opt(o,{'check',2});
@@ -257,7 +257,7 @@ function [L0,K0,f0,K180,f180] = CalcFqr(o,cdx)    % Frequency Based
    end
 end
 function [L0,K0,f0,K180,f180] = CalcEig(o,cdx)    % Eigenvalue Based   
-   [oo,L0] = Principal(o,cdx)
+   [oo,L0] = Principal(o,cdx);
    [K0,f0] = Stable(o,L0);
     
    if (nargout > 2 && ~stop(o,o))

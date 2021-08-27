@@ -1931,6 +1931,7 @@ function oo = Sensitivity(o)           % Sensitivity Plot/Calc
       case 'damping'
          oo = sensitivity(o,'Damping');
       case 'critical'
+         o = opt(o,'pareto',opt(o,{'sensitivity.pareto',1.0}));
          oo = sensitivity(o,'Critical');
       case 'weight'
          oo = sensitivity(o,'Weight');

@@ -707,11 +707,13 @@ function oo = Sensitive(o)             % Sensitivity View Settings Menu
    setting(o,{'sensitivity.omega.high'},1e5);
    setting(o,{'sensitivity.magnitude.low'},[]);
    setting(o,{'sensitivity.magnitude.high'},[]);
+   setting(o,{'sensitivity.pareto'},1);% 100% pareto percentage
    
    setting(o,{'sensitivity.magnitude.enable'},true);
    setting(o,{'sensitivity.phase.enable'},false);
    setting(o,{'sensitivity.omega.points'},200);
    setting(o,{'sensitivity.omega.window'},50);
+   setting(o,{'sensitivity.timing'},0);
    
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Lower Frequency',{},'sensitivity.omega.low');
@@ -729,6 +731,13 @@ function oo = Sensitive(o)             % Sensitivity View Settings Menu
    ooo = mitem(oo,'Points',{},'sensitivity.omega.points');
    choice(ooo,[100,200,500,1000,2000,5000,10000,20000,50000,...
                1e5,2e5,5e5,1e6,2e6,5e6,1e7],{});
+   
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Show Timing',{},'sensitivity.timing');
+         choice(ooo,{{'Off',0},{'On',1}});
+   ooo = mitem(oo,'Pareto',{},'sensitivity.pareto');
+        choice(ooo,{{'10%',0.1},{'20%',0.2},{'40%',0.4},{'60%',0.6},...
+                   {'80%',0.8},{'100%',1.0}});
    
    function Choice(o,values,cblist)    % Choice Menu List With Auto    
       list = {{'Auto',[]},{}};         % list head

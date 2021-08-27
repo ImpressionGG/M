@@ -452,6 +452,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - profiling added for spm/lambda
 % - spm/critical: begin lambda algorithm
 % - spm/lambda: lambda algorith for critical quantities completed
+% - critical sensitivity with pareto processing 
 
 % Known bugs & wishlist
 % =========================
