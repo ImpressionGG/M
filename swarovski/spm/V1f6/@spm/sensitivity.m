@@ -548,9 +548,8 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
 
       % cold refresh critical cache
       
-   o = cache(o,o,'critical');
-   o = cache(o,o,'spectral');
-   
+   o = Cache(o,o);
+
    [f0,T0] = cook(o,'f0,Tnorm');
 %  [lambda0,PsiW31,PsiW33] = cook(o,'lambda0,PsiW31,PsiW33');
    [lambda0,psiW31,psiW33] = cook(o,'lambda0,psiW31,psiW33');
@@ -822,4 +821,23 @@ function sk = Sensi(l0,lk)
 
    sk = set(l0,'name','lk(s)');
    sk.data.matrix = {skjw};
+end
+function o = Cache(o,oo)
+%
+% CACHE  Cache hard refresh
+%
+%           o = Cache(o,o)             % 2nd arg is dummy for highlighting
+%
+%        In any case we need the gamma cache segment. If gamma algorithm
+%        for critical quantity calculation is not selected, then we also
+%        need to refresh critical and spectral
+%        segment
+%
+   assert(isobject(oo));               % to make aware that cache is hard
+                                       % refreshed
+   o = cache(o,o,'gamma');             % need gamma cache
+   if ~isequal(opt(o,'critical.algo'),'gamma')
+      o = cache(o,o,'critical');
+      o = cache(o,o,'spectral');
+   end
 end

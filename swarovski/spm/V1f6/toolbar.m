@@ -1,15 +1,15 @@
-function oo = spmplug1(o,varargin)    % Spmplug1 Plugin              
+function oo = toolbar(o,varargin)      % Toolbar Plugin              
 %
-% SPMPLUG1  Spmplug1 plugin: Add batch print menu items
+% TOOLBAR  Toolbar plugin: Add toolbar and buttons
 %
-%              spmplug1(sho)          % plugin registration
+%              toolbar(sho)          % plugin registration
 %
-%              oo = spmplug1(o,func)  % call local spmplug1 function
+%              oo = toolbar(o,func)  % call local toolbar function
 %
 %           See also: CORAZON, PLUGIN, SAMPLE, SIMPLE
 %
    [gamma,oo] = manage(o,varargin,@Setup,@Register,@Menu,...
-                       @WithCuo,@WithSho,@Batch1,@Batch2);
+                       @WithCuo,@WithSho);
    oo = gamma(oo);
 end              
 
@@ -101,67 +101,88 @@ function o = Menu(o)                   % Setup General Plugin Menus
 %        locate a menu item by path and to insert a new menu item at this
 %        location.
 %
-   oo = Batch(o);                      % add Batch menu items
+   oo = Toolbar(o);                    % add toolbar items
 end
 
 %==========================================================================
 % Plot Menu Plugins
 %==========================================================================
 
-function oo = Batch(o)                 % Batch Menu Setup              
+function oo = Toolbar(o)               % Toolbar Setup              
 %
-% BATCH   Add some Batch menu items
+% TOOLBAR   Add toolbar and some tool items
 %
-   oo = mseek(o,{'#','Batch'});        % find Batch rolldown menu
-   if isempty(oo)
-      return
-   end
+   oo = titem(o);                                  % create toolbar
+   ooo = titem(oo,'guideicon.gif',{@Rebuild},[]);
+   ooo = titem(oo,'greenarrowicon.gif',{@Refresh},[]);
+   ooo = titem(oo,'unknownicon.gif',{@Stop},[]);
    
-   types = {'shell','spmplug1'};       % supported types
+   function o = Rebuild(o)
+      rebuild(o);
+   end   
+   function o = Refresh(o)
+      refresh(o);
+   end
+   function o = Stop(o)
+      stop(o,'Callback');
+   end
+end
 
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Special');
-         enable(ooo,type(o,{'shell','pkg','cut'}));
-   oooo = mitem(ooo,'Special Batch 1',{@WithCuo,'Batch1'});
-   oooo = mitem(ooo,'Special Batch 2',{@WithCuo,'Batch2'});
-end
-function oo = Batch1(o)                % Process Batch 1               
-   switch o.type
-      case {'spm'}
-         oo = SpmBatch(o);
-      case {'pkg'}
-         oo = PkgBatch(o);
-      otherwise
-         oo = ShellBatch(o);
+
+function oo = titem(o,icon,cblist,userdata)
+%
+% TITEM   Create toolbar or toolbar item
+%
+%            oo = titem(o)             % create toolbar
+%
+%            rebuild = 'guideicon.gif';
+%            refresh = 'greenarrowicon.gif'
+%            stop = 'tool_hand.png'
+%
+%            ooo = titem(oo,rebuild,{@Rebuild},[])  % add Rebuild button
+%            ooo = titem(oo,refresh,{@Refresh},[])  % add Refresh button
+%            ooo = titem(oo,stop,{@Stop},[])        % add Stop button
+%
+%         Copyright(c): Bluenetics 2021
+%
+%         See also: CORAZON, MITEM
+%
+   if (nargin == 1)
+      oo = Toolbar(o);
+      return
+   else
+      oo = ToolButton(o,nargin)
    end
    
-   function o = SpmBatch(o)            % Run Batch for SPM Object   
-      message(o,'Run Batch1 for SPM Object');
+   function oo = ToolButton(o,nin)
+      tb = work(o,'titem');
+      pt = uipushtool(tb);
+      pt.CData = Icon(o,icon);
+
+         % set callback
+
+      if (nin >= 3)
+         callback = call(o,class(o),cblist); % construct callback
+         set(pt,'ClickedCallback',callback);
+      end
+
+         % set user data
+
+      if (nin >= 4)
+         set(pt,'userdata',userdata);
+      end
+
+         % set out arg
+
+      oo = work(o,'titem',pt);
    end
-   function o = PkgBatch(o)            % Run Batch for Package Object   
-      message(o,'Run Batch1 for Package Object');
+   function oo = Toolbar(o)
+      tb = uitoolbar(figure(o));
+      oo = work(o,'titem',tb);
    end
-   function o = ShellBatch(o)          % Run Batch for Shell Object   
-      message(o,'Run Batch1 for Shell Object');
-   end
-end
-function oo = Batch2(o)                % Process Batch 2               
-   switch o.type
-      case {'spm'}
-         oo = SpmBatch(o);
-      case {'pkg'}
-         oo = PkgBatch(o);
-      otherwise
-         oo = ShellBatch(o);
-   end
-   
-   function o = SpmBatch(o)            % Run Batch for SPM Object   
-      message(o,'Run Batch2 for SPM Object');
-   end
-   function o = PkgBatch(o)            % Run Batch for Package Object   
-      message(o,'Run Batch2 for Package Object');
-   end
-   function o = ShellBatch(o)          % Run Batch for Shell Object   
-      message(o,'Run Batch2 for Shell Object');
+   function icn = Icon(o,icon)
+      [img,map] = imread(fullfile(matlabroot,...
+            'toolbox','matlab','icons',icon));
+      icn = ind2rgb(img,map);
    end
 end
