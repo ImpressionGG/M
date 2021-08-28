@@ -131,9 +131,14 @@ function varargout = cook(o,sym)
 %          gamma0jw = cook(o,'gamma0jw')    % critical (fwd) spectral FQR
 %          gamma180jw = cook(o,'gamma180jw')% critical (rev) spectral FQR
 %
+%       Resulting system after variation, coordinate transf. & contact,
+%       same as sys = system(o), but cached!
+%
+%          sys = cook(o,'system');          % resulting system
+%
 %       Psion functions for spectrum calculation
 %
-%          [Psi0W31,Psi0W33] = cook(p,'Psi0W31,Psi0W33')
+%          [psiw31,psiw33] = cook(p,'psiw31,psiw33')
 %
 %       Setup
 %
@@ -186,20 +191,24 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
 
    switch sym
       case {'A','B','C', 'D'}
-         oo = brew(o,'System');
-         oo = var(oo,sym);
+         o = cache(o,o,'gamma');       % hard refresh trf cache 
+         sys = cache(o,'gamma.system');
+         oo = var(sys,sym);
 
       case {'A11','A12','A21', 'A22','B1','B2','C1','C2'}
-         oo = brew(o,'System');
-         oo = var(oo,sym);
+         o = cache(o,o,'gamma');       % hard refresh trf cache 
+         sys = cache(o,'gamma.system');
+         oo = var(sys,sym);
 
       case {'B_1','B_2','B_3'}         % B_1 = [B(:,1),B(:,4),B(:,7),...]
-         oo = contact(o);              % B_2 = [B(:,2),B(:,5),B(:,8),...]
-         oo = var(oo,sym);             % B_3 = [B(:,3),B(:,6),B(:,9),...]
+         o = cache(o,o,'gamma');       % B_2 = [B(:,2),B(:,5),B(:,8),...] 
+         sys = cache(o,'gamma.system');% B_3 = [B(:,3),B(:,6),B(:,9),...]
+         oo = var(sys,sym);
          
       case {'C_1','C_2','C_3'}         % C_1 = [C(1,:);C(4,:);C(7,:);...]
-         oo = contact(o);              % C_2 = [C(2,:);C(5,:);C(8,:);...]
-         oo = var(oo,sym);             % C_3 = [C(3,:);C(6,:);C(9,:);...]
+         o = cache(o,o,'gamma');       % C_2 = [C(2,:);C(5,:);C(8,:);...] 
+         sys = cache(o,'gamma.system');% C_3 = [C(3,:);C(6,:);C(9,:);...]
+         oo = var(sys,sym);
          
       case {'contact'}                 % actual contact indices
          oo = contact(o);
@@ -221,25 +230,28 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
 %        oo = cache(oo,['multi.',sym]);
 
       case {'A0','B0','C0','D0','M0','N0','V0','AQ','BQ','CQ','DQ','CP','DP'}
-         oo = brew(o,'System');
-         oo = var(oo,sym);
+         o = cache(o,o,'gamma');       % hard refresh trf cache 
+         sys = cache(o,'gamma.system');
+         oo = var(sys,sym);
 
       case {'a0','a1','omega','zeta'}
-         oo = brew(o,'System');
-         oo = var(oo,sym);
+         o = cache(o,o,'gamma');       % hard refresh trf cache 
+         sys = cache(o,'gamma.system');
+         oo = var(sys,sym);
 
       case 'Tnorm'
-         sys = system(o);
+         o = cache(o,o,'gamma');       % hard refresh trf cache 
+         sys = cache(o,'gamma.system');
          oo = var(sys,'T0');
          
       case 'G'
-         oo = cache(o,o,'trf');        % hard refresh trf cache 
-         oo = cache(oo,'trf.G');
+         o = cache(o,o,'trf');         % hard refresh trf cache 
+         o = cache(o,'trf.G');
 
             % optionally convert G back from VPA to double representation
             
          if ~opt(o,{'precision.Gcook',0})
-            oo = vpa(oo,0);
+            oo = vpa(o,0);
             oo.data.digits = -abs(oo.data.digits);
             [m,n] = size(oo);
             for (i=1:m)
@@ -252,12 +264,12 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          end
          
       case 'Gpsi'
-         oo = cache(o,o,'trf');        % hard refresh trf cache 
+         o = cache(o,o,'trf');         % hard refresh trf cache 
          oo = cache(o,'trf.Gpsi');
 
       case {'G11','G12','G13', 'G21','G22','G23', 'G32'}
-         oo = cache(o,o,'trf');        % hard refresh trf cache 
-         G = cache(oo,'trf.G');
+         o = cache(o,o,'trf');         % hard refresh trf cache 
+         G = cache(o,'trf.G');
          oo = peek(G,i,j);
 
             % optionally convert G back from VPA to double representation
@@ -293,19 +305,19 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          % constrained transfer matrix
                   
       case 'H'
-         oo = cache(o,o,'consd');      % hard refresh consd cache 
-         oo = cache(oo,'consd.H');
+         o = cache(o,o,'consd');       % hard refresh consd cache 
+         oo = cache(o,'consd.H');
          
       case {'H11','H12','H13', 'H21','H22','H23', 'H31','H32','H33'}
-         oo = cache(o,o,'consd');      % hard refresh consd cache 
-         H = cache(oo,'consd.H');
+         o = cache(o,o,'consd');       % hard refresh consd cache 
+         H = cache(o,'consd.H');
          oo = peek(H,i,j);
          
          % open loop transfer matrix
          
       case 'L'
-         oo = cache(o,o,'consd');      % hard refresh consd cache 
-         oo = cache(oo,'consd.L');
+         o = cache(o,o,'consd');       % hard refresh consd cache 
+         oo = cache(o,'consd.L');
          
       case {'P','Q','F0','L0'}
          o = cache(o,o,'principal');   % hard refresh of principal segment
@@ -316,8 +328,8 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          oo = cache(o,['critical.',sym]);
          
       case {'Lmu','S0','T0'}
-         oo = cache(o,o,'loop');       % hard refresh loop cache 
-         oo = cache(oo,['loop.',sym]);
+         o = cache(o,o,'loop');        % hard refresh loop cache 
+         oo = cache(o,['loop.',sym]);
          
       case {'L1','L2'}
          L = cache(o,'consd.L');
@@ -352,27 +364,23 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
 
-      case {'gamma0','gamma180'}
-         oo = cache(o,o,'gamma');
-         oo = cache(oo,['gamma.',sym]);
+      case {'gamma0','gamma180','system'}
+         o = cache(o,o,'gamma');
+         oo = cache(o,['gamma.',sym]);
          
-      case {'L0jw','lambda0','lambda180','gamma0','gamma180',...
-            'psiW31','psiW33','psi0W31','psi0W33',...
-            'g31','g33','g30','l0','l180',...
-            'lambda0jw','lambda180jw','gamma0jw','gamma180jw'}
-         if isequal(opt(o,{'critical.algo','gamma'}),'gamma')
-            o = cache(o,o,'gamma');
-         end
-         oo = cache(o,o,'spectral');
-         oo = cache(oo,['spectral.',sym]);
+      case {'L0jw','lambda0','lambda180','lambda0jw','lambda180jw',...
+            'psiw31','psiw33','g31','g33','g30','l0','l180'}
+         o = cache(o,o,'gamma');
+         o = cache(o,o,'spectral');
+         oo = cache(o,['spectral.',sym]);
          if isa(oo,'corazon')
             oo = inherit(oo,o);
             oo = opt(oo,'oscale',oscale(o));
          end
          
       case {'K0K180','f0f180'}
-         oo = cache(o,o,'setup');
-         oo = cache(oo,['setup.',sym]);
+         o = cache(o,o,'setup');
+         oo = cache(o,['setup.',sym]);
          
       otherwise
          error(['unsupported symbol: ',sym]);

@@ -96,6 +96,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %                              search (default: 1e-10)
 %            iter              number of iterations for zero phase
 %                              crossing search (default: 50)
+%            progress          progress message (default: '')
 %
 %         Copyright(c): Bluenetics 2021
 %
@@ -107,7 +108,8 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
       if (nargout <= 1)
          oo = Lambda(o,PsiW31,PsiW33,om);
       elseif (nargout == 2)
-         [g31,g33] = Lambda(o,PsiW31,PsiW33,om);    % only spectral genesis
+         [g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om); % only spectral genesis
+         oo = g31jw;  g31 = g33jw;     % shift out args
       else
          [oo,g31,g33] = Lambda(o,PsiW31,PsiW33,om); % also spectral genesis
       end
@@ -253,7 +255,12 @@ function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)
 %        with l_jw=-ljw, g31_jw=-g31jw and g33_jw=g3jw
 %
    o.profiler('Lambda',1);
-
+   
+   msg = opt(o,{'progress',0});
+   if ~isempty(msg)
+      progress(o,msg,0);
+   end
+   
    G31jw = psion(o,psiW31,om);
    G33jw = psion(o,psiW33,om);
 
@@ -279,6 +286,11 @@ function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)
 
       kmax = size(G31jw,2);
       for (k=1:kmax)
+         percent = k/kmax*100;
+         if (~isempty(msg) && rem(percent,20)==0)
+            progress(o,msg,percent);
+         end
+            
          G31jwk = reshape(G31jw(:,k),m,m);
          G33jwk = reshape(G33jw(:,k),m,m);
          
@@ -321,6 +333,12 @@ function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)
          [Gmax,idx] = sort(Gmax,'descend');    % sort by descending order
          ljw = ljw(idx,:);                     % reorder
       end
+   end
+   
+      % more or less done
+      
+   if ~isempty(msg)
+      progress(o);
    end
    o.profiler('Lambda',0);
 end

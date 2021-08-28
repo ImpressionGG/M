@@ -457,6 +457,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/spectrum implemented
 % - use glabally psiW31 and psiW33 instead of PsiW31 and PsiW33
 % - toolbar plugin trial
+% - damping sensitivity & critical sensitivity working fpr gamma algo
 
 
 % Known bugs & wishlist

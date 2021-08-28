@@ -236,12 +236,11 @@ function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
       case 'gamma'
          if (nargin >= 2)
             o = opt(o,'process.contact',cdx);
-            [gamma0,gamma180] = gamma(o);
+            [gamma0,gamma180,sys] = gamma(o);
          else
             o = cache(o,o,'gamma');   % hard refresh cache
-            [gamma0,gamma180] = cook(o,'gamma0,gamma180');
+            [gamma0,gamma180,sys] = cook(o,'gamma0,gamma180,system');
          end
-         sys = var(gamma0,'system');
          L0 = principal(o,sys);
          [K0,f0] = var(gamma0,'K0,f0');
          [K180,f180] = var(gamma180,'K180,f180');

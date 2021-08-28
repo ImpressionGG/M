@@ -60,11 +60,11 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
 %
 %          oo = system(o,cdx)
 %          [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0')
-%          psiW31 = psion(o,A,B_1,C_3,T0)       % to calculate G31(jw)
-%          psiW33 = psion(o,A,B_3,C_3,T0)       % to calculate G33(jw)
+%          psiw31 = psion(o,A,B_1,C_3,T0)       % to calculate G31(jw)
+%          psiw33 = psion(o,A,B_3,C_3,T0)       % to calculate G33(jw)
 %
-%          G31jw = psion(o,psiW31,om)  % no multiplication of om with T0
-%          G33jw = psion(o,psiW33,om)  % no multiplication of om with T0
+%          G31jw = psion(o,psiw31,om)  % no multiplication of om with T0
+%          G33jw = psion(o,psiw33,om)  % no multiplication of om with T0
 %
 %       Remark:
 %          

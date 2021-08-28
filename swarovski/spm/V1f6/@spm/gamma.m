@@ -1,16 +1,16 @@
-function [gamma0,gamma180] = gamma(o,om)
+function [gamma0,gamma180,sys] = gamma(o,om)
 %
 % GAMMA      Calculation of gamma TRFs and critical quantities (very 
 %            efficient implementation
 %
-%               [gamma0,gamma180] = gamma(o)
-%               [gamma0,gamma180] = gamma(o,om)
+%               [gamma0,gamma180,sys] = gamma(o)
+%               [gamma0,gamma180,sys] = gamma(o,om)
 %
 %               [K0,f0,lambda0] = var(gamma0,'K0,f0,lambda0');
 %               [K180,f180,lambda180] = var(gamma180,'K180,f180,lambda180');
 % 
-%               [psiW31,psiW33] = var(gamma0,'psiW31,psiW33');
-%               [psiW31,psiW33] = var(gamma180,'psiW31,psiW33');
+%               [psiw31,psiw33] = var(gamma0,'psiw31,psiw33');
+%               [psiw31,psiw33] = var(gamma180,'psiw31,psiw33');
 %
 %            Notes
 %               For finite critical gain K0,K180 the gamma TRF calculates
@@ -30,6 +30,9 @@ function [gamma0,gamma180] = gamma(o,om)
 %               omega construction:        0.4 ms
 %               out arg construction:      0.3 ms
 %
+%            Options
+%               progress:              % show progress (default: false)
+%
 %            Copyright(c): Bluenetics 2021
 %
 %            See also: SPM, SYSTEM, LAMBDA
@@ -44,23 +47,23 @@ function [gamma0,gamma180] = gamma(o,om)
    
       % psion calculation
       
-   [psiW31,psiW33] = Psion(o,sys);
+   [psiw31,psiw33] = Psion(o,sys);
       
       % forward gamma calculation
       
-   [lambda0jw,g31jw,g33jw] = lambda(o,psiW31,psiW33,om);
+   lambda0jw = lambda(o,psiw31,psiw33,om);
    lambda0 = OutArg(o,om,lambda0jw,sys,'lambda0','ryyyy');
    
-   g31 = OutArg(o,om,g31jw,sys,'g31','g');
-   g33 = OutArg(o,om,g33jw,sys,'g33','g');
+%  g31 = OutArg(o,om,g31jw,sys,'g31','g');
+%  g33 = OutArg(o,om,g33jw,sys,'g33','g');
    
-   [gamma0,K0,f0] = Critical(o,lambda0,psiW31,psiW33,g31,g33);
+   [gamma0,K0,f0] = Critical(o,lambda0,psiw31,psiw33);
 
       % backward gamma calculation
    
    if (nargout > 1)
       lambda180 = OutArg(o,om,-lambda0jw,sys,'lambda180','ryyyk');
-      [gamma180,K180,f180] = Critical(o,lambda180,-psiW31,psiW33,g31,g33);
+      [gamma180,K180,f180] = Critical(o,lambda180,-psiw31,psiw33);
    end
 end
 
@@ -68,12 +71,12 @@ end
 % Critical Quantities
 %==========================================================================
 
-function [gamm,K,f] = Critical(o,lamb,psiW31,psiW33,g31,g33)        
+function [gamm,K,f] = Critical(o,lamb,psiw31,psiw33)        
 %
 % CRITICAL
 %
-%    [gamma0,K0,f0] = Critical(o,lambda0,psiW31,psiW33)
-%    [gamma180,K180,f180] = Critical(o,lambda180,-psiW31,psiW33)
+%    [gamma0,K0,f0] = Critical(o,lambda0,psiw31,psiw33)
+%    [gamma180,K180,f180] = Critical(o,lambda180,-psiw31,psiw33)
 %
 %    Note: lambda180 = (-1)*lambda0
 %          gamma180 = (-1)*gamma0
@@ -99,16 +102,14 @@ function [gamm,K,f] = Critical(o,lamb,psiW31,psiW33,g31,g33)
    [K,f,nyqerr] = Search(o,zc0);
    V = o.iif(isinf(K),1,1/K);
 
-   if (psiW31(1) > 0)
+   if (psiw31(1) > 0)
       gamm = var(V*lamb,'K0,f0,lambda0,nyqerr0',K,f,lamb,nyqerr);
       gamm = set(gamm,'name','gamma0', 'color','r');
-      gamm = var(gamm,'g31,g33',g31,g33);
    else
       gamm = var(V*lamb,'K180,f180,lambda180,nyqerr180',K,f,lamb,nyqerr);
       gamm = set(gamm,'name,color','gamma180','rrk');
-      gamm = var(gamm,'g31,g33',(-1)*g31,g33);
    end      
-   gamm = var(gamm,'psiW31,psiW33',psiW31,psiW33);
+   gamm = var(gamm,'psiw31,psiw33',psiw31,psiw33);
    
       % that's it - bye!
    
@@ -221,7 +222,7 @@ function [gamm,K,f] = Critical(o,lamb,psiW31,psiW33,g31,g33)
   
          % calculate critical quantities K0 and f0
       
-      [K0,f0,lambda0jw] = lambda(o,psiW31,psiW33,om1,om2);
+      [K0,f0,lambda0jw] = lambda(o,psiw31,psiw33,om1,om2);
       
          % calculate Nyquist error
          
@@ -234,15 +235,15 @@ end
 % Psion Calculation
 %==========================================================================
 
-function [psiW31,psiW33] = Psion(o,sys)
+function [psiw31,psiw33] = Psion(o,sys)
    A = var(sys,'A');
    B_1 = var(sys,'B_1');
    B_3 = var(sys,'B_3');
    C_3 = var(sys,'C_3');
    T0 = var(sys,'T0');
    
-   psiW31 = psion(o,A,B_1,C_3,T0);     % to calculate G31(jw)
-   psiW33 = psion(o,A,B_3,C_3,T0);     % to calculate G33(jw)
+   psiw31 = psion(o,A,B_1,C_3,T0);     % to calculate G31(jw)
+   psiw33 = psion(o,A,B_3,C_3,T0);     % to calculate G33(jw)
 end
 
 %==========================================================================
