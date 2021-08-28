@@ -54,6 +54,10 @@ function varargout = cook(o,sym)
 %          C_3: 5xN-matrix, with row C_3(i,:) responsible for elongation
 %               of article i in 3-direction (normal direction)
 %
+%       Gamma Transfer functions
+%
+%          [gamma0,gamma180] = cook(o,'gamma0,gamma180');
+%
 %       System 0
 %
 %          Sys0 = cook(o,'Sys0');
@@ -347,11 +351,18 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
       case 'psi'
          o = cache(o,o,'trf');         % hard refresh of trf segment
          oo = cache(o,'trf.psi');
+
+      case {'gamma0','gamma180'}
+         oo = cache(o,o,'gamma');
+         oo = cache(oo,['gamma.',sym]);
          
       case {'L0jw','lambda0','lambda180','gamma0','gamma180',...
-            'PsiW31','PsiW33','Psi0W31','Psi0W33',...
+            'psiW31','psiW33','psi0W31','psi0W33',...
             'g31','g33','g30','l0','l180',...
             'lambda0jw','lambda180jw','gamma0jw','gamma180jw'}
+         if isequal(opt(o,{'critical.algo','gamma'}),'gamma')
+            o = cache(o,o,'gamma');
+         end
          oo = cache(o,o,'spectral');
          oo = cache(oo,['spectral.',sym]);
          if isa(oo,'corazon')

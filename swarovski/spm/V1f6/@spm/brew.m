@@ -15,6 +15,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %           oo = brew(o,'Normalize')   % brew time scaled system
 %           oo = brew(o,'System')      % brew system matrices
 %           oo = brew(o,'Critical');   % brew critical cache segment
+%           oo = brew(o,'Gamma');      % brew gamma cache segment
 %
 %           oo = brew(o,'Trf')         % brew transfer matrix
 %           oo = brew(o,'Constrain')   % brew double constrained trf matrix
@@ -26,6 +27,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %
 %        The following main cache segments are managed by brew:
 %
+%           'gamma'                    % gamma TRFs
 %           'critical'                 % critical quantities
 %           'spectral'                 % spectral TRFs
 %           'sensitivity'              % sensitivity frequency response
@@ -79,7 +81,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %                         |              |
 %                         v              v
 %              +--------------+        +---------------+
-%     L0,K0,f0 |   critical   |        |     setup     |
+%     L0,K0,f0 |   critical   |        |     gamma     |
 %              +--------------+        +---------------+
 %
 %
@@ -138,7 +140,7 @@ function oo = brew(o,varargin)         % SPM Brew Method
 %        
    [gamma,oo] = manage(o,varargin,@Brew,@Variation,@Normalize,@Transform,...
                        @System,@Trf,@Principal,@Multi,@Spectral,@Setup,...
-                       @Critical,@Sensitivity,...
+                       @Critical,@Gamma,@Sensitivity,...
                        @Constrain,@Consd,@Consr,@Process,@Loop,@Nyq);
    oo = gamma(oo);
 end              
@@ -725,6 +727,24 @@ function oo = OldSystem(o)             % System Matrices
 end
 
 %==========================================================================
+% Gamma TRFs gamma0,gamma180
+%==========================================================================
+
+function oo = Gamma(o)                 % Brew Gamma TRFs               
+   [gamma0,gamma180] = gamma(o);
+        
+      % store in gamma cache segment
+
+   oo = o;
+   oo = cache(oo,'gamma.gamma0',gamma0);
+   oo = cache(oo,'gamma.gamma180',gamma180);
+   
+      % hard refresh of cache if not prohibited by cache.hard option
+      
+   cache(oo,oo);                    % hard refresh
+end
+
+%==========================================================================
 % Critical Quantities L0, K0, f0, K180, f180
 %==========================================================================
 
@@ -775,13 +795,17 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 %              L0jw = C*inv(jw*I-A)*B + D
 %
    o = with(o,{'spectrum'});
-%  [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
    
       % calculate characteristic loci lambda0 (a CORASIM FQR system)
-      
-   [lambda0,g31,g33] = lambda(o);
-   [PsiW31,PsiW33] = var(lambda0,'PsiW31,PsiW33');
-   [Psi0W31,Psi0W33] = var(lambda0,'Psi0W31,Psi0W33');
+ 
+   gamma0 = cook(o,'gamma0');
+   [lambda0,g31,g33] = var(gamma0,'lambda0,g31,g33');
+   
+%  [lambda0,g31,g33] = lambda(o);
+%  [PsiW31,PsiW33] = var(lambda0,'PsiW31,PsiW33');
+%  [Psi0W31,Psi0W33] = var(lambda0,'Psi0W31,Psi0W33');
+
+   [psiW31,psiW33] = var(gamma0,'psiW31,psiW33');
    
       % fetch critical quantities
       
@@ -795,9 +819,9 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 
       % critical spectrum
    
-   gamma0 = o.iif(isinf(K0),1,K0)*lambda0;   
-   gamma0 = set(gamma0,'name','gamma0(s)','color','r');
-   gamma0 = var(gamma0,'K,f',K0,f0);
+%  gamma0 = o.iif(isinf(K0),1,K0)*lambda0;   
+%  gamma0 = set(gamma0,'name','gamma0(s)','color','r');
+%  gamma0 = var(gamma0,'K,f',K0,f0);
       
       % with l0 = g0 * g31/g33 calculate: g0 = l0 * g33/g31
       
@@ -818,9 +842,9 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    
       % critical spectrum
    
-   gamma180 = o.iif(isinf(K180),1,K180)*lambda180;   
-   gamma180 = set(gamma180,'name','gamma180(s)','color','rrk');
-   gamma180 = var(gamma180,'K,f',K180,f180);
+%  gamma180 = o.iif(isinf(K180),1,K180)*lambda180;   
+%  gamma180 = set(gamma180,'name','gamma180(s)','color','rrk');
+%  gamma180 = var(gamma180,'K,f',K180,f180);
 
       % get frequency responses l0jw and l180jw as a double matrix
       
@@ -829,8 +853,8 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    for (i=1:m)
       lambda0jw(i,1:n) = lambda0.data.matrix{i};
       lambda180jw(i,1:n) = lambda180.data.matrix{i};
-      gamma0jw(i,1:n) = gamma0.data.matrix{i};
-      gamma180jw(i,1:n) = gamma180.data.matrix{i};
+      %gamma0jw(i,1:n) = gamma0.data.matrix{i};
+      %gamma180jw(i,1:n) = gamma180.data.matrix{i};
    end
       
       % critical frequency responses (maximizing |lambda0(jw)|,
@@ -847,8 +871,8 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    oo = cache(oo,'spectral.lambda0',lambda0);         % store in cache
    oo = cache(oo,'spectral.lambda180',lambda180);     % store in cache
 
-   oo = cache(oo,'spectral.gamma0',gamma0);           % store in cache
-   oo = cache(oo,'spectral.gamma180',gamma180);       % store in cache
+%  oo = cache(oo,'spectral.gamma0',gamma0);           % store in cache
+%  oo = cache(oo,'spectral.gamma180',gamma180);       % store in cache
 
    oo = cache(oo,'spectral.l0',l0);                   % store in cache
    oo = cache(oo,'spectral.l180',l180);               % store in cache
@@ -856,17 +880,17 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    oo = cache(oo,'spectral.lambda0jw',lambda0jw);     % store in cache
    oo = cache(oo,'spectral.lambda180jw',lambda180jw); % store in cache
 
-   oo = cache(oo,'spectral.gamma0jw',gamma0jw);       % store in cache
-   oo = cache(oo,'spectral.gamma180jw',gamma180jw);   % store in cache
+%  oo = cache(oo,'spectral.gamma0jw',gamma0jw);       % store in cache
+%  oo = cache(oo,'spectral.gamma180jw',gamma180jw);   % store in cache
 
    oo = cache(oo,'spectral.g31',g31);
    oo = cache(oo,'spectral.g33',g33);
    oo = cache(oo,'spectral.g30',g30);
 
-   oo = cache(oo,'spectral.PsiW31',PsiW31);
-   oo = cache(oo,'spectral.PsiW33',PsiW33);
-   oo = cache(oo,'spectral.Psi0W31',Psi0W31);
-   oo = cache(oo,'spectral.Psi0W33',Psi0W33);
+%  oo = cache(oo,'spectral.PsiW31',PsiW31);
+%  oo = cache(oo,'spectral.PsiW33',PsiW33);
+   oo = cache(oo,'spectral.psiW31',psiW31);
+   oo = cache(oo,'spectral.psiW33',psiW33);
    
       % hard refresh of cache if not prohibited by cache.hard option
       

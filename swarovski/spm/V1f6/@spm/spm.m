@@ -42,6 +42,11 @@ classdef spm < corazon                 % Spm Class Definition
 %          lambda:     calculate spectral frequency responses (lambda0) and
 %                      related quantities (g31,g33,PsiW31,PsiW33)
 %
+%          gamma:      critical spectral quantity, also carrying critical
+%                      gain and frequency, as well as psion functions
+%                      and spectral frequency responses. gamma is the
+%                      fastest way to calculate critical quantities
+%
 %          sensitivity: calculate/plot weight and damping sensitivity
 %
 %          png:        export current figure contents to .png file in

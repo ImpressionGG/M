@@ -1179,7 +1179,7 @@ function oo = Critical(o)              % Critical Menu
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
    setting(o,{'critical.check'},0);    % no check
-   setting(o,{'critical.algo'},'lambda'); % EIG algorithm
+   setting(o,{'critical.algo'},'gamma'); % gamma algorithm
 %  setting(o,{'critical.gain.low'},1e-3);
    setting(o,{'critical.gain.low'},[]);
 %  setting(o,{'critical.gain.high'},1e3);
@@ -1200,8 +1200,8 @@ function oo = Critical(o)              % Critical Menu
    choice(ooo,[5 10 15 20 25 30 35 40 45 50 75 100],{});
 
    ooo = mitem(oo,'Algorithm',{},'critical.algo');
-   choice(ooo,{{'Frequency Response','fqr'},{'Eigenvalue','eig'},...
-               {'Lambda Algorithm','lambda'}},{@ClearCache});
+   choice(ooo,{{'Eigenvalue','eig'},...
+               {'Gamma Algorithm','gamma'}},{@ClearCache});
 
    ooo = mitem(oo,'Check',{},'critical.check');
    choice(ooo,{{'Off',0},{'Weak',1},{'Strong',2}},{});

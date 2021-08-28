@@ -52,6 +52,10 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
 %          G31jw = psion(o,PsiW31,om*T0)
 %          G33jw = psion(o,PsiW33,om*T0)
 %
+%             or
+%
+%          G31jw = -psion(o,-PsiW31,om*T0)
+%
 %       Example 2:
 %
 %          oo = system(o,cdx)
@@ -162,7 +166,12 @@ function [oo,Idx] = psion(o,varargin)  % psion representation
       [oo,Idx] = Psion(o);             % calculate Psion representation
    elseif (nargin == 3)
       PsiW = varargin{1};  omega = varargin{2};
-      [oo,Idx] = Fqr(o,PsiW,omega);
+      if (PsiW(1) < 0)
+         [oo,Idx] = Fqr(o,-PsiW,omega);
+         oo = -oo;
+      else
+         [oo,Idx] = Fqr(o,PsiW,omega);
+      end
    elseif (nargin == 4)
       A = varargin{1};  B = varargin{2};   C = varargin{3};
       o = data(o,'A,B,C,D',A,B,C,0*C*B);

@@ -7,9 +7,15 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
 %            o = with(o,'critical');  
 %            sys = system(o,cdx);           % contact related system 
-%            lambda0 = lambda(o,sys);       % spectral FQRs
+%
+%            lambda0 = lambda(o,sys);       % principal spectrum
+%            [lambda0,g31,g33] = lambda(o,sys);  % also spectral genesis
+%            [g31,g33] = lambda(o,sys);     % only spectral genesis fcts
 %
 %            lambda0 = lambda(o);           % implicite call to system(o)
+%            [lambda0,g31,g33] = lambda(o); % also spectral genesis fcts
+%            [g31,g33] = lambda(o,sys);     % only spectral genesis fcts
+%
 %            l0 = lambda(o,lambda0);        % calculate critical TRF
 %
 %            sys = system(o,cdx);           % get contact relevant system
@@ -22,6 +28,9 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
 %            lambda0jw = lambda(o,A,B_1,B_3,C_3,T0*omega)
 %            lambda0jw = lambda(o,PsiW31,PsiW33,T0*omega)
+%
+%            lambda180jw = lambda(o,-PsiW31,PsiW33,T0*omega)
+%            lambda180jw = lambda(o,-psiW31,psiW33,omega)
 %
 %         Calculate critical quantities K0 and f0 for given omega interval
 %         [om1,om2] assuming in given omega interval one of the spectral
@@ -94,13 +103,19 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
    o.profiler('lambda',1);
    if (nargin == 4)                    % calculate as fast as possible
-      PsiW31 = varargin{1};  PsiW33 = varargin{2};  om = varargin{3};  
-      oo = Lambda(o,PsiW31,PsiW33,om);
+      PsiW31 = varargin{1};  PsiW33 = varargin{2};  om = varargin{3};
+      if (nargout <= 1)
+         oo = Lambda(o,PsiW31,PsiW33,om);
+      elseif (nargout == 2)
+         [g31,g33] = Lambda(o,PsiW31,PsiW33,om);    % only spectral genesis
+      else
+         [oo,g31,g33] = Lambda(o,PsiW31,PsiW33,om); % also spectral genesis
+      end
       o.profiler('lambda',0);
       return
    elseif (nargin == 5)                % zero cross search
       PsiW31 = varargin{1};  PsiW33 = varargin{2};  
-      om1 = varargin{3};  om2 = varargin{4};  
+      om1 = varargin{3};  om2 = varargin{4};
       [oo,g31,g33] = Critical(o,PsiW31,PsiW33,om1,om2);
       o.profiler('lambda',0);
       return
@@ -221,18 +236,41 @@ end
 % Lambda Calculation
 %==========================================================================
 
-function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)                
+function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)                
+%
+% LAMBDA Calculate lambda and spectrum of G31(jw) and G33(jw) or basic
+%        data for G31(jw) and G33(jw)
+%
+%          ljw = Lambda(o,psiW31,psiW33,om);              % very efficient
+%          [g31jw,g33jw] = Lambda(o,psiW31,psiW33,om);    % only genesis
+%          [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om);% also genesis
+%
+%        Note: to calculate spectral principal quantities of the reverse
+%        system negate psiW31, i,e,
+%
+%           [l_jw,g31_jw,g33_jw] = Lambda(o,-psiW31,psiW33,om)
+%
+%        with l_jw=-ljw, g31_jw=-g31jw and g33_jw=g3jw
+%
    o.profiler('Lambda',1);
 
-   G31jw = psion(o,PsiW31,om);
-   G33jw = psion(o,PsiW33,om);
+   G31jw = psion(o,psiW31,om);
+   G33jw = psion(o,psiW33,om);
 
-   m = sqrt(size(PsiW31,2)-3);
+   m = sqrt(size(psiW31,2)-3);
    if (m == 1)
-      Ljw = G31jw ./ G33jw;
-      ljw = Ljw;
 
-      if (nargout > 1)
+         % ignore next block if we only have to deliver
+         % spectral genesis functions
+            
+      if (nargout ~= 2)                % calculate principal spectrum?
+         Ljw = G31jw ./ G33jw;
+         ljw = Ljw;
+      end
+      
+         % calculate spectral genesis functions if we are asked for
+         
+      if (nargout > 1)                 % calculate spectral genesis?
          g31jw = G31jw;  g33jw = G33jw;
       end
    else
@@ -244,17 +282,22 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
          G31jwk = reshape(G31jw(:,k),m,m);
          G33jwk = reshape(G33jw(:,k),m,m);
          
-         Ljwk = G33jwk\G31jwk;         % needs about 7ms for 5x5 matrix
+            % ignore next block if we only have to deliver
+            % spectral genesis functions
+            
+         if (nargout ~= 2)             % calculate principal spectrum?
+            Ljwk = G33jwk\G31jwk;      % needs about 7ms for 5x5 matrix
 
-         ljw(:,k) = eig(Ljwk);
-         if (k > 1)
-            ljw(:,k-1:k) = Sort(o,ljw(:,k-1:k));
+            ljw(:,k) = eig(Ljwk);
+            if (k > 1)
+               ljw(:,k-1:k) = Sort(o,ljw(:,k-1:k));
+            end
          end
          
             % optionally calculate g31(jw), g33(jw)
             % note: ljw = g0jw * g31jw/g33jw
             
-         if (nargout > 1)
+         if (nargout > 1)              % calculate spectral genesis?
             g31jwk = eig(G31jwk);
             [~,idx] = sort(abs(g31jwk),'descend');
             g31jw(:,k) = g31jwk(idx);
@@ -267,13 +310,17 @@ function [ljw,g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om)
         
          % order by maximum magnitude
       
-      if (kmax > 1)
-         Gmax = max(abs(ljw)');
-      else
-         Gmax = abs(ljw);
+      if ( nargout == 2)               % return onöly spectral genesis?
+         ljw = g31jw;  g31jw = g33jw;  % shift out args
+      else                             % return principal spectrum
+         if (kmax > 1)
+            Gmax = max(abs(ljw)');
+         else
+            Gmax = abs(ljw);
+         end
+         [Gmax,idx] = sort(Gmax,'descend');    % sort by descending order
+         ljw = ljw(idx,:);                     % reorder
       end
-      [Gmax,idx] = sort(Gmax,'descend');    % sort by descending order
-      ljw = ljw(idx,:);                     % reorder
    end
    o.profiler('Lambda',0);
 end
@@ -316,14 +363,26 @@ end
 %==========================================================================
 
 function [K0,f0,l0jw] = Critical(o,psiW31,psiW33,om1,om2)
+%
+% CRITICAL  Fine iteration of critical quantities
+%
+%              [K0,f0,l0jw] = Critical(o,psiW31,psiW33,om1,om2)
+%              [K180,f180,l180jw] = Critical(o,-psiW31,psiW33,om1,om2)
+%
    if (om1 > om2)
       tmp = om1;  om1 = om2; om2 = tmp;     % swap
    end
    
+      % negative psiW31(1) means that we have to calculate the reverse
+      % system
+      
+   sgn = sign(psiW31(1));
+   psiW31 = sgn * psiW31;
+   
       % calculate spectrum at points om1 and om2 and phase of negative
       % spectrum, as we investigate zero crosses (not pi crosses)
       
-   ljw = Lambda(o,psiW31,psiW33,[om1 om2]); 
+   ljw = sgn * Lambda(o,psiW31,psiW33,[om1 om2]); 
    phi1 = angle(-ljw(:,1));  phi2 = angle(-ljw(:,2));
    dphi = phi1 - phi2;
    
@@ -363,7 +422,7 @@ function [K0,f0,l0jw] = Critical(o,psiW31,psiW33,om1,om2)
          % calculate spectrum at om0 and phase of negative spectrum,
          % as we investigate zero crosses (not pi crosses)
          
-      l0jw = Lambda(o,psiW31,psiW33,om0);
+      l0jw = sgn * Lambda(o,psiW31,psiW33,om0);
       p0 = angle(-l0jw(k));
       
          % tighten interval
