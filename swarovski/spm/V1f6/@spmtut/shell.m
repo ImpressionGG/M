@@ -13,6 +13,7 @@ function o = Shell(o)                  % Shell Setup
    o = menu(o,'Begin');                % begin menu setup
    oo = File(o);                       % add File menu
    oo = Chapter1(o);                   % add chapter 1 menu
+   oo = Chapter5(o);                   % add chapter 5 menu
    o = menu(o,'End');                  % end menu setup (will refresh)
 end
 function o = Init(o)                   % Init Object                   
@@ -64,9 +65,18 @@ end
 %==========================================================================
 
 function oo = Chapter1(o)                     
-   oo = mhead(o,'Chapter 1');          % add roll down header menu item
+   oo = mhead(o,'   [1] Geting Started'); % add roll down header menu item
    ooo = mitem(oo,'1.1 Oscillator',{@Show 'c1_1_oscillator'});
    ooo = mitem(oo,'1.2 A Sample System',{@Show 'c1_2_sample_system'});
+end
+
+%==========================================================================
+% Chapter 5 Menu
+%==========================================================================
+
+function oo = Chapter5(o)                     
+   oo = mhead(o,'   [5] Goodies');     % add roll down header menu item
+   ooo = mitem(oo,'5.1 Shell Launch from CommandLine',{@Show 'c5_1_shell_launch'});
 end
 
 %==========================================================================

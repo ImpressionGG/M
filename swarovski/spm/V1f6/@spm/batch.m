@@ -223,6 +223,8 @@ end
 %==========================================================================
 
 function o = RunBatch(o)               % Master Entry for Batch Process
+   tstart = tic;
+   
    switch o.type
       case 'shell'
          o = RunAll(o);
@@ -231,6 +233,16 @@ function o = RunBatch(o)               % Master Entry for Batch Process
       case 'spm'
          o = RunSpm(o);
    end
+   
+      % print/display end message
+      
+   elapse = toc(tstart);
+   msg = o.iif(stop(o),'batch processing stopped',...
+                       'batch processing complete');
+   msg = sprintf('%s (total time: %g s)',msg,o.rd(elapse,0));
+   fprintf('%s\n',msg);
+
+   o = var(o,'done',msg);
 end
 function o = RunAll(o)                 % Run All Configured Batch Items
    assert(type(o,{'shell'}));
@@ -243,13 +255,6 @@ function o = RunAll(o)                 % Run All Configured Batch Items
          break;
       end
    end
-   
-      % print/display end message
-      
-   msg = o.iif(stop(o),'batch processing stopped',...
-                       'batch processing complete');
-   message(o,msg);
-   fprintf('%s\n',msg);
 end
 function o = RunPkg(o)                 % Run a Single Package          
    assert(type(o,{'pkg'}));
