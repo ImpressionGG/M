@@ -191,13 +191,11 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
 
    switch sym
       case {'A','B','C', 'D'}
-         o = cache(o,o,'gamma');       % hard refresh trf cache 
-         sys = cache(o,'gamma.system');
+         sys = system(o);              % don't use cache !!!
          oo = var(sys,sym);
 
       case {'A11','A12','A21', 'A22','B1','B2','C1','C2'}
-         o = cache(o,o,'gamma');       % hard refresh trf cache 
-         sys = cache(o,'gamma.system');
+         sys = system(o);              % don't use cache !!!
          oo = var(sys,sym);
 
       case {'B_1','B_2','B_3'}         % B_1 = [B(:,1),B(:,4),B(:,7),...]

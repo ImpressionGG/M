@@ -81,26 +81,12 @@ function [gamm,K,f] = Critical(o,lamb,psiw31,psiw33)
 %    Note: lambda180 = (-1)*lambda0
 %          gamma180 = (-1)*gamma0
 %
-   om = lamb.data.omega;
-   [m,n] = size(lamb.data.matrix);
-
-      % buildup mandatory zero cross table zc0 for forward cutting and
-      % optional zero cross table zc180 for reverse cutting
-
-   zc0 = [];
-   for (kk=1:m)
-      Gjw0 = lamb.data.matrix{kk};    % i-th FQR
-      
-         % buildup zero cross table for forward cutting
-         
-      cr = ZeroCross(o,om,Gjw0,kk);
-      zc0 = [zc0;cr];
-   end
-      
-      % continue with precise zero cross search
-      
-   [K,f,nyqerr] = Search(o,zc0);
-   V = o.iif(isinf(K),1,1/K);
+   zc = ZeroCross(o,lamb);             % build complete zero cross table 
+   
+   oo = opt(o,'progress','');          % no progress updates!
+   [K,f,nyqerr] = Search(oo,zc);       % iterative detail search
+   
+   V = o.iif(isinf(K),1,1/K);          % scale factor: gamma = V*lambda
 
    if (psiw31(1) > 0)
       gamm = var(V*lamb,'K0,f0,lambda0,nyqerr0',K,f,lamb,nyqerr);
@@ -113,7 +99,24 @@ function [gamm,K,f] = Critical(o,lamb,psiw31,psiw33)
    
       % that's it - bye!
    
-   function zc = ZeroCross(o,om,Gjw,k)      % Find Zero Crosses        
+   function zc = ZeroCross(o,lamb)     % build zero cross table        
+      om = lamb.data.omega;
+      [m,n] = size(lamb.data.matrix);
+
+         % buildup mandatory zero cross table zc0 for forward cutting and
+         % optional zero cross table zc180 for reverse cutting
+
+      zc = [];
+      for (kk=1:m)
+         Gjw0 = lamb.data.matrix{kk};    % i-th FQR
+
+            % buildup zero cross table for forward cutting
+
+         zck = Crosses(o,om,Gjw0,kk);
+         zc = [zc;zck];
+      end
+   end
+   function zc = Crosses(o,om,Gjw,k)   % Find Zero Crosses             
    %
    % ZEROCROSS  Find all zero cross intervals and return a table with
    %            characteristic quantities of all zero crosses
@@ -214,7 +217,7 @@ function [gamm,K,f] = Critical(o,lamb,psiw31,psiw33)
             subplot(o);
       end      
    end
-   function [K0,f0,err] = Search(o,zc)    % Iterative Search         
+   function [K0,f0,err] = Search(o,zc) % Iterative Search              
       GmaX = max(zc(:,7:8)')';
       [Mag,k] = max(GmaX);                % maximum magnitude
       K0 = 1/Mag;
