@@ -637,6 +637,7 @@ function VersionV1I
 % - cache(o,o,[]) - cache hard clear syntax supported
 % - menu rebuild clears refresh callback and ends with a done-message
 % - bugfix in corazon/id: need to inherit options from shell objects
+% - pimp corazita/load and corazita/open to open file by path
 %
 % Known Bugs / Wishlist
 % - none so far

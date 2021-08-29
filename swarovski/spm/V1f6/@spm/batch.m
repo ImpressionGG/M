@@ -35,8 +35,8 @@ end
 function o = Config(o)                 % Configuration Menu            
    setting(o,{'batch.stabilitymargin'},1);
    setting(o,{'batch.criticaloverview'},1);
-   setting(o,{'batch.dampingsensitivity'},0);
-   setting(o,{'batch.criticalsensitivity'},0);
+   setting(o,{'batch.dampingsensitivity'},1);
+   setting(o,{'batch.criticalsensitivity'},1);
    setting(o,{'batch.setupstudy'},0);
    setting(o,{'batch.pareto'},1.0);             % crit. sensitivity pareto
    setting(o,{'batch.cutting'},+1);             % forward cutting
