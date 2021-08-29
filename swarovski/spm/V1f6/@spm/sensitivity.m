@@ -371,7 +371,7 @@ function o = Critical(o)               % Critical Sensitivity
          end
       end
       idle(o);
-      
+
       elapse(ii) = toc;
 
          % Plot K, percentage and timing

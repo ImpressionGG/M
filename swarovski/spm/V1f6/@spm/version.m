@@ -458,6 +458,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - use glabally psiW31 and psiW33 instead of PsiW31 and PsiW33
 % - toolbar plugin trial
 % - damping sensitivity & critical sensitivity working fpr gamma algo
+% - bug fix in lambda/Lambda: empty default instead 0 for progress option
 
 
 % Known bugs & wishlist

@@ -256,7 +256,7 @@ function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)
 %
    o.profiler('Lambda',1);
    
-   msg = opt(o,{'progress',0});
+   msg = opt(o,{'progress',''});
    if ~isempty(msg)
       progress(o,msg,0);
    end
