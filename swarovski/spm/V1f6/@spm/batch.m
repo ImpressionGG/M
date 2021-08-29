@@ -38,6 +38,7 @@ function o = Config(o)                 % Configuration Menu
    setting(o,{'batch.dampingsensitivity'},0);
    setting(o,{'batch.criticalsensitivity'},0);
    setting(o,{'batch.setupstudy'},0);
+   setting(o,{'batch.pareto'},1.0);             % crit. sensitivity pareto
    setting(o,{'batch.cutting'},+1);             % forward cutting
    setting(o,{'batch.cleanup'},0);              % cache cleanup
    setting(o,{'batch.spectrum.points'},5000);   % points of spectrum
@@ -63,6 +64,9 @@ function o = Config(o)                 % Configuration Menu
          check(ooo,{@Cb});
 
    mitem(oo,'-');
+   ooo = mitem(oo,'Pareto',{},'batch.pareto');
+        choice(ooo,{{'10%',0.1},{'20%',0.2},{'40%',0.4},{'60%',0.6},...
+                   {'80%',0.8},{'100%',1.0}},{@Cb});
    ooo = mitem(oo,'Cutting',{},'batch.cutting');
         choice(ooo,{{'Forward',+1},{'Backward',-1},{'Both',0}},{@Cb});
    ooo = mitem(oo,'Cache Cleanup',{},'batch.cleanup');
@@ -99,6 +103,10 @@ function o = About(o)                  % About Batch Configuration
    if (batch.setupstudy)
       comment{end+1} = 'Setup Study';
    end
+   
+   comment{end+1} = ' ';
+   
+   comment{end+1} = sprintf('Pareto %g %%',batch.pareto*100);
    
    switch batch.cutting
       case +1
@@ -247,7 +255,7 @@ function o = RunPkg(o)                 % Run a Single Package
    end
          
    list = children(o);                 % list of package's children
-   for (i=1:n)
+   for (i=1:length(list))
       oo = list{i};                    % i-th child
       RunSpm(oo);                      % run batch for SPM object
    end
@@ -409,7 +417,7 @@ function o = CriticalOverviewSpm(o)
    batch = opt(o,'batch');
    
    if (batch.cutting >= 0)             % forward cutting      
-      tag = Tag(o,'Critical Overview (Forward)');
+      tag = Cls(o,'Critical Overview (Forward)');
       o = opt(o,'view.cutting',+1);
       analyse(o,'Critical','Overview');
       Png(o,tag);
@@ -420,7 +428,7 @@ function o = CriticalOverviewSpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      tag = Tag(o,'Critical Overview (Backward)');
+      tag = Cls(o,'Critical Overview (Backward)');
       o = opt(o,'view.cutting',-1);
       analyse(o,'Critical','Overview');
       Png(o,tag);
@@ -470,7 +478,7 @@ function o = DampingSensitivitySpm(o)
    batch = opt(o,'batch');
    
    if (batch.cutting >= 0)             % forward cutting      
-      tag = Tag(o,'Damping Sensitivity (Forward)');
+      tag = Cls(o,'Damping Sensitivity (Forward)');
       o = opt(o,'view.cutting',+1);
       sensitivity(o,'Damping');
       Png(o,tag);
@@ -481,7 +489,7 @@ function o = DampingSensitivitySpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      tag = Tag(o,'Damping Sensitivity (Backward)',id(o));
+      tag = Cls(o,'Damping Sensitivity (Backward)',id(o));
       o = opt(o,'view.cutting',-1);
       sensitivity(o,'Damping');
       Png(o,tag);
@@ -531,9 +539,8 @@ function o = CriticalSensitivitySpm(o)
    batch = opt(o,'batch');
    
    if (batch.cutting >= 0)             % forward cutting      
-      tag = Tag(o,'Critical Sensitivity (Forward)');
+      tag = Cls(o,'Critical Sensitivity (Forward)');
       o = opt(o,'view.cutting',+1);
-      o = opt(o,'pareto',opt(o,{'sensitivity.pareto',1.0}));
       sensitivity(o,'Critical');
       Png(o,tag);
    end
@@ -543,9 +550,8 @@ function o = CriticalSensitivitySpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      tag = Tag(o,'Critical Sensitivity (Backward)');
+      tag = Cls(o,'Critical Sensitivity (Backward)');
       o = opt(o,'view.cutting',-1);
-      o = opt(o,'pareto',opt(o,{'sensitivity.pareto',1.0}));
       sensitivity(o,'Critical');
       Png(o,tag);
    end
@@ -596,14 +602,14 @@ end
 function o = SetupStudyPkgOnly(o)                                      
    assert(type(o,{'pkg'}));
 
-   tag = Tag(o,'Setup Study',id(o));
+   tag = Cls(o,'Setup Study',id(o));
    analyse(o,'SetupAnalysis','basic',3);
    Png(o,tag);      
 end
 function o = SetupStudySpm(o)                                          
    assert(type(o,{'spm'}));
    
-   tag = Tag(o,'Setup Study');
+   tag = Cls(o,'Setup Study');
    analyse(o,'SetupAnalysis','basic',3);
    Png(o,tag);
 end
@@ -625,8 +631,11 @@ function o = Options(o)               % Set Batch Options
 
    eps = opt(o,'batch.critical.eps');
    o = opt(o,'critical.eps',eps);
+   
+   pareto = opt(o,{'batch.pareto',1.0})
+   o = opt(o,'pareto',pareto);
 end
-function tag = Tag(o,title)           % Setup Tag                      
+function tag = Cls(o,title)           % Clear Screen and Setup Tag     
    cls(o);
    tag = sprintf('%s - %s',title,id(o));
    fprintf('   plot %s diagram ...\n',tag);

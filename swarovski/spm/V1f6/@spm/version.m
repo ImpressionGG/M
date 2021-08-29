@@ -460,6 +460,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - damping sensitivity & critical sensitivity working fpr gamma algo
 % - bug fix in lambda/Lambda: empty default instead 0 for progress option
 % - pimp batch menu and batch functionality
+% - add pareto to batch config
 
 % Known bugs & wishlist
 % =========================
