@@ -461,6 +461,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix in lambda/Lambda: empty default instead 0 for progress option
 % - pimp batch menu and batch functionality
 % - add pareto to batch config
+% - bugfix: batch/RunSpm - missing option inheritance
 
 % Known bugs & wishlist
 % =========================

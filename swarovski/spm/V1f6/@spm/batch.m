@@ -49,19 +49,19 @@ function o = Config(o)                 % Configuration Menu
    
    mitem(oo,'-');
    ooo = mitem(oo,'Stability Margin',{},'batch.stabilitymargin');
-         check(ooo,{@Cb});
+         check(ooo,{@Cb,0});
    ooo = mitem(oo,'Critical Overview',{},'batch.criticaloverview');
          check(ooo,{@Cb});
    
    mitem(oo,'-');
    ooo = mitem(oo,'Damping Sensitivity',{},'batch.dampingsensitivity');
-         check(ooo,{@Cb});
+         check(ooo,{@Cb,0});
    ooo = mitem(oo,'Critical Sensitivity',{},'batch.criticalsensitivity');
-         check(ooo,{@Cb});
+         check(ooo,{@Cb,0});
    
    mitem(oo,'-');
    ooo = mitem(oo,'Setup Study',{},'batch.setupstudy');
-         check(ooo,{@Cb});
+         check(ooo,{@Cb,0});
 
    mitem(oo,'-');
    ooo = mitem(oo,'Pareto',{},'batch.pareto');
@@ -70,20 +70,25 @@ function o = Config(o)                 % Configuration Menu
    ooo = mitem(oo,'Cutting',{},'batch.cutting');
         choice(ooo,{{'Forward',+1},{'Backward',-1},{'Both',0}},{@Cb});
    ooo = mitem(oo,'Cache Cleanup',{},'batch.cleanup');
-        check(ooo,{@Cb});
+        check(ooo,{@Cb,0});
 
    mitem(oo,'-');
    ooo = mitem(oo,'Points',{},'batch.spectrum.points');
-   choice(ooo,[100,500,1000,2000,5000,10000,20000,50000,...
-               1e5,2e5],{@ClearCache});
+   choice(ooo,[100,500,1000,2000,5000,10000,20000],{@Cb,1});
    ooo = mitem(oo,'Epsilon',{},'batch.critical.eps');
-   choice(ooo,10.^[-10:-3],{});
+   choice(ooo,10.^[-10:-3],{@Cb,0});
 
    function o = Cb(o)
-      o = About(o);
+      clear = o.either(arg(o,1),0);
+      if (clear)
+         o = ClearAllCaches(o);
+         o = About(o,'All caches cleared');
+      else
+         o = About(o);
+      end
    end
 end
-function o = About(o)                  % About Batch Configuration     
+function o = About(o,msg)              % About Batch Configuration     
    refresh(o,o);                       % come here for refresh
    batch = opt(o,'batch');
    comment = {};
@@ -124,7 +129,12 @@ function o = About(o)                  % About Batch Configuration
    comment{end+1} = sprintf('Points: %g',opt(o,'batch.spectrum.points'));
    comment{end+1} = sprintf('Epsilon: %g',opt(o,'batch.critical.eps'));
    cls(o);
-   message(o,'Batch Configuration',comment);
+   
+   title = 'Batch Configuration';
+   if (nargin >= 2)
+      title = sprintf('%s (%s)',title,msg);
+   end
+   message(o,title,comment);
 end
 
 %==========================================================================
@@ -307,7 +317,8 @@ function o = RunSpm(o)                 % Run a Single SPM Object
          return
       end
       ID = id(o);
-      o = id(o,ID);                    % refresh object with updated cache
+      oo = id(o,ID);                   % refresh object with updated cache
+      o = inherit(oo,o);               % inherit actual options
    end
 
       % critical sensitivity
@@ -618,14 +629,14 @@ end
 % Helper
 %==========================================================================
 
-function o = ClearAllCaches(o)        % Clear All Caches               
+function o = ClearAllCaches(o)         % Clear All Caches              
    o = pull(o);
    for (i=1:length(o.data))
       oo = o.data{i};
       cache(oo,oo,[]);
    end
 end
-function o = Options(o)               % Set Batch Options              
+function o = Options(o)                % Set Batch Options             
    points = opt(o,'batch.spectrum.points');
    o = opt(o,'spectrum.omega.points',points);
 
@@ -635,13 +646,13 @@ function o = Options(o)               % Set Batch Options
    pareto = opt(o,{'batch.pareto',1.0})
    o = opt(o,'pareto',pareto);
 end
-function tag = Cls(o,title)           % Clear Screen and Setup Tag     
+function tag = Cls(o,title)            % Clear Screen and Setup Tag    
    cls(o);
    tag = sprintf('%s - %s',title,id(o));
    fprintf('   plot %s diagram ...\n',tag);
    o = var(o,'tag',tag);
 end
-function Png(o,tag)                   % Write PNG File                 
+function Png(o,tag)                    % Write PNG File                
 %
 % PNG  Create PNG file and take care of a friendly refresj setting
 %
