@@ -760,7 +760,13 @@ function oo = Critical(o)              % Brew Critical Quantities
    
       % calculate L0 (a CORASIM state space system)
       
-   [K0,f0,K180,f180,L0] = critical(o);
+   check = opt(o,{'critical.check',0});
+   if (check)
+      [K0,f0,K180,f180,L0] = critical(o);
+   else
+      [K0,f0,K180,f180] = critical(o);
+      L0 = [];
+   end
    
       % consider that user has issued a stop request which means that 
       % cache is not refreshed and we return immediately
@@ -772,10 +778,14 @@ function oo = Critical(o)              % Brew Critical Quantities
    
       % calculate L180 (a CORASIM state space system)
       
-   L180 = L0;
-   L180.data.B = -L180.data.B;
-   L180.data.D = -L180.data.D;
-       
+   if isempty(L0)
+      L180 = [];
+   else
+      L180 = L0;
+      L180.data.B = -L180.data.B;
+      L180.data.D = -L180.data.D;
+   end
+   
       % store in critical cache segment
       
    oo = cache(oo,'critical.L0',L0);
