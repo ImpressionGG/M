@@ -2623,6 +2623,7 @@ function L = Extend(o,L)               % extend lambda function
    n = length(L.data.omega);
 
    Ljw = zeros(m,n);  phi = zeros(m,n);
+   [i0,j0] = var(L,'i0,j0');
 
    for (i=1:m)
       Ljw(i,:) = L.data.matrix{i};
@@ -2631,11 +2632,11 @@ function L = Extend(o,L)               % extend lambda function
 
       % find point which minimizes Nyquist error
 
-   K = var(L,'K');
-   M = abs(1 + K*Ljw);              % magnitude of Nyquist FQR
+%  K = var(L,'K');
+%  M = abs(1 + K*Ljw);              % magnitude of Nyquist FQR
 
-   [nyqerr,i0] = min(min(M'));      % row index of minimizing Nyq error
-   [nyqerr,j0] = min(M(i0,:));      % row index of minimizing Nyq error
+%  [nyqerr,i0] = min(min(M'));      % row index of minimizing Nyq error
+%  [nyqerr,j0] = min(M(i0,:));      % row index of minimizing Nyq error
 
    psi0 = phi(i0,j0) + pi;
    phi0 = 2*pi * round(psi0/2/pi);  % multiple of 2*pi (no danger)
@@ -2648,5 +2649,6 @@ function L = Extend(o,L)               % extend lambda function
       fprintf('*** warning: bad phase residuum');
    end
    
-   L = var(L,'fqr,phi,i0,j0',Ljw,phi,i0,j0);
+%  L = var(L,'fqr,phi,i0,j0',Ljw,phi,i0,j0);
+   L = var(L,'phi',phi);
 end

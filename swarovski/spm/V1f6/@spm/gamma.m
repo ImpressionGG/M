@@ -23,6 +23,13 @@ function [gamma0,gamma180,sys] = gamma(o,om)
 %                  gamma0 = lambda0
 %                  gamma180 = lambda180
 %
+%            Integrity check for spectral functions (gamma's and lambda's)
+%
+%               err = gamma(o,gamma0)
+%               err = gamma(o,gamma180)
+%               err = gamma(o,lambda0)
+%               err = gamma(o,lambda180)
+%
 %            Options
 %               progress:              % show progress (default: false)
 %
@@ -40,6 +47,9 @@ function [gamma0,gamma180,sys] = gamma(o,om)
 %
    if (nargin < 2)
       om = Omega(o);                   % omega construction by options
+   elseif isobject(om)
+      gamma0 = Integrity(o,om);        % integrity check
+      return
    end
    
       % system construction
@@ -54,6 +64,7 @@ function [gamma0,gamma180,sys] = gamma(o,om)
       
    lambda0jw = lambda(o,psiw31,psiw33,om);
    lambda0 = OutArg(o,om,lambda0jw,sys,psiw31,psiw33,'0','ryyyy');   
+   
    [gamma0,K0,f0,nyqerr] = Critical(o,lambda0,psiw31,psiw33);
    
 %  g31 = OutArg(o,om,g31jw,sys,'g31','g');
@@ -86,30 +97,38 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    
    oo = opt(o,'progress','');          % no progress updates!
    [K,f,i0,j0,k0,err] = Search(oo,zc); % iterative detail search
-   
+
+      % store variables to lambda function
+      
+   lamb = var(lamb,'K,f,i0,j0',K,f,i0,j0'); 
+
       % adjust omega and frequency response of lamb
    
    lamb.data.omega(j0) = 2*pi*f;       % adaption of omega domain vector
    L0jw = lambda(o,psiw31,psiw33,lamb.data.omega(j0));
    lamb.work.var.fqr(:,j0) = L0jw;
    
+   for (i=1:length(L0jw))
+      lamb.data.matrix{i} = lamb.work.var.fqr(i,:);
+   end
+   
       % final check
       
    [nyqerr,i] = min(abs(1+K*L0jw));    % Nyquist error
    assert(i0==i && err==nyqerr);       % no changes expected
    
-      % store variables to lambda function
+      % store nyquist error to lambda function
       
-   lamb = var(lamb,'K,f,nyqerr,i0,j0',K,f,nyqerr,i0,j0'); 
+   lamb = var(lamb,'nyqerr',nyqerr'); 
    
       % derive gamma function from lambda
       
    if isinf(K)                         % no gain to make gamma unstable?
       gamm = lamb;                     % gamm equals lamb for infinite K
    else
-      gamm = (1/K)*lamb;
-      lambjw = lamb.work.var.fqr;
-      gamm.work.var.fqr = lambjw/K;
+      gamm = K*lamb;
+      fqr = gamm.work.var.fqr;
+      gamm.work.var.fqr = K*fqr;
    end
    
       % add lambda function to variables of gamma and add name & color
@@ -325,4 +344,58 @@ function L = OutArg(o,om,Ljw,sys,psiw31,psiw33,tag,col)
    L = fqr(corasim,om,matrix);
    L = set(L, 'name',name, 'color',col);
    L = var(L,'tag,system,psiw31,psiw33,fqr', tag,sys,psiw31,psiw33,Ljw);
+end
+
+%==========================================================================
+% Integrity Check for Spectral Functions
+%==========================================================================
+
+function err = Integrity(o,lamb)
+%
+% INTEGRITY   Integrity check for spectral functions (debug method)
+%
+%                err = integrity(o,lambda0)
+%
+%             Copyright(c): Bluenetics 2021
+%
+%             See also: SPM, CRITICAL, GAMMA
+%
+   [i0,j0,K,f,Ljw] = var(lamb,'i0,j0,K,f,fqr');
+      
+   if isinf(K)                   % no further checks
+      err = 0;                   % no error
+      return
+   end
+   
+   Ljw0 = Ljw(:,j0);
+
+      % K correction for gamma functions
+      
+   name = [get(lamb,{'name',''}),'____'];
+   if isequal(name(1:4),'gamm')
+      K = 1;
+   end
+   
+      % FQR check
+      
+   for (i=1:length(Ljw0))
+      Lijw = lamb.data.matrix{i};
+      err = norm(Ljw(i,:)-Lijw);
+      if (err)
+         error('frequency response deviation');
+      end
+   end
+   
+      % calculate index integrity and Nyquist error
+   
+   M = abs(1+K*Ljw0);
+   [err,i] = min(M);                   % Nyquist error
+   
+   if (i ~= i0)
+      error('index integrity violated (i0)');
+   end
+   
+   if (err > 1e-6)
+      error('high Nyquist error');
+   end
 end

@@ -509,7 +509,7 @@ function o = Critical(o)               % Critical Sensitivity
          tot = toc(tstart);            % total elapsed time
          title(sprintf('Calculation Time [s] (Total: %g s)',o.rd(tot,1)));
          shelf(o,figure(o),'elapse',elapse);
-         
+         xlabel(sprintf('mode number [#] (pareto: %g %%)',pareto*100));
          subplot(o);
       end
    end

@@ -466,10 +466,13 @@ function vers = version(o,arg)         % SPM Class Version
 % - EVerr check implemented for critical/CalcGamma
 % - bugfix: brew/Critical and verification of stability margin diagram
 % - weak critical check by default, no checks during batch processing
+% - pareto value displayed in critical sensitivity (timimg diagram)
+
 
 % Known bugs & wishlist
 % =========================
 % - bug: Nichols plot of reverse 2-Mode system not correct
+% - bug: corruption during save
 %
 %--------------------------------------------------------------------------
 %

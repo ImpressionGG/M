@@ -225,6 +225,8 @@ end
 function o = RunBatch(o)               % Master Entry for Batch Process
    tstart = tic;
    
+o = ClearAllCaches(o);                 % at this beta stage safer ;-)
+   
    switch o.type
       case 'shell'
          o = RunAll(o);
@@ -635,9 +637,9 @@ end
 %==========================================================================
 
 function o = ClearAllCaches(o)         % Clear All Caches              
-   o = pull(o);
-   for (i=1:length(o.data))
-      oo = o.data{i};
+   os = pull(o);
+   for (i=1:length(os.data))
+      oo = os.data{i};
       cache(oo,oo,[]);
    end
 end
