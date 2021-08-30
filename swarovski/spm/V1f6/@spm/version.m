@@ -465,6 +465,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix: spm/batch - dark mode control
 % - EVerr check implemented for critical/CalcGamma
 % - bugfix: brew/Critical and verification of stability margin diagram
+% - weak critical check by default, no checks during batch processing
 
 % Known bugs & wishlist
 % =========================

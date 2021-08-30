@@ -650,6 +650,8 @@ function o = Options(o)                % Set Batch Options
    
    pareto = opt(o,{'batch.pareto',1.0})
    o = opt(o,'pareto',pareto);
+   
+   o = opt(o,'critical.check',0);      % no checks for batch processing
 end
 function tag = Cls(o,title)            % Clear Screen and Setup Tag    
    cls(o);

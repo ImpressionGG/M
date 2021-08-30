@@ -1195,7 +1195,7 @@ function oo = Critical(o)              % Critical Menu
    setting(o,{'critical.search'},200); % number of initial search points
    setting(o,{'critical.eps'},1e-10);  % epsilon
    setting(o,{'critical.iter'},50);    % iterations
-   setting(o,{'critical.check'},0);    % no check
+   setting(o,{'critical.check'},1);    % weak check
    setting(o,{'critical.algo'},'gamma'); % gamma algorithm
 %  setting(o,{'critical.gain.low'},1e-3);
    setting(o,{'critical.gain.low'},[]);
