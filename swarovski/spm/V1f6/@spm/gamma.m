@@ -23,19 +23,20 @@ function [gamma0,gamma180,sys] = gamma(o,om)
 %                  gamma0 = lambda0
 %                  gamma180 = lambda180
 %
-%            Timing:
-%               
-%               system construction:      18.0 ms
-%               psion calculation:         4.0 ms
-%               omega construction:        0.4 ms
-%               out arg construction:      0.3 ms
-%
 %            Options
 %               progress:              % show progress (default: false)
 %
 %            Copyright(c): Bluenetics 2021
 %
 %            See also: SPM, SYSTEM, LAMBDA
+%
+
+%            Timing:
+%               
+%               system construction:      18.0 ms
+%               psion calculation:         4.0 ms
+%               omega construction:        0.4 ms
+%               out arg construction:      0.3 ms
 %
    if (nargin < 2)
       om = Omega(o);                   % omega construction by options
@@ -84,18 +85,36 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    zc = ZeroCross(o,lamb);             % build complete zero cross table 
    
    oo = opt(o,'progress','');          % no progress updates!
-   [K,f,nyqerr] = Search(oo,zc);       % iterative detail search
+   [K,f,i0,j0,k0,err] = Search(oo,zc); % iterative detail search
    
-   V = o.iif(isinf(K),1,1/K);          % scale factor: gamma = V*lambda
-   lamb = var(lamb,'K,f,nyqerr',K,f,nyqerr'); 
+      % adjust omega and frequency response of lamb
    
-      % calculate:      gamm = V*lamb
-      % be aware that:  var(gamm,'fqr') = V*var(lamb,'fqr')
+   lamb.data.omega(j0) = 2*pi*f;       % adaption of omega domain vector
+   L0jw = lambda(o,psiw31,psiw33,lamb.data.omega(j0));
+   lamb.work.var.fqr(:,j0) = L0jw;
+   
+      % final check
       
-   gamm = V*lamb;   
-   gamm.work.var.fqr = V*lamb.work.var.fqr;
-   gamm = var(gamm,'lambda',lamb);
+   [nyqerr,i] = min(abs(1+K*L0jw));    % Nyquist error
+   assert(i0==i && err==nyqerr);       % no changes expected
    
+      % store variables to lambda function
+      
+   lamb = var(lamb,'K,f,nyqerr,i0,j0',K,f,nyqerr,i0,j0'); 
+   
+      % derive gamma function from lambda
+      
+   if isinf(K)                         % no gain to make gamma unstable?
+      gamm = lamb;                     % gamm equals lamb for infinite K
+   else
+      gamm = (1/K)*lamb;
+      lambjw = lamb.work.var.fqr;
+      gamm.work.var.fqr = lambjw/K;
+   end
+   
+      % add lambda function to variables of gamma and add name & color
+      
+   gamm = var(gamm,'lambda',lamb);
    if (psiw31(1) > 0)
       gamm = set(gamm,'name,color', 'gamma0','r');
    else
@@ -104,7 +123,16 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    
       % that's it - bye!
    
-   function zc = ZeroCross(o,lamb)     % build zero cross table        
+   function zc = ZeroCross(o,lamb)             % Build zero cross table
+   %
+   % ZEROCROSS  Find final zero cross interval table with
+   %            characteristic quantities of all zero crosses
+   %
+   %    crosses table is built as follows
+   %    [
+   %      k  j1   j2  om(j1)  om(j2)  phi(j1)  phi(j2) max(|G(jw(idx))|)
+   %    ]
+   %
       om = lamb.data.omega;
       [m,n] = size(lamb.data.matrix);
 
@@ -121,7 +149,7 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
          zc = [zc;zck];
       end
    end
-   function zc = Crosses(o,om,Gjw,k)   % Find Zero Crosses             
+   function zc = Crosses(o,om,Gjw,k)           % Find Zero Crosses     
    %
    % ZEROCROSS  Find all zero cross intervals and return a table with
    %            characteristic quantities of all zero crosses
@@ -129,7 +157,7 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    %    crosses table is built as follows
    %    [
    %      :   :    :     :      :        :        :       :
-   %      k  i1   i2  om(i1)  om(i2)  phi(i1)  phi(i2) max(|G(jw(idx))|)
+   %      k  j1   j2  om(j1)  om(j2)  phi(j1)  phi(j2) max(|G(jw(idx))|)
    %      :   :    :     :      :        :        :       :
    %    ]
    %
@@ -222,11 +250,19 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
             subplot(o);
       end      
    end
-   function [K0,f0,err] = Search(o,zc) % Iterative Search              
+   function [K0,f0,i0,j0,k0,err] = Search(o,zc)% Iterative Search      
+   %
+   % SEARCH
+   %
+   %    crosses table is built as follows
+   %    [
+   %      k  j1   j2  om(j1)  om(j2)  phi(j1)  phi(j2) max(|G(jw(idx))|)
+   %    ]
+   %
       GmaX = max(zc(:,7:8)')';
-      [Mag,k] = max(GmaX);                % maximum magnitude
+      [Mag,k0] = max(GmaX);            % maximum magnitude @ k
       K0 = 1/Mag;
-      om1 = zc(k,4);  om2 = zc(k,5);  K_ = 1/max(zc(k,8));
+      om1 = zc(k0,4);  om2 = zc(k0,5);  K_ = 1/max(zc(k0,8));
   
          % calculate critical quantities K0 and f0
       
@@ -235,7 +271,16 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
          % calculate Nyquist error
          
       G0jw = 1 + K0*lambda0jw;
-      err = min(abs(G0jw));            % Nyquist error
+      [err,i0] = min(abs(G0jw));       % Nyquist error
+      
+         % calculate j0 index
+         
+      j1 = zc(k0,2);  j2 = zc(k0,3);  om0 = 2*pi*f0;
+      if (om0-om1 < om2-om0)           % is om0 closer to om1?
+         j0 = j1;
+      else
+         j0 = j2;
+      end
    end
 end
 
@@ -243,7 +288,7 @@ end
 % Psion Calculation
 %==========================================================================
 
-function [psiw31,psiw33] = Psion(o,sys)
+function [psiw31,psiw33] = Psion(o,sys)     % Calc Psion Matrices      
    A = var(sys,'A');
    B_1 = var(sys,'B_1');
    B_3 = var(sys,'B_3');
@@ -258,7 +303,7 @@ end
 % Omega Construction
 %==========================================================================
 
-function om = Omega(o)
+function om = Omega(o)                      % Construct Omega Domain   
    oml = opt(o,'spectrum.omega.low');
    omh = opt(o,'spectrum.omega.high');
    points = opt(o,'spectrum.omega.points');
@@ -270,7 +315,7 @@ end
 % Out Arg Construction
 %==========================================================================
 
-function L = OutArg(o,om,Ljw,sys,psiw31,psiw33,tag,col)
+function L = OutArg(o,om,Ljw,sys,psiw31,psiw33,tag,col)                
    for (i=1:size(Ljw,1))
       matrix{i,1} = Ljw(i,:);
    end

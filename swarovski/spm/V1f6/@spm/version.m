@@ -463,6 +463,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add pareto to batch config
 % - bugfix: batch/RunSpm - missing option inheritance
 % - bugfix: spm/batch - dark mode control
+% - EVerr check implemented for critical/CalcGamma
 
 % Known bugs & wishlist
 % =========================
