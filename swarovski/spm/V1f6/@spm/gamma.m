@@ -52,17 +52,17 @@ function [gamma0,gamma180,sys] = gamma(o,om)
       % forward gamma calculation
       
    lambda0jw = lambda(o,psiw31,psiw33,om);
-   lambda0 = OutArg(o,om,lambda0jw,sys,'lambda0','ryyyy');
+   lambda0 = OutArg(o,om,lambda0jw,sys,psiw31,psiw33,'0','ryyyy');   
+   [gamma0,K0,f0,nyqerr] = Critical(o,lambda0,psiw31,psiw33);
    
 %  g31 = OutArg(o,om,g31jw,sys,'g31','g');
 %  g33 = OutArg(o,om,g33jw,sys,'g33','g');
    
-   [gamma0,K0,f0] = Critical(o,lambda0,psiw31,psiw33);
-
       % backward gamma calculation
    
    if (nargout > 1)
-      lambda180 = OutArg(o,om,-lambda0jw,sys,'lambda180','ryyyk');
+      lambda180 = OutArg(o,om,-lambda0jw,sys,-psiw31,psiw33,'180','ryyyk');
+      
       [gamma180,K180,f180] = Critical(o,lambda180,-psiw31,psiw33);
    end
 end
@@ -71,7 +71,7 @@ end
 % Critical Quantities
 %==========================================================================
 
-function [gamm,K,f] = Critical(o,lamb,psiw31,psiw33)        
+function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)        
 %
 % CRITICAL
 %
@@ -87,15 +87,20 @@ function [gamm,K,f] = Critical(o,lamb,psiw31,psiw33)
    [K,f,nyqerr] = Search(oo,zc);       % iterative detail search
    
    V = o.iif(isinf(K),1,1/K);          % scale factor: gamma = V*lambda
-
+   lamb = var(lamb,'K,f,nyqerr',K,f,nyqerr'); 
+   
+      % calculate:      gamm = V*lamb
+      % be aware that:  var(gamm,'fqr') = V*var(lamb,'fqr')
+      
+   gamm = V*lamb;   
+   gamm.work.var.fqr = V*lamb.work.var.fqr;
+   gamm = var(gamm,'lambda',lamb);
+   
    if (psiw31(1) > 0)
-      gamm = var(V*lamb,'K0,f0,lambda0,nyqerr0',K,f,lamb,nyqerr);
-      gamm = set(gamm,'name','gamma0', 'color','r');
+      gamm = set(gamm,'name,color', 'gamma0','r');
    else
-      gamm = var(V*lamb,'K180,f180,lambda180,nyqerr180',K,f,lamb,nyqerr);
-      gamm = set(gamm,'name,color','gamma180','rrk');
+      gamm = set(gamm,'name,color', 'gamma180','rrk');
    end      
-   gamm = var(gamm,'psiw31,psiw33',psiw31,psiw33);
    
       % that's it - bye!
    
@@ -265,11 +270,14 @@ end
 % Out Arg Construction
 %==========================================================================
 
-function L = OutArg(o,om,Ljw,sys,name,col)
+function L = OutArg(o,om,Ljw,sys,psiw31,psiw33,tag,col)
    for (i=1:size(Ljw,1))
       matrix{i,1} = Ljw(i,:);
    end
+   
+   name = ['lambda',tag];
+   
    L = fqr(corasim,om,matrix);
    L = set(L, 'name',name, 'color',col);
-   L = var(L,'system',sys);
+   L = var(L,'tag,system,psiw31,psiw33,fqr', tag,sys,psiw31,psiw33,Ljw);
 end

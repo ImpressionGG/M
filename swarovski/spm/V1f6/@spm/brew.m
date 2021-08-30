@@ -734,6 +734,11 @@ function oo = Gamma(o)                 % Brew Gamma TRFs
    oo = opt(o,'progress','brewing critical spectrum');
    [gamma0,gamma180,sys] = gamma(oo);
         
+      % extend critical spectral functions
+      
+   gamma0 = Extend(o,gamma0);   
+   gamma180 = Extend(o,gamma180);
+   
       % store in gamma cache segment
 
    oo = o;
@@ -800,37 +805,51 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    
       % calculate characteristic loci lambda0 (a CORASIM FQR system)
  
-   gamma0 = cook(o,'gamma0');
-   lambda0 = var(gamma0,'lambda0');
-   
-      % extract psion quantities
+   [gamma0,gamma180] = cook(o,'gamma0,gamma180');
       
-   [psiw31,psiw33] = var(gamma0,'psiw31,psiw33');
-   
       % fetch critical quantities
       
    [K0,f0,K180,f180] = cook(o,'K0,f0,K180,f180');
 
       % principal spectrum
       
-   lambda0 = Sort(o,lambda0,K0,f0);
-   lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
-   lambda0 = var(lambda0,'K,f',K0,f0);
+   lambda0 = var(gamma0,'lambda');
+   %lambda0 = Sort(o,lambda0,K0,f0);
+   %lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
+   %lambda0 = var(lambda0,'K,f',K0,f0);
+   lambda0 = Extend(o,lambda0);
+   lambda0jw = var(lambda0,'fqr');
 
-      % critical spectrum
+      % critical frequency responses (maximizing |lambda0(jw)|)
    
-%  gamma0 = o.iif(isinf(K0),1,K0)*lambda0;   
-%  gamma0 = set(gamma0,'name','gamma0(s)','color','r');
-%  gamma0 = var(gamma0,'K,f',K0,f0);
+   l0 = lambda(o,lambda0);
+   l0 = set(l0,'name','l0(s)','color','yyyr');
+   
+      % calculate characteristic loci lambda180 (a CORASIM FQR system)
       
-      % with l0 = g0 * g31/g33 calculate: g0 = l0 * g33/g31
+   lambda180 = var(gamma180,'lambda');
+   %lambda180 = Sort(o,lambda180,K180,f180);
+   %lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
+   %lambda180 = var(lambda180,'K,f',K180,f180);
+   lambda180 = Extend(o,lambda180);
+   lambda180jw = var(lambda180,'fqr');
+   
+      % critical frequency responses (maximizing |lambda180(jw)|)
+
+   l180 = lambda(o,lambda180);
+   l180 = set(l180,'name','l180(s)','color','yk');
       
-   l0jw = lambda0.data.matrix{1,1};
+      % extract psion quantities
+      
+   [psiw31,psiw33] = var(gamma0,'psiw31,psiw33');   
    om = lambda0.data.omega;
 
-   oo = opt(o,'progress','brewing spectral genesis');
-   [g31jw,g33jw] = lambda(oo,psiw31,psiw33,om);
+      % with l0 = g0 * g31/g33 calculate: g0 = l0 * g33/g31
    
+   oo = opt(o,'progress','brewing spectral genesis');
+   
+   [g31jw,g33jw] = lambda(oo,psiw31,psiw33,om);
+   l0jw = lambda0.data.matrix{1,1};
    g30jw = l0jw .* g33jw ./ g31jw;
 
    g31 = fqr(corasim,om,{g31jw});
@@ -841,31 +860,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
 
    g30 = fqr(corasim,om,{g30jw});
    g30 = set(g30,'name','g30(s)','color','m');
-   
-      % calculate characteristic loci lambda180 (a CORASIM FQR system)
-      
-   lambda180 = (-1)*lambda0;
-   lambda180 = Sort(o,lambda180,K180,f180);
-   lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
-   lambda180 = var(lambda180,'K,f',K180,f180);
-   
-      % get frequency responses l0jw and l180jw as a double matrix
-      
-   [m,~] = size(lambda0.data.matrix);
-   n = length(lambda0.data.omega);
-   for (i=1:m)
-      lambda0jw(i,1:n) = lambda0.data.matrix{i};
-      lambda180jw(i,1:n) = lambda180.data.matrix{i};
-   end
-      
-      % critical frequency responses (maximizing |lambda0(jw)|,
-      % |lambda180(jw)|
-      
-   l0 = lambda(o,lambda0);
-   l0 = set(l0,'name','l0(s)','color','yyyr');
-   l180 = lambda(o,lambda180);
-   l180 = set(l180,'name','l180(s)','color','yk');
-      
+               
       % store in cache
    
    oo = o;
@@ -889,7 +884,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
       
    cache(oo,oo);                       % hard refresh of spectral segment
    
-   function L = Sort(o,L,K,f)            % sort rows of lambda(jw)       
+   function L = Sort(o,L,K,f)          % sort rows of lambda(jw)       
       matrix = L.data.matrix;
       n = prod(size(matrix));
       
@@ -2594,4 +2589,54 @@ function Ts = CancelT(o,Ts)            % Set Cancel Epsilon
    if ~isempty(eps)
       Ts = opt(Ts,'eps',eps);
    end
+end
+function L = Extend(o,L)               % extend lambda function
+%
+% EXTREND  Extend lambda function by variables fqr (frequency response
+%          array) and phi (unwrapped phase array)
+%
+%             gamma0 = Extend(o,gamma0,1)
+%             [gamma0jw,phi0jw] = var(gamma0,'fqr,phi');
+%
+%             gamma180 = Extend(o,gamma180,1)
+%             [gamma180jw,phi180jw] = var(gamma180,'fqr,phi');
+%
+%             lambda0 = Extend(o,lambda0,K0)
+%             [lambda0jw,phi0jw] = var(lambda0,'fqr,phi');
+%
+%             lambda180 = Extend(o,lambda180,K180)
+%             [lambda180jw,phi180jw] = var(lambda180,'fqr,phi');
+%
+%          Angle phi is offsetted to keep phi(jw0) closest to -pi
+%
+   [m,~] = size(L.data.matrix);
+   n = length(L.data.omega);
+
+   Ljw = zeros(m,n);  phi = zeros(m,n);
+
+   for (i=1:m)
+      Ljw(i,:) = L.data.matrix{i};
+      phi(i,:) = unwrap(angle(Ljw(i,:)));
+   end
+
+      % find point which minimizes Nyquist error
+
+   K = var(L,'K');
+   M = abs(1 + K*Ljw);              % magnitude of Nyquist FQR
+
+   [nyqerr,i0] = min(min(M'));      % row index of minimizing Nyq error
+   [nyqerr,j0] = min(M(i0,:));      % row index of minimizing Nyq error
+
+   psi0 = phi(i0,j0) + pi;
+   phi0 = 2*pi * round(psi0/2/pi);  % multiple of 2*pi (no danger)
+   psi = psi0 - phi0;
+   
+   phi = phi - phi0 ;               % make closest
+   err = phi(i0,j0) + pi;           % check: must be close to 0
+
+   if (abs(err) > pi/10)
+      fprintf('*** warning: bad phase residuum');
+   end
+   
+   L = var(L,'fqr,phi,i0,j0',Ljw,phi,i0,j0);
 end

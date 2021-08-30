@@ -316,6 +316,7 @@ function o = Principal(o)              % Pricipal Menu Callbacks
       return
    end
 
+   o = cache(o,o,'gamma');             % hard refresh 'gamma' segment
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
    
@@ -462,6 +463,7 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Critical Gain',{@WithSpm,'Critical','Damping'});
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Old Bode',{@WithSpm,'Critical','OldBode'});
    ooo = mitem(oo,'Bode',{@WithSpm,'Critical','Bode'});
    ooo = mitem(oo,'Magnitude',{@WithSpm,'Critical','Magni'});
    ooo = mitem(oo,'Phase',{@WithSpm,'Critical','Phase'});
@@ -480,6 +482,7 @@ function o = Critical(o)               % Calculate Critical Quantities
       return
    end
    
+   o = cache(o,'gamma');               % hard refresh 'gamma' cache segment
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
 
@@ -543,6 +546,15 @@ function o = Critical(o)               % Calculate Critical Quantities
                critical(o,'Bode',[2111,2121,0,0],1);
             case -1                    % backward direction
                critical(o,'Bode',[0,0,2111,2121],1);
+         end
+      case 'OldBode'
+         switch cutting
+            case 0                     % both directions
+               critical(o,'OldBode',[2211,2221,2212,2222],1);
+            case 1                     % forward direction
+               critical(o,'OldBode',[2111,2121,0,0],1);
+            case -1                    % backward direction
+               critical(o,'OldBode',[0,0,2111,2121],1);
          end
       case 'Magni'
          switch cutting

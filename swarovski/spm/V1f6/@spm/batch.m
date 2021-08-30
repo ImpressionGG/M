@@ -381,7 +381,7 @@ function o = StabilityMarginPkg(o)
    assert(type(o,{'pkg'}));
    cls(o);
 
-   tag = Tag(o,'Stability Margin');
+   tag = Cls(o,'Stability Margin');
    analyse(o,'StabilityMargin');
    Png(o,tag);
 end

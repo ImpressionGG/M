@@ -11,19 +11,36 @@ end
 function o = Shell(o)                  % Shell Setup                   
    o = Init(o);                        % init object
 
+   Progress(o,0);
    o = menu(o,'Begin');                % begin menu setup
    oo = File(o);                       % add File menu
    oo = Edit(o);                       % add Edit menu
+   Progress(o,10);
    oo = View(o);                       % add View menu
+   Progress(o,20);
    oo = Select(o);                     % add Select menu
+   Progress(o,30);
    oo = Plot(o);                       % add Plot menu
+   Progress(o,50);
    oo = Analyse(o);                    % add Analyse menu
    oo = Study(o);                      % add Study menu
+   Progress(o,60);
    oo = Batch(o);                      % add batch menu
    oo = menu(o,'Gallery');             % add Gallery menu
+   Progress(o,80);
    oo = Info(o);                       % add Info menu
    oo = menu(o,'Figure');              % add Figure menu
+   Progress(o,100);
    o = menu(o,'End');                  % end menu setup (will refresh)
+   
+   function Progress(o,percent)
+      return
+      if (nargin == 1)
+         progress(o);
+      else
+         progress(o,'building menu',percent);
+      end
+   end
 end
 function o = Tiny(o)                   % Tiny Shell Setup              
    o = Init(o);                        % init object

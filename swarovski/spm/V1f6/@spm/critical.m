@@ -103,6 +103,20 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
                Bode(o,oo,L180,[sub(4:5),0],-1,crit); % plot critical parameter overview
                Damping(o,oo,L0,[0 sub(6)]);
             end
+         case 'OldBode'
+            if (length(sub) < 2)
+               sub = [211,212,0,0];
+            elseif (length(sub) < 4)
+               sub(6) = 0;
+            end
+            
+            if (sub(1) || sub(2))
+               OldBode(o,oo,L0,sub(1:2),+1,crit); % plot critical parameter overview
+            end
+            if (sub(3) || sub(4))
+               L180 = Negate(L0);
+               OldBode(o,oo,L180,sub([3 4]),-1,crit); % plot critical parameter overview
+            end
          case 'Bode'
             if (length(sub) < 2)
                sub = [211,212,0,0];
@@ -242,8 +256,8 @@ function [L0,K0,f0,K180,f180] = Calc(o,cdx)       % Calc Critical Val's
             [gamma0,gamma180,sys] = cook(o,'gamma0,gamma180,system');
          end
          L0 = principal(o,sys);
-         [K0,f0] = var(gamma0,'K0,f0');
-         [K180,f180] = var(gamma180,'K180,f180');
+         [K0,f0] = var(gamma0,'K,f');
+         [K180,f180] = var(gamma180,'K,f');
          
       otherwise
          fprintf('*** bad algo => using EIG algorithm\n');
@@ -711,219 +725,25 @@ function o = Damping(o,oo,L0,sub)           % Damping Plot
       L.data.D = gain * L.data.D;
    end
 end
-function Bode(o,oo,L0,sub,cutting,crit)     % Bode Plot                
+function NewBode(o,oo,L0,sub,cutting,crit)     % Bode Plot                
    if (length(sub) < 2)
-      sub = [211,212,0,0];
+      sub = [sub,0];
    end
-
-   [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
 
    if (cutting > 0)
-      [K0,f0] = cook(o,'K0,f0');
-      tag = '0';
-   elseif (cutting < 0)
-      [K0,f0] = cook(o,'K180,f180');
-      tag = '180';
-B_1 = -B_1;  B_3 = -B_3;
-   end
-   
-   m = size(C_3,1);
-   multi = (m > 1);                 % multi contact
-   
-   if isequal(K0,inf)
-      %o = subplot(o,sub(1));
-      %set(axes(o),'ylim',[-5 5]);
-      %message(o,'No instabilities - skip frequency analysis!');
-      %return
-   end
-      
-   olo = opt(o,{'omega.low',100});
-   ohi = opt(o,{'omega.high',1e5});
-   points = opt(o,{'omega.points',2000});
-
-   om = logspace(log10(olo),log10(ohi),points);
-   Om = om*T0;                      % time normalized omega
-   f = om/2/pi;                     % frequency range
-   
-   L0jw = zeros(m,length(om));  G31jw = L0jw;  G33jw = L0jw; 
-
-      % calculate G31(jw), G33(jw) and L0(jw)
-
-   i123 = (1:m)';
-   kmax = length(om);
-      
-%  L0jW = cook(o,'lambda0jw');    
-%  L0jw = lambda(o,A,B_1,B_3,C_3,Om);
-
-   if (cutting >= 0)
-      [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om);
-   else
-      [o,L0jw] = GetL180jw(o,A,B_1,B_3,C_3,Om);
-   end
-
-      % calculate phases phi31,phi33 and phi=phi31-phi33
-
-   kf0 = min(find(f>=f0));   
-   phi = angle(o,L0jw,kf0);
-         
-      % calculate critical frequency response
-      
-   [L0jw0,G31jw0,G33jw0] = Lambda(o,A,B_1,B_3,C_3,2*pi*f0*T0);
-   phi0 = mod(angle(L0jw0),2*pi) - 2*pi;
-   
-      % search characteristic frequency response with best matching
-      % |N(jw)| = |1+K0*L0[k](jw0) = 1
-      
-   M = abs(1 + K0*L0jw0);              % magnitude of Nyquist FQR
-   nyqerr = min(M);                    % Nyquist error
-   
-      % now find index k0 that approximates 1 + K0*L0jw =~= 0
-      
-   idx = min(find(f>=f0));
-   M = abs(1 + K0*L0jw(:,idx));
-   aprerr = min(M);                    % approximate Nyquist error
-   k0 = min(find(M==aprerr));          % indexing critical characteristics
-   
-      % get critical characteristics
-   
-   %if (sub(1) ~= 0 && sub(2) ~= 0)
-      lk0jw = L0jw(k0,:);                 % critical characteristics 
-      phil0 = angle(o,lk0jw,kf0);
-      l0jw = lambda(o,L0jw);
-
-      BodePlot(o,l0jw,sub(1),sub(2),crit);% plot intermediate results
-
-      M31 = abs(G31jw0(k0));              % coupling gain
-      phi31 = angle(G31jw0(k0));          % coupling phase      
-
-      M33 = abs(G33jw0(k0));              % direct gain
-      phi33 = angle(G33jw0(k0));          % direkt phase      
-
-      ML0 = abs(L0jw0(k0));               % critical gain
-      phi0 = angle(L0jw0(k0));            % critical phase      
-
-      if isinf(K0)
-         K0_ = K0;  f0_ = f0;
-      else
-         try
-            [K0_,f0_] = Stable(o,L0,K0);
-         catch
-            if (cutting >= 0)
-               [K0_,f0_] = cook(o,'K0,f0');
-            else
-               [K0_,f0_] = cook(o,'K180,f180');
-            end
-         end
-      end
-      Results(o,sub(1),sub(2));           % display results
-   %end
-   
-   
-   heading(o);
-         
-   function BodePlot(o,l0jw,sub1,sub2,crit)
-      frequency = opt(o,{'frequency',0});
-      fac = o.iif(frequency,2*pi,1);
-      
-      if dark(o)
-         colors = {'rk','gk','b','ck','mk'};
-      else
-         colors = {'rwww','gwww','bwww','cwww','mwww'};
-      end
-      
-      if (sub1)
-         subplot(o,sub1,'semilogx');
-         set(gca,'visible','on');
-      
-            % magnitude plot  
-      
-         K = o.iif(crit,K0,1);
-         K = o.iif(isinf(K),1,K);
-         
-         for (ii=1:size(L0jw,1))
-            col = colors{1+rem(ii-1,length(colors))};
-            plot(o,om/fac,20*log10(abs(K*L0jw(ii,:))),col);
-         end
-         
-         col = o.iif(crit,'r2','ryyy2');
-         plot(o,om/fac,20*log10(abs(K*l0jw)),col);         
-         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
-         plot(o,2*pi*f0/fac,-20*log10(K0/K),'K1o');
-
-         name = o.iif(crit,'C0(s)=K0*G31(s)/G33(s)','L0(s)=G31(s)/G33(s)');
-         title(sprintf('%s: Magnitude Plots (K0: %g @ %g Hz)',name,K0,f0));
-         xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
-         ylabel('|L0[k](jw)| [dB]');
-         subplot(o);
-      end
-      
-         % phase plot
-         
-      if (sub2)
-         subplot(o,sub2,'semilogx');
-         set(gca,'visible','on');
-
-         plot(o,om/fac,0*f-180,'K');
-         for (ii=1:size(L0jw,1))
-            col = colors{1+rem(ii-1,length(colors))};
-            plot(o,om/fac,phi(ii,:)*180/pi,col);
-         end
-
-         plot(o,om/fac,phil0*180/pi,o.iif(crit,'r2','yyyr2'));
-
-         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
-         plot(o,2*pi*f0/fac,-180,'K1o');
-
-         subplot(o);  idle(o);  % give time to refresh graphics
-         xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
-         ylabel('L0[k](jw): Phase [deg]');
-      end
-   end
-   function Results(o,sub1,sub2)
-      frequency = opt(o,{'frequency',0});
-      fac = o.iif(frequency,2*pi,1);
-
-      if isinf(K0)
-         s0 = NaN;
-      else
-         s0 = CritEig(o,L0,K0);
-      end
-      err = norm([K0-K0_,f0-f0_,real(s0)]);
-      
       if (crit)
-         name = o.iif(cutting>0,'gamma0(jw)','gamma180(jw)');
+         L = cook(o,'gamma0');
       else
-         name = o.iif(cutting>0,'lambda0(jw)','lambda180(jw)');
+         L = cook(o,'lambda0');
       end
-      
-      if (sub1)
-         subplot(o,sub1);
-         title(sprintf(['%s: Magnitude Plot - K%s: ',...
-                        '%g @ %g Hz (EV error: %g)'],name,tag,K0_,f0_,err));
-
-         txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
-               Rd(M31*1e9),Rd(phi31*180/pi),...
-               Rd(M33*1e9),Rd(phi33*180/pi));
-         xlabel(txt);
-         K = o.iif(crit,K0,1);
-         limits(o,'Magni',K);
-         subplot(o);
+      bode(o,L,sub);
+   else
+      if (crit)
+         L = cook(o,'gamma180');
+      else
+         L = cook(o,'lambda180');
       end
-      
-      if (sub2)
-         subplot(o,sub2);
-         title(sprintf('%s: Phase Plot (Nyquist error: %g)',name,nyqerr));
-         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'r1-.');
-         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
-         xlab = o.iif(frequency,'Frequency [Hz]','Omega [1/s]');
-         xlabel(sprintf('%s      (G31(jw0)/G33(jw0): %g @ %g deg)',...
-                xlab,o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi)));
-         subplot(o);
-      end
-   end
-   function y = Rd(x)                  % round to 1 decimal
-      ooo = corazon;
-      y = ooo.rd(x,1);
+      bode(o,L,sub);
    end
 end
 function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot             
@@ -1139,6 +959,222 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
       end
    end
 
+   function y = Rd(x)                  % round to 1 decimal
+      ooo = corazon;
+      y = ooo.rd(x,1);
+   end
+end
+
+function Bode(o,oo,L0,sub,cutting,crit)  % Old Bode Plot            
+   if (length(sub) < 2)
+      sub = [211,212,0,0];
+   end
+
+   [A,B_1,B_3,C_3,T0] = var(oo,'A,B_1,B_3,C_3,T0');
+
+   if (cutting > 0)
+      [K0,f0] = cook(o,'K0,f0');
+      tag = '0';
+   elseif (cutting < 0)
+      [K0,f0] = cook(o,'K180,f180');
+      tag = '180';
+B_1 = -B_1;  B_3 = -B_3;
+   end
+   
+   m = size(C_3,1);
+   multi = (m > 1);                 % multi contact
+   
+   if isequal(K0,inf)
+      %o = subplot(o,sub(1));
+      %set(axes(o),'ylim',[-5 5]);
+      %message(o,'No instabilities - skip frequency analysis!');
+      %return
+   end
+      
+   olo = opt(o,{'omega.low',100});
+   ohi = opt(o,{'omega.high',1e5});
+   points = opt(o,{'omega.points',2000});
+
+   om = logspace(log10(olo),log10(ohi),points);
+   Om = om*T0;                      % time normalized omega
+   f = om/2/pi;                     % frequency range
+   
+   L0jw = zeros(m,length(om));  G31jw = L0jw;  G33jw = L0jw; 
+
+      % calculate G31(jw), G33(jw) and L0(jw)
+
+   i123 = (1:m)';
+   kmax = length(om);
+      
+%  L0jW = cook(o,'lambda0jw');    
+%  L0jw = lambda(o,A,B_1,B_3,C_3,Om);
+
+   if (cutting >= 0)
+      [o,L0jw] = GetL0jw(o,A,B_1,B_3,C_3,Om);
+   else
+      [o,L0jw] = GetL180jw(o,A,B_1,B_3,C_3,Om);
+   end
+
+      % calculate phases phi31,phi33 and phi=phi31-phi33
+
+   kf0 = min(find(f>=f0));   
+   phi = angle(o,L0jw,kf0);
+         
+      % calculate critical frequency response
+      
+   [L0jw0,G31jw0,G33jw0] = Lambda(o,A,B_1,B_3,C_3,2*pi*f0*T0);
+   phi0 = mod(angle(L0jw0),2*pi) - 2*pi;
+   
+      % search characteristic frequency response with best matching
+      % |N(jw)| = |1+K0*L0[k](jw0) = 1
+      
+   M = abs(1 + K0*L0jw0);              % magnitude of Nyquist FQR
+   nyqerr = min(M);                    % Nyquist error
+   
+      % now find index k0 that approximates 1 + K0*L0jw =~= 0
+      
+   idx = min(find(f>=f0));
+   M = abs(1 + K0*L0jw(:,idx));
+   aprerr = min(M);                    % approximate Nyquist error
+   k0 = min(find(M==aprerr));          % indexing critical characteristics
+   
+      % get critical characteristics
+   
+   %if (sub(1) ~= 0 && sub(2) ~= 0)
+      lk0jw = L0jw(k0,:);                 % critical characteristics 
+      phil0 = angle(o,lk0jw,kf0);
+      l0jw = lambda(o,L0jw);
+
+      BodePlot(o,l0jw,sub(1),sub(2),crit);% plot intermediate results
+
+      M31 = abs(G31jw0(k0));              % coupling gain
+      phi31 = angle(G31jw0(k0));          % coupling phase      
+
+      M33 = abs(G33jw0(k0));              % direct gain
+      phi33 = angle(G33jw0(k0));          % direkt phase      
+
+      ML0 = abs(L0jw0(k0));               % critical gain
+      phi0 = angle(L0jw0(k0));            % critical phase      
+
+      if isinf(K0)
+         K0_ = K0;  f0_ = f0;
+      else
+         try
+            [K0_,f0_] = Stable(o,L0,K0);
+         catch
+            if (cutting >= 0)
+               [K0_,f0_] = cook(o,'K0,f0');
+            else
+               [K0_,f0_] = cook(o,'K180,f180');
+            end
+         end
+      end
+      Results(o,sub(1),sub(2));           % display results
+   %end
+   
+   
+   heading(o);
+         
+   function BodePlot(o,l0jw,sub1,sub2,crit)
+      frequency = opt(o,{'frequency',0});
+      fac = o.iif(frequency,2*pi,1);
+      
+      if dark(o)
+         colors = {'rk','gk','b','ck','mk'};
+      else
+         colors = {'rwww','gwww','bwww','cwww','mwww'};
+      end
+      
+      if (sub1)
+         subplot(o,sub1,'semilogx');
+         set(gca,'visible','on');
+      
+            % magnitude plot  
+      
+         K = o.iif(crit,K0,1);
+         K = o.iif(isinf(K),1,K);
+         
+         for (ii=1:size(L0jw,1))
+            col = colors{1+rem(ii-1,length(colors))};
+            plot(o,om/fac,20*log10(abs(K*L0jw(ii,:))),col);
+         end
+         
+         col = o.iif(crit,'r2','ryyy2');
+         plot(o,om/fac,20*log10(abs(K*l0jw)),col);         
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0/fac,-20*log10(K0/K),'K1o');
+
+         name = o.iif(crit,'C0(s)=K0*G31(s)/G33(s)','L0(s)=G31(s)/G33(s)');
+         title(sprintf('%s: Magnitude Plots (K0: %g @ %g Hz)',name,K0,f0));
+         xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
+         ylabel('|L0[k](jw)| [dB]');
+         subplot(o);
+      end
+      
+         % phase plot
+         
+      if (sub2)
+         subplot(o,sub2,'semilogx');
+         set(gca,'visible','on');
+
+         plot(o,om/fac,0*f-180,'K');
+         for (ii=1:size(L0jw,1))
+            col = colors{1+rem(ii-1,length(colors))};
+            plot(o,om/fac,phi(ii,:)*180/pi,col);
+         end
+
+         plot(o,om/fac,phil0*180/pi,o.iif(crit,'r2','yyyr2'));
+
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
+         plot(o,2*pi*f0/fac,-180,'K1o');
+
+         subplot(o);  idle(o);  % give time to refresh graphics
+         xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
+         ylabel('L0[k](jw): Phase [deg]');
+      end
+   end
+   function Results(o,sub1,sub2)
+      frequency = opt(o,{'frequency',0});
+      fac = o.iif(frequency,2*pi,1);
+
+      if isinf(K0)
+         s0 = NaN;
+      else
+         s0 = CritEig(o,L0,K0);
+      end
+      err = norm([K0-K0_,f0-f0_,real(s0)]);
+      
+      if (crit)
+         name = o.iif(cutting>0,'gamma0(jw)','gamma180(jw)');
+      else
+         name = o.iif(cutting>0,'lambda0(jw)','lambda180(jw)');
+      end
+      
+      if (sub1)
+         subplot(o,sub1);
+         title(sprintf(['%s: Magnitude Plot - K%s: ',...
+                        '%g @ %g Hz (EV error: %g)'],name,tag,K0_,f0_,err));
+
+         txt = sprintf('G31(jw0): %g nm/N @ %g deg, G33(jw0): %g nm/N @ %g deg',...
+               Rd(M31*1e9),Rd(phi31*180/pi),...
+               Rd(M33*1e9),Rd(phi33*180/pi));
+         xlabel(txt);
+         K = o.iif(crit,K0,1);
+         limits(o,'Magni',K);
+         subplot(o);
+      end
+      
+      if (sub2)
+         subplot(o,sub2);
+         title(sprintf('%s: Phase Plot (Nyquist error: %g)',name,nyqerr));
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'r1-.');
+         plot(o,2*pi*f0/fac*[1 1],get(gca,'ylim'),'K1-.');
+         xlab = o.iif(frequency,'Frequency [Hz]','Omega [1/s]');
+         xlabel(sprintf('%s      (G31(jw0)/G33(jw0): %g @ %g deg)',...
+                xlab,o.rd(M31/M33,2),Rd((phi31-phi33)*180/pi)));
+         subplot(o);
+      end
+   end
    function y = Rd(x)                  % round to 1 decimal
       ooo = corazon;
       y = ooo.rd(x,1);
