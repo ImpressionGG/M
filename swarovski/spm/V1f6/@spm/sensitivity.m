@@ -329,7 +329,7 @@ function o = Critical(o)               % Critical Sensitivity
             % fast calc of: [lk,Kk,fk] = cook(oo,'l0,K0,f0');
             
          gamma0 = gamma(oo);
-         [Kk,fk,lambda0] = var(gamma0,'K0,f0,lambda0');
+         [Kk,fk,lambda0] = var(gamma0,'K,f,lambda');
          lk = lambda(oo,lambda0);         
          
             % store results in tables (to be cached). Note that calculated

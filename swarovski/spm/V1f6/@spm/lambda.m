@@ -369,9 +369,12 @@ function L0 = CritCorasim(l0)          % Calculate Critical Fqr
 end
 function L0jw = CritDouble(l0jw)       % Calculate Critical Fqr        
    [m,n] =size(l0jw);
+   
+   L0jw = sqrt(-1)*ones(1,n);
+   
    for (j=1:n)
       mag = abs(l0jw(:,j));
-      idx = find(mag==max(mag));
+      [~,idx] = max(mag);
       L0jw(1,j) = l0jw(idx(1),j);
    end
 end
