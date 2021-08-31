@@ -467,6 +467,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix: brew/Critical and verification of stability margin diagram
 % - weak critical check by default, no checks during batch processing
 % - pareto value displayed in critical sensitivity (timimg diagram)
+% - tag SPM-V16 Beta Version SPM @ Corazon V1I6
 
 
 % Known bugs & wishlist
