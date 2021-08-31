@@ -467,7 +467,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix: brew/Critical and verification of stability margin diagram
 % - weak critical check by default, no checks during batch processing
 % - pareto value displayed in critical sensitivity (timimg diagram)
-% - tag SPM-V16 Beta Version SPM @ Corazon V1I6
+% - tag SPM-V1F6 Beta Version SPM @ Corazon V1I6
 
 % - start beta SPM V1F7 @ beta CORAZON V0i7
 % - batch processing for whole package took 5750s (1.6s), no slow down :-)
