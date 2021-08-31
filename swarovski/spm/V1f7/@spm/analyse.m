@@ -482,10 +482,12 @@ function o = Critical(o)               % Calculate Critical Quantities
       return
    end
    
-   o = cache(o,'gamma');               % hard refresh 'gamma' cache segment
+   o = cache(o,o,'gamma');             % hard refresh 'gamma' cache segment
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
 
+   legacy = opt(o,{'debug.legacy',0})   % activate legacy code
+   
    o = Closeup(o);
    Heading(o);
 
@@ -560,8 +562,13 @@ function o = Critical(o)               % Calculate Critical Quantities
          switch cutting
             case 0                     % both directions
                critical(o,'Magni',[211,212],1);
-            case 1                     % forward direction
-               critical(o,'Magni',[111,0],1);
+            case 1                    % forward direction
+               if (legacy)
+                  critical(o,'Magni',[111,0],1);
+               else
+                  lambda0 = cook(o,'lambda0');
+                  bode(o,lambda0,[111,0]);
+               end
             case -1                    % backward direction
                critical(o,'Magni',[0,111],1);
          end

@@ -482,6 +482,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - batch processing for whole package took 5750s (1.6s), no slow down :-)
 % - dynamic name for PNG directory
 % - bug fix: assertion message in spm/gamma
+% - bug fix: cold cache refresh in analyse/Critical
+% - about screen for package objects pimped
 
 % Known bugs & wishlist
 % =========================

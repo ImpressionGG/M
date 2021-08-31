@@ -40,7 +40,16 @@ classdef corazon < corazita & corazito % Corazon Class
 %                subplot               % subplot control
 %                cls                   % clear screen
 %
+%             Toolbox Generation
+%
 %                rapid                 % rapid toolbox construction
+%
+%             Plugin
+%
+%                plugin                % plugin control
+%                sample                % plugin sample
+%                simple                % plugin sample
+%                legacy                % tiny plugin sample (a good start)
 %
 %             Auxillaty Methods:
 %

@@ -29,7 +29,7 @@ function oo = plugin(o,varargin)
 %
 %          Copyright (c): Bluenetics 2020 
 %
-%          See also: CORAZON
+%          See also: CORAZON, SIMPLE, LEGACY
 %
    [gamma,o] = Plugin(o,varargin,nargout);  % pass to Event work horse
    [gammas,oos] = gamma(o);                 % execute work horse

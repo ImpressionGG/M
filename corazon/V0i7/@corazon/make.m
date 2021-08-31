@@ -41,7 +41,8 @@ function MakeM(o)                      % Make Basic M-files
    CopyFiles(o);
 end
 function MakeCorazon(o)                % Make Corazon Class            
-   exception = {'cache','call','id','menu','shell','version','with'};
+   exception = {'cache','call','id','legacy','menu','shell','sample',...
+                'simple','version','with'};
    class = '@corazon';
    MakeClass(o,class,exception);
 end

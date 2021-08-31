@@ -865,12 +865,13 @@ function o = AboutPkg(o)               % About Package
       o = plot(o,'About');
       return
    end
-   
-   subplot(o,211);
-   message(opt(o,'pitch',2));
-   axis off
-   
-   subplot(o,2322);
+
+   comment = get(o,'comment');
+   pitch = o.iif(length(comment)<= 10,0.6,0.6);
+   sub1 = o.iif(length(comment)<= 10,211,211);
+   sub2 = o.iif(length(comment)<= 10,2322,3533);
+
+   subplot(o,sub2);
    Image(o);
    
      % increase axis width
@@ -880,6 +881,12 @@ function o = AboutPkg(o)               % About Package
    pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
    set(gca,'position',pos);
    set(gca,'ydir','reverse')
+
+      % plot text
+      
+   o = subplot(o,sub1);
+   message(opt(o,'pitch',pitch));
+   axis off
 end
 function o = Image(o)                  % Plot Image                    
    path = [get(o,'dir'),'/',get(o,'image')];

@@ -639,6 +639,7 @@ function VersionV1I
 % - bugfix in corazon/id: need to inherit options from shell objects
 % - pimp corazita/load and corazita/open to open file by path
 % - bugfix: o=cache(o,o,[]) syntax
+% - legacy sample plugin added
 %
 % Known Bugs / Wishlist
 % - none so far

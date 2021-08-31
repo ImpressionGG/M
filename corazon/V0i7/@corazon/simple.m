@@ -12,7 +12,7 @@ function oo = simple(o,varargin)       % Simple Plugin
 %             oo = simple(o,'Simu');
 %             oo = simple(o,'Plot');
 %
-%          See also: CORAZON, PLUGIN, SAMPLE
+%          See also: CORAZON, PLUGIN, SAMPLE, LEGACY
 %
    [gamma,oo] = manage(o,varargin,@Setup,@Register,@Plug,@Callback,...
                        @Basket,@New,@Simu,@Plot,@Stream,@Scatter,@Study1);

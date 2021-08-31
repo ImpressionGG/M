@@ -15,7 +15,7 @@ function oo = sample(o,varargin)       % Sample Plugin
 %          CORAZON objects. Note that in dynamic shells the Analyse menu
 %          is therefore built up by corazon/shell/Analyse.
 %
-%          See also: CORAZON, PLUGIN, SIMPLE
+%          See also: CORAZON, PLUGIN, SIMPLE, LEGACY
 %
    [gamma,oo] = manage(o,varargin,@Setup,@Register,@Basket,...
                        @Plug,@New,@Import,@Export,@Collect,...
