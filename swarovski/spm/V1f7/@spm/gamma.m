@@ -115,9 +115,9 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
       % final check
       
    [nyqerr,i] = min(abs(1+K*L0jw));    % Nyquist error
-   if (i0~=i || err~=nyqerr)
-      fprintf('*** warning: assertion error: i0:%g ~!= %g || nyqerr: %g~=%g\n',...
-              i0,i,  err,nyqerr)
+   if (i0~=i || abs(nyqerr)>2*abs(err))
+      fprintf('*** warning: assertion error: i0:%g ~!= %g || nyqerr: %g>2*%g\n',...
+              i0,i,  nyqerr,err)
       %assert(i0==i && err==nyqerr);       % no changes expected
    end
    

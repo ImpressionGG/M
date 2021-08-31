@@ -481,7 +481,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F7 @ beta CORAZON V0i7
 % - batch processing for whole package took 5750s (1.6s), no slow down :-)
 % - dynamic name for PNG directory
-
+% - bug fix: assertion message in spm/gamma
 
 % Known bugs & wishlist
 % =========================
