@@ -155,7 +155,7 @@ function oo = WithSho(o)               % 'With Shell Object' Callback
    o = dark(o,0);                      % disable dark mode for object o
    
    cls(o);                             % clear screen
- 
+   
    stop(o,'Enable');
    gamma = eval(['@',mfilename]);
    o = Options(o);                     % set batch options
@@ -189,8 +189,8 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    o = dark(o,0);                      % disable dark mode for object o
    
    cls(o);                             % clear screen
- 
-   oo = current(o);                    % get current object
+
+   oo = current(o);                    % get current object 
    
       % oo = current(o) directly inherits options from shell object,
       % this we have to set dark mode option also for oo!
@@ -383,9 +383,9 @@ function o = StabilityMarginPkg(o)
    assert(type(o,{'pkg'}));
    cls(o);
 
-   tag = Cls(o,'Stability Margin');
+   o = Cls(o,'Stability Margin');
    analyse(o,'StabilityMargin');
-   Png(o,tag);
+   Png(o);
 end
 function o = StabilityMarginSpm(o)                                     
    assert(type(o,{'spm'}));
@@ -435,10 +435,10 @@ function o = CriticalOverviewSpm(o)
    batch = opt(o,'batch');
    
    if (batch.cutting >= 0)             % forward cutting      
-      tag = Cls(o,'Critical Overview (Forward)');
+      o = Cls(o,'Critical Overview (Forward)');
       o = opt(o,'view.cutting',+1);
       analyse(o,'Critical','Overview');
-      Png(o,tag);
+      Png(o);
    end
       
    if stop(o)                          % time to  stop?
@@ -446,10 +446,10 @@ function o = CriticalOverviewSpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      tag = Cls(o,'Critical Overview (Backward)');
+      o = Cls(o,'Critical Overview (Backward)');
       o = opt(o,'view.cutting',-1);
       analyse(o,'Critical','Overview');
-      Png(o,tag);
+      Png(o);
    end
 end
 
@@ -496,10 +496,10 @@ function o = DampingSensitivitySpm(o)
    batch = opt(o,'batch');
    
    if (batch.cutting >= 0)             % forward cutting      
-      tag = Cls(o,'Damping Sensitivity (Forward)');
+      o = Cls(o,'Damping Sensitivity (Forward)');
       o = opt(o,'view.cutting',+1);
       sensitivity(o,'Damping');
-      Png(o,tag);
+      Png(o);
    end
       
    if stop(o)                          % time to  stop?
@@ -507,10 +507,10 @@ function o = DampingSensitivitySpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      tag = Cls(o,'Damping Sensitivity (Backward)',id(o));
+      o = Cls(o,'Damping Sensitivity (Backward)',id(o));
       o = opt(o,'view.cutting',-1);
       sensitivity(o,'Damping');
-      Png(o,tag);
+      Png(o);
    end
 end
 
@@ -557,10 +557,10 @@ function o = CriticalSensitivitySpm(o)
    batch = opt(o,'batch');
    
    if (batch.cutting >= 0)             % forward cutting      
-      tag = Cls(o,'Critical Sensitivity (Forward)');
+      o = Cls(o,'Critical Sensitivity (Forward)');
       o = opt(o,'view.cutting',+1);
       sensitivity(o,'Critical');
-      Png(o,tag);
+      Png(o);
    end
       
    if stop(o)                          % time to  stop?
@@ -568,10 +568,10 @@ function o = CriticalSensitivitySpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      tag = Cls(o,'Critical Sensitivity (Backward)');
+      o = Cls(o,'Critical Sensitivity (Backward)');
       o = opt(o,'view.cutting',-1);
       sensitivity(o,'Critical');
-      Png(o,tag);
+      Png(o);
    end
 end
 
@@ -620,16 +620,16 @@ end
 function o = SetupStudyPkgOnly(o)                                      
    assert(type(o,{'pkg'}));
 
-   tag = Cls(o,'Setup Study',id(o));
+   o = Cls(o,'Setup Study',id(o));
    analyse(o,'SetupAnalysis','basic',3);
-   Png(o,tag);      
+   Png(o);      
 end
 function o = SetupStudySpm(o)                                          
    assert(type(o,{'spm'}));
    
-   tag = Cls(o,'Setup Study');
+   o = Cls(o,'Setup Study');
    analyse(o,'SetupAnalysis','basic',3);
-   Png(o,tag);
+   Png(o);
 end
 
 %==========================================================================
@@ -644,33 +644,59 @@ function o = ClearAllCaches(o)         % Clear All Caches
    end
 end
 function o = Options(o)                % Set Batch Options             
+   o = Folder(o);
+   
    points = opt(o,'batch.spectrum.points');
    o = opt(o,'spectrum.omega.points',points);
 
    eps = opt(o,'batch.critical.eps');
    o = opt(o,'critical.eps',eps);
    
-   pareto = opt(o,{'batch.pareto',1.0})
+   pareto = opt(o,{'batch.pareto',1.0});
    o = opt(o,'pareto',pareto);
    
    o = opt(o,'critical.check',0);      % no checks for batch processing
 end
-function tag = Cls(o,title)            % Clear Screen and Setup Tag    
+function o = Cls(o,title)              % Clear Screen and Setup Tag    
    cls(o);
+   Footer(o);
+
    tag = sprintf('%s - %s',title,id(o));
    fprintf('   plot %s diagram ...\n',tag);
-   o = var(o,'tag',tag);
+   o = var(o,'tag,tic',tag,tic);
 end
-function Png(o,tag)                    % Write PNG File                
+function Png(o)                        % Write PNG File                
 %
 % PNG  Create PNG file and take care of a friendly refresj setting
 %
-%         Png(o,tag)
+%         Png(o)
 %
 %      This is also a good location to override refresh setting, as
 %      we do not want to refresh according to a deeper level setting
 %
+   tag = var(o,{'tag','$$$'});
+   time = toc(var(o,'tic'));
+   
+   Footer(o,time);
+   
    refresh(o,{'batch','About'});
    fprintf('   create PNG file ...\n');
+   
    png(o,tag);
+end
+function o = Folder(o)                 % Setup PNG Directory           
+   date = datestr(clock,29);
+   vs = version(o);
+   folder = sprintf('PNG-%s-V%s',date,vs);
+   o = opt(o,'folder',folder);
+end
+function Footer(o,time)                % Refresh Footer                
+   batch = opt(o,'batch');
+   foot = sprintf('SPM V%s, points: %g, eps: %g, pareto: %g%%',...
+                  version(o),batch.spectrum.points,batch.critical.eps,...
+                  batch.pareto*100);
+   if (nargin >= 2)
+      foot = sprintf('%s, time: %gs',foot,o.rd(time,1));
+   end
+   footer(o,foot);
 end

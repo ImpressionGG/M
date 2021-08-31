@@ -305,15 +305,24 @@ function vers = version(o,arg)         % SPM Class Version
 %   + add Setup Studies in Batch menu
 %   ---------------
 %   - bug: Critical/Bode: bad phase for 180°
-%   - bug: critical sensitivity: upper left diagram empty
+%   + bug: critical sensitivity: upper left diagram empty
 %   - performance slow down during batch processing
-%   - auto cration of package info file @ import package
+%   - auto creation of package info file @ import package
 %   ---------------
 %   - Modified Graphics (Andy's suggestion) for Stability Margin
 %   - Additional Plot graphics for mode frequencies
 %   - Comparison of Packages
-%   - PDF and PNG file creation
+%   + PNG file creation (No PDF) 
 %   - show ID in package
+%   ---------------
+%   + assertion in gamma algorithm replaced by warning
+%   - verification of gamma algorithm
+%   - critical sensitivity: spikes
+%   + timing diagram: sometimes empty (change threshold)
+%   - warning of warm cache refreshes
+%   + footer with version and key parameters
+%   + dynamic name for PNG directory (with version date of batch start)
+%   - crashing setup study @LPC.2021040606.SPM model=v7 
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -471,10 +480,12 @@ function vers = version(o,arg)         % SPM Class Version
 
 % - start beta SPM V1F7 @ beta CORAZON V0i7
 % - batch processing for whole package took 5750s (1.6s), no slow down :-)
+% - dynamic name for PNG directory
 
 
 % Known bugs & wishlist
 % =========================
+% - bug: spikes in critical sensitivity diagram
 % - bug: Nichols plot of reverse 2-Mode system not correct
 % - bug: corruption during save
 %

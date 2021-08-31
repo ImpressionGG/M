@@ -5,7 +5,10 @@ function oo = png(o,varargin)          % Save figure as png
 %        png(o)                        % save current figure as PNG
 %        png(o,tag)                    % save current figure as PNG
 %
-%    
+%      Options
+%
+%         folder             % provide folder name (default 'PNG')
+%
 %      See also: SPM, PLOT, ANALYSIS
 %
    if (nargin == 0)
@@ -40,7 +43,8 @@ function path = Directory(o)
         path = pwd;
     end
     
-    path = [path,'/','PNG'];
+    folder = opt(o,{'folder','PNG'});
+    path = [path,'/',folder];
     
         % check existence of directory and create if not exist
         

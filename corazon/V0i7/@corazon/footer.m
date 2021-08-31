@@ -1,16 +1,15 @@
-function hdl = heading(o,msg)
+function hdl = footer(o,msg)
 %
-% HEADING  Draw figure heading
+% FOOTER  Draw figure footer
 %
-%             hdl = heading(o,text)    % draw figure heading
-%             hdl = heading(o)         % use title as figure heading
+%             hdl = footer(o,text)    % draw figure footer
 %
-%          Copyright(c): Bluenetics 2020 
+%          Copyright(c): Bluenetics 2021
 %
-%          See also: CORAZON, PLOT, FOOTER
+%          See also: CORAZON, PLOT, HEADING
 %
    if (nargin < 2)
-      msg = get(o,{'title',[class(o),' object']});
+      error('at least two input args expected');
    end
    if isempty(msg)
       return                           % nothing left to do - bye
@@ -21,22 +20,12 @@ function hdl = heading(o,msg)
    uscore = util(o,'uscore');
    msg = uscore(msg);
    
-      % have to delete existing heading
+      % have to delete existing footer
       
-   kids = get(gcf,'Children');
-   for (i=1:length(kids))
-      kid = kids(i);
-      type = get(kid,'Type');
-      if (isequal(type,'axes')) 
-         kind = shelf(o,kid,'kind');   % which kind of axes?
-         if isequal(kind,'heading')
-            delete(kid);
-         end
-      end
-   end
-
+   Cleanup(o);
+   
    oldhax = gca;                       % save current axes
-   hax = axes(gcf,'OuterPosition',[0 0.95 0.95 0.05]);
+   hax = axes(gcf,'OuterPosition',[0 0.00 0.95 0.05]);
    
       % calculate font size
       
@@ -56,10 +45,29 @@ function hdl = heading(o,msg)
       set(hdl,'Color',0.9*[1 1 1]);
    end
    
-   axis off
-   shelf(o,hax,'kind','heading');      % provide axis kind
+   axis(hax,'off');
+   shelf(o,hax,'kind','footer');       % provide axis kind
    shelf(o,hax,'closeup',false);       % prevents closeup control
    
    axes(oldhax);                       % restore old axes
    dark(o,'Axes');
+end
+
+%==========================================================================
+% Helper
+%==========================================================================
+
+function Cleanup(o)
+   fig = figure(o);
+   kids = get(fig,'Children');
+   for (i=1:length(kids))
+      kid = kids(i);
+      type = get(kid,'Type');
+      if (isequal(type,'axes')) 
+         kind = shelf(o,kid,'kind');   % which kind of axes?
+         if isequal(kind,'footer')
+            delete(kid);
+         end
+      end
+   end
 end
