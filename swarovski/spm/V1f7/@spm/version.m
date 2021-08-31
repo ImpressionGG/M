@@ -473,7 +473,6 @@ function vers = version(o,arg)         % SPM Class Version
 % - batch processing for whole package took 5750s (1.6s), no slow down :-)
 
 
-
 % Known bugs & wishlist
 % =========================
 % - bug: Nichols plot of reverse 2-Mode system not correct
