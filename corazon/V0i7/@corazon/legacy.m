@@ -100,7 +100,8 @@ function o = Menu(o)                   % Setup General Plugin Menus
 %        locate a menu item by path and to insert a new menu item at this
 %        location.
 %      
-   o = mseek(o,{'#' 'Info' 'Debug'})
+   o = mseek(o,{'#' 'Info' 'Debug'});  % seek plug point
+   
    oo = mitem(o,'-');                  % add a menu separator
    oo = Legacy(o);                     % add a legacy selection menu item
 end
@@ -126,6 +127,6 @@ function oo = Legacy(o)                %
 %
    setting(o,{'debug.legacy'},0);      % execute new functions by default
 
-   oo = mitem(o,'Legacy',{},'debug.legacy');
+   oo = mhead(o,'Legacy',{},'debug.legacy');
    choice(oo,{{'Off' 0},{'On',1}});
 end

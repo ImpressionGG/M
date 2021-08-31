@@ -16,7 +16,9 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %            [lambda0,g31,g33] = lambda(o); % also spectral genesis fcts
 %            [g31,g33] = lambda(o,sys);     % only spectral genesis fcts
 %
-%            l0 = lambda(o,lambda0);        % calculate critical TRF
+%            l0 = lambda(o,lambda0);        % calculate dominant TRF
+%            l0jw = var(l0,'fqr');          % FQR of l0
+%            phi = var(l0,'phi');           % unwrapped phase of l0
 %
 %            sys = system(o,cdx);           % get contact relevant system
 %            lambda0 = lambda(o,sys,om);    % calculate spectral FQRs
@@ -138,7 +140,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
       o.profiler('lambda',0);
       return;
    elseif (nargin == 2 && isequal(class(sys),'corasim') && type(sys,{'fqr'}))
-      oo = CritCorasim(sys);
+      oo = Dominant(sys);
       o.profiler('lambda',0);
       return;
    end
@@ -347,7 +349,12 @@ end
 % Calculate Critical Transfer Function (Max. Magnitude)
 %==========================================================================
 
-function L0 = CritCorasim(l0)          % Calculate Critical Fqr        
+function L0 = Dominant(l0)          % Calculate Critical Fqr        
+%
+%  DOMINANT  Create dominant FQR with maximizing magnitude of all spectral
+%            FQRs and according phase.
+%
+%               l0 = 
    assert(type(l0,{'fqr'}));
    [m,n] = size(l0.data.matrix);
    assert(n==1);
@@ -358,14 +365,29 @@ function L0 = CritCorasim(l0)          % Calculate Critical Fqr
       % find greatest magnitude
 
    [m,n] =size(l0jw);
+   [mag,idx] = max(abs(l0jw));
+   [phi,j0] = var(l0,'phi,j0');
+   
+   phi0 = zeros(1,n);
    for (j=1:n)
-      mag = abs(l0jw(:,j));
-      idx = find(mag==max(mag));
-      L0jw(1,j) = l0jw(idx(1),j);
+%     mag = abs(l0jw(:,j));
+%     idx = find(mag==max(mag));
+%     L0jw(1,j) = l0jw(idx(1),j);
+      phi0(j) = phi(idx(j),j); 
+   end
+   
+   phi0 = unwrap(phi0);
+   while (phi0(j0) > -pi+pi/2)
+      phi0 = phi0 - 2*pi;
+   end
+   while (phi0(j0) < -pi-pi/2)
+      phi0 = phi0 + 2*pi;
    end
 
    om = l0.data.omega;
+   L0jw = mag .* exp(1i*phi0);          % artificial FQR
    L0 = fqr(corasim,om,{L0jw});
+   L0 = var(L0,'fqr,phi',L0jw,phi0);
 end
 function L0jw = CritDouble(l0jw)       % Calculate Critical Fqr        
    [m,n] =size(l0jw);
@@ -499,13 +521,13 @@ function L = Sort(o,L)        % Sort Tail of FQR
    for (l=1:m)
       row = min(D);
       [~,j] = min(row);
-jj = min(find(row==min(row))); % target index
-assert(j==jj);
+      %jj = min(find(row==min(row))); % target index
+      %assert(j==jj);
  
       col = D(:,j);
       [~,i] = min(col);
-ii = min(find(col==min(col))); % source index
-assert(ii==i);
+      %ii = min(find(col==min(col))); % source index
+      %assert(ii==i);
 
          % note: i-th element moves to j-th position
 

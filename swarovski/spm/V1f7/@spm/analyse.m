@@ -481,19 +481,27 @@ function o = Critical(o)               % Calculate Critical Quantities
       plot(o,'About');
       return
    end
-   
+
+      % plot heading to see what will go on and load common options
+      
+   Heading(o);
+   legacy = opt(o,{'debug.legacy',0}); % activate legacy code
+   cutting = opt(o,{'view.cutting',0});
+
+      % cold refreshing of caches
+      
    o = cache(o,o,'gamma');             % hard refresh 'gamma' cache segment
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
 
-   legacy = opt(o,{'debug.legacy',0})   % activate legacy code
-   
-   o = Closeup(o);
-   Heading(o);
-
-   cutting = opt(o,{'view.cutting',0});
+      % cook critical and principal spectra
+      
+   [gamma0,gamma180] = cook(o,'gamma0,gamma180');
+   [lambda0,lambda180] = cook(o,'lambda0,lambda180');
+      
+      % dispatch mode
+      
    mode = arg(o,1);
-
    switch mode
       case 'Overview'
          switch cutting
@@ -541,13 +549,27 @@ function o = Critical(o)               % Calculate Critical Quantities
                critical(o,'Damping',[0,111]);
          end
       case 'Bode'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Bode',[2211,2221,2212,2222],1);
-            case 1                     % forward direction
-               critical(o,'Bode',[2111,2121,0,0],1);
-            case -1                    % backward direction
-               critical(o,'Bode',[0,0,2111,2121],1);
+         if (legacy)
+            critical(o,'Bode',sub,1);
+         else
+            bode(o,gamma0,sub);
+         end
+         sub = o.assoc(cutting,{{0,[2211,2221]},{1,[2211,0]},{-1,[0,2221]}});
+
+         if (legacy)
+            switch cutting
+               case 0                     % both directions
+                  critical(o,'Bode',[2211,2221,2212,2222],1);
+               case 1                     % forward direction
+                  critical(o,'Bode',[2111,2121,0,0],1);
+               case -1                    % backward direction
+                  critical(o,'Bode',[0,0,2111,2121],1);
+            end
+         else
+            sub = o.assoc(cutting,{{0,[2211,2221]},{1,[211,212]},{-1,[211,212]}});
+            bode(o,gamma0,sub);
+            sub = o.assoc(cutting,{{0,[2212,2222]},{1,[2212,0]},{-1,[0,2221]}});
+            bode(o,gamma0,sub);
          end
       case 'OldBode'
          switch cutting
@@ -559,19 +581,20 @@ function o = Critical(o)               % Calculate Critical Quantities
                critical(o,'OldBode',[0,0,2111,2121],1);
          end
       case 'Magni'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Magni',[211,212],1);
-            case 1                    % forward direction
-               if (legacy)
-                  critical(o,'Magni',[111,0],1);
-               else
-                  lambda0 = cook(o,'lambda0');
-                  bode(o,lambda0,[111,0]);
-               end
-            case -1                    % backward direction
-               critical(o,'Magni',[0,111],1);
+         if (cutting == 0)             % both directions
+            bode(o,gamma0,[2211 2221]);
+            bode(o,gamma180,[2212 2222]);
+         else
+            if (legacy && cutting > 0)
+               critical(o,'Magni',[211 212],1);
+            elseif (legacy && cutting < 0)
+               critical(o,'Magni',[0 0 211 212],1);
+            else
+               gamm = o.iif(cutting>0,gamma0,gamma180);
+               bode(o,gamm,[211 212]);
+            end
          end
+         
       case 'Phase'
          switch cutting
             case 0                     % both directions

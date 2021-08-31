@@ -867,7 +867,7 @@ function o = AboutPkg(o)               % About Package
    end
 
    comment = get(o,'comment');
-   pitch = o.iif(length(comment)<= 10,0.6,0.6);
+   pitch = o.iif(length(comment)<= 10,1.5,1);
    sub1 = o.iif(length(comment)<= 10,211,211);
    sub2 = o.iif(length(comment)<= 10,2322,3533);
 
@@ -880,7 +880,7 @@ function o = AboutPkg(o)               % About Package
    w = pos(3);  k = 1.5;               % k: stretch factor
    pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
    set(gca,'position',pos);
-   set(gca,'ydir','reverse')
+   set(gca,'ydir','reverse');
 
       % plot text
       
