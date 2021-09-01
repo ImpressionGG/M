@@ -485,10 +485,12 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix: cold cache refresh in analyse/Critical
 % - about screen for package objects pimped
 % - implement closeup for spm/bode
+% - bugfix: small discontinuities in spectrum at critical frequency
+
 
 % Known bugs & wishlist
 % =========================
-% - bug: small discontinuities in spectrum at critical frequency
+% - bug: incorrect dominant magnitude 
 % - bug: spikes in critical sensitivity diagram
 % - bug: Nichols plot of reverse 2-Mode system not correct
 % - bug: corruption during save

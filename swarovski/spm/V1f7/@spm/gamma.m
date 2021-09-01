@@ -98,32 +98,11 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    oo = opt(o,'progress','');          % no progress updates!
    [K,f,i0,j0,k0,err] = Search(oo,zc); % iterative detail search
 
-      % store variables to lambda function
+      % store variables to lambda function 
+      % and adjust omega and frequency response of lamb
       
    lamb = var(lamb,'K,f,i0,j0',K,f,i0,j0'); 
-
-      % adjust omega and frequency response of lamb
-   
-   lamb.data.omega(j0) = 2*pi*f;       % adaption of omega domain vector
-   L0jw = lambda(o,psiw31,psiw33,lamb.data.omega(j0));
-   lamb.work.var.fqr(:,j0) = L0jw;
-   
-   for (i=1:length(L0jw))
-      lamb.data.matrix{i} = lamb.work.var.fqr(i,:);
-   end
-   
-      % final check
-      
-   [nyqerr,i] = min(abs(1+K*L0jw));    % Nyquist error
-   if (i0~=i || abs(nyqerr)>2*abs(err))
-      fprintf('*** warning: assertion error: i0:%g ~!= %g || nyqerr: %g>2*%g\n',...
-              i0,i,  nyqerr,err)
-      %assert(i0==i && err==nyqerr);       % no changes expected
-   end
-   
-      % store nyquist error to lambda function
-      
-   lamb = var(lamb,'nyqerr',nyqerr'); 
+   [lamb,nyqerr] = Adjust(o,lamb,j0,K,f);
    
       % derive gamma function from lambda
       
@@ -304,6 +283,44 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
       else
          j0 = j2;
       end
+   end
+   function [lamb,nyq] = Adjust(o,lamb,j0,K,f) % Adjustment of Omega   
+      lamb.data.omega(j0) = 2*pi*f;       % adaption of omega domain vector
+      L0jw_ = lambda(o,psiw31,psiw33,lamb.data.omega(j0));
+      
+         % reorder L0jw according to least jumps
+      
+      m = length(lamb.data.matrix);
+      L0jw = NaN*L0jw_;                % init
+      for (i=1:m)
+         Ljw = lamb.data.matrix{i};
+         d = abs(L0jw_-Ljw(j0));
+         [dmin,idx] = min(d);
+         L0jw(i,1) = L0jw_(idx);       % reorder
+         L0jw_(idx) = [];              % out of game
+      end
+      
+         % now L0jw is reordered according to öleast jumps
+         
+      lamb.work.var.fqr(:,j0) = L0jw;
+
+         % store FQR as variable
+
+      for (i=1:m)
+         lamb.data.matrix{i} = lamb.work.var.fqr(i,:);
+      end
+
+         % final check
+
+      [nyq,i] = min(abs(1+K*L0jw));    % Nyquist error
+      if (i0~=i || abs(nyq)~=abs(err))
+         fprintf('*** warning: assertion error: i0:%g ~!= %g || nyqerr: %g~=%g\n',...
+                 i0,i,  nyq,err)
+      end
+      
+         % store nyquist error to lambda function
+
+      lamb = var(lamb,'nyqerr',nyq'); 
    end
 end
 

@@ -349,7 +349,7 @@ end
 % Calculate Critical Transfer Function (Max. Magnitude)
 %==========================================================================
 
-function L0 = Dominant(l0)          % Calculate Critical Fqr        
+function L0 = Dominant(l0)             % Calculate Critical Fqr        
 %
 %  DOMINANT  Create dominant FQR with maximizing magnitude of all spectral
 %            FQRs and according phase.
@@ -390,6 +390,7 @@ function L0 = Dominant(l0)          % Calculate Critical Fqr
    L0 = var(L0,'fqr,phi',L0jw,phi0);
 end
 function L0jw = CritDouble(l0jw)       % Calculate Critical Fqr        
+error('will be obsoleted');
    [m,n] =size(l0jw);
    
    L0jw = sqrt(-1)*ones(1,n);
@@ -405,7 +406,7 @@ end
 % Zero Cross Search
 %==========================================================================
 
-function [K0,f0,l0jw] = Critical(o,psiW31,psiW33,om1,om2)
+function [K0,f0,l0jw] = Critical(o,psiW31,psiW33,om1,om2)              
 %
 % CRITICAL  Fine iteration of critical quantities
 %
@@ -490,7 +491,7 @@ end
 % Helper
 %==========================================================================
 
-function L = Sort(o,L)        % Sort Tail of FQR                 
+function L = Sort(o,L)        % Sort Tail of FQR                       
 %
 % TAILSORT    Rearrange characteristic frequency responses in order to
 %             obtain smooth graphs.
