@@ -368,14 +368,14 @@ function L0 = Dominant(l0)             % Calculate Critical Fqr
    [mag,idx] = max(abs(l0jw));
    [phi,j0] = var(l0,'phi,j0');
    
-   phi0 = zeros(1,n);
+   phi0 = zeros(1,n);               % init
    for (j=1:n)
 %     mag = abs(l0jw(:,j));
 %     idx = find(mag==max(mag));
 %     L0jw(1,j) = l0jw(idx(1),j);
       phi0(j) = phi(idx(j),j); 
    end
-   
+
    phi0 = unwrap(phi0);
    while (phi0(j0) > -pi+pi/2)
       phi0 = phi0 - 2*pi;
@@ -384,6 +384,8 @@ function L0 = Dominant(l0)             % Calculate Critical Fqr
       phi0 = phi0 + 2*pi;
    end
 
+      % pack data into corasim object
+      
    om = l0.data.omega;
    L0jw = mag .* exp(1i*phi0);          % artificial FQR
    L0 = fqr(corasim,om,{L0jw});

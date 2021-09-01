@@ -486,7 +486,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - about screen for package objects pimped
 % - implement closeup for spm/bode
 % - bugfix: small discontinuities in spectrum at critical frequency
-% - bugfix: incorrect dominant magnitude 
+% - bugfix: incorrect dominant magnitude
+% - bugfix: critical sensitivity - introduce Cook()
 
 % Known bugs & wishlist
 % =========================

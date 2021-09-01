@@ -243,7 +243,9 @@ function o = Critical(o)               % Critical Sensitivity
       
    PlotS(o,sub4);
    
-   [l0,K0,f0] = cook(o,'l0,K0,f0');
+%  [l0,K0,f0] = cook(o,'l0,K0,f0');
+   [l0,K0,f0] = Cook(o);
+   
    
       % get nominal zeta and variation from settings
       
@@ -328,9 +330,7 @@ function o = Critical(o)               % Critical Sensitivity
             % cook up critical quantities (break if user stop request)
             % fast calc of: [lk,Kk,fk] = cook(oo,'l0,K0,f0');
             
-         gamma0 = gamma(oo);
-         [Kk,fk,lambda0] = var(gamma0,'K,f,lambda');
-         lk = lambda(oo,lambda0);         
+         [lk,Kk,fk] = Cook(oo); 
          
             % store results in tables (to be cached). Note that calculated
             % values are invalid in case of a stop request!
@@ -512,6 +512,22 @@ function o = Critical(o)               % Critical Sensitivity
          xlabel(sprintf('mode number [#] (pareto: %g %%)',pareto*100));
          subplot(o);
       end
+   end
+   function [lk,Kk,fk] = Cook(o)       % Fast Cooking                  
+   %
+   % COOK  Fast cooking of
+   %
+   %          [lk,Kk,fk] = cook(o,'l0,K0,f0')
+   %
+      gamma0 = gamma(o);
+      [Kk,fk,lambda0] = var(gamma0,'K,f,lambda');
+      
+      %lk = lambda(oo,lambda0);
+      mag = abs(var(lambda0,'fqr'));
+      if size(mag,1) > 1
+         mag = max(mag);
+      end
+      lk = fqr(corasim,lambda0.data.omega,{mag});
    end
 end
 
