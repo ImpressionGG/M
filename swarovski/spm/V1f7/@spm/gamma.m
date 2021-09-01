@@ -98,11 +98,11 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    oo = opt(o,'progress','');          % no progress updates!
    [K,f,i0,j0,k0,err] = Search(oo,zc); % iterative detail search
 
-      % store variables to lambda function 
-      % and adjust omega and frequency response of lamb
+      % adjust omega and frequency response of lamb
+      % and store variables to lambda function 
       
+   [lamb,i0,nyqerr] = Adjust(lamb,j0,K,f);
    lamb = var(lamb,'K,f,i0,j0',K,f,i0,j0'); 
-   [lamb,nyqerr] = Adjust(o,lamb,j0,K,f);
    
       % derive gamma function from lambda
       
@@ -284,8 +284,8 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
          j0 = j2;
       end
    end
-   function [lamb,nyq] = Adjust(o,lamb,j0,K,f) % Adjustment of Omega   
-      lamb.data.omega(j0) = 2*pi*f;       % adaption of omega domain vector
+   function [lamb,i0,nyq] = Adjust(lamb,j0,K,f)   % Adjustment of Omega   
+      lamb.data.omega(j0) = 2*pi*f;    % adaption of omega domain vector
       L0jw_ = lambda(o,psiw31,psiw33,lamb.data.omega(j0));
       
          % reorder L0jw according to least jumps
@@ -310,12 +310,12 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
          lamb.data.matrix{i} = lamb.work.var.fqr(i,:);
       end
 
-         % final check
+         % final check and refresh i0
 
-      [nyq,i] = min(abs(1+K*L0jw));    % Nyquist error
-      if (i0~=i || abs(nyq)~=abs(err))
-         fprintf('*** warning: assertion error: i0:%g ~!= %g || nyqerr: %g~=%g\n',...
-                 i0,i,  nyq,err)
+      [nyq,i0] = min(abs(1+K*L0jw));    % Nyquist error
+      if (nyq~=err)
+         fprintf('*** warning: Nyquist error %g ~= %g (dev: %g)\n', ...
+                 nyq,err,nyq-err);
       end
       
          % store nyquist error to lambda function

@@ -78,7 +78,7 @@ function BodePlot(o,L,sub1,sub2,dominant)
          fqr = var(l0,'fqr');
          hdl = plot(hax,om/fac,20*log10(abs(fqr(jdx))),colwk);
       else
-         hdl = plot(hax,om/fac,20*log10(abs(Ljw(i0,jdx))),'r.');
+         hdl = plot(hax,om/fac,20*log10(abs(Ljw(i0,jdx))),colwk);
       end
       set(hdl,'color',o.color(col0), 'linewidth',2);
 
