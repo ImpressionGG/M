@@ -507,7 +507,7 @@ function o = DampingSensitivitySpm(o)
    end
    
    if (batch.cutting <= 0)             % backward cutting      
-      o = Cls(o,'Damping Sensitivity (Backward)',id(o));
+      o = Cls(o,'Damping Sensitivity (Backward)');
       o = opt(o,'view.cutting',-1);
       sensitivity(o,'Damping');
       Png(o);

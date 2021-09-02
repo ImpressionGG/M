@@ -313,8 +313,8 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
          % final check and refresh i0
 
       [nyq,i0] = min(abs(1+K*L0jw));    % Nyquist error
-      if (nyq~=err)
-         fprintf('*** warning: Nyquist error %g ~= %g (dev: %g)\n', ...
+      if (abs(nyq-err) > abs(err)/100)
+         fprintf('*** warning: > 1%% Nyquist error deviation %g ~= %g (dev: %g)\n', ...
                  nyq,err,nyq-err);
       end
       

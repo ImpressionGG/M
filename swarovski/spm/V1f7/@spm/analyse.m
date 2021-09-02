@@ -463,7 +463,7 @@ function oo = CriticalMenu(o)          % Critical Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Critical Gain',{@WithSpm,'Critical','Damping'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Old Bode',{@WithSpm,'Critical','OldBode'});
+%  ooo = mitem(oo,'Old Bode',{@WithSpm,'Critical','OldBode'});
    ooo = mitem(oo,'Bode',{@WithSpm,'Critical','Bode'});
    ooo = mitem(oo,'Magnitude',{@WithSpm,'Critical','Magni'});
    ooo = mitem(oo,'Phase',{@WithSpm,'Critical','Phase'});
@@ -550,13 +550,6 @@ function o = Critical(o)               % Calculate Critical Quantities
          end
       case 'Bode'
          if (legacy)
-            critical(o,'Bode',sub,1);
-         else
-            bode(o,gamma0,sub);
-         end
-         sub = o.assoc(cutting,{{0,[2211,2221]},{1,[2211,0]},{-1,[0,2221]}});
-
-         if (legacy)
             switch cutting
                case 0                     % both directions
                   critical(o,'Bode',[2211,2221,2212,2222],1);
@@ -569,7 +562,7 @@ function o = Critical(o)               % Calculate Critical Quantities
             sub = o.assoc(cutting,{{0,[2211,2221]},{1,[211,212]},{-1,[211,212]}});
             bode(o,gamma0,sub);
             sub = o.assoc(cutting,{{0,[2212,2222]},{1,[2212,0]},{-1,[0,2221]}});
-            bode(o,gamma0,sub);
+            bode(o,gamma180,sub);
          end
       case 'OldBode'
          switch cutting

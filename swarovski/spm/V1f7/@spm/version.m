@@ -479,7 +479,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - tag SPM-V1F6 Beta Version SPM @ Corazon V1I6
 
 % - start beta SPM V1F7 @ beta CORAZON V0i7
-% - batch processing for whole package took 5750s (1.6s), no slow down :-)
+% - batch prqocessing for whole package took 5750s (1.6s), no slow down :-)
 % - dynamic name for PNG directory
 % - bug fix: assertion message in spm/gamma
 % - bug fix: cold cache refresh in analyse/Critical
@@ -488,6 +488,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix: small discontinuities in spectrum at critical frequency
 % - bugfix: incorrect dominant magnitude
 % - bugfix: critical sensitivity - introduce Cook()
+% - adopt warning condition in spm/gamma (error check)
 
 % Known bugs & wishlist
 % =========================
