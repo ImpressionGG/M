@@ -210,11 +210,14 @@ function o = Critical(o)               % Critical Sensitivity
       plot(o,'About');
       return
    end
-   
    tstart = tic;                       % start tic/toc
+   
+      % fetch relevant options, scaling parameters and colors
+      
    timing = opt(o,{'sensitivity.timing',0});
    pareto = opt(o,{'pareto',1.0});
    frequency = opt(o,{'bode.frequency',0});
+   cutting = opt(o,{'view.cutting',1});
    Kf = o.iif(frequency,2*pi,1);
    blue = o.color('cb');
    
@@ -234,18 +237,13 @@ function o = Critical(o)               % Critical Sensitivity
    o = cache(o,o,'spectral');          % hard refresh
    o = cache(o,o,'sensitivity');       % hard refresh
    
-      % plot nominal damping
-      
-   subplot(o,sub3);                    % damping chart
-   damping(o);
-   
-      % plot damping sensitivity
-      
-   PlotS(o,sub4);
+      % plot nominal damping and damping sensitivity
+     
+   PlotDamping(o,sub3);                % damping chart
+   PlotS(o,sub4);                      % plot damping sensitivity
    
 %  [l0,K0,f0] = cook(o,'l0,K0,f0');
-   [l0,K0,f0] = Cook(o);
-   
+   [l0,K0,f0,tag] = Cook(o,cutting);
    
       % get nominal zeta and variation from settings
       
@@ -260,12 +258,7 @@ function o = Critical(o)               % Critical Sensitivity
    
       % init plots
       
-   PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
-   title(sprintf('Critical Magnitude: K0: %g, f0: %g Hz',...
-         o.rd(K0,2),o.rd(f0,0)));
-   xlabel('omega [1/s]');
-   ylabel('|l0(jw)|');
-      
+   PlotBode(o,sub1,l0,f0,'ryyyyy','r-.',[]);      
    PlotK(o,sub2,[1 m],K0);
    PlotPercent(o,sub5,[1 m],K0);
    
@@ -322,15 +315,12 @@ function o = Critical(o)               % Critical Sensitivity
 
             % plot actual damping
 
-         subplot(o,sub3);
-         delete(gca);
-         subplot(o,sub3);
-         damping(oo);
+         PlotDamping(oo,sub3);
       
             % cook up critical quantities (break if user stop request)
             % fast calc of: [lk,Kk,fk] = cook(oo,'l0,K0,f0');
             
-         [lk,Kk,fk] = Cook(oo); 
+         [lk,Kk,fk] = Cook(oo,cutting); 
          
             % store results in tables (to be cached). Note that calculated
             % values are invalid in case of a stop request!
@@ -362,12 +352,7 @@ function o = Critical(o)               % Critical Sensitivity
                % calculate and plot sensitivity
 
             sk = Sensi(l0,lk);
-            PlotBode(o,sub1,sk,omega(k)/2/pi,'cb','c-.');
-            
-            title(sprintf('Mode: #%g, K0: %g, f%g: %g Hz',...
-                          k,o.rd(Kk,2),k,o.rd(omega(k)/2/pi,0)));
-            xlabel('omega [1/s]');
-            ylabel('|l0(jw)|');
+            PlotBode(o,sub1,sk,omega(k)/2/pi,'cb','c-.',k);
          end
       end
       idle(o);
@@ -395,7 +380,13 @@ function o = Critical(o)               % Critical Sensitivity
       PlotFavorites(o);
    end
    
-   function PlotBode(o,sub,l0,f0,col1,col2)                            
+   function PlotDamping(o,sub)
+      o = subplot(o,sub3);
+      delete(axes(o));
+      o = subplot(o,sub);
+      damping(o);                      % damping chart
+   end
+   function PlotBode(o,sub,l0,f0,col1,col2,k)                          
       subplot(o,sub1);
 
       l0 = opt(l0,'frequency',frequency);        % inherit
@@ -404,15 +395,27 @@ function o = Critical(o)               % Critical Sensitivity
       if any(col2=='c')
          set(hdl,'color',o.color('cb'));
       end
+ 
+      if (nargin >= 7 && isempty(k))
+         title(sprintf('Critical Magnitude: K%s: %g, f%s: %g Hz',...
+                        tag,o.rd(K0,2),tag,o.rd(f0,0)));
+         xlabel('omega [1/s]');
+         ylabel(sprintf('|l%s(jw)|',tag));
+      elseif (nargin >= 7)
+         title(sprintf('Mode: #%g, K%s: %g, f%g: %g Hz',...
+                       k,tag,o.rd(Kk,2),k,o.rd(omega(k)/2/pi,0)));
+         xlabel('omega [1/s]');
+         ylabel('|l0(jw)|');
+      end
    end
    function PlotK(o,sub,k,K)                                           
       subplot(o,sub);
       
       if (length(k) == 2)
          plot(o,k,[K K],'K');
-         title(sprintf('Critical Gain (nominal K0: %g)',o.rd(K0,2)));
+         title(sprintf('Critical Gain (nominal K%s: %g)',tag,o.rd(K0,2)));
          xlabel('mode number [#]');
-         ylabel(sprintf('K0 (variation: %g)',vari));
+         ylabel(sprintf('K%s (variation: %g)',tag,vari));
          return;
       end
       
@@ -425,8 +428,8 @@ function o = Critical(o)               % Critical Sensitivity
          set(gca,'ylim',ylim);
       end
       
-      title(sprintf('Critical Gain K0: %g (nominal K0: %g)',...
-                    o.rd(Kk,3),o.rd(K0,3)));
+      title(sprintf('Critical Gain K%s: %g (nominal K0: %g)',...
+                    tag,o.rd(Kk,3),o.rd(K0,3)));
    end
    function PlotPercent(o,sub,k,K)                                     
       subplot(o,sub);
@@ -513,21 +516,33 @@ function o = Critical(o)               % Critical Sensitivity
          subplot(o);
       end
    end
-   function [lk,Kk,fk] = Cook(o)       % Fast Cooking                  
+   function [lk,Kk,fk,tag] = Cook(o,cutting)     % Fast Cooking        
    %
    % COOK  Fast cooking of
    %
    %          [lk,Kk,fk] = cook(o,'l0,K0,f0')
+   %          tag = var(lk,'tag');
    %
-      gamma0 = gamma(o);
-      [Kk,fk,lambda0] = var(gamma0,'K,f,lambda');
+      if (cutting > 0)
+         gamm = gamma(o);
+      else
+         [~,gamm] = gamma(o);
+      end
+      [Kk,fk,lamb] = var(gamm,'K,f,lambda');
       
-      %lk = lambda(oo,lambda0);
-      mag = abs(var(lambda0,'fqr'));
+         % calc maximum magnitude if multi variable
+         
+      mag = abs(var(lamb,'fqr'));
       if size(mag,1) > 1
          mag = max(mag);
       end
-      lk = fqr(corasim,lambda0.data.omega,{mag});
+      
+         % pack into a CORASIM object
+         
+      lk = fqr(corasim,lamb.data.omega,{mag});
+      if (nargout >= 4)
+         tag = var(gamm,'tag');
+      end
    end
 end
 
@@ -830,7 +845,7 @@ function [om,om0] = Omega(o,f0,k,n)    % Omega range near f0
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
 end
-function sk = Sensi(l0,lk) 
+function sk = Sensi(l0,lk)                                             
    l0jw = l0.data.matrix{1};
    lkjw = lk.data.matrix{1};
    skjw = lkjw./l0jw;
@@ -838,7 +853,7 @@ function sk = Sensi(l0,lk)
    sk = set(l0,'name','lk(s)');
    sk.data.matrix = {skjw};
 end
-function o = Cache(o,oo)
+function o = Cache(o,oo)               % Cold Cache Refresh            
 %
 % CACHE  Cache hard refresh
 %

@@ -489,6 +489,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix: incorrect dominant magnitude
 % - bugfix: critical sensitivity - introduce Cook()
 % - adopt warning condition in spm/gamma (error check)
+% - spmhack plugin added
 
 % Known bugs & wishlist
 % =========================
