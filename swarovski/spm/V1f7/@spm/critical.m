@@ -1549,7 +1549,7 @@ function [o,L180jw] = GetL180jw(o,A,B_1,B_3,C_3,Om)
       cache(o,o);                             % hard refresh cache
    end
 end
-function [sys0,L0,sys180] = Principal(o,cdx)   % Get Principal System          
+function [sys0,L0,sys180] = Principal(o,cdx)   % Get Principal System  
    sys0 = system(o,cdx);
    L0 = principal(o,sys0);
    

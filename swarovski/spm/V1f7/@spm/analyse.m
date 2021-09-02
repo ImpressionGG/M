@@ -328,12 +328,11 @@ function o = Principal(o)              % Pricipal Menu Callbacks
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
 
-      % cook critical and principal spectra
+      % cook principal spectra
       
-   [gamma0,gamma180] = cook(o,'gamma0,gamma180');
    [lambda0,lambda180] = cook(o,'lambda0,lambda180');
    
-   o = Closeup(o);
+   %o = Closeup(o);
 
    mode = arg(o,1);
    switch mode
@@ -360,14 +359,10 @@ function o = Principal(o)              % Pricipal Menu Callbacks
          
       case 'Bode'
          if (legacy)
-            switch cutting
-               case 0                     % both directions
-                  critical(o,'Bode',[2211,2221,2212,2222],0);
-               case 1                     % forward direction
-                  critical(o,'Bode',[2111,2121,0,0],0);
-               case -1                    % backward direction
-                  critical(o,'Bode',[0,0,2111,2121],0);
-            end
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[2211,2221,2212,2222]},...
+                  {1,[2111,2121,0,0]},{-1,[0,0,2111,2121]}});
+            critical(o,'Bode',sub,0);
          else
             if (cutting == 0)          % both directions
                bode(o,lambda0,[2211 2221]);
@@ -378,35 +373,35 @@ function o = Principal(o)              % Pricipal Menu Callbacks
             end
          end
          
-      case 'OldBode'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Bode',[2211,2221,2212,2222],false);
-            case 1                     % forward direction
-               critical(o,'Bode',[2111,2121,0,0],false);
-            case -1                    % backward direction
-               critical(o,'Bode',[0,0,2111,2121],false);
-         end
-         
       case 'Magni'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Magni',[211,212],false);
-            case 1                     % forward direction
-               critical(o,'Magni',[111,0],false);
-            case -1                    % backward direction
-               critical(o,'Magni',[0,111],false);
-         end
-         
+          if (legacy)
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[211,212]},{1,[111,0]},{-1,[0,111]}});
+            critical(o,'Magni',sub,0);
+         else
+            if (cutting == 0)          % both directions
+               bode(o,lambda0,[211 0]);
+               bode(o,lambda180,[212 0]);
+            else
+               lamb = o.iif(cutting>0,lambda0,lambda180);
+               bode(o,lamb,[111 0]);
+            end
+          end     
+           
       case 'Phase'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Phase',[211,212],false);
-            case 1                     % forward direction
-               critical(o,'Phase',[111,0],false);
-            case -1                    % backward direction
-               critical(o,'Phase',[0,111],false);
-         end
+          if (legacy)
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[211,212]},{1,[111,0]},{-1,[0,111]}});
+            critical(o,'Phase',sub,0);
+         else
+            if (cutting == 0)          % both directions
+               bode(o,lambda0,[0 211]);
+               bode(o,lambda180,[0 212]);
+            else
+               lamb = o.iif(cutting>0,lambda0,lambda180);
+               bode(o,lamb,[0 111]);
+            end
+          end     
          
       case 'Nyquist'
          switch cutting
@@ -524,11 +519,10 @@ function o = Critical(o)               % Calculate Critical Quantities
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
 
-      % cook critical and principal spectra
+      % cook critical spectra
       
    [gamma0,gamma180] = cook(o,'gamma0,gamma180');
-   [lambda0,lambda180] = cook(o,'lambda0,lambda180');
-      
+
       % dispatch mode
       
    mode = arg(o,1);
@@ -581,14 +575,9 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Bode'
          if (legacy)
             o = Closeup(o);
-            switch cutting
-               case 0                     % both directions
-                  critical(o,'Bode',[2211,2221,2212,2222],1);
-               case 1                     % forward direction
-                  critical(o,'Bode',[2111,2121,0,0],1);
-               case -1                    % backward direction
-                  critical(o,'Bode',[0,0,2111,2121],1);
-            end
+            sub = o.assoc(cutting,{{0,[2211,2221,2212,2222]},...
+                  {1,[2111,2121,0,0]},{-1,[0,0,2111,2121]}});
+            critical(o,'Bode',sub,1);
          else
             if (cutting == 0)          % both directions
                bode(o,gamma0,[2211 2221]);
@@ -599,29 +588,33 @@ function o = Critical(o)               % Calculate Critical Quantities
             end
          end
       case 'Magni'
-         if (cutting == 0)             % both directions
-            bode(o,gamma0,[2211 2221]);
-            bode(o,gamma180,[2212 2222]);
+          if (legacy)
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[211,212]},{1,[111,0]},{-1,[0,111]}});
+            critical(o,'Magni',sub,1);
          else
-            if (legacy && cutting > 0)
-               critical(o,'Magni',[211 212],1);
-            elseif (legacy && cutting < 0)
-               critical(o,'Magni',[0 0 211 212],1);
+            if (cutting == 0)          % both directions
+               bode(o,gamma0,[211 0]);
+               bode(o,gamma180,[212 0]);
             else
                gamm = o.iif(cutting>0,gamma0,gamma180);
-               bode(o,gamm,[211 212]);
+               bode(o,gamm,[111 0]);
             end
-         end
-         
+          end     
       case 'Phase'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Phase',[211,212],1);
-            case 1                     % forward direction
-               critical(o,'Phase',[111,0],1);
-            case -1                    % backward direction
-               critical(o,'Phase',[0,111],1);
-         end
+         if (legacy)
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[211,212]},{1,[111,0]},{-1,[0,111]}});
+            critical(o,'Phase',sub,1);
+         else
+            if (cutting == 0)          % both directions
+               bode(o,gamma0,[0 211]);
+               bode(o,gamma180,[0 212]);
+            else
+               gamm = o.iif(cutting>0,gamma0,gamma180);
+               bode(o,gamm,[0 111]);
+            end
+          end     
         
       case 'Nyquist'
          switch cutting
