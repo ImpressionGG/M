@@ -258,7 +258,8 @@ function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw31,psiw33)
    %      k  j1   j2  om(j1)  om(j2)  phi(j1)  phi(j2) max(|G(jw(idx))|)
    %    ]
    %
-      GmaX = max(zc(:,7:8)')';
+      GmaX = zc(:,8);
+%     GmaX = max(zc(:,7:8)')';
       [Mag,k0] = max(GmaX);            % maximum magnitude @ k
       K0 = 1/Mag;
       om1 = zc(k0,4);  om2 = zc(k0,5);  K_ = 1/max(zc(k0,8));
