@@ -495,6 +495,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spm/bode completed
 % - all bode, phase, magnitue plots working for principal & critical
 % - Critical Bode & Damping using spm/bode
+% - all Bode diagrams of Analyse menu on state of the art
 
 % Known bugs & wishlist
 % =========================
