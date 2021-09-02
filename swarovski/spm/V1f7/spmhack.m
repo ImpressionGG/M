@@ -124,9 +124,13 @@ function oo = Hack(o)                  %
 %          The spmhack code is only executed if setting 'debug.spmhack' is 
 %          defined and true.
 %
+   setting(o,{'hack.dvar'},1);         % damping variation
+   
    oo = mhead(o,'Hack');
    ooo = mitem(oo,'Damping Sensitivity Hack',{@DsHack});
-   ooo = mitem(oo,'Damping Variation Hack',{@DvHack});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Damping Variation Hack',{},'hack.dvar');
+         charm(ooo,{@DvHack});
    
    function o = DsHack(o)
       oo = current(o);
@@ -140,8 +144,11 @@ function oo = Hack(o)                  %
       cache(oo,oo);                    % cold refresh
    end
    function o = DvHack(o)
+      dvar = opt(o,'hack.dvar');
       oo = current(o);
-      damping(oo,oo,[50 50 0.01]);
+      damping(oo,oo,[50 50 0.005*dvar]);
+      
+      cls(o);
       damping(cuo);
    end
 end

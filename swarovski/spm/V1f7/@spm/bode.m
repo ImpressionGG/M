@@ -89,9 +89,21 @@ function BodePlot(o,L,sub1,sub2,dominant)
       hdl = plot(2*pi*f/fac,-20*log10(1),[colwk,'o']);
       set(hdl,'linewidth',1);
       
+         % limits
+         
+      nam = [get(L,'name'),'____'];
+      Klim = o.iif(isequal(nam(1:4),'gamm'),K,1);
+      limits(o,'Magni',Klim);
+         
+         % Eigenvalue error
+         
+      L0 = cache(o,'critical.L0');
+      everr = var(L0,['EVerr',tag]);
+      
          % labels
          
-      title(sprintf('%s: Magnitude Plots (K%s: %g @ %g Hz)',name,tag,K,f));
+      title(sprintf('%s: Magnitude Plots - K%s: %g @ %g Hz (EV error: %g)',...
+                    name,tag,K,f,everr));
       xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
       ylabel(sprintf('|%s[k](jw)| [dB]',name));
       subplot(o);
@@ -127,9 +139,15 @@ function BodePlot(o,L,sub1,sub2,dominant)
       hdl = plot(hax,2*pi*f/fac,-180,[colwk,'o']);
       set(hdl,'linewidth',1);
       
+         % Nyquist error
+         
+      nyqerr = var(L,'nyqerr');
+
          % labels
          
       subplot(o);  idle(o);  % give time to refresh graphics
+      title(sprintf('%s: Phase Plots - K%s: %g @ %g Hz (Nyquist error: %g)',...
+                    name,tag,K,f,nyqerr));
       xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
       ylabel(sprintf('%s[k](jw): Phase [deg]',name));
    end

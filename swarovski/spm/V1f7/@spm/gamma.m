@@ -65,7 +65,7 @@ function [gamma0,gamma180,sys] = gamma(o,om)
    lambda0jw = lambda(o,psiw31,psiw33,om);
    lambda0 = OutArg(o,om,lambda0jw,sys,psiw31,psiw33,'0','ryyyy');   
    
-   [gamma0,K0,f0,nyqerr] = Critical(o,lambda0,psiw31,psiw33);
+   [gamma0,K0,f0,nyqerr] = Gamma(o,lambda0,psiw31,psiw33);
    
 %  g31 = OutArg(o,om,g31jw,sys,'g31','g');
 %  g33 = OutArg(o,om,g33jw,sys,'g33','g');
@@ -73,9 +73,9 @@ function [gamma0,gamma180,sys] = gamma(o,om)
       % backward gamma calculation
    
    if (nargout > 1)
-      lambda180 = OutArg(o,om,-lambda0jw,sys,-psiw31,psiw33,'180','ryyyk');
+      lambda180 = Lambda(o,om,-lambda0jw,sys,-psiw31,psiw33,'180','ryyyk');
       
-      [gamma180,K180,f180] = Critical(o,lambda180,-psiw31,psiw33);
+      [gamma180,K180,f180] = Gamma(o,lambda180,-psiw31,psiw33);
    end
 end
 
@@ -83,12 +83,12 @@ end
 % Critical Quantities
 %==========================================================================
 
-function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)        
+function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw31,psiw33)               
 %
-% CRITICAL
+% GAMMA   Gamma object construction
 %
-%    [gamma0,K0,f0] = Critical(o,lambda0,psiw31,psiw33)
-%    [gamma180,K180,f180] = Critical(o,lambda180,-psiw31,psiw33)
+%    [gamma0,K0,f0] = Gamma(o,lambda0,psiw31,psiw33)
+%    [gamma180,K180,f180] = Gamma(o,lambda180,-psiw31,psiw33)
 %
 %    Note: lambda180 = (-1)*lambda0
 %          gamma180 = (-1)*gamma0
@@ -116,7 +116,7 @@ function [gamm,K,f,nyqerr] = Critical(o,lamb,psiw31,psiw33)
    
       % add lambda function to variables of gamma and add name & color
       
-   gamm = var(gamm,'lambda',lamb);
+   gamm = var(gamm,'lambda,critical',lamb,1);
    if (psiw31(1) > 0)
       gamm = set(gamm,'name,color', 'gamma0','r');
    else
@@ -352,10 +352,10 @@ function om = Omega(o)                      % Construct Omega Domain
 end
 
 %==========================================================================
-% Out Arg Construction
+% Lambda Object Construction
 %==========================================================================
 
-function L = OutArg(o,om,Ljw,sys,psiw31,psiw33,tag,col)                
+function L = Lambda(o,om,Ljw,sys,psiw31,psiw33,tag,col)                
    for (i=1:size(Ljw,1))
       matrix{i,1} = Ljw(i,:);
    end
@@ -364,7 +364,8 @@ function L = OutArg(o,om,Ljw,sys,psiw31,psiw33,tag,col)
    
    L = fqr(corasim,om,matrix);
    L = set(L, 'name',name, 'color',col);
-   L = var(L,'tag,system,psiw31,psiw33,fqr', tag,sys,psiw31,psiw33,Ljw);
+   L = var(L,'tag,system,psiw31,psiw33,fqr,critical',...
+              tag,sys,psiw31,psiw33,Ljw,0);
 end
 
 %==========================================================================

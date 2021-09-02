@@ -157,8 +157,10 @@ function varargout = cache(o,varargin) % Cache Method
 % 6) oo = cache(oo,[])                 % soft clear cache
 % 7) cache(oo,oo)                      % unconditionally store to cuo
 %
-   if container(o)
-      error('caching not supported for container objects!');
+   if container(o)                     % error, except cache(o,o,{})
+      if (nargin ~= 3) || ~isobject(varargin{1}) || ~isequal(varargin{2},{})
+         error('caching not supported for container objects!');
+      end
    end
    while (nargin == 2)                 % 2 input args                  
       if iscell(varargin{1})           % 4) bag = cache(o,{'polar'})

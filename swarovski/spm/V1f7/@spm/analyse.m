@@ -316,16 +316,26 @@ function o = Principal(o)              % Pricipal Menu Callbacks
       return
    end
 
-   o = cache(o,o,'gamma');             % hard refresh 'gamma' segment
+      % plot heading to see what will go on and load common options
+      
+   Heading(o);
+   legacy = opt(o,{'debug.legacy',0}); % activate legacy code
+   cutting = opt(o,{'view.cutting',0});
+   
+      % cold refreshing of caches
+      
+   o = cache(o,o,'gamma');             % hard refresh 'gamma' cache segment
    o = cache(o,o,'critical');          % hard refresh 'critical' segment
    o = cache(o,o,'spectral');          % hard refresh 'spectral' segment
+
+      % cook critical and principal spectra
+      
+   [gamma0,gamma180] = cook(o,'gamma0,gamma180');
+   [lambda0,lambda180] = cook(o,'lambda0,lambda180');
    
    o = Closeup(o);
-   Heading(o);
 
-   cutting = opt(o,{'view.cutting',0});
    mode = arg(o,1);
-
    switch mode
       case 'Genesis'
          PrincipalGenesis(o);
@@ -349,6 +359,26 @@ function o = Principal(o)              % Pricipal Menu Callbacks
          end
          
       case 'Bode'
+         if (legacy)
+            switch cutting
+               case 0                     % both directions
+                  critical(o,'Bode',[2211,2221,2212,2222],0);
+               case 1                     % forward direction
+                  critical(o,'Bode',[2111,2121,0,0],0);
+               case -1                    % backward direction
+                  critical(o,'Bode',[0,0,2111,2121],0);
+            end
+         else
+            if (cutting == 0)          % both directions
+               bode(o,lambda0,[2211 2221]);
+               bode(o,lambda180,[2212 2222]);
+            else
+               lamb = o.iif(cutting>0,lambda0,lambda180);
+               bode(o,lamb,[211,212]);
+            end
+         end
+         
+      case 'OldBode'
          switch cutting
             case 0                     % both directions
                critical(o,'Bode',[2211,2221,2212,2222],false);
@@ -550,6 +580,7 @@ function o = Critical(o)               % Calculate Critical Quantities
          end
       case 'Bode'
          if (legacy)
+            o = Closeup(o);
             switch cutting
                case 0                     % both directions
                   critical(o,'Bode',[2211,2221,2212,2222],1);
@@ -559,19 +590,13 @@ function o = Critical(o)               % Calculate Critical Quantities
                   critical(o,'Bode',[0,0,2111,2121],1);
             end
          else
-            sub = o.assoc(cutting,{{0,[2211,2221]},{1,[211,212]},{-1,[211,212]}});
-            bode(o,gamma0,sub);
-            sub = o.assoc(cutting,{{0,[2212,2222]},{1,[2212,0]},{-1,[0,2221]}});
-            bode(o,gamma180,sub);
-         end
-      case 'OldBode'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'OldBode',[2211,2221,2212,2222],1);
-            case 1                     % forward direction
-               critical(o,'OldBode',[2111,2121,0,0],1);
-            case -1                    % backward direction
-               critical(o,'OldBode',[0,0,2111,2121],1);
+            if (cutting == 0)          % both directions
+               bode(o,gamma0,[2211 2221]);
+               bode(o,gamma180,[2212 2222]);
+            else
+               gamm = o.iif(cutting>0,gamma0,gamma180);
+               bode(o,gamm,[211,212]);
+            end
          end
       case 'Magni'
          if (cutting == 0)             % both directions

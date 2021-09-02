@@ -103,20 +103,6 @@ function [K0,f0,K180,f180,L0] = critical(o,cdx,sub,crit)
                Bode(o,oo,L180,[sub(4:5),0],-1,crit); % plot critical parameter overview
                Damping(o,oo,L0,[0 sub(6)]);
             end
-         case 'OldBode'
-            if (length(sub) < 2)
-               sub = [211,212,0,0];
-            elseif (length(sub) < 4)
-               sub(6) = 0;
-            end
-            
-            if (sub(1) || sub(2))
-               OldBode(o,oo,L0,sub(1:2),+1,crit); % plot critical parameter overview
-            end
-            if (sub(3) || sub(4))
-               L180 = Negate(L0);
-               OldBode(o,oo,L180,sub([3 4]),-1,crit); % plot critical parameter overview
-            end
          case 'Bode'
             if (length(sub) < 2)
                sub = [211,212,0,0];
@@ -1294,7 +1280,8 @@ function [K0,f0] = Stable(o,L0,K,s)    % Calc Stability Margin
       if isempty(idx)
          Klim = inf;
       elseif (idx(1) == 1)
-         Klim = 0;
+%        Klim = 0;
+         Klim = [0,K(1)];
       else
          Klim = [K(idx(1)-1), K(idx(1))];
       end
@@ -1303,7 +1290,7 @@ end
 function s = CritEig(o,L0,K)           % Find critical Eigenvalues     
    [A0,B0,C0,D0] = data(L0,'A,B,C,D');
    
-   kmax = length(K);
+   kmax = length(K);  s = zeros(1,kmax);
    for (k=1:kmax)
       if (kmax > 10 && rem(k-1,10) == 0)
          progress(o,sprintf('%g of %g: critical eigenvalues',k,kmax),k/kmax*100);
@@ -1319,8 +1306,8 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
 
       sk = eig(Ak);
       re = real(sk);
-      idx = find(re==max(re));
-      s(k) = sk(idx(1));
+      [~,idx] = max(re);               % idx = find(re==max(re));
+      s(k) = sk(idx);                  % s(k) = sk(idx(1));
       
       if stop(o,o)                     % stop option controlled
          break;
@@ -1328,7 +1315,7 @@ function s = CritEig(o,L0,K)           % Find critical Eigenvalues
    end
    
    if (kmax > 10)
-      progress(o);                  % done
+      progress(o);                     % done
    end
 end
 function [K0,f0,K180,f180,err] = Critical(o,oo)  % Critical Quantities 

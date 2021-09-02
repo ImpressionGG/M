@@ -491,6 +491,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - adopt warning condition in spm/gamma (error check)
 % - spmhack plugin added
 % - use new corazon/cache syntax of clearing all caches
+% - pimp spm/gamma  by adding critical flag to variables
 
 
 % Known bugs & wishlist
