@@ -1488,11 +1488,12 @@ function oo = ReadInfo(o,path)         % Read Info into Comment
    oo = set(oo,'phi',phi);
 end
 function oo = ClearAllCaches(o)        % Clear All Caches              
-   o = pull(o);
-   for (i=1:length(o.data))
-      oo = o.data{i};
-      cache(oo,oo,[]);                 % cache hard reset
-   end
+%  o = pull(o);
+%  for (i=1:length(o.data))
+%     oo = o.data{i};
+%     cache(oo,oo,[]);                 % cache hard reset
+%  end
+   cache(o,o,{});                      % hard clear of all caches
 end
 function o = ClearSegments(o,seg)      % Clear Specific Cache Segments 
    o = pull(o);                        % get shell object

@@ -640,6 +640,7 @@ function VersionV1I
 % - pimp corazita/load and corazita/open to open file by path
 % - bugfix: o=cache(o,o,[]) syntax
 % - legacy sample plugin added
+% - corazon/cache: calling syntax for hard clear of all caches added
 %
 % Known Bugs / Wishlist
 % - none so far

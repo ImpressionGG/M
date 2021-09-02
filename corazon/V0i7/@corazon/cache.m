@@ -12,8 +12,9 @@ function varargout = cache(o,varargin) % Cache Method
 %       operations requires double-passing the object (both as arg1 and
 %       arg2) to clearly visualize a hard operation!
 %
-%         [oo,bag] = cache(oo,oo,'polar')   % cache refresh (hard)
-%         oo = cache(oo,oo,[])              % clear cache (hard)
+%         [oo,bag] = cache(oo,oo,'polar')   % cache segment refresh (hard)
+%         oo = cache(oo,oo,[])              % clear object cache (hard)
+%         oo = cache(oo,oo,{})              % clear all caches (hard)
 %         oo = cache(oo,'polar',[])         % clear 'polar' cache segment
 %
 %         [oo,bag] = cache(o,'polar')       % soft refresh & get bag
@@ -221,14 +222,24 @@ function varargout = cache(o,varargin) % Cache Method
 % 3) r = cache(oo,{'pol','Pol'},'r')   % get cached value
 % 4) oo = cache(oo,{'pol','Pol'},bag)  % store cache segment's bag
 % 5) [oo,bag] = cache(oo,oo,'polar')   % hard refresh of cache segment 
-% 6) [oo,bag] = cache(oo,oo,[])        % clear cache (hard) 
+% 6) [oo,bag] = cache(oo,oo,[])        % clear object cache (hard) 
+% 7) [oo,bag] = cache(oo,oo,{})        % clear all caches (hard) 
 %
    while (nargin == 3)                 % 3 input args                  
       if isobject(varargin{1})         % 5) [oo,bag,rfr] = cache(oo,oo,'polar')                                        
          if isempty(varargin{2})       % 6) [oo,bag,rfr] = cache(oo,oo,[])
-            oo = cache(o,[]);          % clear cache
-            cache(oo,oo);              % hard cache refresh
-            bag = [];  rfr = 0;
+            if iscell(varargin{2})
+               o = pull(o);            % fetch shell object
+               for (i=1:length(o.data))
+                  oo = o.data{i};
+                  cache(oo,oo,[]);     % clear object cache
+               end
+               oo = [];
+            else
+               oo = cache(o,[]);       % clear cache
+               cache(oo,oo);           % hard cache refresh
+               bag = [];  rfr = 0;
+            end
          else
             [oo,bag,rfr] = HardRefresh(o,varargin{2});
          end

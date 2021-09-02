@@ -637,11 +637,12 @@ end
 %==========================================================================
 
 function o = ClearAllCaches(o)         % Clear All Caches              
-   os = pull(o);
-   for (i=1:length(os.data))
-      oo = os.data{i};
-      cache(oo,oo,[]);
-   end
+%  os = pull(o);
+%  for (i=1:length(os.data))
+%     oo = os.data{i};
+%     cache(oo,oo,[]);
+%  end
+   cache(o,o,{});                      % clear all caches
 end
 function o = Options(o)                % Set Batch Options             
    o = Folder(o);
