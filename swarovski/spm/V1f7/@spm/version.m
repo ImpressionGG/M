@@ -492,6 +492,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - spmhack plugin added
 % - use new corazon/cache syntax of clearing all caches
 % - pimp spm/gamma  by adding critical flag to variables
+% - spm/bode completed
 
 
 % Known bugs & wishlist

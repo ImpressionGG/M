@@ -63,12 +63,9 @@ function [gamma0,gamma180,sys] = gamma(o,om)
       % forward gamma calculation
       
    lambda0jw = lambda(o,psiw31,psiw33,om);
-   lambda0 = OutArg(o,om,lambda0jw,sys,psiw31,psiw33,'0','ryyyy');   
+   lambda0 = Lambda(o,om,lambda0jw,sys,psiw31,psiw33,'0','ryyyy');   
    
    [gamma0,K0,f0,nyqerr] = Gamma(o,lambda0,psiw31,psiw33);
-   
-%  g31 = OutArg(o,om,g31jw,sys,'g31','g');
-%  g33 = OutArg(o,om,g33jw,sys,'g33','g');
    
       % backward gamma calculation
    

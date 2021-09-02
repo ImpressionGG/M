@@ -240,8 +240,8 @@ function varargout = cache(o,varargin) % Cache Method
             else
                oo = cache(o,[]);       % clear cache
                cache(oo,oo);           % hard cache refresh
-               bag = [];  rfr = 0;
             end
+            bag = [];  rfr = 0;
          else
             [oo,bag,rfr] = HardRefresh(o,varargin{2});
          end

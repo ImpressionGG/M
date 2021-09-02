@@ -82,19 +82,18 @@ function BodePlot(o,L,sub1,sub2,dominant)
       end
       set(hdl,'color',o.color(col0), 'linewidth',2);
 
+         % limits
+         
+      Klim = o.iif(var(L,'critical'),K,1);
+      limits(o,'Magni',Klim);
+
          % critical point
          
       hdl = plot(2*pi*f/fac*[1 1],get(gca,'ylim'),[colwk,'-.']);
       set(hdl,'linewidth',1);
-      hdl = plot(2*pi*f/fac,-20*log10(1),[colwk,'o']);
+      hdl = plot(2*pi*f/fac,-20*log10(K/Klim),[colwk,'o']);
       set(hdl,'linewidth',1);
-      
-         % limits
-         
-      nam = [get(L,'name'),'____'];
-      Klim = o.iif(isequal(nam(1:4),'gamm'),K,1);
-      limits(o,'Magni',Klim);
-         
+               
          % Eigenvalue error
          
       L0 = cache(o,'critical.L0');
