@@ -494,6 +494,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp spm/gamma  by adding critical flag to variables
 % - spm/bode completed
 % - all bode, phase, magnitue plots working for principal & critical
+% - Critical Bode & Damping using spm/bode
 
 % Known bugs & wishlist
 % =========================

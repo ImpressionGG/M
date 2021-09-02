@@ -557,11 +557,18 @@ function o = Critical(o)               % Calculate Critical Quantities
       case 'Combi'
          switch cutting
             case 0                     % both directions
-               critical(o,'Overview',[3211,3221,3231, 3212,3222,3232],1);
+%              critical(o,'Overview',[3211,3221,3231, 3212,3222,3232],1);
+               bode(o,gamma0,[3211 3221]);
+               bode(o,gamma180,[3212 3222]);
+               critical(o,'Damping',[3231,3232]);
             case 1                     % forward direction
-               critical(o,'Overview',[3111,3121,3131, 0,0,0],1);
+%              critical(o,'Overview',[3111,3121,3131, 0,0,0],1);
+               bode(o,gamma0,[311,312]);
+               critical(o,'Damping',[111,0]);
             case -1                    % backward direction
-               critical(o,'Overview',[0,0,0, 3111,3121,3131],1);
+%              critical(o,'Overview',[0,0,0, 3111,3121,3131],1);
+               bode(o,gamma180,[311,312]);
+               critical(o,'Damping',[0 111]);
          end
       case 'Damping'
          switch cutting
