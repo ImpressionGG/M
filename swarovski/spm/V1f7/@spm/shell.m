@@ -731,6 +731,7 @@ function oo = Sensitive(o)             % Sensitivity View Settings Menu
    setting(o,{'sensitivity.omega.points'},200);
    setting(o,{'sensitivity.omega.window'},50);
    setting(o,{'sensitivity.timing'},1);
+   setting(o,{'sensitivity.fast'},0);
    
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Lower Frequency',{},'sensitivity.omega.low');
@@ -751,6 +752,8 @@ function oo = Sensitive(o)             % Sensitivity View Settings Menu
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Show Timing',{},'sensitivity.timing');
+         choice(ooo,{{'Off',0},{'On',1}});
+   ooo = mitem(oo,'Fast Processing',{},'sensitivity.fast');
          choice(ooo,{{'Off',0},{'On',1}});
    ooo = mitem(oo,'Pareto',{},'sensitivity.pareto');
         choice(ooo,{{'10%',0.1},{'20%',0.2},{'40%',0.4},{'60%',0.6},...

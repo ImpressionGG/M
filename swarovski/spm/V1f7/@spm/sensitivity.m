@@ -217,6 +217,7 @@ function o = Critical(o)               % Critical Sensitivity
    timing = opt(o,{'sensitivity.timing',0});
    pareto = opt(o,{'pareto',1.0});
    frequency = opt(o,{'bode.frequency',0});
+   fast = opt(o,{'sensitivity.fast',0});
    cutting = opt(o,{'view.cutting',1});
    Kf = o.iif(frequency,2*pi,1);
    blue = o.color('cb');
@@ -315,7 +316,9 @@ function o = Critical(o)               % Critical Sensitivity
 
             % plot actual damping
 
-         PlotDamping(oo,sub3);
+         if (~fast)
+            PlotDamping(oo,sub3);
+         end
       
             % cook up critical quantities (break if user stop request)
             % fast calc of: [lk,Kk,fk] = cook(oo,'l0,K0,f0');
@@ -340,19 +343,21 @@ function o = Critical(o)               % Critical Sensitivity
             cache(o,o);                      % cold refresh
 
                % plot Bode
+               
+            if (~fast)
+               subplot(o,sub1);
+               delete(gca);
+               subplot(o,sub1);
+               PlotBode(oo,sub1,lk,fk,'r','g-.');              
+               PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
+               hdl = plot(f0*2*pi*[1 1]/Kf,get(gca,'ylim'),'r.');
+               hdl = plot(fk*2*pi*[1 1]/Kf,get(gca,'ylim'),'g-.');
 
-            subplot(o,sub1);
-            delete(gca);
-            subplot(o,sub1);
-            PlotBode(oo,sub1,lk,fk,'r','g-.');              
-            PlotBode(o,sub1,l0,f0,'ryyyyy','r-.');
-            hdl = plot(f0*2*pi*[1 1]/Kf,get(gca,'ylim'),'r.');
-            hdl = plot(fk*2*pi*[1 1]/Kf,get(gca,'ylim'),'g-.');
-            
-               % calculate and plot sensitivity
+                  % calculate and plot sensitivity
 
-            sk = Sensi(l0,lk);
-            PlotBode(o,sub1,sk,omega(k)/2/pi,'cb','c-.',k);
+               sk = Sensi(l0,lk);
+               PlotBode(o,sub1,sk,omega(k)/2/pi,'cb','c-.',k);
+            end            
          end
       end
       idle(o);

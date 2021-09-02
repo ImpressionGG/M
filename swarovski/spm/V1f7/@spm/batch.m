@@ -40,6 +40,7 @@ function o = Config(o)                 % Configuration Menu
    setting(o,{'batch.setupstudy'},0);
    setting(o,{'batch.pareto'},1.0);             % crit. sensitivity pareto
    setting(o,{'batch.cutting'},+1);             % forward cutting
+   setting(o,{'batch.fast'},1);                 % fast batch processing 
    setting(o,{'batch.cleanup'},0);              % cache cleanup
    setting(o,{'batch.spectrum.points'},5000);   % points of spectrum
    setting(o,{'batch.critical.eps'},1e-6);      % epsilon of critical phase
@@ -69,6 +70,8 @@ function o = Config(o)                 % Configuration Menu
                    {'80%',0.8},{'100%',1.0}},{@Cb});
    ooo = mitem(oo,'Cutting',{},'batch.cutting');
         choice(ooo,{{'Forward',+1},{'Backward',-1},{'Both',0}},{@Cb});
+   ooo = mitem(oo,'Fast Processing',{},'batch.fast');
+        check(ooo,{@Cb,0});
    ooo = mitem(oo,'Cache Cleanup',{},'batch.cleanup');
         check(ooo,{@Cb,0});
 
@@ -122,6 +125,9 @@ function o = About(o,msg)              % About Batch Configuration
          comment{end+1} = 'Forward/Backward Cutting';
    end
    
+   if (batch.fast)
+      comment{end+1} = 'Fast Processing';
+   end
    if (batch.cleanup)
       comment{end+1} = 'Cache Cleanup';
    end
@@ -652,6 +658,9 @@ function o = Options(o)                % Set Batch Options
 
    eps = opt(o,'batch.critical.eps');
    o = opt(o,'critical.eps',eps);
+   
+   fast = opt(o,'batch.fast');
+   o = opt(o,'sensitivity.fast',fast);
    
    pareto = opt(o,{'batch.pareto',1.0});
    o = opt(o,'pareto',pareto);

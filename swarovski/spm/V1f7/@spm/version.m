@@ -498,6 +498,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - all Bode diagrams of Analyse menu on state of the art
 % - spm/nichols implemented, and all Nichols charts based on spm/nichols
 % - bugfix in spm/gamma/Search: spikes @ critical sensitivity diagram :-)))
+% - switching from corazon V0i7 to V1i7
 
 
 % Known bugs & wishlist
