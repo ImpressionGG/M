@@ -414,15 +414,20 @@ function o = Principal(o)              % Pricipal Menu Callbacks
          end
          
       case 'Nichols'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Nichols',[211,212],false);
-            case 1                     % forward direction
-               critical(o,'Nichols',[111,0],false);
-            case -1                    % backward direction
-               critical(o,'Nichols',[0,111],false);
+          if (legacy)
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[211,212]},{1,[111,0]},{-1,[0,111]}});
+            critical(o,'Nichols',sub,0);
+         else
+            if (cutting == 0)          % both directions
+               nichols(o,lambda0,211);
+               nichols(o,lambda180,212);
+            else
+               lamb = o.iif(cutting>0,lambda0,lambda180);
+               nichols(o,lamb,111);
+            end
          end
-         
+                   
       case 'G31'
          PrincipalSpectrum(o,'g31');
       
@@ -531,28 +536,28 @@ function o = Critical(o)               % Calculate Critical Quantities
          switch cutting
             case 0                     % both directions         
                bode(o,gamma0,[4211 4221]);
-               critical(o,'Nichols',[4231,0],1);
-               critical(o,'Damping',[4341,0]);
+               nichols(o,gamma180,4231);
                Nyquist(o,[4643 0],1);
+               critical(o,'Damping',[4341,0]);
                title('gamma0(jw)');
                
                   % reverse part
                   
                bode(o,gamma180,[4212 4222]);
-               critical(o,'Nichols',[0 4232],1);
-               critical(o,'Damping',[0,4343]);
+               nichols(o,gamma180,4232);
                Nyquist(o,[0 4644],1);
+               critical(o,'Damping',[0,4343]);
                title('gamma180(jw)');
             case 1                     % forward direction
                bode(o,gamma0,[3211 3221]);
-               critical(o,'Damping',[3231,0]);
-               critical(o,'Nichols',[2212,0],true);
+               nichols(o,gamma0,2212);
                Nyquist(o,[2222 0],1);
+               critical(o,'Damping',[3231,0]);
             case -1                    % backward direction
                bode(o,gamma180,[3211 3221]);
-               critical(o,'Damping',[0 3231]);
-               critical(o,'Nichols',[0 2212],true);
+               nichols(o,gamma180,2212);
                Nyquist(o,[0 2222],1);
+               critical(o,'Damping',[0 3231]);
          end
       case 'Combi'
          switch cutting
@@ -631,15 +636,20 @@ function o = Critical(o)               % Calculate Critical Quantities
          end
          
       case 'Nichols'
-         switch cutting
-            case 0                     % both directions
-               critical(o,'Nichols',[211,212],true);
-            case 1                     % forward direction
-               critical(o,'Nichols',[111,0],true);
-            case -1                    % backward direction
-               critical(o,'Nichols',[0,111],true);
+          if (legacy)
+            o = Closeup(o);
+            sub = o.assoc(cutting,{{0,[211,212]},{1,[111,0]},{-1,[0,111]}});
+            critical(o,'Nichols',sub,1);
+         else
+            if (cutting == 0)          % both directions
+               nichols(o,gamma0,211);
+               nichols(o,gamma180,212);
+            else
+               gamm = o.iif(cutting>0,gamma0,gamma180);
+               nichols(o,gamm,111);
+            end
          end
-   end
+    end
    Heading(o);
 
 end

@@ -496,10 +496,13 @@ function vers = version(o,arg)         % SPM Class Version
 % - all bode, phase, magnitue plots working for principal & critical
 % - Critical Bode & Damping using spm/bode
 % - all Bode diagrams of Analyse menu on state of the art
+% - spm/nichols implemented, and all Nichols charts based on spm/nichols
+
 
 % Known bugs & wishlist
 % =========================
 % - bug: spikes in critical sensitivity diagram
+% - bug: genesis plots no more working
 % - bug: Nichols plot of reverse 2-Mode system not correct
 % - bug: corruption during save
 %

@@ -1,4 +1,4 @@
-function oo = subplot(o,varargin)
+function [oo,hax] = subplot(o,varargin)
 %
 % SUBPLOT   Select subplot - handle dark mode (optional grid), always set
 %           axes hold mode (if hold is not desired, explicitely call hold 
@@ -8,6 +8,12 @@ function oo = subplot(o,varargin)
 %              oo = subplot(o,3,1,1);
 %              oo = subplot(o,[3 1 1]);
 %
+%           Also retrieve axes handle:
+%
+%              oo = subplot(o,sub);         % standard call of subplot
+%              hax = axes(oo);              % get axes handle of subplot
+%              [oo,hax] = subplot(o,311);   % same same
+%           
 %           Note that in earlier CORAZON versions axes handle has been 
 %           returned directly (hax = subplot(o,...)), while this behavior 
 %           is discontinued with CORAZON V1i, and axes handle is returned 
@@ -59,6 +65,7 @@ function oo = subplot(o,varargin)
       dark(o,'Axes');                  % refresh dark mode of subplot
       grid(o);
       idle(o);                         % time to refresh graphics
+      hax = o.either(axes(o),gca);
    elseif (nargin == 1 && nargout > 0)
       hax = shelf(o,gca,'subplot');
       oo = axes(o,hax);
@@ -92,7 +99,7 @@ function oo = subplot(o,varargin)
       shelf(o,hax,'subplot',sub);
       dark(o,'Axes');
    elseif (nargin == 3)
-      oo = subplot(o,varargin{1});
+      [oo,hax] = subplot(o,varargin{1});
       mode = varargin{2};
       
       switch mode
@@ -120,8 +127,8 @@ function oo = subplot(o,varargin)
    
       % always axis on, hold on!
       
-   axis on;
-   hold on;
+   axis(hax,'on');
+   hold(hax,'on');
    oo = opt(oo,'subplot',sub);
 end
 

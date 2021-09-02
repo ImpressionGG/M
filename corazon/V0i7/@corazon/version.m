@@ -641,6 +641,7 @@ function VersionV1I
 % - bugfix: o=cache(o,o,[]) syntax
 % - legacy sample plugin added
 % - corazon/cache: calling syntax for hard clear of all caches added
+% - two out args for corazon/subplot
 %
 % Known Bugs / Wishlist
 % - none so far

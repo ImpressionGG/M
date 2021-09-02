@@ -582,7 +582,7 @@ function Nichols(o,oo,L0,sub,cutting,crit)  % Nichols Plot
          ylabel('|L0[k](jw)| [dB]');
          
             % limit calculation seems complicated, but xlim has 
-            %  irelevant values when graphics is zoomed in
+            % irelevant values when graphics is zoomed in
             
          plim = [min(phi(:)),max(phi(:))]*180/pi;
          xlim = get(gca,'xlim');

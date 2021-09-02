@@ -1,6 +1,6 @@
 function bode(o,L,sub,dominant)
 %
-% BODE   Bode plot for principal andcritical spectrum
+% BODE   Bode plot for principal and critical spectrum
 %
 %           bode(o,gamma0,[sub1 sub2]);   % magni & phase plot
 %           bode(o,gamma180,[sub 0]);     % magnitude plot
@@ -10,7 +10,7 @@ function bode(o,L,sub,dominant)
 %
 %        Copyright(c): Bluenetics 2021
 %
-%        See also: SPM, GAMMA, SPECTRUM
+%        See also: SPM, NICHOLS, GAMMA, SPECTRUM
 %
    if (nargin < 4)
       dominant = 0;
@@ -24,14 +24,14 @@ function bode(o,L,sub,dominant)
    
       % now sub is proper!
       
-   BodePlot(o,L,sub(1),sub(2),dominant);   
+   Bode(o,L,sub(1),sub(2),dominant);   
 end
 
 %==========================================================================
 % Bode Plot
 %==========================================================================
 
-function BodePlot(o,L,sub1,sub2,dominant)
+function Bode(o,L,sub1,sub2,dominant)  % Actual Bode Plot              
    frequency = opt(o,{'bode.frequency',0});
    fac = o.iif(frequency,2*pi,1);
 
