@@ -1,4 +1,4 @@
-function nichols(o,L,sub,dominant)
+function nichols(o,L,sub)
 %
 % NICHOLS  Nichols plot for principal and critical spectrum
 %
@@ -10,26 +10,24 @@ function nichols(o,L,sub,dominant)
 %
 %        Copyright(c): Bluenetics 2021
 %
-%        See also: SPM, BODE, GAMMA, SPECTRUM
+%        See also: SPM, BODE, GAMMA, SPECTRUM, BODE, NYQUIST
 %
-   if (nargin < 4)
-      dominant = 0;
-   end
    if (nargin < 3 || length(sub) < 1)
       sub = opt(o,{'subplot',111});
    end
    
       % now sub is proper!
       
-   Nichols(o,L,sub,dominant);   
+   Nichols(o,L,sub);   
 end
 
 %==========================================================================
 % Bode Plot
 %==========================================================================
 
-function Nichols(o,L,sub,dominant)
+function Nichols(o,L,sub)
    frequency = opt(o,{'bode.frequency',0});
+   bullets = opt(o,{'style.bullets',0});
    fac = o.iif(frequency,2*pi,1);
 
       % get spectral data
@@ -38,83 +36,91 @@ function Nichols(o,L,sub,dominant)
    om = L.data.omega(jdx);
    name = get(L,'name');
    [Ljw,phi,i0,j0,K,f,tag] = var(L,'fqr,phi,i0,j0,K,f,tag');
-   l0 = lambda(o,L);   
+%  l0 = lambda(o,L);   
    
       % setup colors and löinewidth
    
    [colors,colwk,col0] = Colors(o,L);
    linewidth = 1;
    
-   NicholsPlot(o,sub);
-   
-   function NicholsPlot(o,sub)                                       
-      [o,hax] = subplot(o,sub);
-      set(hax,'visible','on');
+      % let's go      
+      
+   [o,hax] = subplot(o,sub);
+   set(hax,'visible','on');
 
-         % magnitude plots 1:m  
+      % magnitude plots 1:m  
 
-      for (i=1:size(Ljw,1))
+   for (i=1:size(Ljw,1))
+      col = colors{1+rem(i-1,length(colors))};
+      col = o.iif(bullets,o.iif(dark(o),'w','k'),col);
+      
+      hdl = plot(hax,phi(i,jdx)*180/pi,20*log10(abs(Ljw(i,jdx))),colwk);
+      set(hdl,'color',o.color(col),'linewidth',linewidth);
+      
+      if (bullets) % bullets
          col = colors{1+rem(i-1,length(colors))};
-         hdl = plot(hax,phi(i,jdx)*180/pi,20*log10(abs(Ljw(i,jdx))),colwk);
+         hdl = plot(hax,phi(i,jdx)*180/pi,20*log10(abs(Ljw(i,jdx))),'c.');
          set(hdl,'color',o.color(col),'linewidth',linewidth);
       end
-      
-         % max magnitude
-         
-%     hdl = plot(hax,om/fac,20*log10(Lmax),colwk);
-      if (dominant)
-         [fqr0,phi0] = var(l0,'fqr');
-         hdl = plot(hax,phi0(jdx)*180/pi,20*log10(abs(fqr0(jdx))),colwk);
-      else
-         hdl = plot(hax,phi(i0,jdx)*180/pi,20*log10(abs(Ljw(i0,jdx))),colwk);
-      end
-      set(hdl,'color',o.color(col0), 'linewidth',2);
-
-         % limit calculation seems complicated, but xlim has 
-         % irelevant values when graphics is zoomed in
-            
-      plim = [min(phi(:)),max(phi(:))]*180/pi;
-      xlim = get(gca,'xlim');
-      xlim = [min(xlim(1),plim(1)), max(xlim(2),plim(2))];
-      
-         % limits
-         
-      Klim = o.iif(var(L,'critical'),K,1);
-      limits(o,'Magni',Klim);
-
-            % draw critical points
-
-      phi0 = -180;
-      while (phi0 >= xlim(1))
-         phi0 = phi0 - 360;
-      end
-      for (phi = phi0+360:360:100*180)
-         hdl = plot(phi,0,'p');
-         if (phi==-180)
-            set(hdl,'color','r', 'linewidth',1);
-            plot(phi,0,'y.');
-         else
-            set(hdl,'color',o.iif(dark(o),'w','k'), 'linewidth',1);
-         end
-         if (phi+360>xlim(2))
-            break;
-         end
-      end
-         
-         % Eigenvalue & Nyquist error
-         
-      L0 = cache(o,'critical.L0');
-      everr = var(L0,['EVerr',tag]);
-      nyqerr = var(L,'nyqerr');
-
-         % labels
-         
-      title(sprintf('%s: Magnitude Plots - K%s: %g @ %g Hz (EV/Nyq error: %g/%g)',...
-                    name,tag,K,f,everr,nyqerr));
-      xlabel('Phase [deg]');
-      ylabel(sprintf('|%s[k](jw)| [dB]',name));
-      subplot(o);
    end
+
+      % critical magnitude
+
+   [Ld,Lc] = lambda(o,L);
+   [Lcjw,phic] = var(Lc,'fqr,phi');
+
+   hdl = plot(hax,phic(jdx)*180/pi,20*log10(abs(Lcjw(jdx))),colwk);
+   set(hdl,'color',o.color(col0), 'linewidth',2);
+
+   if (bullets)
+      hdl = plot(hax,phic(jdx)*180/pi,20*log10(abs(Lcjw(jdx))),'c.');
+      set(hdl,'color',o.color([col0,'ww']));
+   end
+   
+      % limit calculation seems complicated, but xlim has 
+      % irelevant values when graphics is zoomed in
+
+   plim = [min(phi(:)),max(phi(:))]*180/pi;
+   xlim = get(gca,'xlim');
+   xlim = [min(xlim(1),plim(1)), max(xlim(2),plim(2))];
+
+      % limits
+
+   Klim = o.iif(var(L,'critical'),K,1);
+   limits(o,'Magni',Klim);
+
+         % draw critical points
+
+   phi0 = -180;
+   while (phi0 >= xlim(1))
+      phi0 = phi0 - 360;
+   end
+   for (phi = phi0+360:360:100*180)
+      hdl = plot(phi,0,'p');
+      if (phi==-180)
+         set(hdl,'color','r', 'linewidth',1);
+         plot(phi,0,'y.');
+      else
+         set(hdl,'color',o.iif(dark(o),'w','k'), 'linewidth',1);
+      end
+      if (phi+360>xlim(2))
+         break;
+      end
+   end
+
+      % Eigenvalue & Nyquist error
+
+   L0 = cache(o,'critical.L0');
+   everr = var(L0,['EVerr',tag]);
+   nyqerr = var(L,'nyqerr');
+
+      % labels
+
+   title(sprintf('%s: Magnitude Plots - K%s: %g @ %g Hz (EV/Nyq error: %g/%g)',...
+                 name,tag,K,f,everr,nyqerr));
+   xlabel('Phase [deg]');
+   ylabel(sprintf('|%s[k](jw)| [dB]',name));
+   subplot(o);
 end
 
 %==========================================================================

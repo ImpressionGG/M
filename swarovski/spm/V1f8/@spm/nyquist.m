@@ -1,46 +1,53 @@
-function [Kcrit,stable,K] = nyquist(o,K)
+function nyquist(o,L,sub)
 %
-% NYQUIST  Return stability region for set of K values
+% NYQUIST Nyquist plot for principal and critical spectrum
 %
-%             [Kcrit,stable] = nyquist(o,K)
-%             [Kcrit,stable,K] = nyquist(o)
+%           nyquist(o,gamma0,sub);       % critical forward spectrum
+%           nyquist(o,gamma180,sub);     % critical backward spectrum
 %
-%          Theory: given L0(s) := mu*G31(s)/G33(s) consider the complex
-%          frequency response curve
+%           nyquist(o,lambda0,sub);      % principal forward spectrum
+%           nyquist(o,lambda0,sub);      % principal backward spectrum
 %
-%             N(jw) := 1 + L0(jw)  =  1 + mu*G31(jw)/G33(jw)
+%         Copyright(c): Bluenetics 2021
 %
-   if (nargin < 2)
-      K = logspace(-3,3,1000);
+%         See also: SPM, BODE, GAMMA, SPECTRUM, NICHOLS, BODE
+%
+   if (nargin < 3 || length(sub) < 1)
+      sub = opt(o,{'subplot',111});
    end
    
-   omega = cache(o,'nyq.omega');
-   L0jw = cache(o,'nyq.L0jw');
-   
-   stable = 0*K;
-   for (i=1:length(K))
-      Njw = 1 + K(i)*L0jw;
-      phi = angle(Njw);
-      U = sum(diff(phi)) / (2*pi);
+      % now sub is proper!
       
-      if (U > 0.5)
-         stable(i) = 0;
-      elseif (U < 0.5)
-         stable(i) = 1;
-      else
-         stable(i) = NaN;
-      end
-   end
-   
-      % find critical K
-      
-   idx = find(stable ~= 1);
-   if isempty(idx)
-      Kcrit = inf;
-   else
-      Kcrit = K(idx(1)-1);
-   end
+   Nyquist(o,L,sub);   
 end
 
+function Nyquist(o,L,sub)                    
+   o = subplot(o,sub);
+
+   o = with(o,'nyq');
+   L = inherit(L,o);
    
+   colors = get(L,o.iif(dark(o),'dark','bright'));
+   col0 = get(L,{'color','r2'}); 
+
+   [K,f,critical,tag] = var(L,'K,f,critical,tag');
+
+      % plot FQR of Li(jw)
+
+   no = length(L.data.matrix(:));
+   for (i=1:no)
+      Li = peek(L,i);
+      col = colors{1+rem(i,length(colors))};
+      nyq(Li,col);
+   end
+
+   [Ld,Lc] = lambda(o,L);           % get dominant/critical FQR
+
+   Lc = inherit(Lc,L);
+   hdl = nyq(Lc,col0);              % Nyquist plot of critical FQR
+   set(hdl,'linewidth',2);
    
+   name = get(L,'name');
+   kind = o.iif(critical,'Critical','Principal');
+   title(sprintf('%s Spectrum: %s - K%s: %g @ %g Hz',kind,name,tag,K,f));
+end

@@ -503,11 +503,12 @@ function vers = version(o,arg)         % SPM Class Version
 % - tag SPM-V1F7 Beta Version SPM @ Corazon V1I7
 
 % - start beta SPM V1F8 @ beta CORAZON V0i8
-% - fic oo-bug in spm/batch
+% - fix oo-bug in spm/batch
+% - bugfix: Nyquist plots
+
 
 % Known bugs & wishlist
 % =====================
-% - bug: Nyquist plot still with bugs
 % - bug: genesis plots no more working
 % - bug: corruption during save
 %

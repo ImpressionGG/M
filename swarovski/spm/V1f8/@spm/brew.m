@@ -739,7 +739,7 @@ function oo = Gamma(o)                 % Brew Gamma TRFs
    gamma0 = Extend(o,gamma0);   
    gamma180 = Extend(o,gamma180);
    
-      % store in gamma cache segment
+        % store in gamma cache segment
 
    oo = o;
    oo = cache(oo,'gamma.gamma0',gamma0);
@@ -824,41 +824,39 @@ function oo = Spectral(o)              % Brew Spectral Quantities
       % principal spectrum
       
    lambda0 = var(gamma0,'lambda');
-   %lambda0 = Sort(o,lambda0,K0,f0);
-   %lambda0 = set(lambda0,'name','lambda0(s)','color','yyyr');
-   %lambda0 = var(lambda0,'K,f',K0,f0);
    lambda0 = Extend(o,lambda0);
-   lambda0jw = var(lambda0,'fqr');
+%  lambda0jw = var(lambda0,'fqr');
 
-      % critical frequency responses (maximizing |lambda0(jw)|)
+      % dominant and critical forward FQR
    
-   l0 = lambda(o,lambda0);
-   l0 = set(l0,'name','l0(s)','color','yyyr');
+%  [Ld0,Lc0] = lambda(o,lambda0);
+%  Ld0 = set(Ld0,'name','Ld0(s)','color','yyyr');
+%  Lc0 = set(Lc0,'name','Lc0(s)','color','yyyr');
+%  lambda0 = var(lambda0,'Ld0,Lc0',Ld0,Lc0);
    
       % calculate characteristic loci lambda180 (a CORASIM FQR system)
       
    lambda180 = var(gamma180,'lambda');
-   %lambda180 = Sort(o,lambda180,K180,f180);
-   %lambda180 = set(lambda180,'name','lambda180(s)','color','yyyrkk');
-   %lambda180 = var(lambda180,'K,f',K180,f180);
    lambda180 = Extend(o,lambda180);
-   lambda180jw = var(lambda180,'fqr');
+%  lambda180jw = var(lambda180,'fqr');
    
-      % critical frequency responses (maximizing |lambda180(jw)|)
-
-   l180 = lambda(o,lambda180);
-   l180 = set(l180,'name','l180(s)','color','yk');
+      % dominant and critical backward FQR
+   
+%  [Ld180,Lc180] = lambda(o,lambda180);
+%  Ld180 = set(Ld180,'name','Ld180(s)','color','yyr');
+%  Lc180 = set(Lc180,'name','Lc180(s)','color','yyr');
+%  lambda180 = var(lambda180,'Ld180,Lc180',Ld180,Lc180);
       
       % extract psion quantities
       
-   [psiw31,psiw33] = var(gamma0,'psiw31,psiw33');   
+   psiw = var(gamma0,'psiw');   
    om = lambda0.data.omega;
 
       % with l0 = g0 * g31/g33 calculate: g0 = l0 * g33/g31
    
    oo = opt(o,'progress','brewing spectral genesis');
    
-   [g31jw,g33jw] = lambda(oo,psiw31,psiw33,om);
+   [g31jw,g33jw] = lambda(oo,psiw,om);
    l0jw = lambda0.data.matrix{1,1};
    g30jw = l0jw .* g33jw ./ g31jw;
 
@@ -877,18 +875,11 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    oo = cache(oo,'spectral.lambda0',lambda0);         % store in cache
    oo = cache(oo,'spectral.lambda180',lambda180);     % store in cache
 
-   oo = cache(oo,'spectral.l0',l0);                   % store in cache
-   oo = cache(oo,'spectral.l180',l180);               % store in cache
-
-   oo = cache(oo,'spectral.lambda0jw',lambda0jw);     % store in cache
-   oo = cache(oo,'spectral.lambda180jw',lambda180jw); % store in cache
-
    oo = cache(oo,'spectral.g31',g31);
    oo = cache(oo,'spectral.g33',g33);
    oo = cache(oo,'spectral.g30',g30);
 
-   oo = cache(oo,'spectral.psiw31',psiw31);
-   oo = cache(oo,'spectral.psiw33',psiw33);
+   oo = cache(oo,'spectral.psiw',psiw);
    
       % hard refresh of cache if not prohibited by cache.hard option
       

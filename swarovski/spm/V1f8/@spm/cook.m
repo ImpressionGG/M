@@ -111,12 +111,6 @@ function varargout = cook(o,sym)
 %          Tv = cook(o,'Tv')                % Velocity trf matrix Tv(s)
 %          Ta = cook(o,'Ta')                % Acceleration trf matrix Ta(s)
 %
-%       Spectral TRFs (characteristic loci)
-%
-%          L0jw = cook(o,'L0jw')            % MIMO frequency responses
-%          l0 = cook(o,'l0')                % MIMO spectral functions l0(s)
-%          [g31,g33,g30] = cook(o,'g31,g33,g30')
-%
 %       Principal Spectrum
 %
 %          lambda0 = cook(o,'lambda0')      % principal (forward) spectrum
@@ -131,6 +125,10 @@ function varargout = cook(o,sym)
 %          gamma0jw = cook(o,'gamma0jw')    % critical (fwd) spectral FQR
 %          gamma180jw = cook(o,'gamma180jw')% critical (rev) spectral FQR
 %
+%       Spectral TRFs (characteristic loci)
+%
+%          [g31,g33,g30] = cook(o,'g31,g33,g30')
+%
 %       Resulting system after variation, coordinate transf. & contact,
 %       same as sys = system(o), but cached!
 %
@@ -138,7 +136,8 @@ function varargout = cook(o,sym)
 %
 %       Psion functions for spectrum calculation
 %
-%          [psiw31,psiw33] = cook(p,'psiw31,psiw33')
+%          lambda0 = cook(o,'lambda0')
+%          psiw = var(lambda0,'psiw');
 %
 %       Setup
 %
@@ -366,8 +365,8 @@ function [o,oo] = Cook(o,sym)          % Cook-up Anyhing
          o = cache(o,o,'gamma');
          oo = cache(o,['gamma.',sym]);
          
-      case {'L0jw','lambda0','lambda180','lambda0jw','lambda180jw',...
-            'psiw31','psiw33','g31','g33','g30','l0','l180'}
+      case {'lambda0','lambda180','lambda0jw','lambda180jw',...
+            'g31','g33','g30'}
          o = cache(o,o,'gamma');
          o = cache(o,o,'spectral');
          oo = cache(o,['spectral.',sym]);

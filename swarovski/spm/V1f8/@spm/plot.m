@@ -30,69 +30,6 @@ function oo = plot(o,varargin)         % SPM Plot Method
 end
 
 %==========================================================================
-% Plot Menu
-%==========================================================================
-
-function oo = Menu(o)                  % Setup Plot Menu               
-   switch type(current(o))
-      case 'shell'
-         oo = ShellMenu(o);
-      case 'spm'
-         oo = SpmMenu(o);
-      case 'pkg'
-         oo = PkgMenu(o);
-      otherwise
-         oo = mitem(o,'About',{@WithCuo,'About'});
-   end
-end
-function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
-   oo = mitem(o,'About',{@WithCuo,'About'});
-   oo = mitem(o,'-');
-   oo = mitem(o,'Transfer Function');
-   ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
-   ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
-   oo = mitem(o,'Principal Transfer Functions');
-   ooo = mitem(oo,'L0(s)',{@WithCuo,'L0Shell'});
-   ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithCuo,'G31G33L0'});
-end
-function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
-%
-% MENU  Setup plot menu. Note that plot functions are best invoked via
-%       Callback or Basket functions, which do some common tasks
-%
-   oo = mitem(o,'About',{@WithCuo,'About'});
-   oo = mitem(o,'Overview',{@WithCuo,'Plot'});
-   
-   oo = mitem(o,'-');
-   oo = ModeShapesMenu(o);
-   oo = TransferFunction(o);           % Transfer Function menu
-   
-   oo = mitem(o,'-');
-   oo = FreeSystemMenu(o);             % G(s)
-   oo = ConstrainSystemMenu(o);        % H(s)
-
-   oo = mitem(o,'-');
-   oo = Principal(o);                  % P(s)/Q(s)
-   oo = CriticalLoop(o);               % K0, S0(s), T0(s)
-   
-   oo = mitem(o,'-');
-   oo = StepResponse(o);               % step response sub-menu
-   oo = RampResponse(o);               % ramp response sub-menu
-   oo = MotionResponse(o);             % motion response sub menu
-   oo = NoiseResponse(o);              % noise response sub menu
-end
-function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type    
-   oo = mitem(o,'About',{@WithCuo,'About'});
-   oo = mitem(o,'Image',{@WithCuo,'Image'});
-   enable(oo,~isempty(get(current(o),'image')));
-   
-   oo = mitem(o,'-');
-%  oo = mitem(o,'Stability Range',{@WithCuo,'StabilityRange'});
-   oo = mitem(o,'Legacy');
-   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
-end
-
-%==========================================================================
 % Launch Callbacks
 %==========================================================================
 
@@ -162,23 +99,70 @@ function oo = WithSpm(o)               % 'With Current SPM Object'
    end
    dark(o);                            % do dark mode actions
 end
-function oo = WithBsk(o)               % 'With Basket' Callback        
-%
-% WITHBSK  Plot basket, or perform actions on the basket, screen clearing, 
-%          current object pulling and forwarding to executing local func-
-%          tion, reporting of irregularities and dark mode support
-%
-   refresh(o,o);                       % use this callback for refresh
-   cls(o);                             % clear screen
 
-   gamma = eval(['@',mfilename]);
-   oo = basket(o,gamma);               % perform operation gamma on basket
- 
-   if ~isempty(oo)                     % irregulars happened?
-      message(oo);                     % report irregular
+%==========================================================================
+% Plot Menu
+%==========================================================================
+
+function oo = Menu(o)                  % Setup Plot Menu               
+   switch type(current(o))
+      case 'shell'
+         oo = ShellMenu(o);
+      case 'spm'
+         oo = SpmMenu(o);
+      case 'pkg'
+         oo = PkgMenu(o);
+      otherwise
+         oo = mitem(o,'About',{@WithCuo,'About'});
    end
-   dark(o);                            % do dark mode actions
 end
+function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
+   oo = mitem(o,'About',{@WithCuo,'About'});
+   oo = mitem(o,'-');
+   oo = mitem(o,'Transfer Function');
+   ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
+   ooo = mitem(oo,'Magnitude Plot',{@WithCuo,'TrfMagni'});
+   oo = mitem(o,'Principal Transfer Functions');
+   ooo = mitem(oo,'L0(s)',{@WithCuo,'L0Shell'});
+   ooo = mitem(oo,'L0(s) = G31(s)/G33(s)',{@WithCuo,'G31G33L0'});
+end
+function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type    
+%
+% MENU  Setup plot menu. Note that plot functions are best invoked via
+%       Callback or Basket functions, which do some common tasks
+%
+   oo = mitem(o,'About',{@WithCuo,'About'});
+   oo = mitem(o,'Overview',{@WithCuo,'Plot'});
+   
+   oo = mitem(o,'-');
+   oo = ModeShapesMenu(o);
+   oo = TransferFunction(o);           % Transfer Function menu
+   
+   oo = mitem(o,'-');
+   oo = FreeSystemMenu(o);             % G(s)
+   oo = ConstrainSystemMenu(o);        % H(s)
+
+   oo = mitem(o,'-');
+   oo = Principal(o);                  % P(s)/Q(s)
+   oo = CriticalLoop(o);               % K0, S0(s), T0(s)
+   
+   oo = mitem(o,'-');
+   oo = StepResponse(o);               % step response sub-menu
+   oo = RampResponse(o);               % ramp response sub-menu
+   oo = MotionResponse(o);             % motion response sub menu
+   oo = NoiseResponse(o);              % noise response sub menu
+end
+function oo = PkgMenu(o)               % Setup Plot Menu @ PKG-Type    
+   oo = mitem(o,'About',{@WithCuo,'About'});
+   oo = mitem(o,'Image',{@WithCuo,'Image'});
+   enable(oo,~isempty(get(current(o),'image')));
+   
+   oo = mitem(o,'-');
+%  oo = mitem(o,'Stability Range',{@WithCuo,'StabilityRange'});
+   oo = mitem(o,'Legacy');
+   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
+end
+
 
 function oo = TransferFunction(o)      % Transfer Function Menu        
    oo = mitem(o,'Transfer Function');
@@ -306,6 +290,42 @@ function oo = ClosedLoopSystem(o)      % Closed Loop System Menu
       if (i < m)
          ooo = mitem(oo,'-');
       end
+   end
+end
+
+%==========================================================================
+% Default Plot Functions
+%==========================================================================
+
+function oo = Plot(o)                  % Default Plot                  
+%
+% PLOT The default Plot function shows how to deal with different object
+%      types. Depending on type a different local plot function is invoked
+%
+   args = arg(o);                      % this is for debug only!
+
+      % arglist could be for corazon/plot, which means that we just call
+      % corazon plot with the syntax plot(corazon,o). If corazon/plot
+      % recognizes a proper arglist it performs the plot call and returns
+      % either the plot handles or NaN, which means that we are done
+      % and return from the function call (with empty out arg)
+      
+   oo = plot(corazon,o);               % if arg list is for corazon/plot
+   if ~isa(oo,'corazon')               % is oo an array of graph handles?
+      return                           % in such case we are done - bye!
+   end
+
+   oo = o;                             % make sure we return a SPM object
+   
+      % otherwise we have to do the work, which is dispatching the object 
+      % type and call the type specific plot functions
+      
+   cls(o);                             % clear screen
+   switch o.type
+      case 'spm'
+         oo = Overview(o);
+      otherwise
+         oo = plot(o,'About');         % no idea how to plot
    end
 end
 
@@ -794,40 +814,6 @@ end
 function oo = NoiseResponse(o)         % Noise Response Menu           
    oo = mitem(o,'Noise Response');
    ooo = mitem(oo,'Acceleration',{@WithCuo,'NoiseRsp'});
-end
-
-%==========================================================================
-% Default Plot Functions
-%==========================================================================
-
-function oo = Plot(o)                  % Default Plot                  
-%
-% PLOT The default Plot function shows how to deal with different object
-%      types. Depending on type a different local plot function is invoked
-%
-   args = arg(o);                      % this is for debug only!
-
-      % arglist could be for corazon/plot, which means that we just call
-      % corazon plot with the syntax plot(corazon,o). If corazon/plot
-      % recognizes a proper arglist it performs the plot call and returns
-      % either the plot handles or NaN, which means that we are done
-      % and return from the function call (with empty out arg)
-      
-   oo = plot(corazon,o);               % if arg list is for corazon/plot
-   if ~isempty(oo)                     % is oo an array of graph handles?
-      oo = []; return                  % in such case we are done - bye!
-   end
-
-      % otherwise we have to do the work, which is dispatching the object 
-      % type and call the type specific plot functions
-      
-   cls(o);                             % clear screen
-   switch o.type
-      case 'spm'
-         oo = Overview(o);
-      otherwise
-         oo = plot(o,'About');         % no idea how to plot
-   end
 end
 
 %==========================================================================

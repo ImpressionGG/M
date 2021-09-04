@@ -1,4 +1,4 @@
-function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs            
+function [oo,o1,o2] = lambda(o,varargin)  % Spectral FQRs            
 %
 % LAMBDA  Calculate spectral frequency responses lambda(s) for an open
 %         loop system. Result is an mx1 MIMO FQR (frequency response) typed
@@ -16,9 +16,18 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %            [lambda0,g31,g33] = lambda(o); % also spectral genesis fcts
 %            [g31,g33] = lambda(o,sys);     % only spectral genesis fcts
 %
-%            l0 = lambda(o,lambda0);        % calculate dominant TRF
-%            l0jw = var(l0,'fqr');          % FQR of l0
-%            phi = var(l0,'phi');           % unwrapped phase of l0
+%         Critical lamda function l0 (lambda{i0} which determines critical 
+%         gain) and dominant lambda function L0 (with always greatest mag-
+%         nitude) 
+%
+%            [Ld,Lc] = lambda(o,lambda0);   % dominant/critical TRF
+%
+%            Ldjw = var(Ld,'fqr');          % FQR of Ld
+%            phid = var(Ld,'phi');          % unwrapped phase of Ld
+%            Lcjw = var(Lc,'fqr');          % FQR of Lc
+%            phic = var(Lc,'phi');          % unwrapped phase of Lc
+%
+%         Lambda calculation for specific contact indices
 %
 %            sys = system(o,cdx);           % get contact relevant system
 %            lambda0 = lambda(o,sys,om);    % calculate spectral FQRs
@@ -27,6 +36,13 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %
 %         The next two calls return the frequency response (not a CORASIM
 %         system), which enables efficient calculation in some algorithms
+%
+%            lambda0jw = lambda(o,psiw,omega)
+%            lambda180jw = lambda(o,-psiw,omega)
+%            
+%            [g31jw,g33jw] = lambda(o,psiw,omega)  % spectral genesis
+%
+%         Legacy calls
 %
 %            lambda0jw = lambda(o,A,B_1,B_3,C_3,T0*omega)
 %            lambda0jw = lambda(o,PsiW31,PsiW33,T0*omega)
@@ -38,7 +54,11 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %         [om1,om2] assuming in given omega interval one of the spectral
 %         functions has a continuous phase crossing of pi+2*k*pi:
 %
-%            [K0,f0,lambda0jw] = lambda(o,psiW31,psiW33,om1,om2)
+%            [K0,f0,lambda0jw] = lambda(o,psiw,om1,om2)
+%
+%         Legacy call
+%
+%            [K0,f0,lambda0jw] = lambda(o,psiw31,psiw33,om1,om2)
 %
 %         Theory:
 %
@@ -57,6 +77,16 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %               Ljwk = Pjwk\Qjwk;
 %               lambda0jw(1:m,k) = Sort(ljw,eig(Ljwk))
 %            end
+%
+%         Example 1:
+%
+%            sys = system(o,cdx);           % get contact relevant system
+%            [A,B_1,B_3,C_3,T0] = var(sys,'A,B_1,B_3,C_3,T0')
+%            psiw31 = psion(o,A,B_1,C_3,T0) % to calculate G31(jw)
+%            psiw33 = psion(o,A,B_3,C_3,T0) % to calculate G33(jw)
+%            psiw = [psiw31;psiw33];
+%            lambda0jw = lambda(o,psiw,omega)
+%            lambda180jw = lambda(o,-psiw,omega)
 %
 %         Example 1:
 %
@@ -105,22 +135,52 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
 %         See also: SPM, SYSTEM, PRINCIPAL, LAMBDA
 %
    o.profiler('lambda',1);
-   if (nargin == 4)                    % calculate as fast as possible
-      PsiW31 = varargin{1};  PsiW33 = varargin{2};  om = varargin{3};
+   if (nargin == 3)                    % calculate as fast as possible
+      psiw = varargin{1};
+      om = varargin{2};
+      [psiw31,psiw33] = SplitPsiw(psiw);
+      
       if (nargout <= 1)
-         oo = Lambda(o,PsiW31,PsiW33,om);
+         oo = Lambda(o,psiw31,psiw33,om);
       elseif (nargout == 2)
-         [g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om); % only spectral genesis
-         oo = g31jw;  g31 = g33jw;     % shift out args
+         [g31jw,g33jw] = Lambda(o,psiw31,psiw33,om); % only spectral genesis
+         oo = g31jw;  o1 = g33jw;     % shift out args
       else
-         [oo,g31,g33] = Lambda(o,PsiW31,PsiW33,om); % also spectral genesis
+         [oo,o1,o2] = Lambda(o,psiw31,psiw33,om); % also spectral genesis
+      end
+      o.profiler('lambda',0);
+      return
+   elseif (nargin == 4)                % calculate as fast as possible
+      PsiW31 = varargin{1};  PsiW33 = varargin{2};  om = varargin{3};
+ 
+         % we have to deal with two different calling syntax
+         %
+         %    a) [...] = lambda(o,psiw,om1,om2)      % zero cross search 
+         %    b) [...] = lambda(o,pswi31,psiw33,om)  % spectrum calculation
+         %
+      
+      if (size(PsiW31,1) ~= size(PsiW33,1)) % a) lambda(o,psiw,om1,om2) 
+         om1 = varargin{2};  om2 = varargin{3};
+         [PsiW31,PsiW33] = SplitPsiw(PsiW31);
+         [oo,o1,o2] = Critical(o,PsiW31,PsiW33,om1,om2);
+         o.profiler('lambda',0);
+         return
+      else                                  % b) lambda(o,psiw31,psiw33,om)
+         if (nargout <= 1)
+            oo = Lambda(o,PsiW31,PsiW33,om);
+         elseif (nargout == 2)
+            [g31jw,g33jw] = Lambda(o,PsiW31,PsiW33,om); % only spectral genesis
+            oo = g31jw;  o1 = g33jw;     % shift out args
+         else
+            [oo,o1,o2] = Lambda(o,PsiW31,PsiW33,om); % also spectral genesis
+         end
       end
       o.profiler('lambda',0);
       return
    elseif (nargin == 5)                % zero cross search
       PsiW31 = varargin{1};  PsiW33 = varargin{2};  
       om1 = varargin{3};  om2 = varargin{4};
-      [oo,g31,g33] = Critical(o,PsiW31,PsiW33,om1,om2);
+      [oo,o1,o2] = Critical(o,PsiW31,PsiW33,om1,om2);
       o.profiler('lambda',0);
       return
    end
@@ -140,7 +200,7 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
       o.profiler('lambda',0);
       return;
    elseif (nargin == 2 && isequal(class(sys),'corasim') && type(sys,{'fqr'}))
-      oo = Dominant(sys);
+      [oo,o1] = Dominant(sys);
       o.profiler('lambda',0);
       return;
    end
@@ -227,10 +287,10 @@ function [oo,g31,g33] = lambda(o,varargin)  % Spectral FQRs
          g33{i,1} = g33jw(i,:);
       end
       g31 = fqr(corasim,om,g31);       % FQR typed CORASIM system
-      g31 = set(g31,'name','g31(s)','color','g');
+      o1 = set(g31,'name','g31(s)','color','g');
    
       g33 = fqr(corasim,om,g33);       % FQR typed CORASIM system
-      g33 = set(g33,'name','g33(s)','color','g');
+      o2 = set(g33,'name','g33(s)','color','g');
    end
    
    o.profiler('lambda',0);
@@ -346,61 +406,74 @@ function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)
 end
 
 %==========================================================================
-% Calculate Critical Transfer Function (Max. Magnitude)
+% Calculate Dominant and Critical FQR
 %==========================================================================
 
-function L0 = Dominant(l0)             % Calculate Critical Fqr        
+function [Ld,Lc] = Dominant(L)         % Dominant/Critical FQR           
 %
-%  DOMINANT  Create dominant FQR with maximizing magnitude of all spectral
-%            FQRs and according phase.
+%  DOMINANT  Create (1x1) dominant FQR Ld(jw) and (1x1) critical FQR Lc(jw)
 %
-%               l0 = 
-   assert(type(l0,{'fqr'}));
-   [m,n] = size(l0.data.matrix);
-   assert(n==1);
-   for (i=1:m)
-      l0jw(i,:) = l0.data.matrix{i};
-   end
-
-      % find greatest magnitude
-
-   [m,n] =size(l0jw);
-   [mag,idx] = max(abs(l0jw));
-   [phi,j0] = var(l0,'phi,j0');
+%               [Ld0,Lc0] = Dominant(lambda0);
+%               [Ld180,Lc180] = Dominant(lambda180);
+%               [Gd0,Gc0] = Dominant(gamma0);
+%               [Gd180,Gc180] = Dominant(gamma180);
+%
+%            The dominant FQR Ld(jw) maximizes the magnitude of all spec-
+%            tral functions Ljw(i), while the critical FQR Lc(jw) selects
+%            the one Ljw(i0) for which the critical gain applies
+%
+   [Ljw,phi,i0,j0] = var(L,'fqr,phi,i0,j0');
+   om = L.data.omega;
+   [m,n] = size(Ljw);
    
-   phi0 = zeros(1,n);               % init
-   for (j=1:n)
-%     mag = abs(l0jw(:,j));
-%     idx = find(mag==max(mag));
-%     L0jw(1,j) = l0jw(idx(1),j);
-      phi0(j) = phi(idx(j),j); 
-   end
-
-   phi0 = unwrap(phi0);
-   while (phi0(j0) > -pi+pi/2)
-      phi0 = phi0 - 2*pi;
-   end
-   while (phi0(j0) < -pi-pi/2)
-      phi0 = phi0 + 2*pi;
-   end
-
-      % pack data into corasim object
+      % get maximizing magnitude
       
-   om = l0.data.omega;
-   L0jw = mag .* exp(1i*phi0);          % artificial FQR
-   L0 = fqr(corasim,om,{L0jw});
-   L0 = var(L0,'fqr,phi',L0jw,phi0);
+   if (m==1)
+      magd = abs(Ljw);  idx = ones(1,n);
+   else
+      [magd,idx] = max(abs(Ljw));
+   end
+   phid = DomPhase(phi,j0,idx);
+
+      % pack data of dominant FQR Ld(jw) into corasim object
+      
+   Ldjw = magd .* exp(1i*phid);        % artificial FQR
+   Ld = fqr(corasim,om,{Ldjw});
+   Ld = var(Ld,'fqr,phi',Ldjw,phid);
+
+      % pack data of critical FQR Lc(jw) into corasim object
+      
+   Lcjw = Ljw(i0,:);                   % artificial FQR
+   Lc = fqr(corasim,om,{Lcjw});
+   Lc = var(Lc,'fqr,phi',Lcjw,phi(i0,:));
+      
+      % done
+      
+   function phid = DomPhase(phi,j0,idx)% Get Dominant FQR's Phase      
+      phid = 0*phi(1,:);               % init
+      for (jj=1:length(phid))
+         phid(jj) = phi(idx(jj),jj); 
+      end
+
+      phid = unwrap(phid);
+      while (phid(j0) > -pi+pi/2)
+         phid = phid - 2*pi;
+      end
+      while (phid(j0) < -pi-pi/2)
+         phid = phid + 2*pi;
+      end
+   end
 end
-function L0jw = CritDouble(l0jw)       % Calculate Critical Fqr        
+function L0jw = CritDouble(Ljw)        % Calculate Critical FQR        
 %error('will be obsoleted');
-   [m,n] =size(l0jw);
+   [m,n] =size(Ljw);
    
    L0jw = sqrt(-1)*ones(1,n);
    
    for (j=1:n)
-      mag = abs(l0jw(:,j));
+      mag = abs(Ljw(:,j));
       [~,idx] = max(mag);
-      L0jw(1,j) = l0jw(idx(1),j);
+      L0jw(1,j) = Ljw(idx(1),j);
    end
 end
 
@@ -544,5 +617,33 @@ function L = Sort(o,L)        % Sort Tail of FQR
        'debug';
     end
     o.profiler('Sort',0);
+end
+function [psiw31,psiw33] = SplitPsiw(psiw)
+%
+%  SPLITPSIW  Split up psiw into psiw31 and psiw33. Note the delicious 
+%             detail that usual calling syntax is:
+%
+%                lambda0 = lambda(o,psiw31,psiw33,om)
+%                lambda180 = lambda(o,-psiw31,psiw33,om)
+%
+%             and note for reverse cutting psiw31 is negated but psiw33 is
+%             not!!! In contrast
+%
+%                psiw = [psiw31;psiw33]
+%                lambda0 = lambda(o,psiw,om)
+%                lambda180 = lambda(o,-psiw,om)
+%
+%             This means that for split up we need to negate psiw33 (!!!)
+%             if psiw31(1) is negative.
+%
+   m = size(psiw,1)/2;
+   idx = 1:m;
+   
+   psiw31 = psiw(idx,:);
+   if (psiw31(1) > 0)
+      psiw33 = psiw(idx+m,:);
+   else
+      psiw33 = -psiw(idx+m,:);
+   end
 end
 

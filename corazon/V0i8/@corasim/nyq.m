@@ -44,7 +44,7 @@ end
 % Nyquist Plot
 %==========================================================================
 
-function o = Nyquist(o,col)            % Nyquist Plot                  
+function oo = Nyquist(o,col)           % Nyquist Plot                  
    points = opt(o,{'omega.points',10000});      
 %  oscale = opt(o,{'oscale',1});       % omega scaling factor
 
@@ -72,9 +72,9 @@ function o = Nyquist(o,col)            % Nyquist Plot
       dB = 20*log10(abs(Gjw));
       r = Map(o,dB);
       
-      hdl = plot(o,r.*cos(phi),r.*sin(phi),col);
+      oo = plot(o,r.*cos(phi),r.*sin(phi),col);
    else   
-      hdl = plot(o,real(Gjw),imag(Gjw),col);
+      oo = plot(o,real(Gjw),imag(Gjw),col);
    end
 
       % do some decorative actions

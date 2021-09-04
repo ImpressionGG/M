@@ -117,12 +117,13 @@ end
 % Default Plot Function
 %==========================================================================
 
-function o = Plot(o)                   % Plot Object                   
+function oo = Plot(o)                  % Plot Object                   
    oo = plot(corazon,o);               % if arg list is for corazon/plot
-   if ~isempty(oo)                     % is oo an array of graph handles?
-      oo = []; return                  % in such case we are done - bye!
+   if ~isa(oo,'corazon')               % is oo an array of graph handles?
+      return                           % in such case we are done - bye!
    end
    
+   oo = o;                             % return a corazon object
    switch type(o)
       case 'css'                       % continuous state space system
          PlotCss(o);
@@ -133,7 +134,7 @@ function o = Plot(o)                   % Plot Object
          PlotCss(o);
       case 'strf'                      % continuous transfer function
          o = system(o);                % cast strf into css
-         PlotCss(o);
+         o = PlotCss(o);
       case 'modal'                     % modal system
          o = system(o);                % cast ztrf into dsss
          PlotDss(o);

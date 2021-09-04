@@ -9,8 +9,8 @@ function [gamma0,gamma180,sys] = gamma(o,om)
 %               [K0,f0,lambda0] = var(gamma0,'K0,f0,lambda0');
 %               [K180,f180,lambda180] = var(gamma180,'K180,f180,lambda180');
 % 
-%               [psiw31,psiw33] = var(gamma0,'psiw31,psiw33');
-%               [psiw31,psiw33] = var(gamma180,'psiw31,psiw33');
+%               psiw0 = var(gamma0,'psiw');
+%               psiw180 = var(gamma180,'psiw');
 %
 %            Notes
 %               For finite critical gain K0,K180 the gamma TRF calculates
@@ -37,14 +37,6 @@ function [gamma0,gamma180,sys] = gamma(o,om)
 %
 %            See also: SPM, SYSTEM, LAMBDA
 %
-
-%            Timing:
-%               
-%               system construction:      18.0 ms
-%               psion calculation:         4.0 ms
-%               omega construction:        0.4 ms
-%               out arg construction:      0.3 ms
-%
    if (nargin < 2)
       om = Omega(o);                   % omega construction by options
    elseif isobject(om)
@@ -58,21 +50,21 @@ function [gamma0,gamma180,sys] = gamma(o,om)
    
       % psion calculation
       
-   [psiw31,psiw33] = Psion(o,sys);
+   psiw = Psion(o,sys);
       
       % forward gamma calculation
       
-   lambda0jw = lambda(o,psiw31,psiw33,om);
-   lambda0 = Lambda(o,om,lambda0jw,sys,psiw31,psiw33,'0','ryyyy');   
+   lambda0jw = lambda(o,psiw,om);
+   lambda0 = Lambda(o,om,lambda0jw,sys,psiw,'0','ryyyy');   
    
-   [gamma0,K0,f0,nyqerr] = Gamma(o,lambda0,psiw31,psiw33);
+   [gamma0,K0,f0,nyqerr] = Gamma(o,lambda0,psiw);
    
       % backward gamma calculation
    
    if (nargout > 1)
-      lambda180 = Lambda(o,om,-lambda0jw,sys,-psiw31,psiw33,'180','ryyyk');
+      lambda180 = Lambda(o,om,-lambda0jw,sys,-psiw,'180','ryyyk');
       
-      [gamma180,K180,f180] = Gamma(o,lambda180,-psiw31,psiw33);
+      [gamma180,K180,f180] = Gamma(o,lambda180,-psiw);
    end
 end
 
@@ -80,12 +72,12 @@ end
 % Critical Quantities
 %==========================================================================
 
-function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw31,psiw33)               
+function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw)               
 %
 % GAMMA   Gamma object construction
 %
-%    [gamma0,K0,f0] = Gamma(o,lambda0,psiw31,psiw33)
-%    [gamma180,K180,f180] = Gamma(o,lambda180,-psiw31,psiw33)
+%    [gamma0,K0,f0] = Gamma(o,lambda0,psiw)
+%    [gamma180,K180,f180] = Gamma(o,lambda180,-psiw)
 %
 %    Note: lambda180 = (-1)*lambda0
 %          gamma180 = (-1)*gamma0
@@ -114,7 +106,7 @@ function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw31,psiw33)
       % add lambda function to variables of gamma and add name & color
       
    gamm = var(gamm,'lambda,critical',lamb,1);
-   if (psiw31(1) > 0)
+   if (psiw(1) > 0)
       gamm = set(gamm,'name,color', 'gamma0','r');
    else
       gamm = set(gamm,'name,color', 'gamma180','rrk');
@@ -266,7 +258,7 @@ function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw31,psiw33)
   
          % calculate critical quantities K0 and f0
       
-      [K0,f0,lambda0jw] = lambda(o,psiw31,psiw33,om1,om2);
+      [K0,f0,lambda0jw] = lambda(o,psiw,om1,om2);
       
          % calculate Nyquist error
          
@@ -284,7 +276,7 @@ function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw31,psiw33)
    end
    function [lamb,i0,nyq] = Adjust(lamb,j0,K,f)   % Adjustment of Omega   
       lamb.data.omega(j0) = 2*pi*f;    % adaption of omega domain vector
-      L0jw_ = lambda(o,psiw31,psiw33,lamb.data.omega(j0));
+      L0jw_ = lambda(o,psiw,lamb.data.omega(j0));
       
          % reorder L0jw according to least jumps
       
@@ -326,7 +318,7 @@ end
 % Psion Calculation
 %==========================================================================
 
-function [psiw31,psiw33] = Psion(o,sys)     % Calc Psion Matrices      
+function psiw = Psion(o,sys)           % Calc Psion Matrices      
    A = var(sys,'A');
    B_1 = var(sys,'B_1');
    B_3 = var(sys,'B_3');
@@ -335,6 +327,7 @@ function [psiw31,psiw33] = Psion(o,sys)     % Calc Psion Matrices
    
    psiw31 = psion(o,A,B_1,C_3,T0);     % to calculate G31(jw)
    psiw33 = psion(o,A,B_3,C_3,T0);     % to calculate G33(jw)
+   psiw = [psiw31;psiw33];
 end
 
 %==========================================================================
@@ -353,24 +346,28 @@ end
 % Lambda Object Construction
 %==========================================================================
 
-function L = Lambda(o,om,Ljw,sys,psiw31,psiw33,tag,col)                
+function L = Lambda(o,om,Ljw,sys,psiw,tag,col)                
    for (i=1:size(Ljw,1))
       matrix{i,1} = Ljw(i,:);
    end
    
    name = ['lambda',tag];
    
+      % define colors for bright/dark mode
+      
+   bright = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
+   dark = {'rk','gk','b','ck','mk','yk','wk'};
+
    L = fqr(corasim,om,matrix);
-   L = set(L, 'name',name, 'color',col);
-   L = var(L,'tag,system,psiw31,psiw33,fqr,critical',...
-              tag,sys,psiw31,psiw33,Ljw,0);
+   L = set(L, 'name,color,bright,dark',name,col,bright,dark);
+   L = var(L,'tag,system,psiw,fqr,critical',tag,sys,psiw,Ljw,0);
 end
 
 %==========================================================================
 % Integrity Check for Spectral Functions
 %==========================================================================
 
-function err = Integrity(o,lamb)
+function err = Integrity(o,lamb)       % Integrity Check               
 %
 % INTEGRITY   Integrity check for spectral functions (debug method)
 %

@@ -342,19 +342,28 @@ function o = Principal(o)              % Pricipal Menu Callbacks
          switch cutting
             case 0                     % both directions         
                bode(o,lambda0,[4211 4221]);
-               Nyquist(o,[2221 0],0);
+               nichols(o,lambda0,4231);
+               nyquist(o,lambda0,4643);
+               title('lambda0(jw)');
+               critical(o,'Damping',[4341,0]);
                
                   % reverse part
                   
                bode(o,lambda180,[4212 4222]);
-               Nyquist(o,[0 2222],0);
-                  
+               nichols(o,lambda180,4232);
+               nyquist(o,lambda180,4644);
+               title('lambda180(jw)');
+               critical(o,'Damping',[0,4343]);
             case 1                     % forward direction
-               bode(o,lambda0,[2211 2221]);
-               Nyquist(o,[1212 0],0);
+               bode(o,lambda0,[3211 3221]);
+               nichols(o,lambda0,2212);
+               nyquist(o,lambda0,2222);
+               critical(o,'Damping',[3231,0]);
             case -1                    % backward direction
-               bode(o,lambda180,[2211 2221]);
-               Nyquist(o,[0 1212],0);
+               bode(o,lambda180,[3211 3221]);
+               nichols(o,lambda180,2212);
+               nyquist(o,lambda180,2222);
+               critical(o,'Damping',[0 3231]);
          end
          
       case 'Bode'
@@ -404,15 +413,14 @@ function o = Principal(o)              % Pricipal Menu Callbacks
           end     
          
       case 'Nyquist'
-         switch cutting
-            case 0                     % both directions
-               Nyquist(o,[1211 1212],0);
-            case 1                     % forward direction
-               Nyquist(o,[111 0],0);
-            case -1                    % backward direction
-               Nyquist(o,[0 111],0);
+         if (cutting == 0)          % both directions
+            nyquist(o,lambda0,121);
+            nyquist(o,lambda180,122);
+         else
+            lamb = o.iif(cutting>0,lambda0,lambda180);
+            nyquist(o,lamb,111);
          end
-         
+        
       case 'Nichols'
           if (legacy)
             o = Closeup(o);
@@ -536,27 +544,27 @@ function o = Critical(o)               % Calculate Critical Quantities
          switch cutting
             case 0                     % both directions         
                bode(o,gamma0,[4211 4221]);
-               nichols(o,gamma180,4231);
-               Nyquist(o,[4643 0],1);
-               critical(o,'Damping',[4341,0]);
+               nichols(o,gamma0,4231);
+               nyquist(o,gamma0,4643);
                title('gamma0(jw)');
+               critical(o,'Damping',[4341,0]);
                
                   % reverse part
                   
                bode(o,gamma180,[4212 4222]);
                nichols(o,gamma180,4232);
-               Nyquist(o,[0 4644],1);
-               critical(o,'Damping',[0,4343]);
+               nyquist(o,gamma180,4644);
                title('gamma180(jw)');
+               critical(o,'Damping',[0,4343]);
             case 1                     % forward direction
                bode(o,gamma0,[3211 3221]);
                nichols(o,gamma0,2212);
-               Nyquist(o,[2222 0],1);
+               nyquist(o,gamma0,2222);
                critical(o,'Damping',[3231,0]);
             case -1                    % backward direction
                bode(o,gamma180,[3211 3221]);
                nichols(o,gamma180,2212);
-               Nyquist(o,[0 2222],1);
+               nyquist(o,gamma180,2222);
                critical(o,'Damping',[0 3231]);
          end
       case 'Combi'
@@ -567,10 +575,10 @@ function o = Critical(o)               % Calculate Critical Quantities
                critical(o,'Damping',[3231,3232]);
             case 1                     % forward direction
                bode(o,gamma0,[311,312]);
-               critical(o,'Damping',[111,0]);
+               critical(o,'Damping',[313,0]);
             case -1                    % backward direction
                bode(o,gamma180,[311,312]);
-               critical(o,'Damping',[0 111]);
+               critical(o,'Damping',[0 313]);
          end
       case 'Damping'
          switch cutting
@@ -626,15 +634,14 @@ function o = Critical(o)               % Calculate Critical Quantities
           end     
         
       case 'Nyquist'
-         switch cutting
-            case 0                     % both directions
-               Nyquist(o,[1211 1212],1);
-            case 1                     % forward direction
-               Nyquist(o,[111 0],1);
-            case -1                    % backward direction
-               Nyquist(o,[0 111],1);
+         if (cutting == 0)          % both directions
+            nyquist(o,gamma0,121);
+            nyquist(o,gamma180,122);
+         else
+            gamm = o.iif(cutting>0,gamma0,gamma180);
+            nyquist(o,gamm,111);
          end
-         
+          
       case 'Nichols'
           if (legacy)
             o = Closeup(o);
@@ -667,65 +674,6 @@ function o = Closeup(o)                % Set Closeup if Activated
        o = opt(o,'omega.low',2*pi*f0/(1+closeup));
        o = opt(o,'omega.high',2*pi*f0*(1+closeup));
        o = opt(o,'omega.points',points);
-   end
-end
-function Nyquist(o,sub,critical)       % Nyquist Plot                  
-   o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
-
-   o = with(o,'nyq');
-   if sub(1)
-      [lambda0,K0,f0] = cook(o,'lambda0,K0,f0');
-      PlotNyquist(o,sub(1),lambda0,K0,f0,critical,'0')
-   end
-
-   if (length(sub) > 1 && sub(2))
-      [lambda180,K180,f180] = cook(o,'lambda180,K180,f180');
-      PlotNyquist(o,sub(2),lambda180,K180,f180,critical,'180')
-   end
-   
-   function PlotNyquist(o,sub,lam,K,f,critical,tag)                    
-      subplot(o,sub);
-
-      if (dark(o))
-         colors = {'rk','gk','b','ck','mk','yk','wk'};
-      else
-         colors = {'rwww','gwww','bwww','cwww','mwww','yw','wk'};
-      end
-      colors = get(lam,{'colors',colors});
-
-      if ~critical
-         no = length(lam.data.matrix(:));
-         for (i=1:no)
-            l0i = peek(lam,i);
-            l0jwi = l0i.data.matrix{1,1};
-
-            col = colors{1+rem(i,length(colors))};
-            nyq(l0i,col);
-         end
-      end
-
-      if (critical)
-         col = 'r2';
-      else
-         col = [get(lam,'color'),'2'];
-      end
-
-      if (critical)
-         l00 = peek(lam,1);
-         if isinf(K)
-            nyq(lam,col);
-         else
-            nyq(K*lam,col);
-         end
-         title(sprintf('%s gamma%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       'Critical Loci',tag,tag,K,tag,f));
-      else
-         l00 = peek(lam,1);
-         nyq(lam,col);
-         limits(o,'Nyq');                 % plot nyquist limits
-         title(sprintf('Spectrum lambda%s(jw) - K%s: %g @ f%s: %g Hz',...
-                       tag,tag,K,tag,f));
-      end
    end
 end
 

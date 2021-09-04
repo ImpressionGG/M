@@ -1082,8 +1082,8 @@ function PlotTemplate                  % Plot Template
 % %      types. Depending on type a different local plot function is invoked
 % %
 %    oo = plot(corazon,o);               % if arg list is for corazon/plot
-%    if ~isempty(oo)                     % is oo an array of graph handles?
-%       oo = []; return                  % in such case we are done - bye!
+%    if ~isa(oo,'corazon')               % is oo an array of graph handles?
+%       return                           % in such case we are done - bye!
 %    end
 %
 %    cls(o);                             % clear screen

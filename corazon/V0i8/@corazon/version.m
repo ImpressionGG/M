@@ -646,6 +646,7 @@ function VersionV1I
 % Change Log V1i8 (beta):
 %
 % - corleon/save: replace struct conversion to property wise conversion
+% - corazon/rapid: change Plot template to check handles with corazon type
 %
 % Known Bugs / Wishlist
 % - none so far
