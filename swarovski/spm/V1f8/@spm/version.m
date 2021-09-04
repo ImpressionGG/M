@@ -508,7 +508,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - add limit circles to Nyquist plot
 % - bugfix: corruption during save no more occured again
 % - bugfix: genesis plots no more working
-
+% - adaptions in spm/sensitivity to deal with psiw-representation 
 
 % Known bugs & wishlist
 % =====================

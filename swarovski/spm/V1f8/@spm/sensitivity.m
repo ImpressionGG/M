@@ -89,10 +89,15 @@ end
 
 function [dB,Sjw] = Sensitivity(o)     % Sensitivity Data Calculation  
    o = cache(o,o,'spectral');          % hard refresh spectral cache
-   [psiw31,psiw33] = cook(o,'psiw31,psiw33');
+   lambda0 = cook(o,'lambda0');
+   psiw = var(lambda0,'psiw');
    
-   dB = 0*psiw31(:,1);
-   Sjw = psiw33;
+%  dB = 0*psiw31(:,1);
+%  Sjw = psiw33;
+
+   m = size(psiw,1)/2;
+   dB = 0*psiw(1:m,1);
+   Sjw = dB;
 end
 
 %==========================================================================
@@ -119,11 +124,14 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sfqr(o,k,omega,l0jw,psiW31,psiW33)
 %   spectrum is returned and the sensitivity is zero
 %
    if (nargin < 6)
-      [psiw31,psiw33,T0] = cook(o,'psiw31,psiw33,Tnorm');
+%     [psiw31,psiw33,T0] = cook(o,'psiw31,psiw33,Tnorm');
+      lambda0 = cook(o,'lambda0');
+      psiw = var(lambda0,'psiw');
 
           % calculate spectrum and critical spectrum
 
-      L0jw = lambda(o,psiw31,psiw33,omega); % spectrum (n rows)
+%     L0jw = lambda(o,psiw31,psiw33,omega); % spectrum (n rows)
+      L0jw = lambda(o,psiw,omega);          % spectrum (n rows)
       l0jw = lambda(o,L0jw);                % critical spectrum (1 row)
    end
    
@@ -133,7 +141,7 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sfqr(o,k,omega,l0jw,psiW31,psiW33)
       error('scalar integer expected for mode number (arg2)');
    end
 
-   [m,n] = size(psiw31);
+   [m,n] = size(psiw);  m = m/2;
    if (k < 0 || k > m)
       error('mode number (arg2) of range');
    end
@@ -145,22 +153,26 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sfqr(o,k,omega,l0jw,psiW31,psiW33)
    
       % extract Psi and weight parts from PsiW31 and PsiW33
       
-   Psi31 = psiw31(:,1:3);  W31 = psiw31(:,4:end);
-   Psi33 = psiw33(:,1:3);  W33 = psiw33(:,4:end);
-
+%  Psi31 = psiw31(:,1:3);  W31 = psiw31(:,4:end);
+%  Psi33 = psiw33(:,1:3);  W33 = psiw33(:,4:end);
+   Psi = psiw(:,1:3);  W = psiw(:,4:end);
+   
       % inactivate mode related weight
       
    if (k == 0)                        % for k=0 no inactivation!
       lkjw = l0jw;  skjw = 0*l0jw;
       return
    else
+      kdx = [k,k+m];                   % variation indices
       switch mode
          case 'weight'
-            W31(k,:) = 0*W31(k,:);  
-            W33(k,:) = 0*W33(k,:);
+%           W31(k,:) = 0*W31(k,:);  
+%           W33(k,:) = 0*W33(k,:);
+            W(kdx,:) = 0*W(kdx,:); 
          case 'damping'
-            Psi31(k,2) = vari*Psi31(k,2);
-            Psi33(k,2) = vari*Psi33(k,2);
+%           Psi31(k,2) = vari*Psi31(k,2);
+%           Psi33(k,2) = vari*Psi33(k,2);
+            Psi(kdx,2) = vari*Psi(kdx,2);
          otherwise
             error('bad sensitivity calculation mode');
       end
@@ -169,12 +181,14 @@ function [skjw,lkjw,l0jw,PsiW31,PsiW33] = Sfqr(o,k,omega,l0jw,psiW31,psiW33)
       % refresh PsiW31 and PsiW33 with inactivated weight or
       % damping variation
    
-   psiw31 = [Psi31 W31];
-   psiw33 = [Psi33 W33];
-
+%  psiw31 = [Psi31 W31];
+%  psiw33 = [Psi33 W33];
+   psiw_ = [Psi,W];
+   
       % calculate frequency response for inactivated weight
       
-   Lkjw = lambda(o,psiw31,psiw33,omega);
+%  Lkjw = lambda(o,psiw31,psiw33,omega);
+   Lkjw = lambda(o,psiw_,omega);
    lkjw = lambda(o,Lkjw);                      % critical function
 
       % finally calculate sensitivity frequency response
@@ -592,7 +606,8 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
    o = Cache(o,o);
 
    [f0,T0] = cook(o,'f0,Tnorm');
-   [lambda0,psiw31,psiw33] = cook(o,'lambda0,psiw31,psiw33');
+   lambda0 = cook(o,'lambda0');
+   psiw = var(lambda0,'psiw');
 
    [om0,w0] = Omega(o);                % omega range and center frequency
    
@@ -602,13 +617,13 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
    
       % sensitivity study
 
-   m = size(psiw31,1);                 % number of modes
+   m = size(psiw,1)/2;                 % number of modes
    [~,om] = fqr(with(L0,'bode'));      % get full omega range
 
       % get full range phi(om)
 
-   L0jw = lambda(o,psiw31,psiw33,om);
-   L0jw0 = lambda(o,psiw31,psiw33,om0);
+   L0jw = lambda(o,psiw,om);
+   L0jw0 = lambda(o,psiw,om0);
 
    PlotL0(o,3211);
    o = Variation(o,3211,3221);         % run variations
@@ -642,9 +657,10 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       bode(trf(corasim),'W');
       set(gca,'ylim',[-10,40],'ytick',-10:10:40);
       
-      Psi31 = psiw31(:,1:3);  W31 = psiw31(:,4:end);
-      Psi33 = psiw33(:,1:3);  W33 = psiw33(:,4:end);
-      zero = 0;      
+%     Psi31 = psiw31(:,1:3);  W31 = psiw31(:,4:end);
+%     Psi33 = psiw33(:,1:3);  W33 = psiw33(:,4:end);
+%     Psi = psiw(:,1:3);  W = psiw(:,4:end);
+%     zero = 0;      
       
       l0jw = lambda(o,L0jw);
       l0jw0 = lambda(o,L0jw0);
@@ -655,20 +671,24 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
       modes = zeros(1,m);              % init
       
       for (i=1:m)
+         kdx = [i,i+m];                % variation indices
          switch modus
             case 'weight'
-               w31 = W31;  w31(i,:) = w31(i,:)*zero;  pw31 = [Psi31 w31];
-               w33 = W33;  w33(i,:) = w33(i,:)*zero;  pw33 = [Psi33 w33];
+%              w31 = W31;  w31(i,:) = w31(i,:)*zero;  pw31 = [Psi31 w31];
+%              w33 = W33;  w33(i,:) = w33(i,:)*zero;  pw33 = [Psi33 w33];
+               w = psiw(:,4:end);
+               w(kdx,:) = 0*w(kdx,:);  psiw_ = [Psi w];
             case 'damping'
-               k = i;         
-               pw31 = psiw31;  pw31(k,2) = vari*pw31(k,2);
-               pw33 = psiw33;  pw33(k,2) = vari*pw33(k,2);
+%              k = i;         
+%              pw31 = psiw31;  pw31(k,2) = vari*pw31(k,2);
+%              pw33 = psiw33;  pw33(k,2) = vari*pw33(k,2);
+               psiw_ = psiw;  psiw_(kdx,2) = vari*psiw_(kdx,2);  
             otherwise
                error('bad sensitivity calculation mode')
          end
          
-         Gjw = lambda(o,pw31,pw33,om);      % full omega range
-         Gjw0 = lambda(o,pw31,pw33,om0);    % omega range next to om0
+         Gjw = lambda(o,psiw_,om);     % full omega range
+         Gjw0 = lambda(o,psiw_,om0);   % omega range next to om0
 
             % calculate critical function
             
@@ -684,7 +704,8 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
             % store sensitivity and modal frequency
 
          S(i) = max(20*log10(abs(sjw0))); % store max dB value of sensitivity
-         mode = sqrt(Psi31(i,3))/oscale(o); % mode omega
+%        mode = sqrt(Psi31(i,3))/oscale(o); % mode omega
+         mode = sqrt(psiw_(i,3))/oscale(o); % mode omega
          modes(i) = mode;
 
          if (detail)
