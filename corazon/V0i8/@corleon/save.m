@@ -58,7 +58,16 @@ function list = save(o,object,filepath)
 %
    o.admin.saved = now;                % update time stamp of saving
    
-   Query = struct(o);                  % save only struct of CORLEON object
+      % next we want to convert corleon object to a Query struct.
+      % one possibility is: Query=struct(o), but MATLAB will moan.
+      % so we do property wise conversion to a structure
+      
+%  Query = struct(o);                  % save only struct of CORLEON object
+   Query.query = o.query;
+   Query.admin = o.admin;
+   
+      % rename object to Object
+      
    Object = object;                    % object to be saved
    
    save(filepath,'Object','Query');    % save both data
