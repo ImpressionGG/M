@@ -505,6 +505,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F8 @ beta CORAZON V0i8
 % - fix oo-bug in spm/batch
 % - bugfix: Nyquist plots
+% - add limit circles to Nyquist plot
 
 
 % Known bugs & wishlist

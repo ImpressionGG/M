@@ -66,7 +66,8 @@ function [lim,style] = limits(o,mode,K)
 
          nyq(Gs,style);  
          if (kmu ~= 1)
-            nyq((K/kmu)*Gs,style);
+%           nyq((K/kmu)*Gs,style);
+            nyq((1/kmu)*Gs,style);
          end
 
       case 'Magni'

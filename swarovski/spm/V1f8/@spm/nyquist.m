@@ -47,6 +47,13 @@ function Nyquist(o,L,sub)
    hdl = nyq(Lc,col0);              % Nyquist plot of critical FQR
    set(hdl,'linewidth',2);
    
+      % limits
+
+   Klim = o.iif(var(L,'critical'),K,1);
+   limits(o,'Nyq',Klim);
+
+      % labeling
+      
    name = get(L,'name');
    kind = o.iif(critical,'Critical','Principal');
    title(sprintf('%s Spectrum: %s - K%s: %g @ %g Hz',kind,name,tag,K,f));
