@@ -858,7 +858,7 @@ function oo = Spectral(o)              % Brew Spectral Quantities
    
    [g31jw,g33jw] = lambda(oo,psiw,om);
    l0jw = lambda0.data.matrix{1,1};
-   g30jw = l0jw .* g33jw ./ g31jw;
+   g30jw = l0jw .* g33jw(end,:) ./ g31jw(1,:);
 
    g31 = fqr(corasim,om,{g31jw});
    g31 = set(g31,'name','g31(s)','color','gk');

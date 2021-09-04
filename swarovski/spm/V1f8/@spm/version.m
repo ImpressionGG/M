@@ -506,12 +506,13 @@ function vers = version(o,arg)         % SPM Class Version
 % - fix oo-bug in spm/batch
 % - bugfix: Nyquist plots
 % - add limit circles to Nyquist plot
+% - bugfix: corruption during save no more occured again
+% - bugfix: genesis plots no more working
 
 
 % Known bugs & wishlist
 % =====================
-% - bug: genesis plots no more working
-% - bug: corruption during save
+% - bug: crash during setup study
 %
 %--------------------------------------------------------------------------
 %

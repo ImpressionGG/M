@@ -342,6 +342,9 @@ function [ljw,g31jw,g33jw] = Lambda(o,psiW31,psiW33,om)
       if (nargout > 1)                 % calculate spectral genesis?
          g31jw = G31jw;  g33jw = G33jw;
       end
+      if (nargout == 2)
+         ljw = g31jw;  g31jw = g33jw;  % shift out args
+      end
    else
       ljw = zeros(m,length(om));       % init
       phi = ljw;                       % init
