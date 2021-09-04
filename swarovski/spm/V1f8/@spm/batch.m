@@ -231,7 +231,7 @@ end
 function o = RunBatch(o)               % Master Entry for Batch Process
    tstart = tic;
    
-o = ClearAllCaches(o);                 % at this beta stage safer ;-)
+%o = ClearAllCaches(o);                 % at this beta stage safer ;-)
    
    switch o.type
       case 'shell'
@@ -346,7 +346,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       % setup study
 
    if (batch.setupstudy)
-      SetupStudySpm(oo);
+      SetupStudySpm(o);
       if stop(o)
          return
       end

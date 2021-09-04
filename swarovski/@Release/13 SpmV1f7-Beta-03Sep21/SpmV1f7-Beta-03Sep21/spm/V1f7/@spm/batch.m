@@ -346,7 +346,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       % setup study
 
    if (batch.setupstudy)
-      SetupStudySpm(oo);
+      SetupStudySpm(o);                % SetupStudySpm(oo);
       if stop(o)
          return
       end
@@ -355,7 +355,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       % cache cleanup
 
    if (batch.cleanup)
-      o = cache(o,o,[]);             % cache hard clear
+      o = cache(o,o,[]);               % cache hard clear
    end
 end
 

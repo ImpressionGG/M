@@ -502,6 +502,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug: Nichols plot of reverse 2-Mode system not correct
 % - tag SPM-V1F7 Beta Version SPM @ Corazon V1I7
 
+% - start beta SPM V1F8 @ beta CORAZON V0i8
+% - fic oo-bug in spm/batch
 
 % Known bugs & wishlist
 % =====================
