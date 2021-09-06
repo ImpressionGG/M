@@ -286,7 +286,7 @@ function o = RunPkg(o)                 % Run a Single Package
       % setup overview for the package
       
    if (batch.setupstudy)
-      SetupStudyPackageOnly(o);
+      SetupStudyPkgOnly(o);
       if stop(o)
          return
       end
@@ -626,7 +626,7 @@ end
 function o = SetupStudyPkgOnly(o)                                      
    assert(type(o,{'pkg'}));
 
-   o = Cls(o,'Setup Study',id(o));
+   o = Cls(o,'Setup Study');
    analyse(o,'SetupAnalysis','basic',3);
    Png(o);      
 end

@@ -360,11 +360,17 @@ function [K0,f0,K180,f180,L0] = CalcGamma(o,cdx)  % Gamma Algo
    if (check >= 1 )
       if (check == 2)
          [K0_,f0_] = Stable(o,L0);
+      elseif (check == 1 && isinf(K0))
+         [K0_,f0_] = Stable(o,L0);
       else
          [K0_,f0_] = Stable(o,L0,K0);
       end
       
-      err = norm([K0-K0_,f0-f0_]);
+      if (isinf(K0) && isinf(K0_))
+         err = 0;
+      else
+         err = norm([K0-K0_,f0-f0_]);
+      end
       L0 = var(L0,'EVerr0',err);
       if (err > 1e-6)
          fprintf('*** numerical struggles during K0,f0 calculation: err = %g\n',err);
@@ -374,11 +380,17 @@ function [K0,f0,K180,f180,L0] = CalcGamma(o,cdx)  % Gamma Algo
          L180 = Negate(L0); 
          if (check == 2)
             [K180_,f180_] = Stable(o,L180);
+         elseif (check == 1 && isinf(K180))
+            [K180_,f180_] = Stable(o,L180);
          else
             [K180_,f180_] = Stable(o,L180,K180);
          end
 
-         err = norm([K180-K180_,f180-f180_]);
+         if (isinf(K180) && isinf(K180_)
+            err = 0;
+         else
+            err = norm([K180-K180_,f180-f180_]);
+         end
          L0 = var(L0,'EVerr180',err);
          if (err > 1e-6)
             fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);

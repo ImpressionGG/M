@@ -84,13 +84,20 @@ function [gamm,K,f,nyqerr] = Gamma(o,lamb,psiw)
 %
    zc = ZeroCross(o,lamb);             % build complete zero cross table 
    
-   oo = opt(o,'progress','');          % no progress updates!
-   [K,f,i0,j0,k0,err] = Search(oo,zc); % iterative detail search
+   if isempty(zc)                      % then infinite critical gain
+      K = inf;  f = 0;  
+      nyqerr = 0;  err = 0;
+      i0 = 1;  j0 = NaN;  k0 = 0;  
+   else
+      oo = opt(o,'progress','');       % no progress updates!
+      [K,f,i0,j0,k0,err] = Search(oo,zc);   % iterative detail search
 
-      % adjust omega and frequency response of lamb
-      % and store variables to lambda function 
+         % adjust omega and frequency response of lamb
+         % and store variables to lambda function 
       
-   [lamb,i0,nyqerr] = Adjust(lamb,j0,K,f);
+      [lamb,i0,nyqerr] = Adjust(lamb,j0,K,f);
+   end
+   
    lamb = var(lamb,'K,f,i0,j0',K,f,i0,j0'); 
    
       % derive gamma function from lambda
