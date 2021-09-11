@@ -386,7 +386,7 @@ function [K0,f0,K180,f180,L0] = CalcGamma(o,cdx)  % Gamma Algo
             [K180_,f180_] = Stable(o,L180,K180);
          end
 
-         if (isinf(K180) && isinf(K180_)
+         if (isinf(K180) && isinf(K180_))
             err = 0;
          else
             err = norm([K180-K180_,f180-f180_]);
