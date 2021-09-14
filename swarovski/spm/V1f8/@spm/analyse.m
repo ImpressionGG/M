@@ -1280,6 +1280,13 @@ end
 function oo = SetupMenu(o)             % Setup Menu                    
    oo = mitem(o,'Setup');
 
+   ooo = mitem(oo,'Basic Study',{@WithCuo,'SetupAnalysis','basic',1});
+   ooo = mitem(oo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry',1});
+   ooo = mitem(oo,'Sample Study',{@WithCuo,'SetupAnalysis','sample',1});
+   return   
+   
+      % legacy stuff no more supported
+      
    ooo = mitem(oo,'Stability Margin');
    oooo = mitem(ooo,'Basic Study',{@WithCuo,'SetupAnalysis','basic',3});
    oooo = mitem(ooo,'Symmetry Study',{@WithCuo,'SetupAnalysis','symmetry',3});
@@ -1691,7 +1698,8 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
 
       Mu0 = mu/K0;
       xj = x(rdx(j));
-      PlotDb(o,xj,1/Mu0,sub(1,1));
+%     PlotDb(o,xj,1/Mu0,sub(1,1));
+      PlotMargin(o,xj,K0,sub(1,1));
       PlotK(o,xj,K0,sub(2,1));
       PlotConfig(o,xj,cfg,id(j),sub(3,1));
 %     PlotMu(o,xj,Mu0,4211);
@@ -1701,10 +1709,11 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
 
       Mu180 = mu/K180;
       xj = x(j);
-      PlotDb(o,xj,1/Mu180,sub(1,2));
+%     PlotDb(o,xj,1/Mu180,sub(1,2));
+      PlotMargin(o,xj,K180,sub(1,2));
       PlotK(o,xj,K180,sub(2,2));
       PlotConfig(o,xj,cfg,id(j),sub(3,2));
-%     PlotMu(o,xjv,Mu180,4212);
+%     PlotMu(o,xj,Mu180,4212);
 %     PlotMargin(o,xj,1/Mu180,4232);
       PlotFrequency(o,xj,f180,sub(4,2));
 
@@ -1744,7 +1753,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
       hdl = patch(xi+X,K/2+Y,o.color(fcol));
       hdl = patch(xi+ratio*X,K/2+Y,o.color(bcol));
    end
-   function PlotMargin(o,xi,marg,sub)
+   function OldPlotMargin(o,xi,marg,sub)
       if (sub == 0)
          return                        % ignore
       end
@@ -1787,6 +1796,44 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
          patch(xi+X,dB/2+Y,o.color(fcol));
          patch(xi+ratio*X,dB/2+Y,o.color(bcol));
 %        plot(o,xi,marg,green);
+      end
+   end
+   function PlotMargin(o,xi,K,sub)
+      if (sub == 0)
+         return                        % ignore
+      end
+
+      [lim,~] = limits(o);
+      marg = K*lim(2);
+
+      subplot(o,sub);
+      [fcol,bcol,ratio] = Colors(o,marg*lim(1)/lim(2));
+
+      %dB = 20*log10(marg);     
+      X =  0.4*[1 1 -1 -1 1];
+      Y = marg/2*[1 -1 -1 1 1];
+
+
+      if isinf(marg)
+         plot(o,xi,0,infgreen);
+      else
+         %patch(xi+X,marg/2+Y,o.color(fcol));
+         %patch(xi+ratio*X,marg/2+Y,o.color(bcol));
+
+%        patch(xi+X,marg/2+Y,o.color(fcol));
+%        patch(xi+ratio*X,marg/2+Y,o.color(bcol));
+
+         hdl(1) = plot([xi xi],[0 marg],'g');
+         hdl(2) = plot(xi,marg,'go');
+         set(hdl(1),'linewidth',2);
+         set(hdl(2),'linewidth',1);
+                 
+         marg0 = 1/lim(1);
+         if (marg < marg0)
+            set(hdl,'color','r');
+         elseif (marg < 1)
+            set(hdl,'color',o.color('yyyr'));
+         end
       end
    end
    function PlotFrequency(o,xi,f0,sub)
@@ -1841,8 +1888,11 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
          hold on;
          if isequal(tit,'Stability Margin')
             if o.is(lim)
-               plot(o,get(gca,'xlim'),[1 1]*0,col);
-               plot(o,get(gca,'xlim'),[1 1]*20*log10(lim(1)/lim(2)),col);
+%              plot(o,get(gca,'xlim'),[1 1]*0,col);
+%              plot(o,get(gca,'xlim'),[1 1]*20*log10(lim(1)/lim(2)),col);
+               plot(o,get(gca,'xlim'),[1 1],col);
+               plot(o,get(gca,'xlim'),[1 1]*lim(2)/lim(1),col);
+               set(gca,'ylim',[0 10]);
             end
          elseif isequal(tit,'Critical Friction')
             if o.is(lim)
@@ -1858,17 +1908,24 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
 
       switch tit
          case 'Stability Margin'
-            title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
-            ylabel(sprintf('%s [dB]',lower(tit)));
+%           title(sprintf('Stability Margin [dB] (%s Cutting, mu: %g)',dir,abs(mu)));
+%           ylabel(sprintf('%s [dB]',lower(tit)));
+            title(sprintf('Stability Margin (%s Cutting, mu: %g/%g)',...
+                          dir,abs(mu),abs(mu)*lim(1)/lim(2)));
+            ylabel(sprintf('%s',lower(tit)));
          otherwise
             title(sprintf('%s (%s Cutting)',tit,dir));
             ylabel(lower(tit));
       end
 
       if isequal(tit,'Stability Margin')
-         ylabel('margin [dB]');
+%        ylabel('margin [dB]');
+         ylabel('margin');
       elseif ~isempty(mu) && ~isnan(mu)
          ylabel(lower(tit));
+         if isequal(tit,'Critical Friction')
+            set(gca,'ylim',[0 1]);
+         end
       elseif isempty(mu)
          ylabel('configuration')
       else

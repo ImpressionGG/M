@@ -511,6 +511,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - adaptions in spm/sensitivity to deal with psiw-representation
 % - quite a stable version
 % - reorder setup indices
+% - linear scale for stability margin in setup study
 
 % Known bugs & wishlist
 % =====================
