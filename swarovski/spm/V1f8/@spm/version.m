@@ -510,6 +510,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bugfix: genesis plots no more working
 % - adaptions in spm/sensitivity to deal with psiw-representation
 % - quite a stable version
+% - reorder setup indices
 
 % Known bugs & wishlist
 % =====================

@@ -1370,7 +1370,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
 
    for (j=1:N)                         % calc & plot stability margin
       i = id(j);
-      cfg = Config(i);
+      cfg = Config(i,n);
       PlotConfig(o,x(j),cfg,id(j),o.iif(flip,1714,3121));
    end
 
@@ -1387,7 +1387,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
          progress(o,j);
 
          i = id(j);
-         cfg = Config(i);
+         cfg = Config(i,n);
          if isnan(K0K180(i,1))
             [oo,L0,K0,f0,K180,f180] = contact(oi,cfg);
             K0K180(i,:) = [K0,K180];
@@ -1436,7 +1436,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
    progress(o);                        % progress completed
    Heading(o);                         % add heading
 
-   function idx = Config(N)            % Return Configuration Indices
+   function idx = Config(N,n)          % Return Configuration Indices
       kmax = log(n+1)/log(2);
       idx = [];
       for (k=1:kmax)
@@ -1636,8 +1636,8 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
    C = cook(o,'C');
    no = size(C,1)/3;
    n = 2^no-1;
-
-   id = Order(no,mode);
+   
+   [id,rdx] = Order(no,mode);
    N = length(id);
    x = 1:N;
 
@@ -1667,14 +1667,15 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
 
    stop(o,'Enable');                % enable button down function for stop
    fmin = inf;                      % init
-
-   ridx = zeros(1,N);               % reverse indices 
+   
+      % calc & plot 
+      
    for (j=1:N)                      % calc & plot stability margin
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,j/N*100);
 
       i = id(j);
-      [cfg,ridx(i)] = Config(i);
+      [cfg,ridx(j)] = Config(i,n);
       if isnan(K0K180(i,1))
          [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
          K0K180(i,:) = [K0,K180];
@@ -1689,21 +1690,23 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
       end
 
       Mu0 = mu/K0;
-      PlotDb(o,x(j),1/Mu0,sub(1,1));
-      PlotK(o,x(j),K0,sub(2,1));
-      PlotConfig(o,x(j),cfg,id(j),sub(3,1));
-%     PlotMu(o,x(j),Mu0,4211);
-%     PlotMargin(o,x(j),1/Mu0,4231);
-      PlotFrequency(o,x(j),f0,sub(4,1));
+      xj = x(rdx(j));
+      PlotDb(o,xj,1/Mu0,sub(1,1));
+      PlotK(o,xj,K0,sub(2,1));
+      PlotConfig(o,xj,cfg,id(j),sub(3,1));
+%     PlotMu(o,xj,Mu0,4211);
+%     PlotMargin(o,xj,1/Mu0,4231);
+      PlotFrequency(o,xj,f0,sub(4,1));
 
 
       Mu180 = mu/K180;
-      PlotDb(o,x(j),1/Mu180,sub(1,2));
-      PlotK(o,x(j),K180,sub(2,2));
-      PlotConfig(o,x(j),cfg,id(j),sub(3,2));
-%     PlotMu(o,x(j),Mu180,4212);
-%     PlotMargin(o,x(j),1/Mu180,4232);
-      PlotFrequency(o,x(j),f180,sub(4,2));
+      xj = x(j);
+      PlotDb(o,xj,1/Mu180,sub(1,2));
+      PlotK(o,xj,K180,sub(2,2));
+      PlotConfig(o,xj,cfg,id(j),sub(3,2));
+%     PlotMu(o,xjv,Mu180,4212);
+%     PlotMargin(o,xj,1/Mu180,4232);
+      PlotFrequency(o,xj,f180,sub(4,2));
 
       idle(o);                         % show graphics
       if stop(o)
@@ -1715,25 +1718,6 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
    progress(o);                        % progress completed
    Heading(o);                         % add heading
 
-   function [idx,N] = Config(N)        % Return Configuration Indices
-      kmax = log(n+1)/log(2);
-      idx = [];
-      bits = zeros(1,kmax);
-      for (k=1:kmax)
-         if (rem(N,2) == 1)
-            bits(k) = 1;
-            idx(end+1) = k;
-         end
-         N = floor(N/2);
-      end
-      
-         % buildup N for reverse order
-         
-      N = 0;
-      for (k=1:kmax)
-         N = N*2 + bits(k);
-      end
-   end
    function PlotMu(o,xi,mu,sub)
       if (sub == 0)
          return                        % ignore
@@ -1924,7 +1908,7 @@ end
 
    % local helper
 
-function id = Order(no,mode)           % Order of Setup IDs            
+function [id,rdx] = Order(no,mode)           % Order of Setup IDs            
    if (no == 5 && isequal(mode,'symmetry'))
       id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
            [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];
@@ -1938,6 +1922,9 @@ function id = Order(no,mode)           % Order of Setup IDs
    else
       id = 1:(2^no-1);
    end
+   
+   n = 2^no-1;
+   rdx = Reorder(id,n);
 end
 
 %==========================================================================
@@ -2496,7 +2483,7 @@ function o = L0Magni(o)                % L0(i,j) Magnitude Plots
 
    heading(o);
 end
-function o = LambdaMagni(o)
+function o = LambdaMagni(o)                                            
    if type(o,{'spm'})
       o = cache(o,o,'spectral');
    end
@@ -2518,7 +2505,7 @@ function o = LambdaMagni(o)
 
    heading(o);
 end
-function o = LambdaMagni2(o)
+function o = LambdaMagni2(o)                                           
    if type(o,{'spm'})
       o = cache(o,o,'spectral');
    end
@@ -2536,7 +2523,7 @@ function o = LambdaMagni2(o)
 
    heading(o);
 end
-function o = LambdaBode(o)
+function o = LambdaBode(o)                                             
    if type(o,{'spm'})
       o = cache(o,o,'spectral');
    end
@@ -2742,10 +2729,10 @@ end
 % Charts
 %==========================================================================
 
-function BodeChart(o,sub,G)            % Bode Chart
+function BodeChart(o,sub,G)            % Bode Chart                    
    o = with(o,'bode');
 end
-function MagniChart(o,sub,G,critical)  % Magnitude Chart
+function MagniChart(o,sub,G,critical)  % Magnitude Chart               
    o = with(o,'bode');
    if (nargin < 4)
       critical = 1;
@@ -2771,7 +2758,7 @@ function MagniChart(o,sub,G,critical)  % Magnitude Chart
    end
    ylabel(sprintf('|%s|  [dB]',name));
 end
-function PhaseChart(o,sub,G,critical)  % Phase Chart
+function PhaseChart(o,sub,G,critical)  % Phase Chart                   
    o = with(o,'bode');
    if (nargin < 4)
       critical = 1;
@@ -2794,7 +2781,7 @@ function PhaseChart(o,sub,G,critical)  % Phase Chart
    ylabel(sprintf('|%s|  [dB]',name));
 end
 
-function NyquistChart(o,sub,mu)        % Nyquist Chart
+function NyquistChart(o,sub,mu)        % Nyquist Chart                 
    o = cache(o,o,'critical');       % hard refresh 'spectral' segment
    o = cache(o,o,'spectral');       % hard refresh 'spectral' segment
    o = with(o,'nyq');
@@ -2825,7 +2812,7 @@ function NyquistChart(o,sub,mu)        % Nyquist Chart
    [K0,f0] = cook(o,'K0,f0');
    title(sprintf('Nyquist Loci mu*lambda0(jw) - K0: %g @ f0: %g Hz (mu: %g)',K0,f0,mu));
 end
-function MarginChart(o,sub)            % Margin Chart
+function MarginChart(o,sub)            % Margin Chart                  
    plot(o,'About');
    return                              % don't support this chart anymore
 
@@ -2853,10 +2840,49 @@ function MarginChart(o,sub)            % Margin Chart
 end
 
 %==========================================================================
+% Setup Configuration
+%==========================================================================
+
+function [idx,N] = Config(N,n)         % Return Configuration Indices  
+   kmax = log(n+1)/log(2);
+   idx = [];
+   bits = zeros(1,kmax);
+   for (k=1:kmax)
+      if (rem(N,2) == 1)
+         bits(k) = 1;
+         idx(end+1) = k;
+      end
+      N = floor(N/2);
+   end
+
+      % buildup N for reverse order
+
+   N = 0;
+   for (k=1:kmax)
+      N = N*2 + bits(k);
+   end
+end
+function rdx = Reorder(id,n)           % Calc Reordering Indices       
+   N = length(id);
+   rdx = zeros(1,N);                   % reverse indices 
+   for (j=1:N)                         % calc & plot stability margin
+      i = id(j);
+      [cfg,rev] = Config(i,n);
+      jdx = find(id==rev);
+      for (k=1:length(jdx))
+         if (rdx(jdx(k)) == 0)
+            rdx(jdx(k)) = j;
+            break;
+         end
+      end
+   end   
+end
+
+%==========================================================================
 % Helper
 %==========================================================================
 
-function title = Title(o)              % Get Object Title
+function title = Title(o)              % Get Object Title              
    title = get(o,{'title',[class(o),' object']});
 
    dir = get(o,'dir');
@@ -2866,17 +2892,17 @@ function title = Title(o)              % Get Object Title
       title = [title,' - [',package,']'];
    end
 end
-function t = Time(o)                   % Get Time Vector
+function t = Time(o)                   % Get Time Vector               
    T = opt(o,{'simu.dt',0.00005});
    tmax = opt(o,{'simu.tmax',0.01});
    t = 0:T:tmax;
 end
-function oo = Corasim(o)               % Convert To Corasim Object
+function oo = Corasim(o)               % Convert To Corasim Object     
    oo = type(cast(o,'corasim'),'css');
    [A,B,C,D] = data(o,'A,B,C,D');
    oo = system(oo,A,B,C,D);
 end
-function u = StepInput(o,t,index,Fmax) % Get Step Input Vector
+function u = StepInput(o,t,index,Fmax) % Get Step Input Vector         
 %
 % STEPINPUT   Get step input vector (and optional time vector)
 %
@@ -2900,7 +2926,7 @@ function u = StepInput(o,t,index,Fmax) % Get Step Input Vector
    I = eye(m);
    u = Fmax * I(:,index)*ones(size(t));
 end
-function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
+function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector         
 %
 % RAMPINPUT   Get ramp input vector (and optional time vector)
 %
@@ -2924,13 +2950,13 @@ function u = RampInput(o,t,index,Fmax) % Get Ramp Input Vector
    I = eye(m);
    u = I(:,index)*t * Fmax/max(t);
 end
-function Verbose(o,G)                  % Verbose Tracing of TFF
+function Verbose(o,G)                  % Verbose Tracing of TFF        
    if (control(o,'verbose') > 0)
       G = opt(G,'detail',true);
       display(G);
    end
 end
-function Legend(o,sub,objects)         % Plot Legend
+function Legend(o,sub,objects)         % Plot Legend                   
    subplot(o,sub);
    list = {''};                        % ignore 1st, as some dots plotted
    for (i=1:length(objects))
@@ -2939,7 +2965,7 @@ function Legend(o,sub,objects)         % Plot Legend
    hdl = legend(list);
    set(hdl,'color','w');
 end
-function [om,om0] = OldOmega(o,f0,k,n)    % Omega range near f0
+function [om,om0] = OldOmega(o,f0,k,n) % Omega range near f0           
 %
 % OMEGA  Omega range near f0
 %
@@ -2964,7 +2990,7 @@ function [om,om0] = OldOmega(o,f0,k,n)    % Omega range near f0
    om0 = 2*pi*f0;
    om = logspace(log10(om0*k1),log10(om0*k2),n);
 end
-function Heading(o,head)
+function Heading(o,head)                                               
    txt = Contact(o);
    [~,phitxt] = getphi(o);
    
@@ -2982,7 +3008,7 @@ function Heading(o,head)
    end
    heading(o,msg);
 end
-function txt = Contact(o)
+function txt = Contact(o)                                              
    contact = opt(o,'process.contact');
    if isempty(contact)
       txt = '';
@@ -3011,7 +3037,7 @@ function txt = Contact(o)
       txt = [txt,']'];
    end
 end
-function [fcol,bcol,ratio] = Colors(o,K,i)
+function [fcol,bcol,ratio] = Colors(o,K,i)                             
 %
 % COLORS   Return colors and color ratio of a critical value, where output
 %          arg is the ratio of foreground (fcol) to background (bcol9 color
