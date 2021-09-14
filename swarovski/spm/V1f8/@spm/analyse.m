@@ -1668,12 +1668,13 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
    stop(o,'Enable');                % enable button down function for stop
    fmin = inf;                      % init
 
+   ridx = zeros(1,N);               % reverse indices 
    for (j=1:N)                      % calc & plot stability margin
       txt = sprintf('calculate stability range of %s',get(o,'title'));
       progress(o,txt,j/N*100);
 
       i = id(j);
-      cfg = Config(i);
+      [cfg,ridx(i)] = Config(i);
       if isnan(K0K180(i,1))
          [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
          K0K180(i,:) = [K0,K180];
@@ -1714,14 +1715,23 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
    progress(o);                        % progress completed
    Heading(o);                         % add heading
 
-   function idx = Config(N)            % Return Configuration Indices
+   function [idx,N] = Config(N)        % Return Configuration Indices
       kmax = log(n+1)/log(2);
       idx = [];
+      bits = zeros(1,kmax);
       for (k=1:kmax)
          if (rem(N,2) == 1)
+            bits(k) = 1;
             idx(end+1) = k;
          end
          N = floor(N/2);
+      end
+      
+         % buildup N for reverse order
+         
+      N = 0;
+      for (k=1:kmax)
+         N = N*2 + bits(k);
       end
    end
    function PlotMu(o,xi,mu,sub)
