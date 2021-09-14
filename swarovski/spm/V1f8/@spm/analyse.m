@@ -1348,7 +1348,9 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
    no = size(C,1)/3;
    n = 2^no-1;
 
-   id = Order(no,mode);
+   %id = Order(no,mode);
+   [id,rdx] = Order(no,mode);  
+   
    N = length(id);
    x = 1:N;
 
@@ -1359,7 +1361,8 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
 
    if (flip)
       Axes2(o,1311,mu,'Stability Margin'); % get variation range and plot axes
-      Axes2(o,1714,[],'Setup');
+      Axes2(o,1613,[],'Setup');  title('===>');
+      Axes2(o,1614,[],'Setup');  title('<===');
       Axes2(o,1313,-mu,'Stability Margin'); % get variation range and plot axes
    else
       Axes1(o,3111,mu,'Stability Margin'); % get variation range and plot axes
@@ -1378,7 +1381,8 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
    for (j=1:N)                         % calc & plot stability margin
       i = id(j);
       cfg = Config(i,n);
-      PlotConfig(o,x(j),cfg,id(j),o.iif(flip,1714,3121));
+      PlotConfig(o,x(rdx(j)),cfg,id(j),o.iif(flip,1613,3121));
+      PlotConfig(o,x(j),cfg,id(j),o.iif(flip,1614,3121));
    end
 
    stop(o,'Enable');                   % enable stop button down function
@@ -1410,10 +1414,10 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
 
          Mu0 = mu/K0;  Mu180 = mu/K180;
          if (flip)
-            PlotMargin(o,x(j),vi,1/Mu0,1311);
+            PlotMargin(o,x(rdx(j)),vi,1/Mu0,1311);
             PlotMargin(o,x(j),vi,1/Mu180,1313);
          else
-            PlotMargin(o,x(j),vi,1/Mu0,3111);
+            PlotMargin(o,x(rdx(j)),vi,1/Mu0,3111);
             PlotMargin(o,x(j),vi,1/Mu180,3131);
          end
 
@@ -1428,7 +1432,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
    end
    stop(o,'Disable');                  % enable stop button down function
 
-   if (flip)
+   if (false && flip)                  % never again!
       subplot(o,1311);
       pos = get(gca,'position');
       width = pos(3);
@@ -1682,7 +1686,8 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
       progress(o,txt,j/N*100);
 
       i = id(j);
-      [cfg,ridx(j)] = Config(i,n);
+      cfg = Config(i,n);
+      %[cfg,ridx(j)] = Config(i,n);
       if isnan(K0K180(i,1))
          [oo,L0,K0,f0,K180,f180] = contact(o,cfg);
          K0K180(i,:) = [K0,K180];
@@ -1702,6 +1707,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
       PlotMargin(o,xj,K0,sub(1,1));
       PlotK(o,xj,K0,sub(2,1));
       PlotConfig(o,xj,cfg,id(j),sub(3,1));
+      ylabel('===>');
 %     PlotMu(o,xj,Mu0,4211);
 %     PlotMargin(o,xj,1/Mu0,4231);
       PlotFrequency(o,xj,f0,sub(4,1));
@@ -1713,6 +1719,7 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
       PlotMargin(o,xj,K180,sub(1,2));
       PlotK(o,xj,K180,sub(2,2));
       PlotConfig(o,xj,cfg,id(j),sub(3,2));
+      ylabel('<===');
 %     PlotMu(o,xj,Mu180,4212);
 %     PlotMargin(o,xj,1/Mu180,4232);
       PlotFrequency(o,xj,f180,sub(4,2));
@@ -1965,7 +1972,7 @@ end
 
    % local helper
 
-function [id,rdx] = Order(no,mode)           % Order of Setup IDs            
+function [id,rdx] = Order(no,mode)           % Order of Setup IDs      
    if (no == 5 && isequal(mode,'symmetry'))
       id = [31 27 23 15 [7 [13 11 19 21 14] 5 3 [6 1 2 [9 17] 10 4 10 ...
            [17 18] 8 16 12] 24 20 [14 21 25 26  22] 28] 30 29 27 31];

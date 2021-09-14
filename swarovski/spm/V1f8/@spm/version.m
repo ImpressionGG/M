@@ -296,33 +296,32 @@ function vers = version(o,arg)         % SPM Class Version
 %   + View>Sensitivity menu for sensitivity analysis
 %   + caching of sensitivity analysis data
 %   + cache saved on File/Save As ... and re-loaded on File/Open
-%   ---------------
+%   + setup study with reordering of forward cutting charts
 %   + bug: stability margin calculation mistake
 %   + bug: leaves gap after continuing sensitivity calculation
 %   + incorporate package title into standard headings
 %   + bug: sensitivity.S not cached after 1st run of Damping Sensitivity 
 %   + bug: always same value of K0 for different damping settings
 %   + add Setup Studies in Batch menu
-%   ---------------
-%   - bug: Critical/Bode: bad phase for 180°
+%   + bug: Critical/Bode: bad phase for 180°
 %   + bug: critical sensitivity: upper left diagram empty
-%   - performance slow down during batch processing
+%   + performance slow down during batch processing
 %   - auto creation of package info file @ import package
-%   ---------------
-%   - Modified Graphics (Andy's suggestion) for Stability Margin
+%   + Modified Graphics (Andy's suggestion) for Stability Margin
 %   - Additional Plot graphics for mode frequencies
 %   - Comparison of Packages
 %   + PNG file creation (No PDF) 
-%   - show ID in package
-%   ---------------
+%   + show ID in package
 %   + assertion in gamma algorithm replaced by warning
-%   - verification of gamma algorithm
-%   - critical sensitivity: spikes
+%   + verification of gamma algorithm
+%   + critical sensitivity: spikes
 %   + timing diagram: sometimes empty (change threshold)
-%   - warning of warm cache refreshes
+%   + warning of warm cache refreshes
 %   + footer with version and key parameters
 %   + dynamic name for PNG directory (with version date of batch start)
-%   - crashing setup study @LPC.2021040606.SPM model=v7 
+%   + crashing setup study @LPC.2021040606.SPM model=v7 
+%   + reorder setup configurations in setup study
+%   - save .mat file with actual cache in PNG folder
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -340,6 +339,10 @@ function vers = version(o,arg)         % SPM Class Version
 %     
 %
 % - start beta SPM V1F1
+% - organizing mode 'packages' by default
+% - add Batch menu
+% - add spm/batch method
+% - add spm/pdf method
 % - introduce methods spm/system, spm/principal and pimp spm/critical
 % - introduction of spm/system method to do: variation, normalization,
 %   coordinate transformation
@@ -367,12 +370,6 @@ function vers = version(o,arg)         % SPM Class Version
 % - new 3-color setup analysis charts
 % - spm/contact to accept binary coded contact IDs
 % - pimp stability margin chart
-%
-% - start beta SPM V1F1
-% - organizing mode 'packages' by default
-% - add Batch menu
-% - add spm/batch method
-% - add spm/pdf method
 %
 % - start beta SPM V1F2
 % + clear cache @omega or zeta varitation
@@ -512,6 +509,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - quite a stable version
 % - reorder setup indices
 % - linear scale for stability margin in setup study
+% - pimp setup study diagrams for SPM and PKG
 
 % Known bugs & wishlist
 % =====================
