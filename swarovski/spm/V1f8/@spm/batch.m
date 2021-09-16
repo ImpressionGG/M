@@ -42,6 +42,7 @@ function o = Config(o)                 % Configuration Menu
    setting(o,{'batch.cutting'},+1);             % forward cutting
    setting(o,{'batch.fast'},1);                 % fast batch processing 
    setting(o,{'batch.cleanup'},0);              % cache cleanup
+   setting(o,{'batch.save'},1);                 % intermediate save
    setting(o,{'batch.spectrum.points'},5000);   % points of spectrum
    setting(o,{'batch.critical.eps'},1e-6);      % epsilon of critical phase
    
@@ -73,6 +74,8 @@ function o = Config(o)                 % Configuration Menu
    ooo = mitem(oo,'Fast Processing',{},'batch.fast');
         check(ooo,{@Cb,0});
    ooo = mitem(oo,'Cache Cleanup',{},'batch.cleanup');
+        check(ooo,{@Cb,0});
+   ooo = mitem(oo,'Intermediate Save',{},'batch.save');
         check(ooo,{@Cb,0});
 
    mitem(oo,'-');
@@ -130,6 +133,9 @@ function o = About(o,msg)              % About Batch Configuration
    end
    if (batch.cleanup)
       comment{end+1} = 'Cache Cleanup';
+   end
+   if (batch.save)
+      comment{end+1} = 'Intermediate Save';
    end
    
    comment{end+1} = sprintf('Points: %g',opt(o,'batch.spectrum.points'));
@@ -618,23 +624,34 @@ function o = SetupStudyPkg(o)
          break
       end
    end
-   
+
       % finally make the setup study for the package
       
    SetupStudyPkgOnly(o);
+   
+      % intermediate save, if activated
+      
+   if (~stop(o) && opt(o,'batch.save'))
+      IntermediateSave(o);
+   end
 end
 function o = SetupStudyPkgOnly(o)                                      
    assert(type(o,{'pkg'}));
 
-   o = Cls(o,'Setup Study');
+   o = Cls(o,'Setup Study Basic');
    analyse(o,'SetupAnalysis','basic',3);
+   Png(o); 
+   
+   o = Cls(o,'Setup Study Symmetry');
+   analyse(o,'SetupAnalysis','symmetry',3);
    Png(o);      
 end
 function o = SetupStudySpm(o)                                          
    assert(type(o,{'spm'}));
    
    o = Cls(o,'Setup Study');
-   analyse(o,'SetupAnalysis','basic',3);
+%  analyse(o,'SetupAnalysis','basic',3);
+   analyse(o,'SetupAnalysis','basic',1);
    Png(o);
 end
 
@@ -709,4 +726,34 @@ function Footer(o,time)                % Refresh Footer
       foot = sprintf('%s, time: %gs',foot,o.rd(time,1));
    end
    footer(o,foot);
+end
+function IntermediateSave(o)           % Save to .Mat file             
+   assert(type(o,{'pkg'}));
+
+      % get path
+      
+   path = get(o,'dir');
+   if isempty(path)
+      fprintf('*** warning: no directory info provided for save: %s\n',...
+              id(o));
+      return
+   else
+      pngdir = png(o);
+      [dir,file,ext] = fileparts(pngdir);
+      file = [file,ext];
+      
+      path = [path,'/',file,'/package.mat'];
+   end
+
+      % make new shell object with only package and its children
+      
+   list = children(o);
+   list = [{o},list];                  % add package  object to children
+   o = pull(o);
+   o.data = list;
+   
+      % clean object and save
+      
+   o = clean(o);
+   save(o,pack(o),path);
 end

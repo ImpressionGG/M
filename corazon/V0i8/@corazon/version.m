@@ -642,6 +642,7 @@ function VersionV1I
 % - legacy sample plugin added
 % - corazon/cache: calling syntax for hard clear of all caches added
 % - two out args for corazon/subplot
+% - optional path for corazon/save
 %
 % Change Log V1i8 (beta):
 %

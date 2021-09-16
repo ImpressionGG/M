@@ -26,13 +26,18 @@ classdef corazon < corazita & corazito % Corazon Class
 %                current               % get/set current object
 %                cuo                   % short hand for current object
 %                sho                   % shorthand for shell object
+%                children              % get children of shell or package
+%                id                    % get ID of object/ retrieve by ID
 %
 %                gcf                   % get current figure
 %                figure                % get/set object related figure hdl
 %                figure                % get/set object related axes handle 
 %                menu                  % menu creation building blocks
 %                mitem                 % create a menu item
-%                mhead                 % create a menu header             
+%                mhead                 % create a menu header
+%                check                 % add check feature to menu item
+%                choice                % add choice feature to menu item
+%                charm                 % add charm feature to menu item
 %                heading               % add heading to graphics
 %                footer                % add footer to graphics
 %                dark                  % dark mode control

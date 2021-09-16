@@ -1,9 +1,12 @@
-function o = save(o,bag)
+function o = save(o,bag,path)
 %
 % SAVE   Save a bag of properties to .MAT file
 %
 %           o = save(corazita,bag)
 %           o = save(corazita,pack(o))
+%
+%           o = save(corazita,bag,path)
+%           o = save(corazita,pack(o),path)
 %
 %        Copyright(c): Bluenetics 2020 
 %
@@ -16,7 +19,14 @@ function o = save(o,bag)
       cd(directory(bull));
    end
    
-   [file, dir] = uiputfile('object.mat', 'Save .mat file');
+   if (nargin >= 3)
+      [dir,file,ext] = fileparts(path);
+      dir = [dir,'/'];
+      file = [file,ext];
+   else
+      [file, dir] = uiputfile('object.mat', 'Save .mat file');
+   end
+   
    if ~isequal(file,0)
       directory(bull,dir);             % save to persistent directory path
       cso = server(bull,bag);          % create a Corleon server object

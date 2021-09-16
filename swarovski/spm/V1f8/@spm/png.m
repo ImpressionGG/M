@@ -5,16 +5,20 @@ function oo = png(o,varargin)          % Save figure as png
 %        png(o)                        % save current figure as PNG
 %        png(o,tag)                    % save current figure as PNG
 %
+%        path = png(o);                % get PNG path (don't save)
+%
 %      Options
 %
 %         folder             % provide folder name (default 'PNG')
 %
 %      See also: SPM, PLOT, ANALYSIS
 %
-   if (nargin == 0)
-       oo = Png(o);
+   if (nargin == 1 && nargout == 0)
+      oo = Png(o);
+   elseif (nargin == 1 && nargout == 1)
+      oo = Directory(o);
    elseif (nargin == 2)
-       oo = Png(o,varargin{1});
+      oo = Png(o,varargin{1});
    else
        error('1 or 2 input args expected');
    end

@@ -1324,6 +1324,10 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
    end
    variation = get(o,'variation');
 
+   kind = arg(o,1);
+   kind(1) = upper(kind(1));
+   Heading(o,[kind,' Setup Study ',Id(o)]);   % add heading
+   
       % get object list of package
       % note that first list element is the package object, which has
       % to been deleted. calculate stability margin for all data objects
@@ -1445,7 +1449,7 @@ function o = PkgSetupAnalysis(o)       % Setup Specific Stab. Margin
    end
 
    progress(o);                        % progress completed
-   Heading(o);                         % add heading
+   Heading(o,[kind,' Setup Study ',Id(o)]);   % add heading
 
    function idx = Config(N,n)          % Return Configuration Indices
       kmax = log(n+1)/log(2);
@@ -3183,3 +3187,7 @@ function [fcol,bcol,ratio] = Colors(o,K,i)
       ratio = 1-ratio;
    end
 end
+function ID = Id(o)                    % Local Wrapper for id()        
+   ID = id(o);
+end
+

@@ -510,6 +510,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - reorder setup indices
 % - linear scale for stability margin in setup study
 % - pimp setup study diagrams for SPM and PKG
+% - intermediate save added to setup study batch processing
+% - headline fixed for package setup study
 
 % Known bugs & wishlist
 % =====================
