@@ -277,26 +277,59 @@ function o = RunPkg(o)                 % Run a Single Package
       % individual package specific plots
 
    if (batch.stabilitymargin)
-      StabilityMarginPkg(o);
       if stop(o)
          return
+      end
+      
+      StabilityMarginPkg(o);
+      
+      if (~stop(o) && batch.save)
+         IntermediateSave(o);
       end
    end
          
    list = children(o);                 % list of package's children
    for (i=1:length(list))
+      if stop(o)
+         return;
+      end
+      
       oo = list{i};                    % i-th child
       RunSpm(oo);                      % run batch for SPM object
+
+         % intermediate save, if activated
+
+      if (~stop(o) && batch.save)
+         IntermediateSave(o);
+      end
    end
    
       % setup overview for the package
       
    if (batch.setupstudy)
-      SetupStudyPkgOnly(o);
       if stop(o)
          return
       end
+   
+      SetupStudyPkgOnly(o);
+
+         % intermediate save, if activated
+
+      if (~stop(o) && batch.save)
+         IntermediateSave(o);
+      end
    end      
+
+      % cache cleanup
+
+   if (batch.cleanup)
+      fprintf('clear cache of package and all SPM objects\n');
+      o = cache(o,o,[]);               % cache hard clear of PKG object
+      for (i=1:length(list))
+         oo = list{i};                 % i-th child
+         oo = cache(oo,oo,[]);         % cache hard clear of SPM object
+      end
+   end
 end
 function o = RunSpm(o)                 % Run a Single SPM Object       
 %
@@ -313,28 +346,28 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       % stability margin
 
    if (batch.stabilitymargin)
-      StabilityMarginSpm(o);
       if stop(o)
          return
       end
+      StabilityMarginSpm(o);
    end
 
       % critical overview
 
    if (batch.criticaloverview)
-      CriticalOverviewSpm(o);
       if stop(o)
          return
       end
+      CriticalOverviewSpm(o);
    end
 
       % damping sensitivity
 
    if (batch.dampingsensitivity)
-      DampingSensitivitySpm(o);
       if stop(o)
          return
       end
+      DampingSensitivitySpm(o);
       ID = id(o);
       oo = id(o,ID);                   % refresh object with updated cache
       o = inherit(oo,o);               % inherit actual options
@@ -343,25 +376,19 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       % critical sensitivity
 
    if (batch.criticalsensitivity)
-      CriticalSensitivitySpm(o);
       if stop(o)
          return
       end
+      CriticalSensitivitySpm(o);
    end
 
       % setup study
 
    if (batch.setupstudy)
-      SetupStudySpm(o);
       if stop(o)
          return
       end
-   end
-
-      % cache cleanup
-
-   if (batch.cleanup)
-      o = cache(o,o,[]);             % cache hard clear
+      SetupStudySpm(o);
    end
 end
 
@@ -628,12 +655,6 @@ function o = SetupStudyPkg(o)
       % finally make the setup study for the package
       
    SetupStudyPkgOnly(o);
-   
-      % intermediate save, if activated
-      
-   if (~stop(o) && opt(o,'batch.save'))
-      IntermediateSave(o);
-   end
 end
 function o = SetupStudyPkgOnly(o)                                      
    assert(type(o,{'pkg'}));
@@ -650,8 +671,11 @@ function o = SetupStudySpm(o)
    assert(type(o,{'spm'}));
    
    o = Cls(o,'Setup Study');
-%  analyse(o,'SetupAnalysis','basic',3);
    analyse(o,'SetupAnalysis','basic',1);
+   Png(o);
+
+   o = Cls(o,'Setup Study');
+   analyse(o,'SetupAnalysis','symmetry',1);
    Png(o);
 end
 
@@ -753,7 +777,9 @@ function IntermediateSave(o)           % Save to .Mat file
    o.data = list;
    
       % clean object and save
-      
+   
+   fprintf('   intermediate saving to %s\n ',path);
+   
    o = clean(o);
    save(o,pack(o),path);
 end
