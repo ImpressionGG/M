@@ -181,9 +181,12 @@ function oo = PackageInfo(o)           % Provide Package Info File
    caption = 'Provide Package Info File (.pkg)';
    path = fselect(o,'d','*.*',caption);
    if isempty(path)
+      oo = o;
       return
    end
-   
+   oo = pkginfo(o,path);               % provide package info
+end
+function oo = OldProvidePkgInfo(o,path)% Provide Package Info          
    [dir,file,ext] = fileparts(path);
    title = [file,ext];              % recombine file&extension to name
    
@@ -457,7 +460,7 @@ function oo = Cutting(o)               % Cutting Mode Sub-Menu
    oo = mitem(o,'Cutting',{},'view.cutting');
    choice(oo,{{'Forward',1},{'Backward',-1},{'Both',0}},{});
 end
-function oo = Scale(o)                  % Scale Sub-Menu                
+function oo = Scale(o)                 % Scale Sub-Menu                
    setting(o,{'scale.xunit'},'ms');     % time scaling unit
    setting(o,{'scale.xscale'},1e3);     % time scaling factor
    
@@ -1387,7 +1390,7 @@ end
 % Helper
 %==========================================================================
 
-function oo = Dialog(o)                % Edit Key Parameters           
+function oo = OldDialog(o)             % Edit Key Parameters           
 %
 % Dialog  A dialog box is opened to edit key parameters
 %         With opt(o,'caption') the default caption of the dialog box
@@ -1450,7 +1453,7 @@ function oo = Dialog(o)                % Edit Key Parameters
    oo = set(oo,'project',project,'version',version,'creator',creator);
    oo = set(oo,'variation',variation,'image',image);
 end
-function oo = ReadInfo(o,path)         % Read Info into Comment        
+function oo = OldReadInfo(o,path)      % Read Info into Comment        
    fid = fopen(path);
    if isequal(fid,-1)
       oo = o;

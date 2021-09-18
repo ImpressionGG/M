@@ -516,6 +516,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - setup symmetry study reordered
 % - pimped setup symmetry study
 % - advance from vorazon/V0i8 to V1i8
+% - new methods spm/collect and spm/pkginfo
+
 
 % Known bugs & wishlist
 % =====================
