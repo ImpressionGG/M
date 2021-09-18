@@ -37,6 +37,7 @@ function use(tag,version)
 %           use spm-v1f5      % SPM V1f5    beta @ 18Aug21
 %           use spm-v1f6      % SPM V1f6    beta @ 30Aug21
 %           use spm-v1f7      % SPM V1f7    beta @ 03Sep21
+%           use spm-v1f8      % SPM V1f8    beta @ 18Sep21
 %
    if (nargin < 2)
       version.carabao = 'V1l';
@@ -209,6 +210,8 @@ function use(tag,version)
          Swarovski('12','Spm','V1f6','V1i6','Beta','30Aug21')
       case 'spm-v1f7'
          Swarovski('13','Spm','V1f7','V1i7','Beta','03Sep21')
+      case 'spm-v1f8'
+         Swarovski('14','Spm','V1f8','V1i8','Beta','18Sep21')
 
       case 'minispm-v1e'
          Swarovski('07','MiniSpm','V1e','V1h','Release','22Feb21')
