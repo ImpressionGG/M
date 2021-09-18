@@ -513,7 +513,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - intermediate save added to setup study batch processing
 % - headline fixed for package setup study
 % - add intermediate saving
-% - symmetry study reordered
+% - setup symmetry study reordered
+% - pimped setup symmetry study 
 
 % Known bugs & wishlist
 % =====================
