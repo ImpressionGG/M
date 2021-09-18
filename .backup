@@ -1,0 +1,72 @@
+#!/bin/bash
+# .backup - backup script for copying Study repository to bakup directory
+
+   NAME='M'                                # name of repository to be backed up
+   VERSION=CorazonV1i
+
+   if [ "$*" == "-?" ]; then
+       echo 'usage: ./.backup [-v?] <dir>  # backup script for M repository'
+       echo 'usage: ./.backup -n           # echo name'
+       echo 'usage: ./.backup -v           # echo version number'
+       echo ''
+       echo 'see also: bak'
+       exit 0
+   fi
+
+   if [ "$*" == "-n" ]; then
+       echo $NAME
+       exit 0
+   fi
+
+   if [ "$*" == "-v" ]; then
+       echo $VERSION
+       exit 0
+   fi
+
+#===============================================================================
+# check git repository
+#===============================================================================
+
+   GITROOT=`gitroot`
+   GITREP=`gitrep`
+
+   if [ "$GITREP" != "$NAME" ]; then
+      ec -r "   *** error: need to be within hierarchy of git repoastory $NAME"
+      echo  "              .backup terminated!"
+      exit 1
+   fi
+
+   if [ -d $1 ]; then
+       BAKDIR="$1"
+   else
+      ec -r "   *** error: no backup directory specified"
+      echo  "              .backup terminated!"
+      exit 1
+   fi
+
+#===============================================================================
+# cleanup first
+#===============================================================================
+
+   cl
+
+#===============================================================================
+# copy backup files to $BAKDIR
+#===============================================================================
+
+   ec -y "  copying files ..."
+
+   TOOLBOX=corazon
+   ec -b "    copy $TOOLBOX/* ..."
+   cp -r $GITROOT/$TOOLBOX $BAKDIR
+   chmod -R +w $BAKDIR/$TOOLBOX
+
+   TOOLBOX=cute
+   ec -b "    copy swarovski/$TOOLBOX/* ..."
+   cp -r $GITROOT/swarovski/$TOOLBOX $BAKDIR
+   chmod -R +w $BAKDIR/$TOOLBOX
+
+   TOOLBOX=spm
+   ec -b "    copy swarovski/$TOOLBOX/* ..."
+   cp -r $GITROOT/swarovski/$TOOLBOX $BAKDIR
+   chmod -R +w $BAKDIR/$TOOLBOX
