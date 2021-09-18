@@ -15,7 +15,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @WithSpm,@Numeric,@Trf,@TfOverview,...
                       @Principal,...
-                      @Critical,...
+                      @Critical,@CriticalFriction,...
                       @StabilitySummary,@StabilityMargin,@NyquistStability,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
                       @LmuBodeNyq,@Overview,...
@@ -47,8 +47,7 @@ function oo = Menu(o)                  % Setup Analyse Menu
    end
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
-   oo = mitem(o,'Stability');
-%  ooo = mitem(oo,'Overview',{@WithCuo,'StabilityOverview'});
+   oo = StabilityMenu(o);              % build-up stability menu
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
    oo = mitem(o,'Stability');
@@ -64,6 +63,7 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = StabilityMenu(o);              % add Stability menu
    oo = SetupMenu(o);                  % add Setup menu
    oo = SensitivityMenu(o);            % add Sensitivity menu
+return
 
    oo = mitem(o,'-');
 o = mitem(o,'Legacy');
@@ -683,8 +683,13 @@ end
 
 function oo = StabilityMenu(o)         % Stability Menu                
    oo = mitem(o,'Stability');
-   ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
-   enable(ooo,0);                      % disabled for SPM objects
+   if (container(o))                   % shell object? 
+      ooo = mitem(oo,'Critical Friction (Forward)',{@WithCuo,'CriticalFriction',+1});
+      ooo = mitem(oo,'Critical Friction (Reverse)',{@WithCuo,'CriticalFriction',-1});
+   else
+      ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
+      enable(ooo,0);                   % disabled for SPM objects
+   end
    return
    
       % rest is all legacy
@@ -719,6 +724,8 @@ function o = StabilitySummary(o)       % Plot Stability Overview
 end
 function o = StabilityMargin(o)        % Plot Stability Margins        
    switch o.type
+      case 'shell'
+         o = ShellStabilityMargin(o);
       case 'pkg'
          o = PkgStabilityMargin(o);
       case 'spm'
@@ -727,10 +734,44 @@ function o = StabilityMargin(o)        % Plot Stability Margins
          plot(o,'About');
    end
 end
+function o = CriticalFriction(o)       % Critical Friction Comparison  
+   if (~container(o))
+      plot(o,'About');
+      return
+   end
+   
+   cutting = arg(o,1);                 % cutting direction
+   
+   list = children(o);                 % list of PKG objects
+   if (length(list) > 9)
+      message(o,'Max. 9 package objects for comparison allowed!');
+      return
+   end
+   
+   [m,n] = Layout(length(list));   
+   
+   for (i=1:length(list))
+      oo = list{i};
+      
+      sub = 100*m + 10*n + i;
+      if (cutting > 0)
+         sub = [0 0;  0 0; sub 0; 0 0];
+         tit = ['Critical Friction (Forward): ',id(oo)];
+      else
+         sub = [0 0;  0 0; 0 sub; 0 0];
+         tit = ['Critical Friction (Reverse): ',id(oo)];
+      end
+      oo = opt(oo,'subplot',sub);
+      PkgStabilityMargin(oo);
+      title(tit);
+   end
+end
 function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin     
    o = cache(o,o,'critical');
    Heading(o);
-   MarginChart(o,[211,212]);
+   
+   sub = opt(o,{'subplot',[211,212]});
+   MarginChart(o,sub);
 end
 function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin     
    if ~type(o,{'pkg'})
@@ -757,14 +798,16 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       mode = 3;                        % new style
    end
    
-   if (mode == 2)   % critical quantities
-      sub = [   0    0; 2211 2212; 4231 4232; 4241 4242];
-   elseif (mode == 3)   % stability margin, critical friction & frequency
-      sub = [0    0;  3211 3212; 3221 3222;  3231 3232];
-   else
-      sub = [4211 4212; 4221 4222; 4231 4232; 4241 4242];
+   sub = opt(o,'subplot');
+   if isempty(sub)
+      if (mode == 2)   % critical quantities
+         sub = [   0    0; 2211 2212; 4231 4232; 4241 4242];
+      elseif (mode == 3)   % stability margin, critical friction & frequency
+         sub = [0    0;  3211 3212; 3221 3222;  3231 3232];
+      else
+         sub = [4211 4212; 4221 4222; 4231 4232; 4241 4242];
+      end
    end
-
 
    Heading(o);                         % start with heading
 
@@ -958,7 +1001,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
          return
       end
 
-      subplot(o,sub);
+      o = subplot(o,sub);
 
       [lim,col] = limits(o);
       plot(o,x,0*x,'K.');
@@ -3192,4 +3235,7 @@ end
 function ID = Id(o)                    % Local Wrapper for id()        
    ID = id(o);
 end
-
+function [m,n] = Layout(N)             % Matrix Layout for N diagrams  
+   n=round(sqrt(N));
+   m = ceil(N/n);
+end

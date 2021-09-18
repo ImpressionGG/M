@@ -308,7 +308,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + performance slow down during batch processing
 %   + auto creation of package info file @ import package
 %   + Modified Graphics (Andy's suggestion) for Stability Margin
-%   - Comparison of Packages
+%   + Comparison of Packages
 %   + PNG file creation (No PDF) 
 %   + show ID in package
 %   + assertion in gamma algorithm replaced by warning
@@ -518,6 +518,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - advance from vorazon/V0i8 to V1i8
 % - new methods spm/collect and spm/pkginfo
 % + auto creation of package info file @ import package
+% + comparison of packages (critical friction)
 
 
 % Known bugs & wishlist
