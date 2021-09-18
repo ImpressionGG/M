@@ -306,9 +306,8 @@ function vers = version(o,arg)         % SPM Class Version
 %   + bug: Critical/Bode: bad phase for 180°
 %   + bug: critical sensitivity: upper left diagram empty
 %   + performance slow down during batch processing
-%   - auto creation of package info file @ import package
+%   + auto creation of package info file @ import package
 %   + Modified Graphics (Andy's suggestion) for Stability Margin
-%   - Additional Plot graphics for mode frequencies
 %   - Comparison of Packages
 %   + PNG file creation (No PDF) 
 %   + show ID in package
@@ -321,7 +320,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + dynamic name for PNG directory (with version date of batch start)
 %   + crashing setup study @LPC.2021040606.SPM model=v7 
 %   + reorder setup configurations in setup study
-%   - save .mat file with actual cache in PNG folder
+%   + save .mat file with actual cache in PNG folder
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -336,6 +335,7 @@ function vers = version(o,arg)         % SPM Class Version
 %     plotting 5x characteristic plots and displaying nyquist error
 %   - add menu point Select>Coupling-Path for selection of coupling path
 %   - calculate G(s) depending on selection of coupling path
+%   - Additional Plot graphics for mode frequencies
 %     
 %
 % - start beta SPM V1F1
@@ -517,6 +517,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimped setup symmetry study
 % - advance from vorazon/V0i8 to V1i8
 % - new methods spm/collect and spm/pkginfo
+% + auto creation of package info file @ import package
 
 
 % Known bugs & wishlist
