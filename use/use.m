@@ -42,7 +42,7 @@ function use(tag,version)
    if (nargin < 2)
       version.carabao = 'V1l';
       
-      version.corazon = 'V1i8';   % made from V0i8
+      version.corazon = 'V0i9';   % made from V0i8
  
       version.corinth = 'V2a1';
       version.cordoba = 'V1c';
@@ -54,7 +54,7 @@ function use(tag,version)
       
       version.bluco = 'V1a';
       version.train = 'V1a';
-      version.spm = 'V1f8';
+      version.spm = 'V1f9';
       version.minispm = 'V1f1';
       
       version.pll = 'V1a';

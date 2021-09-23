@@ -1,0 +1,124 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Oscillator</title><meta name="generator" content="MATLAB 9.10"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-08-21"><meta name="DC.source" content="c1_1_oscillator.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Oscillator</h1><!--introduction--><p>Let us start with basics. Let us start with the investigation of a simple oscillator. An undamped spring mass system is complex enough for these very first considerations. In a second step we will introduce damping to the spring mass system and will internalize the changes. Ready? Let's go!</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Undamped Spring-Mass System</a></li><li><a href="#2">Homogeneous Solution</a></li><li><a href="#3">Stuff</a></li><li><a href="#4">Cross Product</a></li><li><a href="#5">Inline Expression</a></li><li><a href="#6">Block Equation</a></li></ul></div><h2 id="1">Undamped Spring-Mass System</h2><p>Consider the spring-mass system in the figure below!</p><p><img vspace="5" hspace="5" src="f1_1_undamped_spring_mass.png" alt=""> </p><p>What is a proper mathematical description? What about Newton's law "mass times acceleration equals sum of forces"?</p><p><img src="c1_1_oscillator_eq15827783899257224522.png" alt="$$m \ddot q=\sum F $$" style="width:56px;height:16px;"></p><p>Well, this task seems to be easy! Two forces can be identified, which act on mass <img src="c1_1_oscillator_eq11319871188381094158.png" alt="$m$" style="width:10px;height:6px;">: the exciting force <img src="c1_1_oscillator_eq08597826192214703288.png" alt="$F$" style="width:8px;height:8px;"> in positive direction and spring force <img src="c1_1_oscillator_eq08978975697231755175.png" alt="$F_k=kq$" style="width:38px;height:10px;"> in negative direction with <img src="c1_1_oscillator_eq15226540192103580117.png" alt="$q$" style="width:5px;height:8px;"> denoting the elongation from equilibrium. This gives Newton's law a specific face.</p><p><img src="c1_1_oscillator_eq09270921135215182653.png" alt="$$  m\ddot q=F-kq $$" style="width:63px;height:10px;"></p><p>we have now a mathematical description - a linear ordinary differential equation of order 2.</p><h2 id="2">Homogeneous Solution</h2><p>How does the free system behave? This question leads us to the homogeneous solution of our differential equation with <img src="c1_1_oscillator_eq00984748498198940759.png" alt="$F=0$" style="width:29px;height:8px;">. Let's rewrite our equation to better see what we have in front of us.</p><p><img src="c1_1_oscillator_eq07502600965065893694.png" alt="$$  m\ddot q+kq=0 $$" style="width:60px;height:10px;"></p><h2 id="3">Stuff</h2><pre class="codeinput">s = dot(A,B);
+</pre><h2 id="4">Cross Product</h2><p>A cross product of two vectors yields a third vector perpendicular to both original vectors. Again, MATLAB has a simple command for cross products.</p><pre class="codeinput">v = cross(A,B);
+</pre><h2 id="5">Inline Expression</h2><p><img src="c1_1_oscillator_eq15682195134482745114.png" alt="$x^2+e^{\pi i}$" style="width:36px;height:11px;"></p><h2 id="6">Block Equation</h2><p><img src="c1_1_oscillator_eq17467035999183504765.png" alt="$$e^{\pi i} + 1 = 0$$" style="width:52px;height:11px;"></p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2021a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Oscillator 
+% Let us start with basics. Let us start with the investigation of a simple 
+% oscillator. An undamped spring mass system is complex enough for these
+% very first considerations. In a second step we will introduce damping to
+% the spring mass system and will internalize the changes. Ready? Let's go!
+%%
+
+%% Undamped Spring-Mass System
+% Consider the spring-mass system in the figure below!
+%
+% <<f1_1_undamped_spring_mass.png>>
+%
+% What is a proper mathematical description? What about Newton's law "mass
+% times acceleration equals sum of forces"?
+%
+% $$m \ddot q=\sum F $$  
+%
+% Well, this task seems to be easy! Two forces can be identified, which act
+% on mass $m$: the exciting force $F$ in positive direction and spring force
+% $F_k=kq$ in negative direction with $q$ denoting the elongation from
+% equilibrium. This gives Newton's law a specific face.
+%
+% $$  m\ddot q=F-kq $$
+%
+% we have now a mathematical description - a linear ordinary differential
+% equation of order 2.
+
+%% Homogeneous Solution
+% How does the free system behave? This 
+% question leads us to the homogeneous solution of our differential 
+% equation with $F=0$. Let's rewrite our equation to better see what we 
+% have in front of us.
+%
+% $$  m\ddot q+kq=0 $$
+%
+
+%% Stuff
+s = dot(A,B);
+%% Cross Product
+% A cross product of two vectors yields a third
+% vector perpendicular to both original vectors.
+% Again, MATLAB has a simple command for cross products.
+v = cross(A,B);
+%% Inline Expression
+% $x^2+e^{\pi i}$
+%% Block Equation
+%
+% $$e^{\pi i} + 1 = 0$$
+%
+##### SOURCE END #####
+--></body></html>
