@@ -12,11 +12,9 @@ function use(tag,version)
 %           use work       % use classes in work directory
 %           use midi       % use miditoolbox
 %
-%           use pll
-%           use kalman
-%           use surge
+%           use bluco      % pll, kalman, surge, 
 %           use trade
-%           use antenna       % Willy's Antennen Toolbox
+%           use antenna    % Willy's Antennen Toolbox
 %
 %           use googleearth
 %
@@ -52,14 +50,13 @@ function use(tag,version)
       version.cute = 'V1c1';
       version.trf = 'V2a';
       
-      version.bluco = 'V1a';
+      version.bluco = 'V1b';
       version.train = 'V1a';
       version.spm = 'V1f9';
       version.minispm = 'V1f1';
       
       version.pll = 'V1a';
       version.kalman = 'V1a';
-      version.surge = 'V1a';
       version.trade = 'V1a';
       version.antenna = 'V1a';
       
@@ -88,7 +85,7 @@ function use(tag,version)
       case 'bluco'
          use corazon
          addpath([mhome,'/bluco/',version.bluco]);
-         fprintf(['   Bluco Studies ',version.bluco,' (kalman,ntc)\n']);   
+         fprintf(['   Bluco Studies ',version.bluco,' (kalman,ntc,surge,pll)\n']);   
          
       case 'carabao'
          addpath([mhome,'/carabao/',version.carabao]);
