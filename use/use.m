@@ -11,6 +11,7 @@ function use(tag,version)
 %           use spm        % use (Andy's) SPM toolbox (ANSYS)
 %           use work       % use classes in work directory
 %           use midi       % use miditoolbox
+%           use mind       % use MIND toolbox
 %
 %           use bluco      % pll, kalman, surge, 
 %           use trade
@@ -59,6 +60,7 @@ function use(tag,version)
       version.kalman = 'V1a';
       version.trade = 'V1a';
       version.antenna = 'V1a';
+      version.mind = 'V1a';
       
       version.uled = 'V1a';
    end
@@ -135,8 +137,12 @@ function use(tag,version)
          use corazon
          addpath([mhome,'/midi/',version.midi]);
          addpath([mhome,'/miditoolbox']);
-         fprintf(['   using MIDI toolbox\n']);            
+         fprintf(['   using MIDI toolbox %s\n'],version.mind);            
          fprintf(['   type: help miditoolbox\n']);            
+      case 'mind'
+         use corazon
+         addpath([mhome,'/mind/',version.mind]);
+         fprintf(['   using MIND toolbox %s\n'],version.mind);            
       case 'rat'
          addpath([mhome,'/rat/',version.rat]);
          fprintf(['   using RAT toolbox ',version.rat,'\n']);   
