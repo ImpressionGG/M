@@ -652,7 +652,7 @@ function VersionV1I
 % Change Log V1i8 (beta):
 %
 % - corazito/master: bug fix: do not append empty arg to arg list
-%
+% - corazon/rapid: generate improved plot method
 %
 % Known Bugs / Wishlist
 % - none so far
