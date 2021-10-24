@@ -18,7 +18,13 @@ function o = sho(o)
    if (nargin == 0)
       o = pull(corazon);
    else
-      o = inherit(o,sho);              % inherit shell settings as options
+      so = sho;                        % pull shell object
+      
+      if isempty(so)
+         return                        % return without inheriting
+      end
+      
+      o = inherit(o,so);               % inherit shell settings as options
       o = opt(o,'inherit',true);       % additionally set inherit option
    end
 end

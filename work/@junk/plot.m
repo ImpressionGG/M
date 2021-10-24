@@ -1,6 +1,6 @@
-function oo = plot(o,varargin)         % TEST1 Plot Method
+function oo = plot(o,varargin)         % JUNK Plot Method
 %
-% PLOT   TEST1 plot method
+% PLOT   JUNK plot method
 %
 %           plot(o)                    % default plot method
 %           plot(o,'Plot')             % default plot method
@@ -12,7 +12,7 @@ function oo = plot(o,varargin)         % TEST1 Plot Method
 %           plot(o,'PlotY')            % stream plot Y
 %           plot(o,'PlotXY')           % scatter plot
 %
-%        See also: TEST1, SHELL
+%        See also: JUNK, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @About,@Overview,@PlotX,@PlotY,@PlotXY);
@@ -35,35 +35,6 @@ function oo = Menu(o)                  % Setup Plot Menu
    oo = mitem(o,'X',{@WithBsk,'PlotX'});
    oo = mitem(o,'Y',{@WithBsk,'PlotY'});
    oo = mitem(o,'XY', {@WithBsk,'PlotXY'});
-
-   oo = Filter(o);                     % add Filter menu to Select menu
-end
-function oo = Filter(o)                % Add Filter Menu Items
-   setting(o,{'filter.mode'},'raw');   % filter mode off
-   setting(o,{'filter.type'},'LowPass2');
-   setting(o,{'filter.bandwidth'},5);
-   setting(o,{'filter.zeta'},0.6);
-   setting(o,{'filter.method'},1);
-
-   oo = mseek(o,{'#','Select'});
-   ooo = mitem(oo,'-');
-
-   ooo = mitem(oo,'Filter');
-   oooo = mitem(ooo,'Mode','','filter.mode');
-   choice(oooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-   oooo = mitem(ooo,'-');
-   oooo = mitem(ooo,'Type',{},'filter.type');
-   choice(oooo,{{'Order 2 Low Pass','LowPass2'},...
-                {'Order 2 High Pass','HighPass2'},...
-                {'Order 4 Low Pass','LowPass4'},...
-                {'Order 4 High Pass','HighPass4'}},{});
-   oooo = mitem(ooo,'Bandwidth',{},'filter.bandwidth');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Zeta',{},'filter.zeta');
-   charm(oooo,{});
-   oooo = mitem(ooo,'Method',{},'filter.method');
-   choice(oooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
 
 %==========================================================================

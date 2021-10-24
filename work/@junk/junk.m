@@ -1,6 +1,6 @@
-classdef test1 < corazon               % Test1 Class Definition
+classdef junk < corazon                % Junk Class Definition
    methods                             % public methods
-      function o = test1(arg)          % test1 constructor
+      function o = junk(arg)           % junk constructor
          if (nargin == 0)
             arg = 'shell';             % 'shell' type by default
          end

@@ -1,5 +1,5 @@
-function oo = shell(o,varargin)        % TEST1 shell
-   [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,...
+function oo = shell(o,varargin)        % JUNK shell
+   [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
                                  @Plot,@PlotCb,@Analysis,@Study);
    oo = gamma(o);                      % invoke local function
 end
@@ -15,7 +15,7 @@ function o = Shell(o)                  % Shell Setup
    oo = File(o);                       % add File menu
    oo = menu(o,'Edit');                % add Edit menu
    oo = View(o);                       % add View menu
-   oo = menu(o,'Select');              % add Select menu
+   oo = Select(o);                     % add Select menu
    oo = Plot(o);                       % add Plot menu
    oo = Analyse(o);                    % add Analyse menu
    oo = Study(o);                      % add Study menu
@@ -36,12 +36,12 @@ function o = Init(o)                   % Init Object
    o = launch(o,mfilename);            % setup launch function
    o = control(o,{'dark'},0);          % run in non dark mode
 
-   o = provide(o,'par.title','Test1 Shell');
-   o = provide(o,'par.comment',{'Playing around with TEST1 objects'});
+   o = provide(o,'par.title','Junk Shell');
+   o = provide(o,'par.comment',{'Playing around with JUNK objects'});
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus
-   list = {'View','Plot','Analyse','Study'};
+   list = {'View','Select','Plot','Analyse','Study'};
 end
 
 %==========================================================================
@@ -59,15 +59,15 @@ function oo = New(o)                   % New Menu
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Stuff');
    oooo = new(corazon(ooo),'Menu');    % add CORAZON New stuff items
-   ooo = mitem(oo,'Test1');
+   ooo = mitem(oo,'Junk');
    oooo = new(ooo,'Menu');
 end
 function oo = Import(o)                % Import Menu Items
    oo = mhead(o,'Import');             % locate Import menu header
    ooo = mitem(oo,'Stuff');
    oooo = mitem(ooo,'Stuff (.txt)',{@ImportCb,'ReadStuffTxt','.txt',@corazon});
-   ooo = mitem(oo,'Test1');
-   oooo = mitem(ooo,'Log Data (.dat)',{@ImportCb,'ReadGenDat','.dat',@test1});
+   ooo = mitem(oo,'Junk');
+   oooo = mitem(ooo,'Log Data (.dat)',{@ImportCb,'ReadGenDat','.dat',@junk});
    return
 
    function o = ImportCb(o)            % Import Log Data Callback
@@ -82,8 +82,8 @@ function oo = Export(o)                % Export Menu Items
    oo = mhead(o,'Export');             % locate Export menu header
    ooo = mitem(oo,'Stuff');
    oooo = mitem(ooo,'Stuff (.txt)',{@ExportCb,'WriteStuffTxt','.txt',@corazon});
-   ooo = mitem(oo,'Test1');
-   oooo = mitem(ooo,'Log Data (.dat)',{@ExportCb,'WriteGenDat','.dat',@test1});
+   ooo = mitem(oo,'Junk');
+   oooo = mitem(ooo,'Log Data (.dat)',{@ExportCb,'WriteGenDat','.dat',@junk});
    return
 
    function oo = ExportCb(o)           % Export Log Data Callback
@@ -112,7 +112,43 @@ function oo = View(o)                  % View Menu
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
 
-   plugin(o,'test1/shell/View');       % plug point
+   plugin(o,'junk/shell/View');       % plug point
+end
+
+%==========================================================================
+% Select Menu
+%==========================================================================
+
+function oo = Select(o)                % Select Menu
+   oo = menu(o,'Select');              % add Select menu
+   dynamic(oo);                        % make this a dynamic menu
+   ooo = Filter(oo);                   % add Filter sub menu
+end
+function oo = Filter(o)                % Add Filter Menu Items
+   setting(o,{'filter.mode'},'raw');   % filter mode off
+   setting(o,{'filter.type'},'LowPass2');
+   setting(o,{'filter.bandwidth'},5);
+   setting(o,{'filter.zeta'},0.6);
+   setting(o,{'filter.method'},1);
+
+   oo = mitem(o,'-');
+
+   oo = mitem(o,'Filter');
+   ooo = mitem(oo,'Mode','','filter.mode');
+   choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
+               {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Type',{},'filter.type');
+   choice(ooo,{{'Order 2 Low Pass','LowPass2'},...
+               {'Order 2 High Pass','HighPass2'},...
+               {'Order 4 Low Pass','LowPass4'},...
+               {'Order 4 High Pass','HighPass4'}},{});
+   ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
+   charm(ooo,{});
+   ooo = mitem(oo,'Zeta',{},'filter.zeta');
+   charm(ooo,{});
+   ooo = mitem(oo,'Method',{},'filter.method');
+   choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 end
 
 %==========================================================================
@@ -124,7 +160,7 @@ function oo = Plot(o)                  % Plot Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = plot(oo,'Menu');              % setup plot menu
 
-   plugin(o,'test1/shell/Plot');       % plug point
+   plugin(o,'junk/shell/Plot');       % plug point
 end
 
 %==========================================================================
@@ -136,7 +172,7 @@ function oo = Analyse(o)               % Analyse Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = analyse(oo,'Menu');           % setup analyse menu
 
-   plugin(o,'test1/shell/Analyse');    % plug point
+   plugin(o,'junk/shell/Analyse');    % plug point
 end
 
 %==========================================================================
@@ -148,7 +184,7 @@ function oo = Study(o)                 % Study Menu
    dynamic(oo);                        % make this a dynamic menu
    ooo = study(oo,'Menu');             % setup study menu
 
-   plugin(o,'test1/shell/Study');      % plug point
+   plugin(o,'junk/shell/Study');      % plug point
 end
 
 %==========================================================================
@@ -158,8 +194,8 @@ end
 function oo = Info(o)                  % Info Menu
    oo = menu(o,'Info');                % add Info menu
    ooo = mseek(oo,{'Version'});
-   oooo = mitem(ooo,['Test1 Class: Version ',version(test1)]);
-   ooooo = mitem(oooo,'Edit Release Notes','edit test1/version');
+   oooo = mitem(ooo,['Junk Class: Version ',version(junk)]);
+   ooooo = mitem(oooo,'Edit Release Notes','edit junk/version');
 
-   plugin(o,'test1/shell/Info');       % plug point
+   plugin(o,'junk/shell/Info');       % plug point
 end

@@ -1,20 +1,20 @@
-function oo = analyse(o,varargin)     % Graphical Analysis
+function oo = study(o,varargin)     % Do Some Studies
 %
-% ANALYSE   Graphical analysis
+% STUDY   Several studies
 %
-%    Plenty of graphical analysis functions
+%       oo = study(o,'Menu')     % setup study menu
 %
-%       analyse(o)                % analyse @ opt(o,'mode.analyse')
+%       oo = study(o,'Study1')   % raw signal
+%       oo = study(o,'Study2')   % raw & filtered signal
+%       oo = study(o,'Study3')   % filtered
+%       oo = study(o,'Study4')   % signal noise
 %
-%       oo = analyse(o,'menu')    % setup Analyse menu
-%       oo = analyse(o,'Surf')    % surface plot
-%       oo = analyse(o,'Histo')   % display histogram
+%    See also: JUNK, PLOT, ANALYSIS
 %
-%    See also: TEST1, PLOT, STUDY
-%
-   [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@Surf,@Histo);
-   oo = gamma(o);                 % invoke local function
+   [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
+                        @Study1,@Study2,@Study3,@Study4,@Study5,...
+                        @Study6,@Study7,@Study8,@Study9,@Study10);
+   oo = gamma(o);                   % invoke local function
 end
 
 %==========================================================================
@@ -22,8 +22,17 @@ end
 %==========================================================================
 
 function oo = Menu(o)
-   oo = mitem(o,'Surface',{@WithCuo,'Surf'},[]);
-   oo = mitem(o,'Histogram',{@WithCuo,'Histo'},[]);
+   oo = mitem(o,'Raw',{@WithCuo,'Study1'},[]);
+   oo = mitem(o,'Raw & Filtered',{@WithCuo,'Study2'},[]);
+   oo = mitem(o,'Filtered',{@WithCuo,'Study3'},[]);
+   oo = mitem(o,'Noise',{@WithCuo,'Study4'},[]);
+   oo = mitem(o,'-');
+   oo = mitem(o,'Study5',{@WithCuo,'Study5'},[]);
+   oo = mitem(o,'Study6',{@WithCuo,'Study6'},[]);
+   oo = mitem(o,'Study7',{@WithCuo,'Study7'},[]);
+   oo = mitem(o,'Study8',{@WithCuo,'Study8'},[]);
+   oo = mitem(o,'Study9',{@WithCuo,'Study9'},[]);
+   oo = mitem(o,'Study10',{@WithCuo,'Study10'},[]);
 end
 
 %==========================================================================
@@ -89,25 +98,86 @@ function oo = WithBsk(o)               % 'With Basket' Callback
 end
 
 %==========================================================================
-% Actual Analysis
+% Studies
 %==========================================================================
 
-function o = Surf(o)                   % Surf Plot
-   x = cook(o,'x');
-   y = cook(o,'y');
-
-   idx = 1:ceil(length(x)/50):length(x);
-   idy = 1:ceil(length(y)/50):length(y);
-   z = x(idx)'.*y(idy);
-   surf(x(idx),y(idy),z);
-end
-function o = Histo(o)                  % Histogram
+function o = Study1(o)                 % Study 1: Raw Signal
    t = cook(o,':');
    x = cook(o,'x');
    y = cook(o,'y');
 
    subplot(211);
-   plot(with(corazon(o),'style'),t,sort(x),'r');
+   plot(with(corazon(o),'style'),t,x,'r');
+   title('Raw Signal X');
+   xlabel('t');
+
    subplot(212);
-   plot(with(corazon(o),'style'),t,sort(y),'b');
+   plot(with(corazon(o),'style'),t,y,'b');
+   title('Raw Signal Y');
+   xlabel('t');
+end
+function o = Study2(o)                 % Study 2: Raw & Filtered Signal
+   t = cook(o,':');
+   [x,xf] = cook(o,'x');
+   [y,yf] = cook(o,'y');
+
+   subplot(211);
+   plot(t,x,'r');  hold on;
+   plot(with(corazon(o),'style'),t,xf,'k');
+   title('Raw & Filtered Signal X');
+   xlabel('t');
+
+   subplot(212);
+   plot(t,y,'r');  hold on;
+   plot(with(corazon(o),'style'),t,yf,'k');
+   title('Raw & Filtered Signal Y');
+   xlabel('t');
+end
+function o = Study3(o)                 % Study 3: Filtered Signal
+   t = cook(o,':');
+   [~,xf] = cook(o,'x');
+   [~,yf] = cook(o,'y');
+
+   subplot(211);
+   plot(with(corazon(o),'style'),t,xf,'r');
+   title('Filtered Signal X');
+   xlabel('t');
+
+   subplot(212);
+   plot(with(corazon(o),'style'),t,yf,'b');
+   title('Filtered Signal Y');
+   xlabel('t');
+end
+function o = Study4(o)                 % Study 4: Noise
+   t = cook(o,':');
+   [x,xf] = cook(o,'x');
+   [y,yf] = cook(o,'y');
+
+   subplot(211);
+   plot(with(corazon(o),'style'),t,x-xf,'r');
+   title('Noise Signal X');
+   xlabel('t');
+
+   subplot(212);
+   plot(with(corazon(o),'style'),t,y-yf,'b');
+   title('Noise Signal Y');
+   xlabel('t');
+end
+function o = Study5(o)                 % Study 5
+   message(o,'Study 5');
+end
+function o = Study6(o)                 % Study 6
+   message(o,'Study 6');
+end
+function o = Study7(o)                 % Study 7
+   message(o,'Study 7');
+end
+function o = Study8(o)                 % Study 8
+   message(o,'Study 8');
+end
+function o = Study9(o)                 % Study 9
+   message(o,'Study 9');
+end
+function o = Study10(o)                % Study 10
+   message(o,'Study 10');
 end

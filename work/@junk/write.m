@@ -1,17 +1,17 @@
-function oo = write(o,varargin)        % Write TEST1 Object To File
+function oo = write(o,varargin)        % Write JUNK Object To File
 %
-% WRITE   Write driver to write a TEST1 object to file.
+% WRITE   Write driver to write a JUNK object to file.
 %
 %             oo = write(o,'WriteStuffTxt',path)
 %
-%          See also: TEST1, EXPORT
+%          See also: JUNK, EXPORT
 %
    [gamma,oo] = manage(o,varargin,@WriteLogLog);
    oo = gamma(oo);
 end
 
 %==========================================================================
-% Data Write Driver for Test1 Stuff
+% Data Write Driver for Junk Stuff
 %==========================================================================
 
 function o = WriteLogLog(o)            % Export Object to .log File

@@ -1,14 +1,14 @@
-function oo = new(o,varargin)          % TEST1 New Method              
+function oo = new(o,varargin)          % JUNK New Method              
 %
-% NEW   New TEST1 object
+% NEW   New JUNK object
 %
 %           oo = new(o,'Menu')         % menu setup
 %
-%           o = new(test1,'Simple')    % some simple data
-%           o = new(test1,'Wave')      % some wave data
-%           o = new(test1,'Beat')      % some beat data
+%           o = new(junk,'Simple')    % some simple data
+%           o = new(junk,'Wave')      % some wave data
+%           o = new(junk,'Beat')      % some beat data
 %
-%       See also: TEST1, PLOT, ANALYSIS, STUDY
+%       See also: JUNK, PLOT, ANALYSIS, STUDY
 %
    [gamma,oo] = manage(o,varargin,@Simple,@Wave,@Beat,@Menu);
    oo = gamma(oo);
@@ -43,7 +43,7 @@ function oo = Simple(o)                % New wave object
 
       % pack into object
 
-   oo = test1('smp');                  % simple type
+   oo = junk('smp');                  % simple type
    oo.par.title = sprintf('Some Simple Function (%s)',datestr(now));
    oo.data.t = t;
    oo.data.x = randn + x + 0.1*randn(size(t));
@@ -65,7 +65,7 @@ function oo = Wave(o)                  % New wave object
 
       % pack into object
 
-   oo = test1('alt');                  % alternative type
+   oo = junk('alt');                  % alternative type
    oo.par.title = sprintf('A Stupid Wave (%s)',datestr(now));
    oo.data.t = t;
    oo.data.x = x .* shape + 0.02*randn(size(t));
@@ -88,7 +88,7 @@ function oo = Beat(o)                  % New beat object
 
       % pack into object
 
-   oo = test1('alt');                  % alternative type
+   oo = junk('alt');                  % alternative type
    oo.par.title = sprintf('A Stupid Beat (%s)',datestr(now));
    oo.data.t = t;
    oo.data.x = x .* shape + 0.02*randn(size(t));

@@ -1,10 +1,10 @@
-function oo = read(o,varargin)         % Read TEST1 Object From File
+function oo = read(o,varargin)         % Read JUNK Object From File
 %
-% READ   Read a TEST1 object from file.
+% READ   Read a JUNK object from file.
 %
 %             oo = read(o,'ReadLogLog',path) % .log data read driver
 %
-%          See also: TEST1, IMPORT
+%          See also: JUNK, IMPORT
 %
    [gamma,oo] = manage(o,varargin,@ReadLogLog);
    oo = gamma(oo);
@@ -18,7 +18,7 @@ function oo = ReadLogLog(o)            % Read Driver for .log Data
    path = arg(o,1);
    [x,y,par] = Read(path);
 
-   oo = test1('log');
+   oo = junk('log');
    oo.data.x = x;
    oo.data.y = y;
    oo.par = par;

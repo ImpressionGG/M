@@ -1,14 +1,14 @@
-function vers = version(o,arg)       % TEST1 Class Version
+function vers = version(o,arg)       % JUNK Class Version
 %
-% VERSION   TEST1 class version / release notes
+% VERSION   JUNK class version / release notes
 %
-%       vs = version(test1);           % get TEST1 version string
+%       vs = version(junk);            % get JUNK version string
 %
-%    See also: TEST1
+%    See also: JUNK
 %
 %--------------------------------------------------------------------------
 %
-% Features TEST1/V1A
+% Features JUNK/V1A
 % ==================
 %
 % - Toolbox to analyse and study ...
@@ -23,10 +23,10 @@ function vers = version(o,arg)       % TEST1 Class Version
 %
 %--------------------------------------------------------------------------
 %
-% Release Notes TEST1/V1A
+% Release Notes JUNK/V1A
 % =======================
 %
-% - created: 24-Oct-2021 07:49:02
+% - created: 24-Oct-2021 09:07:57
 %
 % Known bugs & wishlist
 % =========================
@@ -34,8 +34,8 @@ function vers = version(o,arg)       % TEST1 Class Version
 %
 %--------------------------------------------------------------------------
 %
-   path = upper(which('test1/version'));
+   path = upper(which('junk/version'));
    path = upath(o,path);
-   idx = max(findstr(path,'@TEST1'));
+   idx = max(findstr(path,'@JUNK'));
    vers = path(idx-4:idx-2);
 end

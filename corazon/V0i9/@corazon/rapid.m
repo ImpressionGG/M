@@ -615,7 +615,7 @@ function StandardShellTemplate         % Standard Shell Template
 % %==========================================================================
 %
 % function oo = shell(o,varargin)        % $NAME shell
-%    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,...
+%    [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
 %                                  @Plot,@PlotCb,@Analysis,@Study);
 %    oo = gamma(o);                      % invoke local function
 % end
@@ -631,7 +631,7 @@ function StandardShellTemplate         % Standard Shell Template
 %    oo = File(o);                       % add File menu
 %    oo = menu(o,'Edit');                % add Edit menu
 %    oo = View(o);                       % add View menu
-%    oo = menu(o,'Select');              % add Select menu
+%    oo = Select(o);                     % add Select menu
 %    oo = Plot(o);                       % add Plot menu
 %    oo = Analyse(o);                    % add Analyse menu
 %    oo = Study(o);                      % add Study menu
@@ -657,7 +657,7 @@ function StandardShellTemplate         % Standard Shell Template
 %    o = refresh(o,{'menu','About'});    % provide refresh callback function
 % end
 % function list = Dynamic(o)             % List of Dynamic Menus
-%    list = {'View','Plot','Analyse','Study'};
+%    list = {'View','Select','Plot','Analyse','Study'};
 % end
 %
 % %==========================================================================
@@ -731,6 +731,42 @@ function StandardShellTemplate         % Standard Shell Template
 %    plugin(o,'$name/shell/View');       % plug point
 % end
 % 
+% %==========================================================================
+% % Select Menu
+% %==========================================================================
+%
+% function oo = Select(o)                % Select Menu
+%    oo = menu(o,'Select');              % add Select menu
+%    dynamic(oo);                        % make this a dynamic menu
+%    ooo = Filter(oo);                   % add Filter sub menu
+% end
+% function oo = Filter(o)                % Add Filter Menu Items
+%    setting(o,{'filter.mode'},'raw');   % filter mode off
+%    setting(o,{'filter.type'},'LowPass2');
+%    setting(o,{'filter.bandwidth'},5);
+%    setting(o,{'filter.zeta'},0.6);
+%    setting(o,{'filter.method'},1);
+%
+%    oo = mitem(o,'-');
+%
+%    oo = mitem(o,'Filter');
+%    ooo = mitem(oo,'Mode','','filter.mode');
+%    choice(ooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
+%                {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
+%    ooo = mitem(oo,'-');
+%    ooo = mitem(oo,'Type',{},'filter.type');
+%    choice(ooo,{{'Order 2 Low Pass','LowPass2'},...
+%                {'Order 2 High Pass','HighPass2'},...
+%                {'Order 4 Low Pass','LowPass4'},...
+%                {'Order 4 High Pass','HighPass4'}},{});
+%    ooo = mitem(oo,'Bandwidth',{},'filter.bandwidth');
+%    charm(ooo,{});
+%    ooo = mitem(oo,'Zeta',{},'filter.zeta');
+%    charm(ooo,{});
+%    ooo = mitem(oo,'Method',{},'filter.method');
+%    choice(ooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
+% end
+%
 % %==========================================================================
 % % Plot Menu
 % %==========================================================================
@@ -984,35 +1020,6 @@ function PlotTemplate                  % Plot Template
 %    oo = mitem(o,'X',{@WithBsk,'PlotX'});
 %    oo = mitem(o,'Y',{@WithBsk,'PlotY'});
 %    oo = mitem(o,'XY', {@WithBsk,'PlotXY'});
-%
-%    oo = Filter(o);                     % add Filter menu to Select menu
-% end
-% function oo = Filter(o)                % Add Filter Menu Items
-%    setting(o,{'filter.mode'},'raw');   % filter mode off
-%    setting(o,{'filter.type'},'LowPass2');
-%    setting(o,{'filter.bandwidth'},5);
-%    setting(o,{'filter.zeta'},0.6);
-%    setting(o,{'filter.method'},1);
-%
-%    oo = mseek(o,{'#','Select'});
-%    ooo = mitem(oo,'-');
-%
-%    ooo = mitem(oo,'Filter');
-%    oooo = mitem(ooo,'Mode','','filter.mode');
-%    choice(oooo,{{'Raw Signal','raw'},{'Filtered Signal','filter'},...
-%                 {'Raw & Filtered','both'},{'Signal Noise','noise'}},'');
-%    oooo = mitem(ooo,'-');
-%    oooo = mitem(ooo,'Type',{},'filter.type');
-%    choice(oooo,{{'Order 2 Low Pass','LowPass2'},...
-%                 {'Order 2 High Pass','HighPass2'},...
-%                 {'Order 4 Low Pass','LowPass4'},...
-%                 {'Order 4 High Pass','HighPass4'}},{});
-%    oooo = mitem(ooo,'Bandwidth',{},'filter.bandwidth');
-%    charm(oooo,{});
-%    oooo = mitem(ooo,'Zeta',{},'filter.zeta');
-%    charm(oooo,{});
-%    oooo = mitem(ooo,'Method',{},'filter.method');
-%    choice(oooo,{{'Forward',0},{'Fore/Back',1},{'Advanced',2}},{});
 % end
 %
 % %==========================================================================

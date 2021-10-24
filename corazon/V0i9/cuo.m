@@ -18,6 +18,13 @@ function oo = cuo(o)                   % Get Current Shell Object
 %    See also CORAZITO, UTIL, SHO, CURRENT
 %
    so = pull(corazon);            % pull shell object
+   if isempty(so)                 % no shell opened?
+      oo = [];
+      return
+   end
+   
+      % otherwise continue with valid shell object
+      
    if (nargin == 0)
       oo = current(so);
    elseif (nargin == 1)

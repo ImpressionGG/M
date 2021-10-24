@@ -655,6 +655,7 @@ function VersionV1I
 % - corazon/rapid: generate improved plot method
 % - corazon/plot: bug fix: hold control (subplot() always set hold on)
 % - corazo/heading: implicite hold off
+% - corazon: bug fix of cuo and sho (in case of unavailable shell window)
 %
 % Known Bugs / Wishlist
 % - none so far
