@@ -965,6 +965,7 @@ function PlotTemplate                  % Plot Template
 % %
 %    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
 %                        @About,@Overview,@PlotX,@PlotY,@PlotXY);
+%    oo = opt(oo,{'subplot'},1111);      % provide subplot default 
 %    oo = gamma(oo);
 % end
 %

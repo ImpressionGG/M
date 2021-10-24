@@ -249,7 +249,12 @@ function oo = Plot(o)                  % Default Plot Function
       %end
       %hax = subplot(sub(1),sub(2),sub(3));
       %hax = subplot(o,sub);
-      o = subplot(o,sub);
+      if (ishold)
+         o = subplot(o,sub);
+      else
+         o = subplot(o,sub);
+         hold off;
+      end
       hax = axes(o);
       set(hax,'color',o.iif(dark(o),0,1)*[1 1 1]);
    else                                % manage canvas color

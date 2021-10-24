@@ -16,6 +16,7 @@ function oo = plot(o,varargin)         % TEST5 Plot Method
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
                        @About,@Overview,@PlotX,@PlotY,@PlotXY);
+   oo = opt(oo,{'subplot'},1111);      % provide subplot default 
    oo = gamma(oo);
 end
 
@@ -98,7 +99,7 @@ function oo = WithCuo(o)               % 'With Current Object' Callback
    refresh(o,o);                       % remember to refresh here
    cls(o);                             % clear screen
  
-   oo = current(o);                    % get current object
+   oo = current(o);                    % get current object   
    gamma = eval(['@',mfilename]);
    oo = gamma(oo);                     % forward to executing method
 

@@ -653,6 +653,7 @@ function VersionV1I
 %
 % - corazito/master: bug fix: do not append empty arg to arg list
 % - corazon/rapid: generate improved plot method
+% - corazon/plot: bug fix: hold control (subplot() always set hold on)
 %
 % Known Bugs / Wishlist
 % - none so far
