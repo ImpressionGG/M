@@ -5,6 +5,8 @@ function hdl = heading(o,msg)
 %             hdl = heading(o,text)    % draw figure heading
 %             hdl = heading(o)         % use title as figure heading
 %
+%          Remarks: heading() implicitely calls 'hold off' at the end
+%
 %          Copyright(c): Bluenetics 2020 
 %
 %          See also: CORAZON, PLOT, FOOTER
@@ -62,4 +64,6 @@ function hdl = heading(o,msg)
    
    axes(oldhax);                       % restore old axes
    dark(o,'Axes');
+   
+   hold off
 end
