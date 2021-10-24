@@ -10,6 +10,7 @@ function use(tag,version)
 %           use trf        % use TRF toolbox (transfer functions)
 %           use spm        % use (Andy's) SPM toolbox (ANSYS)
 %           use work       % use classes in work directory
+%           use mesh       % BT mesh simulation
 %           use midi       % use miditoolbox
 %           use mind       % use MIND toolbox
 %
@@ -45,6 +46,7 @@ function use(tag,version)
  
       version.corinth = 'V2a1';
       version.cordoba = 'V1c';
+      version.mesh = 'V1a';
       version.midi = 'V1a';
       version.rat = 'V1a';
       version.cut = 'V1b';
@@ -139,6 +141,10 @@ function use(tag,version)
          addpath([mhome,'/miditoolbox']);
          fprintf(['   using MIDI toolbox %s\n'],version.mind);            
          fprintf(['   type: help miditoolbox\n']);            
+      case 'mesh'
+         use corazon
+         addpath([mhome,'/study/mesh/',version.mesh]);
+         fprintf(['   using MESH toolbox %s\n'],version.mind);            
       case 'mind'
          use corazon
          addpath([mhome,'/mind/',version.mind]);
