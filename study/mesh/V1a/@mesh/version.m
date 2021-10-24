@@ -11,7 +11,8 @@ function vers = version(o,arg)       % MESH Class Version
 % Features MESH/V1A
 % ==================
 %
-% - Toolbox to analyse and study ...
+% - Toolbox to analyse and study BT Mesh performance
+% - bug fixes in shell
 %
 %--------------------------------------------------------------------------
 %
@@ -27,6 +28,7 @@ function vers = version(o,arg)       % MESH Class Version
 % =======================
 %
 % - created: 21-Oct-2021 17:05:32
+%
 %
 % Known bugs & wishlist
 % =========================

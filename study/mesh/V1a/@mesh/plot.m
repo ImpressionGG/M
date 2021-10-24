@@ -1,4 +1,4 @@
-function oo = plot(o,varargin)         % MESH Plot Method
+function oo = plot(o,varargin)         % MESH Plot Method              
 %
 % PLOT   MESH plot method
 %
@@ -12,7 +12,8 @@ function oo = plot(o,varargin)         % MESH Plot Method
 %        See also: MESH, SHELL
 %
    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                       @Overview,@PlotX,@PlotY,@PlotXY);
+                       @About,@Overview,@PlotX,@PlotY,@PlotXY);
+   oo = opt(oo,{'subplot'},1111);      % provide subplot default 
    oo = gamma(oo);
 end
 
@@ -20,11 +21,12 @@ end
 % Plot Menu
 %==========================================================================
 
-function oo = Menu(o)                  % Setup Plot Menu
+function oo = Menu(o)                  % Setup Plot Menu               
 %
 % MENU  Setup plot menu. Note that plot functions are best invoked via
 %       Callback or Basket functions, which do some common tasks
 %
+   oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'Overview',{@WithCuo,'Overview'});
 end
 
@@ -94,25 +96,17 @@ end
 % Default Plot Functions
 %==========================================================================
 
-function oo = Plot(o)                  % Default Plot
+function oo = Plot(o)                  % Default Plot                  
 %
 % PLOT The default Plot function shows how to deal with different object
 %      types. Depending on type a different local plot function is invoked
 %
-   args = arg(o);                      % this is for debug only!
-o = arg(o,{[]});
-      % arglist could be for corazon/plot, which means that we just call
-      % corazon plot with the syntax plot(corazon,o). If corazon/plot
-      % recognizes a proper arglist it performs the plot call and returns
-      % either the plot handles or NaN, which means that we are done
-      % and return from the function call (with empty out arg)
-      
    oo = plot(corazon,o);               % if arg list is for corazon/plot
-   if ~isa(oo,'corazon')               % is oo an array of graph handles?
-      %return                           % in such case we are done - bye!
-   else
-      oo = o;                          % make sure we return a MESH object
+   if ~isa(oo,'corazon')               % did corazon/plot handle the call
+      return                           % in such case we are done - bye!
    end
+
+      % otherwise dispatch on object type
 
    cls(o);                             % clear screen
    switch o.type
@@ -127,7 +121,10 @@ end
 % Local Plot Functions (are checking type)
 %==========================================================================
 
-function o = Overview(o)              % Plot Overview
+function oo = About(o)                 % About Object                  
+   oo = plot(corazon(o),'About');
+end
+function o = Overview(o)               % Plot Overview                 
    if ~type(o,{'traf'})
       oo = []; return                  % no idea how to plot this type
    end

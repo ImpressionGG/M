@@ -1,5 +1,5 @@
 function oo = shell(o,varargin)        % MESH shell
-   [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,...
+   [gamma,o] = manage(o,varargin,@Shell,@Tiny,@Dynamic,@View,@Select,...
                                  @Plot,@PlotCb,@Analysis,@Study);
    oo = gamma(o);                      % invoke local function
 end
@@ -41,7 +41,7 @@ function o = Init(o)                   % Init Object
    o = refresh(o,{'menu','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus
-   list = {'View','Plot','Analyse','Study'};
+   list = {'View','Select','Plot','Analyse','Study'};
 end
 
 %==========================================================================
@@ -126,7 +126,8 @@ function oo = Select(o)                % Select Menu
    setting(o,{'traffic.repeats'},6);
 
    oo = menu(o,'Select');              % add standard Select menu
-
+   dynamic(oo);
+   
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Number of Transmissions [ms]',{},'traffic.N');
          choice(ooo,[10,100,1000],{});
