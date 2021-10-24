@@ -24,7 +24,10 @@ function oo = master(obj,evt,tag,cblist)  % Master Callback
    
       % retrieve user data and append to cblist
       
-   cblist{end+1} = get(gcbo,'userdata');
+   args = get(gcbo,'userdata');
+   if ~isempty(args)
+      cblist{end+1} = args;
+   end
    
       % call callback
       

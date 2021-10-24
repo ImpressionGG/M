@@ -649,6 +649,11 @@ function VersionV1I
 % - corleon/save: replace struct conversion to property wise conversion
 % - corazon/rapid: change Plot template to check handles with corazon type
 %
+% Change Log V1i8 (beta):
+%
+% - corazito/master: bug fix: do not append empty arg to arg list
+%
+%
 % Known Bugs / Wishlist
 % - none so far
 %

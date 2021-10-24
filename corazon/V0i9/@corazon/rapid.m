@@ -954,6 +954,9 @@ function PlotTemplate                  % Plot Template
 % %           plot(o)                    % default plot method
 % %           plot(o,'Plot')             % default plot method
 % %
+% %           plot(o,'About')            % about object
+% %           plot(o,'Overview')         % plot object overview
+% %
 % %           plot(o,'PlotX')            % stream plot X
 % %           plot(o,'PlotY')            % stream plot Y
 % %           plot(o,'PlotXY')           % scatter plot
@@ -961,7 +964,7 @@ function PlotTemplate                  % Plot Template
 % %        See also: $NAME, SHELL
 % %
 %    [gamma,oo] = manage(o,varargin,@Plot,@Menu,@WithCuo,@WithSho,@WithBsk,...
-%                        @Overview,@PlotX,@PlotY,@PlotXY);
+%                        @About,@Overview,@PlotX,@PlotY,@PlotXY);
 %    oo = gamma(oo);
 % end
 %
@@ -974,6 +977,7 @@ function PlotTemplate                  % Plot Template
 % % MENU  Setup plot menu. Note that plot functions are best invoked via
 % %       Callback or Basket functions, which do some common tasks
 % %
+%    oo = mitem(o,'About',{@WithCuo,'About'});
 %    oo = mitem(o,'Overview',{@WithCuo,'Plot'});
 %    oo = mitem(o,'-');
 %    oo = mitem(o,'X',{@WithBsk,'PlotX'});
@@ -1082,9 +1086,11 @@ function PlotTemplate                  % Plot Template
 % %      types. Depending on type a different local plot function is invoked
 % %
 %    oo = plot(corazon,o);               % if arg list is for corazon/plot
-%    if ~isa(oo,'corazon')               % is oo an array of graph handles?
+%    if ~isa(oo,'corazon')               % did corazon/plot handle the call
 %       return                           % in such case we are done - bye!
 %    end
+%
+%       % otherwise dispatch on object type
 %
 %    cls(o);                             % clear screen
 %    switch o.type
@@ -1093,7 +1099,7 @@ function PlotTemplate                  % Plot Template
 %       case 'alt'
 %          oo = PlotXY(o);
 %       otherwise
-%          oo = [];  return              % no idea how to plot
+%          oo = About(o);                % no idea how to plot
 %    end
 % end
 %
@@ -1101,27 +1107,31 @@ function PlotTemplate                  % Plot Template
 % % Local Plot Functions (are checking type)
 % %==========================================================================
 %
+% function oo = About(o)                 % About Object
+%    oo = plot(corazon(o),'About');
+% end
 % function oo = Overview(o)              % Plot Overview
 %    if ~type(o,{'smp','alt'})
-%       oo = []; return                  % no idea how to plot this type
+%       oo = About(o);            
+%       return
 %    end
 %
-%    oo = opt(o,'subplot',[2 2 1]);
+%    oo = subplot(o,2211);
 %    PlotX(oo);
 %
-%    oo = opt(oo,'subplot',[2 2 3]);
-%    oo = opt(oo,'title',' ');           % prevent from drawing a title
+%    oo = subplot(o,2221);
 %    PlotY(oo);
 %
-%    oo = opt(oo,'subplot',[1 2 2]);
-%    oo = opt(oo,'title','X/Y-Orbit');   % override title
+%    oo = subplot(o,1212);
 %    PlotXY(oo);
+%    title(axes(oo),'X/Y-Orbit');        % override title
 %
 %    heading(o);
 % end
 % function oo = PlotX(o)                 % Stream Plot X
 %    if ~type(o,{'smp','alt'})
-%       oo = []; return                  % no idea how to plot this type
+%       oo = About(o);            
+%       return
 %    end
 %
 %    oo = Stream(o,'x','r');
@@ -1129,7 +1139,8 @@ function PlotTemplate                  % Plot Template
 % end
 % function oo = PlotY(o)                 % Stream Plot Y%
 %    if ~type(o,{'smp','alt'})
-%       oo = []; return                  % no idea how to plot this type
+%       oo = About(o);            
+%       return
 %    end
 %
 %    oo = Stream(o,'y','bc');
@@ -1137,7 +1148,8 @@ function PlotTemplate                  % Plot Template
 % end
 % function oo = PlotXY(o)                % Scatter Plot
 %    if ~type(o,{'smp','alt'})
-%       oo = []; return                  % no idea how to plot this type
+%       oo = About(o);            
+%       return
 %    end
 %
 %    x = cook(o,'x');
@@ -1145,7 +1157,6 @@ function PlotTemplate                  % Plot Template
 %    oo = corazon(o);
 %    oo = opt(oo,'color',opt(o,'style.scatter'));
 %    plot(oo,x,y,'ko');
-% %  set(gca,'DataAspectRatio',[1 1 1]);
 %    title('Scatter Plot');
 %    xlabel('x');  ylabel('y');
 %

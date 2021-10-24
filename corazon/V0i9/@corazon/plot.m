@@ -199,7 +199,9 @@ function oo = Plot(o)                  % Default Plot Function
       ilist = arg(oo);
       if ~iscell(ilist) || length(ilist) < 2 || ...
          ~isa(ilist{1},'double') || isempty(ilist{1})
-         if isempty(ilist{1})
+         if isempty(ilist)
+            return;                    % tell caller to continue plotting
+         elseif isempty(ilist{1})
             oo = NaN;                  % simulates a pseudo plot
          else
             oo = [];                   % then no arglist for corazon/plot
