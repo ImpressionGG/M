@@ -57,10 +57,10 @@ end
 function oo = New(o)                   % New Menu
    oo = mseek(o,{'New'});
    ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Stuff');
-   oooo = new(corazon(ooo),'Menu');    % add CORAZON New stuff items
-   ooo = mitem(oo,'Mesh');
-   oooo = new(ooo,'Menu');
+%  ooo = mitem(oo,'Stuff');
+%  oooo = new(corazon(ooo),'Menu');    % add CORAZON New stuff items
+%  ooo = mitem(oo,'Mesh');
+   ooo = new(oo,'Menu');
 end
 function oo = Import(o)                % Import Menu Items
    oo = mhead(o,'Import');             % locate Import menu header
@@ -111,8 +111,13 @@ function oo = View(o)                  % View Menu
    ooo = menu(oo,'Dark');              % add Dark mode menu item
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Style');             % add plot style sub menu
-
-   plugin(o,'mesh/shell/View');       % plug point
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Clear Screen',{@Cls});
+   plugin(o,'mesh/shell/View');        % plug point
+   
+   function o = Cls(o)
+      cls(o);
+   end
 end
 
 %==========================================================================
@@ -121,7 +126,7 @@ end
 
 function oo = Select(o)                % Select Menu
    setting(o,{'traffic.Tobs'},1000);
-   setting(o,{'traffic.Tpack'},500);
+   setting(o,{'traffic.Tpack'},250);
    setting(o,{'traffic.N'},1000);
    setting(o,{'traffic.repeats'},6);
 
@@ -130,13 +135,13 @@ function oo = Select(o)                % Select Menu
    
    ooo = mitem(oo,'-');
    ooo = mitem(oo,'Number of Transmissions [ms]',{},'traffic.N');
-         choice(ooo,[10,100,1000],{});
+         choice(ooo,[10,100,1000,1e4,1e5],{});
    ooo = mitem(oo,'Transmission Repeats',{},'traffic.repeats');
          choice(ooo,[1:10],{});
    ooo = mitem(oo,'Observe Time [ms]',{},'traffic.Tobs');
-         choice(ooo,[10,100,1000,1e4],{});
-   ooo = mitem(oo,'Packet Duration [us]',{},'traffic.Tobs');
-         choice(ooo,[500 1000],{});
+         choice(ooo,[10,20,50,100,200,500,1000,1e4,1e5],{});
+   ooo = mitem(oo,'Packet Duration [us]',{},'traffic.Tpack');
+         choice(ooo,[250,500,750,1000],{});
 end
 
 %==========================================================================

@@ -4,16 +4,15 @@ function oo = analyse(o,varargin)     % Graphical Analysis
 %
 %    Plenty of graphical analysis functions
 %
-%       analyse(o)                % analyse @ opt(o,'mode.analyse')
+%       analyse(o)                     % analyse @ opt(o,'mode.analyse')
 %
-%       oo = analyse(o,'menu')    % setup Analyse menu
-%       oo = analyse(o,'Surf')    % surface plot
-%       oo = analyse(o,'Histo')   % display histogram
+%       oo = analyse(o,'menu')         % setup Analyse menu
+%       oo = analyse(o,'Collision')    % collision analysis
 %
 %    See also: MESH, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@Surf,@Histo);
+                                 @WithBsk,@Collision,@Probability,@Optimal);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -22,8 +21,10 @@ end
 %==========================================================================
 
 function oo = Menu(o)
-   oo = mitem(o,'Surface',{@WithCuo,'Surf'},[]);
-   oo = mitem(o,'Histogram',{@WithCuo,'Histo'},[]);
+   oo = mitem(o,'Optimal Repeat Number',{@WithCuo,'Optimal'},[]);
+   oo = mitem(o,'-');
+   oo = mitem(o,'Collision Study',{@WithCuo,'Collision'},[]);
+   oo = mitem(o,'Collision Probability',{@WithCuo,'Probability'},[]);
 end
 
 %==========================================================================
@@ -92,22 +93,42 @@ end
 % Actual Analysis
 %==========================================================================
 
-function o = Surf(o)                   % Surf Plot
-   x = cook(o,'x');
-   y = cook(o,'y');
-
-   idx = 1:ceil(length(x)/50):length(x);
-   idy = 1:ceil(length(y)/50):length(y);
-   z = x(idx)'.*y(idy);
-   surf(x(idx),y(idy),z);
+function o = Collision(o)              % Collision Analysis
+   N = opt(o,{'traffic.N',1000});      % number of concurrent transmissions
+   n = opt(o,{'traffic.repeats',6});   % number of repeats
+   Tobs = opt(o,{'traffic.Tobs',1000});
+   Tpack = opt(o,{'traffic.Tpack',250})/1000;
+   
+      % let's go ...
+      
+   t = Setup(o,N,Tobs,Tpack);
+   dt = diff(t);
+   
+   gdx = find(dt>Tpack);
+   plot(rem(gdx,1000),dt(gdx),'pg');
+   hold on;
+   
+   rdx = find(dt<=Tpack);
+   plot(rem(rdx,1000),dt(rdx),'pr');
+   
+   
+   c = length(rdx)/length(dt);
+   title(sprintf('Collision Propability: %g %%',c*100));
+   
+   
+   function t = Setup(o,N,Tobs,Tpack)
+      t = rand(1,N) * (Tobs-Tpack);
+      t = sort(t);
+   end
 end
-function o = Histo(o)                  % Histogram
-   t = cook(o,':');
-   x = cook(o,'x');
-   y = cook(o,'y');
-
-   subplot(211);
-   plot(with(corazon(o),'style'),t,sort(x),'r');
-   subplot(212);
-   plot(with(corazon(o),'style'),t,sort(y),'b');
+function o = Probability(o)            % Collision Probability
+   L = opt(o,{'traffic.Tpack',250})/1000;
+   
+   T = 2000*0.25/L;
+   R = 0:250:2*T;
+   collsim(o,R,L);
+end
+function o = Optimal(o)                % Optimal Repeat Analysis
+   Rmax = 2500;
+   optimal(sho,100:50:Rmax);
 end
