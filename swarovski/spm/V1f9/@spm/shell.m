@@ -61,7 +61,7 @@ function o = Init(o)                   % Init Object
  
    o = provide(o,'par.title','SPM Toolbox');
    o = provide(o,'par.comment',{'Analyzing SPM objects'});
-   o = refresh(o,{'menu','About'});    % provide refresh callback function
+   o = refresh(o,{'plot','About'});    % provide refresh callback function
 end
 function list = Dynamic(o)             % List of Dynamic Menus         
    list = {'View','Select','Plot','Analyse','Batch','Study'};

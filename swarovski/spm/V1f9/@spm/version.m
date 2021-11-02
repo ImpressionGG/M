@@ -364,7 +364,21 @@ function vers = version(o,arg)         % SPM Class Version
 %     Einlesen spezifischer Dämpfungen von Datei)
 %     => globale Steifigkeit: Select/Variation/Omega
 %     => globale Dämpfung: Select/Variation/Zeta
-%     => Einlesen spezifischer Dämpfungen von Datei: damping.txt
+%     => Einlesen spezifischer Dämpfungen von Datei: #00.dmp, #01.dmp, ...
+%   + Einfach- und Mehrfachkontakt-Analyse
+%     => Select/Contact
+%   + Spektraldarstellung für Mehrfachkontaktsysteme
+%     => Analyse/Principal, Analyse/Critical
+%   + kritischer Reibkoeffizient mit Übersichtsdarstellung
+%     => Analyse/Stability/Stability Margin
+%   + Bode Diagramme
+%     => Analyse/Principal/Bode, Analyse/Critical/Bode
+%   + Stabilitätsdiagramme
+%     => Analyse/Stability/Stability Margin
+%   + Setup Studien
+%     => Analyse/Setup
+%   + Funktionsbeschreibung in der Toolbox durch MATLAB Help Funktionen
+%     => help spm/<method>
 %
 %
 % - Roadmap
@@ -569,6 +583,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F9 @ beta CORAZON V0i9
 % - bug fix: Analyse/Stability menu (depends on current object)
 % - extend damping.m to read damping files with commented data lines
+% - cross check and availability of all quoted functions
 
 % Known bugs & wishlist
 % =====================
