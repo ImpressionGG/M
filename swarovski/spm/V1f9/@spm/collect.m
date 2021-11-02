@@ -180,7 +180,7 @@ end
 % Actual Collection
 %==========================================================================
 
-function list = Collect(o)             % Collect Files                    
+function list = Collect(o)             % Collect Files                 
    caption = 'Import all objects from folder';
    directory = fselect(o,'d','*.*',caption);
    if isempty(directory)
@@ -257,7 +257,7 @@ function list = CollectPkg(o,directory)% Collect Files in Package
       end
    end
 end
-function list = CollectDir(o,path)     % Collect Packages in Directory
+function list = CollectDir(o,path)     % Collect Packages in Directory 
    [~,file,~] = fileparts(path);
    directory = path;
    files = dir(path);

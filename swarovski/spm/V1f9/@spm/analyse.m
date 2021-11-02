@@ -683,29 +683,31 @@ end
 
 function oo = StabilityMenu(o)         % Stability Menu                
    oo = mitem(o,'Stability');
-   if (container(o))                   % shell object? 
+   if (container(current(o)))          % shell object? 
       ooo = mitem(oo,'Critical Friction (Forward)',{@WithCuo,'CriticalFriction',+1});
       ooo = mitem(oo,'Critical Friction (Reverse)',{@WithCuo,'CriticalFriction',-1});
    else
       ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
       enable(ooo,0);                   % disabled for SPM objects
+return
+      ooo = mitem(oo,'-');
+      ooo = mitem(oo,'Root Locus',{@WithCuo,'Rloc'});
    end
-   return
    
       % rest is all legacy
       
-   ooo = mitem(oo,'Overview',{@WithCuo,'StabilitySummary'});
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Nyquist',{@WithCuo,'NyquistStability'});
+%  ooo = mitem(oo,'Overview',{@WithCuo,'StabilitySummary'});
+%  ooo = mitem(oo,'-');
+%  ooo = mitem(oo,'Nyquist',{@WithCuo,'NyquistStability'});
 
-   ooo = mitem(oo,'-');
-   ooo = mitem(oo,'Legacy');
-   oooo = mitem(ooo,'Overview',{@WithCuo,'StabilityOverview'});
-   oooo = mitem(ooo,'-');
-   oooo = mitem(ooo,'Stability Margin',{@WithCuo,'Margin'});
-   oooo = mitem(ooo,'Damping',{@WithCuo,'Damping'});
-   oooo = mitem(ooo,'-');
-   oooo = mitem(ooo,'Root Locus',{@WithCuo,'Rloc'});
+%  ooo = mitem(oo,'-');
+%  ooo = mitem(oo,'Legacy');
+%  oooo = mitem(ooo,'Overview',{@WithCuo,'StabilityOverview'});
+%  oooo = mitem(ooo,'-');
+%  oooo = mitem(ooo,'Stability Margin',{@WithCuo,'Margin'});
+%  oooo = mitem(ooo,'Damping',{@WithCuo,'Damping'});
+%  oooo = mitem(ooo,'-');
+%  oooo = mitem(ooo,'Root Locus',{@WithCuo,'Rloc'});
 end
 
    % callbacks
@@ -1158,21 +1160,24 @@ function o = OldDamping(o)             % Closed Loop Damping
    L0 = inherit(L0,o);
 
    rlocus(o,L0,mu);
-endfunction o = Rloc(o)                   % Root Locus
+end
+function o = Rloc(o)                   % Root Locus
    o = with(o,'rloc');
    o = with(o,'style');
 
-   sym = 'Sys0';
-   oo = cook(o,sym);
+   
+   sym = '';                           % was: 'Sys0';
+   sys = system(o);                    % was:  oo = cook(o,sym);
 
    mu = opt(o,{'process.mu',0.1});
-   B0 = data(oo,'B');
-   oo = data(oo,'B',B0*mu);
+%  B0 = data(oo,'B');
+%  oo = data(oo,'B',B0*mu);
 
-   oo = inherit(oo,o);
+   sys = inherit(sys,o);
 
    subplot(o,111);
-   rloc(oo);
+%  rlocus(o,sys);
+   rloc(sys);
    title(sprintf('Root Locus %s(s) - mu = %g',sym,mu));
 
    heading(o);

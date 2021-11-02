@@ -291,10 +291,14 @@ function dtab = Load(o,file)
             % if we have no comment line read 3 double numbers
 
          if ~(length(line) >= 1 && line(1) == '%')
+            idx = strfind(line,'%');
+            if ~isempty(idx)
+               line(min(idx):end) = [];
+            end
             row = eval(['[',line,']'],[]);
             row = row(:)';
             if (length(row) ~= 3)
-               error('bad file format');
+               error(['bad file format: ',path]);
             end
             dtab = [dtab; row];
          end

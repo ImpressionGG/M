@@ -322,6 +322,51 @@ function vers = version(o,arg)         % SPM Class Version
 %   + reorder setup configurations in setup study
 %   + save .mat file with actual cache in PNG folder
 %
+% - Abnahme (angebotene Funktionen)
+%   + funktioniert die Toolbox dann auch an verschiedenen Stellen mit 
+%     mehr oder weniger Artikeln (Setup-Studie ...); 1:50 Stifte
+%     => prinzipiell so aufgebaut (z.B. Test Setup Studie mit 3 und 5 
+%        Schleifkontakten gestestet); Test mit größerer Stiftzahl kann
+%        gemacht werden, fixes für > 5 Stifte müssen aber als Aufwand
+%        verrechnet werden
+%   + Aussage der Symmetry Study? Sollte binär von zentraler Kugel aus
+%     sortiert werden, d.h, der Vergleich oben/unten liefert leading/trai-
+%     ling
+%     => ist bei der manuellen Sortierreihenfolge (sample study & simmetry
+%        so der Fall), basic study folgt dem Bitmuster der binären
+%        Repräsentation
+%   + Import von SPM Daten und Verwaltung von Packages (inkl. Löschen
+%     ganzer Packages bzw. Einlesen aller Packages eines Verzeichnisses)
+%     => Löschen ganzer Packages mit Edit/Cut
+%     => Einlesen aller Packages eines Verzeichnisses OK, auch rekursiv
+%     => Zusätzlich Möglichkeit durch Clone und Herauslöschen
+%   + Automatische Generierung von Package-Info Files falls keine Package-
+%     Info vorhanden ist
+%     => implementiert (für nicht existierende Package Info Files wird ein
+%        Dialog zur Bestätigung der Autogenerierung angeboten)!
+%   + Darstellung der prinzipalen Frequenzgänge
+%     => siehe Analyse/Pricipal/Genesis,Analyse/Pricipal/G31&G33_Spectrum
+%   + Nyquist Analyse
+%     => siehe Analyse/Principal/Nyquist und Analyse/Critical/Nyquist
+%   - Wurzelort Analyse
+%     => nicht implementiert
+%   + Stability Margin Analyse
+%     => Analyse/Margin/Stability Margin
+%   + Numerische Algorithmen für Systeme mit bis zu 100 Moden mit
+%     Überprüfung der numerischen Präzision
+%     => Berechnung mit 2 Methoden: EW-Analyse ind FQR-Methode
+%   + Prozess- und Design-Parameter Variation (Lagewinkel-Abhängigkeit,
+%     Schleifrichtungs-Abhängigkeit, Bestückungsabhängigkeit)
+%     => Lagewinkel-Abhängigkeit: Select/Objects, .../Stability Margin
+%     => Schleifrichtungs-Abhängigkeit: View/Cutting
+%     => Bestückungsabhängigkeit: Analyse/Setup
+%   + Systemparameter Variation (globale Steifigkeit, globale Dämpfung,
+%     Einlesen spezifischer Dämpfungen von Datei)
+%     => globale Steifigkeit: Select/Variation/Omega
+%     => globale Dämpfung: Select/Variation/Zeta
+%     => Einlesen spezifischer Dämpfungen von Datei: damping.txt
+%
+%
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
 %     stable
@@ -522,7 +567,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - tag SPM-V1F8 Beta Version SPM @ Corazon V1I8
 
 % - start beta SPM V1F9 @ beta CORAZON V0i9
-
+% - bug fix: Analyse/Stability menu (depends on current object)
+% - extend damping.m to read damping files with commented data lines
 
 % Known bugs & wishlist
 % =====================
