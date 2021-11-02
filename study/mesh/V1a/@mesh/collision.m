@@ -5,7 +5,7 @@ function oo = collision(o,R,r,L)
 %             to repeat rate r and packet length L. 
 %
 %                C = collision(o,R,r,L)     % collision propability 
-%                C = collision(o,R,r)       % L = 0.256e-3 (250us) 
+%                C = collision(o,R,r)       % L = 0.256e-3 (250us), r=3 
 %
 %                C = collision(o,500,6);
 %                C = collision(o,1000,[2 3])% 2 application repeats, 3
@@ -44,6 +44,9 @@ function oo = collision(o,R,r,L)
 %
    if (nargin < 4)
       L = 0.256e-3;
+   end
+   if (nargin < 3)
+      r = 3;
    end
    if (nargin < 2)
       R = 0:10:1000;

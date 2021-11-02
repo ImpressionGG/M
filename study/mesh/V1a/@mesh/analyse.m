@@ -12,7 +12,7 @@ function oo = analyse(o,varargin)     % Graphical Analysis
 %    See also: MESH, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,...
-                                 @WithBsk,@Collision,@Probability,@Optimal);
+                  @WithBsk,@Collision,@Probability,@Optimal,@Boost);
    oo = gamma(o);                 % invoke local function
 end
 
@@ -25,6 +25,9 @@ function oo = Menu(o)
    oo = mitem(o,'-');
    oo = mitem(o,'Collision Study',{@WithCuo,'Collision'},[]);
    oo = mitem(o,'Collision Probability',{@WithCuo,'Probability'},[]);
+   oo = mitem(o,'Boost Rate',{@WithCuo,'Boost'});
+   oo = mitem(o,'-');
+   oo = bench(o,'Menu');
 end
 
 %==========================================================================
@@ -131,4 +134,12 @@ end
 function o = Optimal(o)                % Optimal Repeat Analysis
    Rmax = 2500;
    optimal(sho,100:50:Rmax);
+end
+function o = Boost(o)                  % Boost Rate                    
+   o = subplot(o,2111);
+   boost(o);
+   
+   o = subplot(o,2121);
+   boost(o,3,0.256/1000,30000);
+   set(gca,'ylim',[0 1]);
 end
