@@ -1,4 +1,10 @@
 classdef mesh < corazon                % Mesh Class Definition
+%
+% Object types:
+%
+%    send:   definition of messages to be sent, including timing and
+%            parameters
+
    methods                             % public methods
       function o = mesh(arg)           % mesh constructor
          if (nargin == 0)

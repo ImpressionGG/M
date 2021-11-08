@@ -47,7 +47,7 @@ function oo = collsim(o,R,L)           % collision simulation
       C(i) = 1 - length(gdx) / length(dt1);
 
       if (nargout == 0)
-         hdl = plot(R(i),100*C(i),'ro');
+         hdl = plot(R(i),100*C(i),'rp');
          hold on;
          idle(o);
       end
@@ -55,6 +55,7 @@ function oo = collsim(o,R,L)           % collision simulation
    
    if (nargout == 0)
       hdl = plot(R,100*C,'ro');
+      %o.color(hdl,'ryyy');
       %set(hdl,'linewidth',3);
       subplot(o);
    else
@@ -69,9 +70,10 @@ function oo = collsim(o,R,L)           % collision simulation
       t0 = 0:100:R0;
       t1 = 0:50:R(end);
    
-      P = t0/2000 * Lms/0.256;
+      P = t0/2000;   % * Lms/0.256;
       P1 = 100*(1 - exp(-t1/R0));
-      plot(t0,100*P,'g', t1,P1,'c');
+      hdl = plot(t0,100*P,'g', t1,P1,'c');
+      set(hdl,'linewidth',1);
       
       title(sprintf('Collision Propability (packet: %g us)',Lms*1000));
       xlabel('Packet Rate [pkt/s]');

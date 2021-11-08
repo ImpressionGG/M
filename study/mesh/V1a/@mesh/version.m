@@ -30,6 +30,7 @@ function vers = version(o,arg)       % MESH Class Version
 % - created: 21-Oct-2021 17:05:32
 % - basic analysis with collision probability implemented
 % - methods bench, boost and yield
+% - some refinements
 %
 % Known bugs & wishlist
 % =========================

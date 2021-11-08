@@ -96,7 +96,7 @@ end
 % Actual Analysis
 %==========================================================================
 
-function o = Collision(o)              % Collision Analysis
+function o = Collision(o)              % Collision Analysis            
    N = opt(o,{'traffic.N',1000});      % number of concurrent transmissions
    n = opt(o,{'traffic.repeats',6});   % number of repeats
    Tobs = opt(o,{'traffic.Tobs',1000});
@@ -124,14 +124,14 @@ function o = Collision(o)              % Collision Analysis
       t = sort(t);
    end
 end
-function o = Probability(o)            % Collision Probability
-   L = opt(o,{'traffic.Tpack',250})/1000;
+function o = Probability(o)            % Collision Probability         
+   L = opt(o,{'traffic.Tpack',250})*1e-6;
    
-   T = 2000*0.25/L;
+   T = 2000*250e-6/L;
    R = 0:250:2*T;
    collsim(o,R,L);
 end
-function o = Optimal(o)                % Optimal Repeat Analysis
+function o = Optimal(o)                % Optimal Repeat Analysis       
    Rmax = 2500;
    optimal(sho,100:50:Rmax);
 end
@@ -140,6 +140,6 @@ function o = Boost(o)                  % Boost Rate
    boost(o);
    
    o = subplot(o,2121);
-   boost(o,3,0.256/1000,30000);
+   boost(o,1,0.256/1000,30000);
    set(gca,'ylim',[0 1]);
 end

@@ -322,7 +322,7 @@ function vers = version(o,arg)         % SPM Class Version
 %   + reorder setup configurations in setup study
 %   + save .mat file with actual cache in PNG folder
 %
-% - Abnahme (angebotene Funktionen)
+% - Abnahme/Teil 1 (Im Angebot aufgelistete Funktionen)
 %   + funktioniert die Toolbox dann auch an verschiedenen Stellen mit 
 %     mehr oder weniger Artikeln (Setup-Studie ...); 1:50 Stifte
 %     => prinzipiell so aufgebaut (z.B. Test Setup Studie mit 3 und 5 
@@ -380,6 +380,9 @@ function vers = version(o,arg)         % SPM Class Version
 %   + Funktionsbeschreibung in der Toolbox durch MATLAB Help Funktionen
 %     => help spm/<method>
 %
+% - Abnahme/Teil 1 (Im Angebot aufgelistete Funktionen)
+%   + funktioniert die Toolbox an unterschiedlichen Stellen dann auch mit
+%     mehr oder weniger Artikeln (Setup Studie, 1-50 Stifte) 
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
