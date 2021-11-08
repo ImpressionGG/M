@@ -380,9 +380,36 @@ function vers = version(o,arg)         % SPM Class Version
 %   + Funktionsbeschreibung in der Toolbox durch MATLAB Help Funktionen
 %     => help spm/<method>
 %
-% - Abnahme/Teil 1 (Im Angebot aufgelistete Funktionen)
+% - Abnahme/Teil 2 (Von Andy aufgelistete Punkte)
 %   + funktioniert die Toolbox an unterschiedlichen Stellen dann auch mit
-%     mehr oder weniger Artikeln (Setup Studie, 1-50 Stifte) 
+%     mehr oder weniger Artikeln (Setup Studie, 1-50 Stifte)
+%     => Test mit 1/3/5 Kontakten Critical und Setup Studien positiv!
+%     => Erweiterung des Select/Contact Menüs um 2-Kontakt-Muster 
+%        'o-o-x-x-x','x-x-x-o-o','x-o-o-o-o','x-o-o-o-o'; Analyse/Critical
+%        Tests positiv. Setup/Basis und Setup/Sample Studien funktionieren,
+%        Setup/Symmetry zeigt kein symmetrisches Muster
+%     => Setup-Studien-Menüs sind für 5 und 7 Stifte vorbereitet. Für
+%        andere Stiftzahlen gibt es derzeit keine Sonderunterstützung
+%   + Aussage der Symmetry Study? Sollte binär von zentraler Kugel aus
+%     sortiert werden ...
+%     => derzeitige Sortierung: binär, und davon ausgehend gespiegelt!
+%     => weitere Anpassungen müßten gegen Aufwandsabgeltung umgesetzt
+%        werden
+%   + Sortierung bei einem einzelnen SPM konsistent zur Sortierung beim
+%     Package (dürfte bereits so sein)
+%     => ist bereits so!
+%   + Im Batch als Auswertung die Basic Setup Studie mit richtiger
+%     Sortierung anstelle der Symmetry Study, bzw. vielleicht auch auswähl-
+%     bar Basic Setup study und Symmetry Setup Study, welche nur für SPMs 
+%     und Package gilt
+%     => so implementiert dass beide Varianten im Batch berechnet werden
+%   + Überall Info-Text mit schmalem Abstand
+%     => zentrale About-Routine
+%     => bei Batch-Konfiguration geändert
+%     => Aufrufe müssen als message(opt(o,'pitch',0.5),...) angepasst
+%        werden
+%   + 10000 Punkte Default auch im Patch (wie im Live Modus)
+%     => auf 1000 Punkte geändert
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -587,6 +614,7 @@ function vers = version(o,arg)         % SPM Class Version
 % - bug fix: Analyse/Stability menu (depends on current object)
 % - extend damping.m to read damping files with commented data lines
 % - cross check and availability of all quoted functions
+% + 10000 Punkte Default auch im Batch (wie im Live Modus)
 
 % Known bugs & wishlist
 % =====================

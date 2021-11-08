@@ -43,7 +43,7 @@ function o = Config(o)                 % Configuration Menu
    setting(o,{'batch.fast'},1);                 % fast batch processing 
    setting(o,{'batch.cleanup'},0);              % cache cleanup
    setting(o,{'batch.save'},1);                 % intermediate save
-   setting(o,{'batch.spectrum.points'},5000);   % points of spectrum
+   setting(o,{'batch.spectrum.points'},10000);  % points of spectrum
    setting(o,{'batch.critical.eps'},1e-6);      % epsilon of critical phase
    
    oo = mitem(o,'Batch Config');
@@ -146,7 +146,9 @@ function o = About(o,msg)              % About Batch Configuration
    if (nargin >= 2)
       title = sprintf('%s (%s)',title,msg);
    end
-   message(o,title,comment);
+   
+   oo = opt(o,'pitch',0.5);
+   message(oo,title,comment);
 end
 
 %==========================================================================
