@@ -452,6 +452,11 @@ function AbnahmeTeil2
 %        kann, und dass immer die globalen Werte genommen werden
 %   + Damping vor Critical Sensitivity rechnen, damit das Diagram nicht
 %     leer ist, oder Diagramm nicht anzeigen, wenn nicht berechnet
+%     => Menüpunkt 'Weight Sensitivity' wurde entfernt
+%     => default für 'show timing' ist nun 'false'
+%     => Damping sensitivity wird in critical sensitivity nicht mehr
+%        angezeigt, falls Daten nicht verfügbar
+%     
 end
 
 function Roadmap                                                       
@@ -671,6 +676,7 @@ function SpmV1F9
 % + 10000 Punkte Default auch im Batch (wie im Live Modus)
 % + plugin examples spmhack and batchplug added
 % - Weight Sensitivity removed from Analyse/Sensitivity menu
+% - 
 end
 
 function KnownBugsAndWishlist                                          

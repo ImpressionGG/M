@@ -229,6 +229,8 @@ function o = Critical(o)               % Critical Sensitivity
       % fetch relevant options, scaling parameters and colors
       
    timing = opt(o,{'sensitivity.timing',0});
+   valid = ~isempty(cache(o,'sensitivity.S'));  % valid sensitivity
+
    pareto = opt(o,{'pareto',1.0});
    frequency = opt(o,{'bode.frequency',0});
    fast = opt(o,{'sensitivity.fast',0});
@@ -238,12 +240,21 @@ function o = Critical(o)               % Critical Sensitivity
    
    heading(o);
    
-   sub1 = 2212;                        % for bode plot
-   sub2 = o.iif(timing,4221,3221);     % for K plot
-   sub3 = 2222;                        % for damping
-   sub4 = o.iif(timing,4211,3211);     % for damping sensitivity
-   sub5 = o.iif(timing,4231,3231);     % for Percentage plot
-   sub6 = 4241;                        % for timing plot
+   if (valid)
+      sub1 = 2212;                        % for bode plot
+      sub2 = o.iif(timing,4221,3221);     % for K plot
+      sub3 = 2222;                        % for damping
+      sub4 = o.iif(timing,4211,3211);     % for damping sensitivity
+      sub5 = o.iif(timing,4231,3231);     % for Percentage plot
+      sub6 = 4241;                        % for timing plot
+   else
+      sub1 = 2212;                        % for bode plot
+      sub2 = o.iif(timing,3211,2211);     % for K plot
+      sub3 = 2222;                        % for damping
+      sub4 = [];                          % for damping sensitivity
+      sub5 = o.iif(timing,3221,2221);     % for Percentage plot
+      sub6 = 4241;                        % for timing plot
+   end
    
       % hard refresh of caches
     
@@ -822,6 +833,9 @@ function o = WeightOrDamping(o)        % Damping Sensitivity
    end
 end
 function PlotS(o,sub)                  % Plot Sensitivity              
+   if isempty(sub)
+      return
+   end
    subplot(o,sub);
    modus = cache(o,'sensitivity.mode');
    S = cache(o,'sensitivity.S');
