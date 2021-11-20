@@ -6,6 +6,12 @@ function vers = version(o,arg)         % SPM Class Version
 %
 %    See also: SPM
 %
+   path = upper(which('spm/version'));
+   path = upath(o,path);
+   idx = max(findstr(path,'@SPM'));
+   vers = path(idx-4:idx-2);
+end
+function FeaturesSpmV1c                                                
 %--------------------------------------------------------------------------
 %
 % Features SPM/V1C
@@ -35,17 +41,20 @@ function vers = version(o,arg)         % SPM Class Version
 % - cook method to access all important interna data
 % - trial to implement VPA for TRF add
 % - proper defaults
-%
+end
+function SpmV1D                                                        
 % Features SPM/V1D
 % ================
 %
 % - Replace old style principal transfer functions by normalized (and in-
 %   vertible) principal transfer functions.
 % - introduce plot menu for critical closed loop transfer functions
-%
+end
+function SpmV1E                                                        
 % Features SPM/V1E
 % ================
-%
+end
+function SpmV1F                                                        
 % Features SPM/V1F
 % ================
 % - init organized setting is 'packages' by default
@@ -59,9 +68,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - better information in diagram titles
 % - damping variation on package level (via damping file) and object
 %   specific via command shell; graphical damping overview for cross check 
-% 
-%--------------------------------------------------------------------------
-%
+end
+function Roadmap0                                                      
 % Roadmap
 % =======
 % + fix calculation bug (deviation between MiniSpm and SPM Toolbox)
@@ -98,7 +106,8 @@ function vers = version(o,arg)         % SPM Class Version
 %         object and update shell with actual default settings
 %
 %--------------------------------------------------------------------------
-%
+end
+function ReleaseNotesV1C                                               
 % Release Notes SPM/V1C
 % =====================
 %
@@ -179,8 +188,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp speed of rloc diagram, access poles/zeros voa zpk()
 % - pricipal TRF plot menu added
 % - Release of SPM toolbox V1C
-%
-%
+end
+function ReleaseNotesV1D                                               
 % Release Notes SPM/V1D
 % =====================
 %
@@ -216,7 +225,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - creating package info @ reading info file / provide parameter defaults
 % - Plot>Critical_Loop -> new plot menu items
 % - pimp phase diagrams
-%
+end
+function ReleaseNotesV1E                                               
 % Release Notes SPM/V1E
 % =====================
 %
@@ -282,7 +292,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - pimp & bug fixes SPM V1E
 % - pimping
 % - add sample mode to setup analysis
-%
+end
+function ReleaseNotesV1F                                               
 % Release Notes SPM/V1F
 % =====================
 %
@@ -321,7 +332,8 @@ function vers = version(o,arg)         % SPM Class Version
 %   + crashing setup study @LPC.2021040606.SPM model=v7 
 %   + reorder setup configurations in setup study
 %   + save .mat file with actual cache in PNG folder
-%
+end
+function AbnahmeTeil1                                                  
 % - Abnahme/Teil 1 (Im Angebot aufgelistete Funktionen)
 %   + funktioniert die Toolbox dann auch an verschiedenen Stellen mit 
 %     mehr oder weniger Artikeln (Setup-Studie ...); 1:50 Stifte
@@ -379,7 +391,8 @@ function vers = version(o,arg)         % SPM Class Version
 %     => Analyse/Setup
 %   + Funktionsbeschreibung in der Toolbox durch MATLAB Help Funktionen
 %     => help spm/<method>
-%
+end
+function AbnahmeTeil2                                                  
 % - Abnahme/Teil 2 (Von Andy aufgelistete Punkte)
 %   + funktioniert die Toolbox an unterschiedlichen Stellen dann auch mit
 %     mehr oder weniger Artikeln (Setup Studie, 1-50 Stifte)
@@ -416,7 +429,16 @@ function vers = version(o,arg)         % SPM Class Version
 %     informieren
 %     => Bestätigungsdialog eingebaut mit optionaler Änderung des
 %        Verzeichnisnamens
-%
+%   + PDF Export möglich? Evt. nur als Feature, das von mir als Patch
+%     programmiert werden kann?
+%     => Wunch wurde nicht behandelt (Abwicklung als verrechnete Aufgabe
+%        wäre möglich)
+%   + Plugin Skelett für Batch und analyse
+%     => zwei plugin-Beispiele sind als Teil der Toolbox dabei: 
+%        spmhack.m, batchplug.m
+end
+
+function Roadmap                                                       
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
 %     stable
@@ -431,8 +453,9 @@ function vers = version(o,arg)         % SPM Class Version
 %   - add menu point Select>Coupling-Path for selection of coupling path
 %   - calculate G(s) depending on selection of coupling path
 %   - Additional Plot graphics for mode frequencies
-%     
-%
+end
+
+function SpmV1F1                                                       
 % - start beta SPM V1F1
 % - organizing mode 'packages' by default
 % - add Batch menu
@@ -465,7 +488,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - new 3-color setup analysis charts
 % - spm/contact to accept binary coded contact IDs
 % - pimp stability margin chart
-%
+end
+function SpmV1F2                                                       
 % - start beta SPM V1F2
 % + clear cache @omega or zeta varitation
 % - first version of weight sensitivity for multi contact systems
@@ -487,6 +511,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - damping syntax changed for side effect to the shell
 % - tag SPM-V1F2 Beta Version SPM @ Corazon V1I2
 %
+end
+function SpmV1F3                                                       
 % - start beta SPM V1F3
 % - bug fix: deactivate menu Analyse>Stability_Margin for shell object
 %   selection
@@ -500,6 +526,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - batch menu items for all damping sensitivity and critical sensitivity
 % - tag SPM-V1F3 Beta Version SPM @ Corazon V1I3
 %
+end
+function SpmV1F4                                                       
 % - start beta SPM V1F4
 % - incorporate package title into standard headings
 % - move Weight/Damping Sensitivity struff to spm/sensitivity method
@@ -534,7 +562,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - start beta SPM V1F5 @ beta CORAZON V0i5
 % - bug fix: focus thief in corazon/cls
 % - tag SPM-V1F5 Beta Version SPM @ Corazon V1I5
-%
+end
+function SpmV1F6                                                       
 % - start beta SPM V1F6 @ beta CORAZON V0i6
 % - spm/critical method pimped to deal with k0=inf or K190=inf
 % - spm/new extended to support 'Challenge' systems
@@ -569,7 +598,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - weak critical check by default, no checks during batch processing
 % - pareto value displayed in critical sensitivity (timimg diagram)
 % - tag SPM-V1F6 Beta Version SPM @ Corazon V1I6
-
+end
+function SpmV1F7                                                       
 % - start beta SPM V1F7 @ beta CORAZON V0i7
 % - batch prqocessing for whole package took 5750s (1.6s), no slow down :-)
 % - dynamic name for PNG directory
@@ -593,7 +623,8 @@ function vers = version(o,arg)         % SPM Class Version
 % - switching from corazon V0i7 to V1i7
 % - bug: Nichols plot of reverse 2-Mode system not correct
 % - tag SPM-V1F7 Beta Version SPM @ Corazon V1I7
-
+end
+function SpmV1F8                                                       
 % - start beta SPM V1F8 @ beta CORAZON V0i8
 % - fix oo-bug in spm/batch
 % - bugfix: Nyquist plots
@@ -615,22 +646,20 @@ function vers = version(o,arg)         % SPM Class Version
 % + auto creation of package info file @ import package
 % + comparison of packages (critical friction)
 % - tag SPM-V1F8 Beta Version SPM @ Corazon V1I8
-
+end
+function SpmV1F9                                                       
 % - start beta SPM V1F9 @ beta CORAZON V0i9
 % - bug fix: Analyse/Stability menu (depends on current object)
 % - extend damping.m to read damping files with commented data lines
 % - cross check and availability of all quoted functions
 % + 10000 Punkte Default auch im Batch (wie im Live Modus)
+% + plugin examples spmhack and batchplug added
+end
 
-
-
+function KnownBugsAndWishlist                                          
 % Known bugs & wishlist
 % =====================
 % - none
 %--------------------------------------------------------------------------
 %
-   path = upper(which('spm/version'));
-   path = upath(o,path);
-   idx = max(findstr(path,'@SPM'));
-   vers = path(idx-4:idx-2);
 end

@@ -3,16 +3,17 @@ function oo = batch(o,varargin)        % Batch figure printing
 % BATCH Batch figure generation
 %
 %       oo = batch(o,'Menu')           % setup Batch menu
+%       oo = batch(o,'Options')        % set Batch options
 %
 %       oo = batch(o,func)             % call local batch function
 %
 %    See also: SPM, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @RunBatch,@About,...
+                        @RunBatch,@About,@Options,...
                         @StabilityMargin,@CriticalOverview,...
                         @CriticalSensitivity,@DampingSensitivity,...
-                        @SetupStudy,@ClearAllCaches);
+                        @SetupStudy,@ClearAllCaches,@Confirm);
    oo = gamma(o);                      % invoke local function
 end
 
