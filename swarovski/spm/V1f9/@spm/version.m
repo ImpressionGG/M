@@ -410,6 +410,12 @@ function vers = version(o,arg)         % SPM Class Version
 %        werden
 %   + 10000 Punkte Default auch im Patch (wie im Live Modus)
 %     => auf 1000 Punkte geändert
+%   + PNGs werden beim Batch überschrieben. Diskutieren ob wir das so
+%     lassen wollen, bzw, ob ein neuer Ordner Ordner erzeugt wird, oder
+%     beim Bestätigungsdialog vor dem Ausführen checken und darüber
+%     informieren
+%     => Bestätigungsdialog eingebaut mit optionaler Änderung des
+%        Verzeichnisnamens
 %
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -616,10 +622,11 @@ function vers = version(o,arg)         % SPM Class Version
 % - cross check and availability of all quoted functions
 % + 10000 Punkte Default auch im Batch (wie im Live Modus)
 
+
+
 % Known bugs & wishlist
 % =====================
-% - bug: crash during setup study
-%
+% - none
 %--------------------------------------------------------------------------
 %
    path = upper(which('spm/version'));

@@ -94,7 +94,7 @@ function o = Config(o)                 % Configuration Menu
       end
    end
 end
-function o = About(o,msg)              % About Batch Configuration     
+function [o,list] = About(o,msg)       % About Batch Configuration     
    refresh(o,o);                       % come here for refresh
    batch = opt(o,'batch');
    comment = {};
@@ -140,15 +140,20 @@ function o = About(o,msg)              % About Batch Configuration
    
    comment{end+1} = sprintf('Points: %g',opt(o,'batch.spectrum.points'));
    comment{end+1} = sprintf('Epsilon: %g',opt(o,'batch.critical.eps'));
-   cls(o);
    
-   title = 'Batch Configuration';
-   if (nargin >= 2)
-      title = sprintf('%s (%s)',title,msg);
+   if (nargout <= 1)
+      cls(o);
+
+      title = 'Batch Configuration';
+      if (nargin >= 2)
+         title = sprintf('%s (%s)',title,msg);
+      end
+
+      oo = opt(o,'pitch',0.5);
+      message(oo,title,comment);
+   else
+      list = comment;
    end
-   
-   oo = opt(o,'pitch',0.5);
-   message(oo,title,comment);
 end
 
 %==========================================================================
@@ -240,7 +245,11 @@ function o = RunBatch(o)               % Master Entry for Batch Process
    tstart = tic;
    
 %o = ClearAllCaches(o);                 % at this beta stage safer ;-)
-   
+   o = Confirm(o);
+   if isempty(o)
+      return
+   end
+      
    switch o.type
       case 'shell'
          o = RunAll(o);
@@ -297,11 +306,11 @@ function o = RunPkg(o)                 % Run a Single Package
       end
       
       oo = list{i};                    % i-th child
-      RunSpm(oo);                      % run batch for SPM object
+      oo = RunSpm(oo);                 % run batch for SPM object
 
          % intermediate save, if activated
 
-      if (~stop(o) && batch.save)
+      if (~stop(o) && ~isempty(oo) && batch.save)
          IntermediateSave(o);
       end
    end
@@ -333,7 +342,7 @@ function o = RunPkg(o)                 % Run a Single Package
       end
    end
 end
-function o = RunSpm(o)                 % Run a Single SPM Object       
+function oo = RunSpm(o)                % Run a Single SPM Object       
 %
 % RUNSPM   Run batch tasks for a single SPM object.
 %
@@ -342,6 +351,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
 %          If cache needs to be cleared then return SPMobject with cleared
 %          cache!
 %
+   oo = [];
    assert(type(o,{'spm'}));
    batch = opt(o,'batch');
 
@@ -351,7 +361,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       if stop(o)
          return
       end
-      StabilityMarginSpm(o);
+      %StabilityMarginSpm(o);          % not supported
    end
 
       % critical overview
@@ -361,6 +371,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
          return
       end
       CriticalOverviewSpm(o);
+      oo = o;
    end
 
       % damping sensitivity
@@ -373,6 +384,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
       ID = id(o);
       oo = id(o,ID);                   % refresh object with updated cache
       o = inherit(oo,o);               % inherit actual options
+      oo = o;
    end
 
       % critical sensitivity
@@ -382,6 +394,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
          return
       end
       CriticalSensitivitySpm(o);
+      oo = o;
    end
 
       % setup study
@@ -391,6 +404,7 @@ function o = RunSpm(o)                 % Run a Single SPM Object
          return
       end
       SetupStudySpm(o);
+      oo = o;
    end
 end
 
@@ -430,7 +444,7 @@ function o = StabilityMarginPkg(o)
 end
 function o = StabilityMarginSpm(o)                                     
    assert(type(o,{'spm'}));
-   refresh(o,{'batch','About'});
+   cls(o);
 end
 
 %==========================================================================
@@ -784,4 +798,41 @@ function IntermediateSave(o)           % Save to .Mat file
    
    o = clean(o);
    save(o,pack(o),path);
+end
+function oo = Confirm(o)               % Batch Confirmation Dialog     
+   folder = opt(o,{'folder','PNG'}); 
+
+   while (1)
+      [~,list] = About(o);
+      list{end+1} = ' ';
+      list{end+1} = ['Folder: ',folder];
+      choice = questdlg(list,'Run Batch', 'Change','Cancel', 'OK', 'OK');
+      
+      if ~isequal(choice,'Change')
+         break;
+      end
+      
+         % change folder name
+ 
+       name = 'Change Folder';
+       prompt = {'Folder Name for PNG Files'};
+       numlines=1;
+       default = {folder};
+
+       while (1)
+          answer = inputdlg(prompt,name,numlines,default);
+          if ~isempty(answer)
+             if ~isempty(answer{1})
+                folder = answer{1};
+                break;
+             end
+          end
+       end
+   end
+   
+   if isequal(choice,'Cancel')
+      oo = [];
+   else
+      oo = opt(o,'folder',folder);  
+   end
 end

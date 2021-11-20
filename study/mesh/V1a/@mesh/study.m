@@ -12,8 +12,7 @@ function oo = study(o,varargin)     % Do Some Studies
 %    See also: MESH, PLOT, ANALYSIS
 %
    [gamma,o] = manage(o,varargin,@Error,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                        @Study1,@Study2,@Study3,@Study4,@Study5,...
-                        @Study6,@Study7,@Study8,@Study9,@Study10);
+                        @Gravity1);
    oo = gamma(o);                   % invoke local function
 end
 
@@ -22,17 +21,7 @@ end
 %==========================================================================
 
 function oo = Menu(o)
-   oo = mitem(o,'Raw',{@WithCuo,'Study1'},[]);
-   oo = mitem(o,'Raw & Filtered',{@WithCuo,'Study2'},[]);
-   oo = mitem(o,'Filtered',{@WithCuo,'Study3'},[]);
-   oo = mitem(o,'Noise',{@WithCuo,'Study4'},[]);
-   oo = mitem(o,'-');
-   oo = mitem(o,'Study5',{@WithCuo,'Study5'},[]);
-   oo = mitem(o,'Study6',{@WithCuo,'Study6'},[]);
-   oo = mitem(o,'Study7',{@WithCuo,'Study7'},[]);
-   oo = mitem(o,'Study8',{@WithCuo,'Study8'},[]);
-   oo = mitem(o,'Study9',{@WithCuo,'Study9'},[]);
-   oo = mitem(o,'Study10',{@WithCuo,'Study10'},[]);
+   oo = mitem(o,'Gravity 1',{@WithCuo,'Gravity1'},[]);
 end
 
 %==========================================================================
@@ -101,83 +90,35 @@ end
 % Studies
 %==========================================================================
 
-function o = Study1(o)                 % Study 1: Raw Signal
-   t = cook(o,':');
-   x = cook(o,'x');
-   y = cook(o,'y');
+function o = Gravity1(o)                % Study 1: Raw Signal
+   t = [0.1; 0.4; 0.8];
+   
+   n = 10;
+   t = t*zeros(1,n);
+   [t,dt] = Gravity(o,t);
+   plot(1:size(t,2),t);
+   subplot(o);
+end
 
-   subplot(211);
-   plot(with(corazon(o),'style'),t,x,'r');
-   title('Raw Signal X');
-   xlabel('t');
+%==========================================================================
+% THE Gravity Algorithm
+%==========================================================================
 
-   subplot(212);
-   plot(with(corazon(o),'style'),t,y,'b');
-   title('Raw Signal Y');
-   xlabel('t');
-end
-function o = Study2(o)                 % Study 2: Raw & Filtered Signal
-   t = cook(o,':');
-   [x,xf] = cook(o,'x');
-   [y,yf] = cook(o,'y');
-
-   subplot(211);
-   plot(t,x,'r');  hold on;
-   plot(with(corazon(o),'style'),t,xf,'k');
-   title('Raw & Filtered Signal X');
-   xlabel('t');
-
-   subplot(212);
-   plot(t,y,'r');  hold on;
-   plot(with(corazon(o),'style'),t,yf,'k');
-   title('Raw & Filtered Signal Y');
-   xlabel('t');
-end
-function o = Study3(o)                 % Study 3: Filtered Signal
-   t = cook(o,':');
-   [~,xf] = cook(o,'x');
-   [~,yf] = cook(o,'y');
-
-   subplot(211);
-   plot(with(corazon(o),'style'),t,xf,'r');
-   title('Filtered Signal X');
-   xlabel('t');
-
-   subplot(212);
-   plot(with(corazon(o),'style'),t,yf,'b');
-   title('Filtered Signal Y');
-   xlabel('t');
-end
-function o = Study4(o)                 % Study 4: Noise
-   t = cook(o,':');
-   [x,xf] = cook(o,'x');
-   [y,yf] = cook(o,'y');
-
-   subplot(211);
-   plot(with(corazon(o),'style'),t,x-xf,'r');
-   title('Noise Signal X');
-   xlabel('t');
-
-   subplot(212);
-   plot(with(corazon(o),'style'),t,y-yf,'b');
-   title('Noise Signal Y');
-   xlabel('t');
-end
-function o = Study5(o)                 % Study 5
-   message(o,'Study 5');
-end
-function o = Study6(o)                 % Study 6
-   message(o,'Study 6');
-end
-function o = Study7(o)                 % Study 7
-   message(o,'Study 7');
-end
-function o = Study8(o)                 % Study 8
-   message(o,'Study 8');
-end
-function o = Study9(o)                 % Study 9
-   message(o,'Study 9');
-end
-function o = Study10(o)                % Study 10
-   message(o,'Study 10');
+function [t,dt] = Gravity(o,t,d,n)
+%
+% GRAVITY  Align timing t by means of incremental corrections dt according
+%          to the gravity algorithm, where
+%
+%             [t,c] = Gravity(o,t,d)
+%
+   [m,n] = size(t);
+   x = t(:,1);                           % initial timing
+  
+   for (k=2:n)
+      xc = mean(x);                      % center of gravity
+      delta = (xc - x)/2;
+      x = x + delta;
+      t(:,k) = x;
+      dt(:,k) = delta;
+   end
 end
