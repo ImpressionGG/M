@@ -436,6 +436,22 @@ function AbnahmeTeil2
 %   + Plugin Skelett für Batch und analyse
 %     => zwei plugin-Beispiele sind als Teil der Toolbox dabei: 
 %        spmhack.m, batchplug.m
+%   + Macht Copy/Paste von einzelnen SPMs Sinn? Denn dann gibt es kein
+%   übergeordnetes Package, wenn man in eine leere Toolbox pasted.
+%     => die Integrität kann verloren gehen. Die Toolbox ist jedoch so
+%        designed, dass das auf Expert-Level möglich ist, und der Experte
+%        muss wissen, was er tut
+%     => die sicherere Methode: eine ganze Shell clonen, und dann Teile
+%        löschen, die man nicht dabei haben will!
+%   + Wie wirken sich Batch Settings wie 'points' auf den Cache aus?
+%     => das kann bei Unterschieden von Live- und Batch-settings schief-
+%        gehen. Darum ist es auch sinnvoll, die Batch-Settings mit den 
+%        Live-Settings identisch zu haben (Default für 'points' wurde ja
+%        nachgezogen)
+%     => ein einfacher Fix wäre, dass man 'points' im Batch nicht verändern
+%        kann, und dass immer die globalen Werte genommen werden
+%   + Damping vor Critical Sensitivity rechnen, damit das Diagram nicht
+%     leer ist, oder Diagramm nicht anzeigen, wenn nicht berechnet
 end
 
 function Roadmap                                                       
@@ -654,6 +670,7 @@ function SpmV1F9
 % - cross check and availability of all quoted functions
 % + 10000 Punkte Default auch im Batch (wie im Live Modus)
 % + plugin examples spmhack and batchplug added
+% - Weight Sensitivity removed from Analyse/Sensitivity menu
 end
 
 function KnownBugsAndWishlist                                          

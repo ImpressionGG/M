@@ -2053,7 +2053,7 @@ function oo = SensitivityMenu(o)       % Sensitivity Menu
    oo = mitem(o,'Sensitivity');
    ooo = mitem(oo,'Damping Sensitivity',{@WithSpm,'Sensitivity','damping'});
    ooo = mitem(oo,'Critical Sensitivity',{@WithSpm,'Sensitivity','critical'});
-   ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'Sensitivity','weight'});
+%  ooo = mitem(oo,'Weight Sensitivity',{@WithSpm,'Sensitivity','weight'});
 end
 function oo = Sensitivity(o)           % Sensitivity Plot/Calc         
    mode = arg(o,1);
