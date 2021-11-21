@@ -26,7 +26,7 @@ function o = Shell(o)                  % Shell Setup
    oo = Study(o);                      % add Study menu
    Progress(o,60);
    oo = Batch(o);                      % add batch menu
-   oo = menu(o,'Gallery');             % add Gallery menu
+%  oo = menu(o,'Gallery');             % add Gallery menu
    Progress(o,80);
    oo = Info(o);                       % add Info menu
    oo = menu(o,'Figure');              % add Figure menu
@@ -58,6 +58,7 @@ function o = Init(o)                   % Init Object
    o = opt(o,{'style.bullets'},0);     % provide bullets default
    o = opt(o,{'view.grid'},1);         % grid on by default
    o = opt(o,{'mode.organized'},'packages');
+   o = opt(o,{'mode.expert'},0);       % no expert mode by default
  
    o = provide(o,'par.title','SPM Toolbox');
    o = provide(o,'par.comment',{'Analyzing SPM objects'});
@@ -72,12 +73,26 @@ end
 %==========================================================================
 
 function oo = File(o)                  % File Menu                     
+   expert = opt(o,{'mode.expert',0});
+   
    oo = menu(o,'File');                % add File menu
-   ooo = New(oo);                      % add New menu
+   if (expert)
+      ooo = New(oo);                   % add New menu
+   end
    ooo = Import(oo);                   % add Import menu items
-   ooo = Export(oo);                   % add Export menu items
+   if (expert)
+      ooo = Export(oo);                % add Export menu items
+   else
+      ooo = mseek(oo,{'Export'});
+      visible(ooo,0);
+   end
    ooo = Tools(oo);
-   ooo = Extras(oo);
+   if (expert)
+      ooo = Extras(oo);
+   else
+      ooo = mseek(oo,{'Extras'});
+      visible(ooo,0);
+   end
 end
 function oo = New(o)                   % New Menu                      
    oo = mseek(o,{'New'});
@@ -400,7 +415,7 @@ function oo = Extras(o)                % Extras Menu Items
    end
 end
 
-function list = ProvideDtab(list)      % Provide Damping Table
+function list = ProvideDtab(list)      % Provide Damping Table         
    for (i=1:length(list))
       oo = list{i};
       if type(oo,{'pkg','spm'})
@@ -417,6 +432,9 @@ end
 function oo = Edit(o)                  % Edit Menu                     
    oo = menu(o,'Edit');                % add Edit menu items
 
+   ooo = mseek(oo,{'Launch'});
+   visible(ooo,0);
+   
    plugin(o,'spm/shell/Edit');         % plug point
 end
 
@@ -810,11 +828,11 @@ function oo = Select(o)                % Select Menu
    event(o,'Select',o);                % rebuild menu on 'Select' event
 
    ooo = menu(oo,'Objects');           % add Objects menu
-   ooo = Channel(oo);                  % add Transfer Channel menu
+%  ooo = Channel(oo);                  % add Transfer Channel menu
 
    ooo = mitem(oo,'-');
    ooo = menu(oo,'Organize');   
-   ooo = Basket(oo);                   % add Basket menu
+%  ooo = Basket(oo);                   % add Basket menu
 
    ooo = mitem(oo,'-');
    ooo = Coordinates(oo);              % add Coordinates sub menu
@@ -823,9 +841,9 @@ function oo = Select(o)                % Select Menu
    ooo = Variation(oo);                % Variation menu
    ooo = Sensitivity(oo);              % Sensitivity menu
    
-   ooo = mitem(oo,'-');
-   ooo = Simu(oo);                     % add Simu sub menu
-   ooo = Motion(oo);                   % add Motion sub menu
+%  ooo = mitem(oo,'-');
+%  ooo = Simu(oo);                     % add Simu sub menu
+%  ooo = Motion(oo);                   % add Motion sub menu
 
    ooo = mitem(oo,'-');
    ooo = Internal(oo);                 % add Internal sub menu

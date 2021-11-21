@@ -456,6 +456,20 @@ function AbnahmeTeil2
 %     => default für 'show timing' ist nun 'false'
 %     => Damping sensitivity wird in critical sensitivity nicht mehr
 %        angezeigt, falls Daten nicht verfügbar
+%   + Bei Critical Sensitivity default-mäßig nicht das Timing-Diagramm
+%     anzeigen
+%     => Default so geändert, dass Timing nicht mehr angezeigt wird
+%   + wo sind die µ-Schranken definiert
+%     => Select/Friction/Mu, Select/Friction/Range
+%   + Menüs weiter verschlanken
+%     => siehe folgende Punkte
+%   + Menü File/New
+%     => versteckt
+%   + Menü File/Export
+%     => versteckt
+%   + Menü File/Extras/Study
+%     => versteckt
+%
 %     
 end
 
@@ -676,7 +690,7 @@ function SpmV1F9
 % + 10000 Punkte Default auch im Batch (wie im Live Modus)
 % + plugin examples spmhack and batchplug added
 % - Weight Sensitivity removed from Analyse/Sensitivity menu
-% - 
+% - some menus removed
 end
 
 function KnownBugsAndWishlist                                          

@@ -48,6 +48,7 @@ function oo = Menu(o)                  % Setup Analyse Menu
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = StabilityMenu(o);              % build-up stability menu
+   enable(oo,0);
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
    oo = mitem(o,'Stability');

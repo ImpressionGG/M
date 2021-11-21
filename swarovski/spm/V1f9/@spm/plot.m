@@ -118,6 +118,7 @@ function oo = Menu(o)                  % Setup Plot Menu
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'About',{@WithCuo,'About'});
+return;
    oo = mitem(o,'-');
    oo = mitem(o,'Transfer Function');
    ooo = mitem(oo,'Bode Plot',{@WithCuo,'TrfBode'});
