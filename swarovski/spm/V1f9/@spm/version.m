@@ -477,10 +477,20 @@ function AbnahmeTeil2
 %     => nach Analyse/About verschoben
 %   + Andere Menüpunkte im Plot Menü
 %     => Plot Menü wurde entfernt
+%   + Weight Sensitivity erzeugt bug; noch notwendig?
+%     => Menüpunkt wurde entfernt
 %   + Bug: Einzel-Setup-Studie überschreibt im Batch das Ergebnis; erst
 %     wird Basic gerechnet, dann Symmetrie?
 %     => Bug wurde behoben (Dateinen 'Setup Study Basic' und 'Setup Study
 %     Symmetry'
+%   + There are 2 hard problems in computer science: cache invalidation,
+%     naming things, and off-by-1 errors
+%     => exactly!
+%   - Fokus-Dieb beim Speichern der PNG
+%     => war nicht reproduzierbar
+%   + File->Import->Package->Cancel: Fehler in Konsole
+%     => Bug behoben
+%
 end
 
 function Roadmap                                                       
@@ -706,6 +716,7 @@ function SpmV1F9
 % - Plot/Mode_Shapes menu moved to Analyse rolldown menu
 % - Study menu by default off
 % - bugfix: batch setup study png file overwrite
+% - bugfix: File->Import->Package->Cancel
 end
 
 function KnownBugsAndWishlist                                          

@@ -184,6 +184,7 @@ function list = Collect(o)             % Collect Files
    caption = 'Import all objects from folder';
    directory = fselect(o,'d','*.*',caption);
    if isempty(directory)
+      list = {};
       return
    end
 
