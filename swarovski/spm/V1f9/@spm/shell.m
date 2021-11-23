@@ -1406,7 +1406,14 @@ function oo = Info(o)                  % Info Menu
    oooo = mitem(ooo,['Spm Class: Version ',version(spm)]);
    ooooo = mitem(oooo,'Edit Release Notes','edit spm/version');
 
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Image',{@Image});
+   
    plugin(o,'spm/shell/Info');         % plug point
+   
+   function o = Image(o)
+      plot(o,'WithCuo','Image');
+   end
 end
 
 %==========================================================================

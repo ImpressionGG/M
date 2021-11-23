@@ -471,6 +471,8 @@ function AbnahmeTeil2
 %     => versteckt
 %   + SPM gewählt, Plot/Overview
 %     => umbenannt in Plot/Eigenvalues, Funktion OK
+%   + Plot/Image 
+%     => nach Info/Image verschoben
 end
 
 function Roadmap                                                       
@@ -691,6 +693,7 @@ function SpmV1F9
 % + plugin examples spmhack and batchplug added
 % - Weight Sensitivity removed from Analyse/Sensitivity menu
 % - some menus removed
+% - Plot/Image menu item moved to Info menu
 end
 
 function KnownBugsAndWishlist                                          
