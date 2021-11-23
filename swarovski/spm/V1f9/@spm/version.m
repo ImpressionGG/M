@@ -490,7 +490,9 @@ function AbnahmeTeil2
 %     => war nicht reproduzierbar
 %   + File->Import->Package->Cancel: Fehler in Konsole
 %     => Bug behoben
-%
+%   + Beim Importieren eines Packages, wo noch keine .pkg Datei erzeugt
+%     wurde, gibt es nach dem Import eine Ausgabe des Objekts auf Konsole
+%     => behoben (fehlender ';')
 end
 
 function Roadmap                                                       
@@ -717,6 +719,7 @@ function SpmV1F9
 % - Study menu by default off
 % - bugfix: batch setup study png file overwrite
 % - bugfix: File->Import->Package->Cancel
+% - bugfix: missing semicolon during auto package info creation
 end
 
 function KnownBugsAndWishlist                                          

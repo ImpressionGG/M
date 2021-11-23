@@ -504,5 +504,5 @@ function ProvidePackageInfo(o,folder)  % Provide PKG info if not exist
    
       % missing PKG info!
       
-   pkginfo(o,folder) 
+   pkginfo(o,folder);
 end
