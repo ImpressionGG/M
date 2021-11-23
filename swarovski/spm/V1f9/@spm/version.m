@@ -697,6 +697,7 @@ function SpmV1F9
 % - some menus removed
 % - Plot/Image menu item moved to Info menu
 % - Plot/About menu item moved to Analyse menu
+% - Plot/Mode_Shapes menu moved to Analyse rolldown menu
 end
 
 function KnownBugsAndWishlist                                          

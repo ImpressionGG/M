@@ -15,6 +15,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
                       @WithSpm,@About,@Numeric,@Trf,@TfOverview,...
                       @Principal,...
+                      @ModeOverview,@Real,@Imag,@Complex,@Damp,...
                       @Critical,@CriticalFriction,...
                       @StabilitySummary,@StabilityMargin,@NyquistStability,...
                       @LmuDisp,@LmuRloc,@LmuStep,@LmuBode,@LmuNyq,...
@@ -49,16 +50,27 @@ end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'-');
-   oo = StabilityMenu(o);              % build-up stability menu
-   enable(oo,0);
+   oo = DummyMenu(o,'Principal');
+   oo = DummyMenu(o,'Critical');
+   oo = mitem(o,'-');
+   oo = DummyMenu(o,'Stability');
+   oo = DummyMenu(o,'Setup');
+   oo = DummyMenu(o,'Sensitivity');
+   oo = mitem(o,'-');
+   oo = DummyMenu(o,'Mode Shapes');
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
    oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'-');
+   oo = DummyMenu(o,'Principal');
+   oo = DummyMenu(o,'Critical');
+   oo = mitem(o,'-');
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
-
    oo = SetupMenu(o);
+   oo = DummyMenu(o,'Sensitivity');
+   oo = mitem(o,'-');
+   oo = DummyMenu(o,'Mode Shapes');
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
    oo = mitem(o,'About',{@WithCuo,'About'});
@@ -70,6 +82,8 @@ function oo = SpmMenu(o)               % Setup SPM Analyse Menu
    oo = StabilityMenu(o);              % add Stability menu
    oo = SetupMenu(o);                  % add Setup menu
    oo = SensitivityMenu(o);            % add Sensitivity menu
+   oo = mitem(o,'-');
+   oo = ModeShapesMenu(o);             % Mode Shapes Menu         
 return
 
    oo = mitem(o,'-');
@@ -100,6 +114,12 @@ o = mitem(o,'Legacy');
    ooo = mitem(oo,'Force Ramp @ F2',{@WithCuo,'NormRamp'},2);
 
    oo = Precision(o);
+end
+
+function oo = DummyMenu(o,label)       % Add a Dummy menu Entry        
+   oo = mitem(o,label);                % dummy menu item         
+        enable(oo,false);
+   ooo = mitem(oo,'Dummy');
 end
 
 function oo = NumericMenu(o)           % Numeric Menu                  
@@ -347,6 +367,188 @@ function o = Image(o)                  % Plot Image
    else
       message(o,'cannot display image',{['path: ',path]});
    end
+end
+
+%==========================================================================
+% Mode Shapes
+%==========================================================================
+
+function oo = ModeShapesMenu(o)        % Mode Shapes Menu              
+   oo = mitem(o,'Mode Shapes');   
+   ooo = mitem(oo,'Overview',{@WithCuo,'ModeOverview'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
+   ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
+   ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
+   ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Damping', {@WithCuo,'Damp'});
+end
+
+   % callbacks
+
+function o = ModeOverview(o)           % Plot Mode Overview            
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   Real(o,[2 2 1]);
+   Imag(o,[2 2 3]);
+   Complex(o,[1 2 2]);
+
+   heading(o);
+end
+function o = Real(o,sub)               % Plot Real Part of Eigenvalues 
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   if (nargin < 2)
+      sub = [1 1 1];                   % default subplot full canvas
+   end
+   subplot(o,sub);
+   
+      % inspect variation - if differing from 1 then make a first plot
+      % with nominal system parameters
+      
+   vomega = opt(o,{'variation.omega',1});
+   vzeta = opt(o,{'variation.zeta',1});
+   
+   if (vomega ~= 1 || vzeta ~= 1)
+      oo = opt(o,'variation.omega',1);
+      oo = opt(oo,'variation.zeta',1);
+      oo = Eigen(oo);                  % nominal system eigenvalues
+      [index,real] = var(oo,'index,real');   
+      plot(o,index,real,'K1');
+      hold on
+      plot(o,index,real,'K.');
+   end
+   
+   oo = Eigen(o);                      % calc eigenvalues
+   [index,real] = var(oo,'index,real');   
+   plot(o,index,real,'r2');
+
+   title('Real Part of System Eigenvalues');
+   xlabel('index');  ylabel('real part');
+   
+   heading(o);
+end
+function o = Imag(o,sub)               % Plot Imag Part of Eigenvalues 
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   if (nargin < 2)
+      sub = [1 1 1];                   % default subplot full canvas
+   end
+   subplot(o,sub);
+   
+      % inspect variation - if differing from 1 then make a first plot
+      % with nominal system parameters
+      
+   vomega = opt(o,{'variation.omega',1});
+   vzeta = opt(o,{'variation.zeta',1});
+   
+   if (vomega ~= 1 || vzeta ~= 1)
+      oo = opt(o,'variation.omega',1);
+      oo = opt(oo,'variation.zeta',1);
+      oo = Eigen(oo);                  % nominal system eigenvalues
+      [index,imag] = var(oo,'index,imag');   
+      plot(o,index,imag,'K1');
+      hold on
+      plot(o,index,imag,'K.');
+   end
+   
+   oo = Eigen(o);                      % calc eigenvalues
+   [index,imag] = var(oo,'index,imag');
+   
+   plot(o,index,imag,'g2');
+
+   title('Imaginary Part of System Eigenvalues');
+   xlabel('index');  ylabel('real part');
+  
+   heading(o);
+end
+function o = Complex(o,sub)            % Eigenvalues in Complex Plane  
+   if ~type(o,{'spm'})
+      oo = plot(o,'About');
+      return                           % no idea how to plot this type
+   end
+
+   if (nargin < 2)
+      sub = [1 1 1];                   % default subplot full canvas
+   end
+   subplot(o,sub);
+   
+      % inspect variation - if differing from 1 then make a first plot
+      % with nominal system parameters
+      
+   vomega = opt(o,{'variation.omega',1});
+   vzeta = opt(o,{'variation.zeta',1});
+   
+   if (vomega ~= 1 || vzeta ~= 1)
+      oo = opt(o,'variation.omega',1);
+      oo = opt(oo,'variation.zeta',1);
+      oo = Eigen(oo);                  % nominal system eigenvalues
+      [re,im] = var(oo,'real,imag');   
+      plot(o,re,im,'Ko');
+      hold on
+      plot(o,re,im,'K.');
+   end
+   
+   oo = Eigen(o);                      % calc eigenvalues
+   [lambda,re,im] = var(oo,'lambda,real,imag');
+
+   plot(o,re,im,'Ko');
+   hold on;
+   plot(o,re,im,'rp');
+   plot(o,re,im,'rh');
+   plot(o,re,im,'r.');
+
+   title('Eigenvalues in Complex Plane');
+   xlabel('real part');  ylabel('imaginary part');
+
+   [~,idx] = sort(abs(lambda));
+   lambda = lambda(idx);
+   
+      % for an eigen value pair we have:
+      % (s-s1)*(s+s1) = (s-re+i*im)*(s-re-i*im) = (s-re)^2 + im^2
+      % (s-s1)*(s+s1) = s^2 -2*re*s + (re^2+im^2) = s^2 + 2*zeta*om*s +om^2
+      % => om = sqrt(re^2+im^2) = abs(s1) = abs(s2)
+      % => zeta = -re/om
+      
+   for (i=1:length(lambda)/2)
+      s = lambda(2*i);
+      om = abs(s);
+      f = om/2/pi;
+      zeta = -real(s)/om;
+      percent = zeta*100;
+      
+      if (i < 10)
+         num = '  #';
+      elseif (i < 100)
+         num = ' #';
+      else
+         num = '#';
+      end
+      
+      fprintf('   %s%g: f = %g Hz, omega = %g 1/s, zeta = %g  (%g%%)\n',...
+              num,i,  f,om, zeta,o.rd(percent,2));
+   end
+   
+%  set(gca,'DataAspectRatio',[1 1 1]);
+   heading(o);
+end
+function o = Damp(o)                   % Plot Mode Damping             
+   if ~type(o,{'spm'})
+      plot(o,'About');
+      return
+   end
+   
+   damping(o);
+   heading(o);
 end
 
 %==========================================================================
@@ -3308,4 +3510,26 @@ end
 function [m,n] = Layout(N)             % Matrix Layout for N diagrams  
    n=round(sqrt(N));
    m = ceil(N/n);
+end
+function oo = Eigen(o)                 % Calc System Eigenvalues       
+%
+% EIGEN  Apply system variation and calulate system eigenvalues of the
+%        varyied system and sort. Note that no normalization is applied.
+%
+%           oo = Eigen(o)
+%           [idx,re,im] = var(oo,'index,real,imag');
+%
+   
+   oo = brew(o,'Variation');           % apply system variation
+   A = data(oo,'A');
+
+   s = eig(A);                         % eigenvalues (EV)
+   i = 1:length(s);                    % EV index 
+   x = real(s);                        % real value
+   y = imag(s);                        % imag value
+   [~,idx] = sort(abs(imag(s)));
+   
+      % store calculated stuff in var space
+      
+   oo = var(oo,'lambda,index,real,imag',s,i,x(idx),y(idx));
 end
