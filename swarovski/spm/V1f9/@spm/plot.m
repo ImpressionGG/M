@@ -105,6 +105,12 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Plot Menu               
+   expert = opt(o,{'mode.expert',0});
+   if ~expert
+      oo = o;
+      return
+   end
+   
    switch type(current(o))
       case 'shell'
          oo = ShellMenu(o);

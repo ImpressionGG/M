@@ -475,6 +475,12 @@ function AbnahmeTeil2
 %     => nach Info/Image verschoben
 %   + Plot/About 
 %     => nach Analyse/About verschoben
+%   + Andere Menüpunkte im Plot Menü
+%     => Plot Menü wurde entfernt
+%   + Bug: Einzel-Setup-Studie überschreibt im Batch das Ergebnis; erst
+%     wird Basic gerechnet, dann Symmetrie?
+%     => Bug wurde behoben (Dateinen 'Setup Study Basic' und 'Setup Study
+%     Symmetry'
 end
 
 function Roadmap                                                       
@@ -699,6 +705,7 @@ function SpmV1F9
 % - Plot/About menu item moved to Analyse menu
 % - Plot/Mode_Shapes menu moved to Analyse rolldown menu
 % - Study menu by default off
+% - bugfix: batch setup study png file overwrite
 end
 
 function KnownBugsAndWishlist                                          

@@ -687,11 +687,11 @@ end
 function o = SetupStudySpm(o)                                          
    assert(type(o,{'spm'}));
    
-   o = Cls(o,'Setup Study');
+   o = Cls(o,'Setup Study Basic');
    analyse(o,'SetupAnalysis','basic',1);
    Png(o);
 
-   o = Cls(o,'Setup Study');
+   o = Cls(o,'Setup Study Symmetry');
    analyse(o,'SetupAnalysis','symmetry',1);
    Png(o);
 end
