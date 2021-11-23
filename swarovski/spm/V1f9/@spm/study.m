@@ -23,7 +23,7 @@ end
 %==========================================================================
 
 function oo = Menu(o)                  % Setup Study Menu              
-   if ~setting(o,{'study.menu',1})
+   if ~setting(o,{'study.menu',0})
       visible(o,0);
       oo = o; return
    end
