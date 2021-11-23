@@ -493,6 +493,16 @@ function AbnahmeTeil2
 %   + Beim Importieren eines Packages, wo noch keine .pkg Datei erzeugt
 %     wurde, gibt es nach dem Import eine Ausgabe des Objekts auf Konsole
 %     => behoben (fehlender ';')
+%   + Copy/Paste zwischen Matlab-Instanzen funktioniert nicht. Sollte es?
+%     => nein, sollte es nicht!
+%     => work around: save shell; import shell in anderer instanz, dann
+%        copy/paste
+%   - Funktioniert das Laden bzw. Copy ...
+%     => Auftragsarbeit
+%   + Beim Import von #00.dmp führen Whitespace zu Fehlern
+%     => wurde behoben
+%   + Numerical struggles derzeit zu konservativ
+%     => Schranke wurde von 1e-6 auf 1e-5 herabgesetzt
 end
 
 function Roadmap                                                       
@@ -720,6 +730,7 @@ function SpmV1F9
 % - bugfix: batch setup study png file overwrite
 % - bugfix: File->Import->Package->Cancel
 % - bugfix: missing semicolon during auto package info creation
+% - numerical struggles: reduce eps=1e-6 to eps=1e-5
 end
 
 function KnownBugsAndWishlist                                          

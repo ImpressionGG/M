@@ -262,7 +262,7 @@ function [L0,K0,f0,K180,f180] = CalcFqr(o,cdx)    % Frequency Based
       end
       
       err = norm([K0-K0_,f0-f0_]);
-      if (err > 1e-6)
+      if (err > 1e-5)
          fprintf('*** numerical struggles during K0,f0 calculation: err = %g\n',err);
       end
       
@@ -275,7 +275,7 @@ function [L0,K0,f0,K180,f180] = CalcFqr(o,cdx)    % Frequency Based
          end
 
          err = norm([K180-K180_,f180-f180_]);
-         if (err > 1e-6)
+         if (err > 1e-5)
             fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);
          end
       end
@@ -313,7 +313,7 @@ function [L0,K0,f0,K180,f180] = CalcEig(o,cdx)    % Eigenvalue Based
       K0_ = K;  f0_ = Omega/(2*pi*T0);
 
       err = norm([K0-K0_,f0-f0_]);
-      if (err > 1e-6)
+      if (err > 1e-5)
          fprintf('*** numerical struggles during K0,f0 calculation: err = %g\n',err);
       end
       
@@ -322,7 +322,7 @@ function [L0,K0,f0,K180,f180] = CalcEig(o,cdx)    % Eigenvalue Based
          K180_ = K;  f180_ = Omega/(2*pi*T0);
 
          err = norm([K180-K180_,f180-f180_]);
-         if (err > 1e-6)
+         if (err > 1e-5)
             fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);
          end
       end
@@ -372,7 +372,7 @@ function [K0,f0,K180,f180,L0] = CalcGamma(o,cdx)  % Gamma Algo
          err = norm([K0-K0_,f0-f0_]);
       end
       L0 = var(L0,'EVerr0',err);
-      if (err > 1e-6)
+      if (err > 1e-5)
          fprintf('*** numerical struggles during K0,f0 calculation: err = %g\n',err);
       end
       
@@ -392,7 +392,7 @@ function [K0,f0,K180,f180,L0] = CalcGamma(o,cdx)  % Gamma Algo
             err = norm([K180-K180_,f180-f180_]);
          end
          L0 = var(L0,'EVerr180',err);
-         if (err > 1e-6)
+         if (err > 1e-5)
             fprintf('*** numerical struggles during K180,f180 calculation: err = %g\n',err);
          end
       end
