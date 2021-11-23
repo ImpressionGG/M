@@ -696,6 +696,7 @@ function SpmV1F9
 % - Weight Sensitivity removed from Analyse/Sensitivity menu
 % - some menus removed
 % - Plot/Image menu item moved to Info menu
+% - Plot/About menu item moved to Analyse menu
 end
 
 function KnownBugsAndWishlist                                          

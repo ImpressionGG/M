@@ -47,13 +47,13 @@ function oo = Menu(o)                  % Setup Analyse Menu
    end
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
-   oo = mitem(o,'About',{@About});
+   oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'-');
    oo = StabilityMenu(o);              % build-up stability menu
    enable(oo,0);
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
-   oo = mitem(o,'About',{@About});
+   oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'-');
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
@@ -61,7 +61,7 @@ function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type
    oo = SetupMenu(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
-   oo = mitem(o,'About',{@About});
+   oo = mitem(o,'About',{@WithCuo,'About'});
    oo = mitem(o,'-');
    oo = PrincipalMenu(o);              % Add Principal menu
    oo = CriticalMenu(o);               % Add Critical menu
@@ -296,13 +296,14 @@ end
 %==========================================================================
 
 function o = About(o)                  % About Object                  
-   switch type(current(o))
+   switch type(o)
       case 'pkg'
          o = AboutPkg(o);
       otherwise
          cls(o);
          o = menu(o,'About');          % keep it simple
    end
+   refresh(o,{@analyse,'WithCuo','About'});
 end
 function o = AboutPkg(o)               % About Package                 
    if ~type(o,{'pkg'})
@@ -331,6 +332,21 @@ function o = AboutPkg(o)               % About Package
    o = subplot(o,sub1);
    message(opt(o,'pitch',pitch));
    axis off
+end
+function o = Image(o)                  % Plot Image                    
+   path = [get(o,'dir'),'/',get(o,'image')];
+   try
+      im = imread(path);
+   catch
+      im = [];
+   end
+   
+   if ~isempty(im)
+      hdl = image(im);
+      axis off
+   else
+      message(o,'cannot display image',{['path: ',path]});
+   end
 end
 
 %==========================================================================
