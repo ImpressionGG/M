@@ -38,11 +38,12 @@ function use(tag,version)
 %           use spm-v1f6      % SPM V1f6    beta @ 30Aug21
 %           use spm-v1f7      % SPM V1f7    beta @ 03Sep21
 %           use spm-v1f8      % SPM V1f8    beta @ 18Sep21
+%           use spm-v1f9      % SPM V1f9    beta @ 23Nov21
 %
    if (nargin < 2)
       version.carabao = 'V1l';
       
-      version.corazon = 'V1i9';   % made from V0i9
+      version.corazon = 'V1i';   % made from V0i
  
       version.corinth = 'V2a1';
       version.cordoba = 'V1c';
@@ -55,7 +56,7 @@ function use(tag,version)
       
       version.bluco = 'V1b';
       version.train = 'V1a';
-      version.spm = 'V1f9';
+      version.spm = 'V1f';
       version.minispm = 'V1f1';
       
       version.pll = 'V1a';
@@ -221,6 +222,10 @@ function use(tag,version)
          Swarovski('13','Spm','V1f7','V1i7','Beta','03Sep21')
       case 'spm-v1f8'
          Swarovski('14','Spm','V1f8','V1i8','Beta','18Sep21')
+      case 'spm-v1f9'
+         Swarovski('15','Spm','V1f9','V1i9','Beta','23Nov21')
+      case 'spm-v1f'
+         Swarovski('16','Spm','V1f','V1i','Release','23Nov21')
 
       case 'minispm-v1e'
          Swarovski('07','MiniSpm','V1e','V1h','Release','22Feb21')
