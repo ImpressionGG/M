@@ -503,6 +503,17 @@ function AbnahmeTeil2
 %     => wurde behoben
 %   + Numerical struggles derzeit zu konservativ
 %     => Schranke wurde von 1e-6 auf 1e-5 herabgesetzt
+%
+%   + Package oder SPM: Edit property führt zu Fehler
+%     => Menüpunkt wurde entfernt
+%   - Überschriften: => ############ Rückfrage #############
+%   + Really Nice2Have
+%   + Batch-Config vor ausführen anzeigen
+%     => wurde eingebaut
+%   + Idealerweise Start von Batch bestätigen
+%     => wurde eingebaut
+%   + Nice2Have (6 Punkte)
+%     => Auftrag!
 end
 
 function Roadmap                                                       
@@ -731,6 +742,7 @@ function SpmV1F9
 % - bugfix: File->Import->Package->Cancel
 % - bugfix: missing semicolon during auto package info creation
 % - numerical struggles: reduce eps=1e-6 to eps=1e-5
+% - Beta SpmV1F9 @ CorazonV1i9 complete
 end
 
 function KnownBugsAndWishlist                                          

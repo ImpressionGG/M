@@ -429,14 +429,160 @@ end
 % Edit Menu
 %==========================================================================
 
-function oo = Edit(o)                  % Edit Menu                     
+function oo = OldEdit(o)                  % Edit Menu                     
    oo = menu(o,'Edit');                % add Edit menu items
 
+   ooo = mseek(oo,{'Property'});
+   visible(ooo,0);
    ooo = mseek(oo,{'Launch'});
    visible(ooo,0);
    
    plugin(o,'spm/shell/Edit');         % plug point
 end
+
+function oo = Edit(o)                  % Edit Menu                     
+%
+% EDIT   Edit menu setup & handling
+%
+   if container(o)
+      oo = mhead(o,'Edit');
+%     ooo = mitem(oo,'Property',{@Edit});
+%     ooo = mitem(oo,'Launch',{@menu,'LaunchCb'});
+%     ooo = mitem(oo,'-');
+      ooo = mitem(oo,'Copy',{@menu,'CopyCb'});
+      ooo = mitem(oo,'Cut',{@menu,'CutCb'});
+      ooo = mitem(oo,'Paste',{@menu 'PasteCb'});
+      ooo = mitem(oo,'-');
+      ooo = mitem(oo,'Clear Objects',{@menu,'ClearCb'});
+      ooo = mitem(oo,'-');
+      ooo = mitem(oo,'Copy Figure',{@CopyFigCb});
+   else
+      oo = mhead(o,'Edit');
+      ooo = mitem(oo,'Copy',{@CopyCb});
+      ooo = mitem(oo,'-');
+      ooo = mitem(oo,'Copy Figure',{@CopyFigCb});
+   end
+   return
+
+   function o = Edit(o)                % Edit Property                 
+      edit(o);                         % edit current object
+   end
+   function oo = CopyFigCb(o)          % Copy Figure Into Clipboard    
+      editmenufcn(figure(o),'EditCopyFigure');
+      oo = o;                          % copy input arg to output
+   end
+end
+function oo = LaunchCb(o)              % Launch Object                 
+   oo = current(o);                    % get current object
+   launch(oo);                         % launch object's shell
+end
+function oo = CopyCb(o)                % Copy Object                   
+   oo = current(o);
+   
+   if (container(oo))
+      list = o.data;
+   elseif type(oo,{'pkg'})
+      list = PackageList(o,oo);        % all objects of a package
+   else
+      list = {oo};
+   end
+   
+      % enclose object list into an object
+      
+   oo = data(corazon,list);
+   clip(o,oo);                         % put list into clip board
+end
+function oo = CutCb(o)                 % Cut Object                    
+   oo = current(o);
+   
+   if (container(oo))
+      list = o.data;
+   elseif type(oo,{'pkg'})
+      list = PackageList(o,oo);        % all objects of a package
+   else
+      list = {oo};
+   end
+   
+      % enclose object list into an object
+      
+   oo = data(corazon,list);
+   clip(o,oo);                         % put list into clip board
+   
+      % save current object index and get list of object IDs to be
+      % removed from shell object
+   
+   %[~,cidx] = current(o);              % get current index
+   
+   ids = {};
+   for (i=1:length(list))
+      ids{i} = id(list{i});
+   end
+      
+      % remove all objects in list from shell object
+
+   rest = {};                          % rest of objects
+   for (i=1:length(o.data))
+      oi = o.data{i};
+      idoi = id(oi);
+      if ~o.is(idoi,ids)
+         rest{end+1} = oi;
+      end
+   end
+   
+      % push shell object with reduced object list
+      
+   o.data = rest;
+   o = push(o);                        % push object back to figure 
+
+   %cidx = min(cidx,data(o,inf));       % update current index
+   cidx = 0;                           % select shell object
+   current(o,cidx);                    % update current selection
+   refresh(pull(o));
+end
+function oo = ClearCb(o)               % Clear All Objects             
+   oo = pull(o);
+
+   [list,~] = gallery(oo);             % get gallery list
+   if ~isempty(list)
+      msgbox('Clearing all objects is only possible with empty gallery!');
+      return
+   end
+
+   if container(oo)
+      button = questdlg('Do you want to clear all objects?',...
+                        'Clear All Objects', 'Yes','No','No');  
+      if strcmp(button,'Yes')
+         oo = data(oo,{});             % clear objects
+         oo = push(oo);                % update figure object
+
+         setting(o,'basket.type','*'); % all types selected by default
+
+         current(o,0);                 % update current selection
+         %refresh(oo);                 % and refresh screen
+         cls(o);
+         menu(o,'About');
+      end
+   end
+end
+function oo = PasteCb(o)               % Paste Object                  
+   oo = clip(o);                       % put object into clip board
+   paste(o,oo.data);
+end
+
+function list = PackageList(o,oo)      % All Objects of a Package      
+   assert(type(oo,{'pkg'}));
+   
+   package = get(oo,{'package','??'}); % package ID
+   list = {};
+   
+   for (i=1:length(o.data))
+      oi = o.data{i};
+      if isequal(get(oi,'package'),package)
+         list{end+1} = oi;
+      end
+   end
+end
+
 
 %==========================================================================
 % View Menu
