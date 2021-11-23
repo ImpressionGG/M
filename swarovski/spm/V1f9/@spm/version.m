@@ -473,6 +473,8 @@ function AbnahmeTeil2
 %     => umbenannt in Plot/Eigenvalues, Funktion OK
 %   + Plot/Image 
 %     => nach Info/Image verschoben
+%   + Plot/About 
+%     => nach Analyse/About verschoben
 end
 
 function Roadmap                                                       

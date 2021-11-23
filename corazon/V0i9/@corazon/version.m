@@ -656,6 +656,7 @@ function VersionV1I
 % - corazon/plot: bug fix: hold control (subplot() always set hold on)
 % - corazo/heading: implicite hold off
 % - corazon: bug fix of cuo and sho (in case of unavailable shell window)
+% - corazon/menu/About: bug fix - options to be inherited
 %
 % Known Bugs / Wishlist
 % - none so far

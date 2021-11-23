@@ -1313,6 +1313,8 @@ function oo = About(o)                 % Display Object Info
    cls(o);
    
    oo = current(o);
+   oo = inherit(oo,o);                 % get options
+   
    if container(oo)
       list = Classes(oo);
       if length(list) > 1

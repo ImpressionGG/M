@@ -13,7 +13,7 @@ function oo = analyse(o,varargin)      % Graphical Analysis
 %    See also: SPM, PLOT, STUDY
 %
    [gamma,o] = manage(o,varargin,@Err,@Menu,@WithCuo,@WithSho,@WithBsk,...
-                      @WithSpm,@Numeric,@Trf,@TfOverview,...
+                      @WithSpm,@About,@Numeric,@Trf,@TfOverview,...
                       @Principal,...
                       @Critical,@CriticalFriction,...
                       @StabilitySummary,@StabilityMargin,@NyquistStability,...
@@ -47,16 +47,22 @@ function oo = Menu(o)                  % Setup Analyse Menu
    end
 end
 function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
+   oo = mitem(o,'About',{@About});
+   oo = mitem(o,'-');
    oo = StabilityMenu(o);              % build-up stability menu
    enable(oo,0);
 end
 function oo = PkgMenu(o)               % Setup Plot Menu for Pkg Type  
+   oo = mitem(o,'About',{@About});
+   oo = mitem(o,'-');
    oo = mitem(o,'Stability');
    ooo = mitem(oo,'Stability Margin',{@WithCuo,'StabilityMargin'});
 
    oo = SetupMenu(o);
 end
 function oo = SpmMenu(o)               % Setup SPM Analyse Menu        
+   oo = mitem(o,'About',{@About});
+   oo = mitem(o,'-');
    oo = PrincipalMenu(o);              % Add Principal menu
    oo = CriticalMenu(o);               % Add Critical menu
 
@@ -283,6 +289,48 @@ end
 
 function o = Err(o)                    % Error Handler                 
    error('bad mode');
+end
+
+%==========================================================================
+% About
+%==========================================================================
+
+function o = About(o)                  % About Object                  
+   switch type(current(o))
+      case 'pkg'
+         o = AboutPkg(o);
+      otherwise
+         cls(o);
+         o = menu(o,'About');          % keep it simple
+   end
+end
+function o = AboutPkg(o)               % About Package                 
+   if ~type(o,{'pkg'})
+      o = plot(o,'About');
+      return
+   end
+
+   comment = get(o,'comment');
+   pitch = o.iif(length(comment)<= 10,1.5,1);
+   sub1 = o.iif(length(comment)<= 10,211,211);
+   sub2 = o.iif(length(comment)<= 10,2322,3533);
+
+   subplot(o,sub2);
+   Image(o);
+   
+     % increase axis width
+     
+   pos = get(gca,'position');
+   w = pos(3);  k = 1.5;               % k: stretch factor
+   pos = [pos(1)-(k-1)/2*w, pos(2), w*k, pos(4)];
+   set(gca,'position',pos);
+   set(gca,'ydir','reverse');
+
+      % plot text
+      
+   o = subplot(o,sub1);
+   message(opt(o,'pitch',pitch));
+   axis off
 end
 
 %==========================================================================

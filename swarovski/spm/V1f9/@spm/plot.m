@@ -839,7 +839,9 @@ end
 
 function o = AboutPkg(o)               % About Package                 
    if ~type(o,{'pkg'})
-      o = plot(o,'About');
+      %o = plot(o,'About');
+      o = opt(o,'pitch',0.5);
+      o = menu(o,'About');
       return
    end
 
