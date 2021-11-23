@@ -469,8 +469,8 @@ function AbnahmeTeil2
 %     => versteckt
 %   + Menü File/Extras/Study
 %     => versteckt
-%
-%     
+%   + SPM gewählt, Plot/Overview
+%     => umbenannt in Plot/Eigenvalues, Funktion OK
 end
 
 function Roadmap                                                       

@@ -133,7 +133,6 @@ function oo = SpmMenu(o)               % Setup Plot Menu @ SPM-Type
 %       Callback or Basket functions, which do some common tasks
 %
    oo = mitem(o,'About',{@WithCuo,'About'});
-   oo = mitem(o,'Overview',{@WithCuo,'Plot'});
    
    oo = mitem(o,'-');
    oo = ModeShapesMenu(o);
@@ -326,8 +325,9 @@ end
 
 function oo = ModeShapesMenu(o)        % Mode Shapes Menu              
    oo = mitem(o,'Mode Shapes');   
-   ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
+   ooo = mitem(oo,'Overview',{@WithCuo,'Plot'});
    ooo = mitem(oo,'-');
+   ooo = mitem(oo,'Complex', {@WithCuo,'Complex'});
    ooo = mitem(oo,'Real Part',{@WithCuo,'Real'});
    ooo = mitem(oo,'Imaginary Part',{@WithCuo,'Imag'});
    ooo = mitem(oo,'-');
