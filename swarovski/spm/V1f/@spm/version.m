@@ -522,7 +522,26 @@ function AbnahmeTeil3
 %   + Verschwundene Menüpunkte Analyse>Stability>Critical_Friction(Forward)
 %     Analyse>Stability>Critical_Friction(Backward)
 %     => wurden wieder eingebaut, Beschriftung wurde angepasst
-
+%   + Tippfehler im Abnahmekommentar: 1000 Punkte (statt 10000 Punkte)
+%     => Tippfehler ausgebessert
+%   + Fokusdieb im Batch (bei PNG-Speicherung)
+%     => wurde behoben
+%     => Fehler lag in corazon/header und corazon/footer. Am Ende der
+%        beiden routinen wurde mit axes(oldhax) die ursprüngliche Selektion
+%        der Achsen wieder hergestellt. Nun poppt axes(...) jedoch das
+%        aktuelle MATLAB-Fenster in den Vordergrund (Fokusdieb! Ist in
+%        MATLAB dokumentiert)
+%     => Fix: heading() und footer() stellen die ursprüngliche Achsen-Se-
+%        lektion nur dann wieder her, wenn die Option 'restore' gesetzt
+%        ist, wobei die Option bei Default den Wert false hat
+%   + Principial & Critical Overview: Texte zu lang
+%     => im Nicht-Expert mode (wird in spm/shell/Init() gesetzt) werden
+%        K-Werte, f-Werte unf Fehler gerundet, wobei die Dezimalstellen-
+%        anzahl verringert und der Beschriftungstext verkürzt wird 
+%   + Beschriftung bei Setup-Studien: es geht nicht hervor, ob es sich um
+%     eine Basic-, Symmetry- oder Sample- Setup-studie handelt
+%     => Beschriftung der Studienart bei PKG-Object Studie einbauen
+%     => Beschriftung der Studienart bei SPM-Object Studie einbauen
 end
 function Roadmap                                                       
 % - Roadmap
@@ -759,6 +778,7 @@ function SpmV1F9
 % - focus thief found in heading and footer method (restoring old axes)
 % - Release SpmV1F @ CorazonV1i
 % - titles fixed for CriticalForward and CriticalReverse
+% - buy-off remarks phase 3
 end
 
 function KnownBugsAndWishlist                                          
