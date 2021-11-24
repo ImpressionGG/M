@@ -53,7 +53,7 @@ function oo = ShellMenu(o)             % Setup Plot Menu for SHELL Type
    oo = DummyMenu(o,'Principal');
    oo = DummyMenu(o,'Critical');
    oo = mitem(o,'-');
-   oo = DummyMenu(o,'Stability');
+   oo = StabilityMenu(o);              % build-up stability menu
    oo = DummyMenu(o,'Setup');
    oo = DummyMenu(o,'Sensitivity');
    oo = mitem(o,'-');
@@ -1025,14 +1025,20 @@ function o = CriticalFriction(o)       % Critical Friction Comparison
       sub = 100*m + 10*n + i;
       if (cutting > 0)
          sub = [0 0;  0 0; sub 0; 0 0];
-         tit = ['Critical Friction (Forward): ',id(oo)];
+         head = ['Critical Friction (Forward)'];
       else
          sub = [0 0;  0 0; 0 sub; 0 0];
-         tit = ['Critical Friction (Reverse): ',id(oo)];
+         head = ['Critical Friction (Reverse)'];
       end
+      tit = get(oo,{'title',''});
       oo = opt(oo,'subplot',sub);
-      PkgStabilityMargin(oo);
+      oo = PkgStabilityMargin(oo,head);
       title(tit);
+      heading(o,head);
+      
+      if isempty(oo)
+         break;
+      end
    end
 end
 function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin     
@@ -1042,7 +1048,7 @@ function o = SpmStabilityMargin(o)     % Plot SPM Stability Margin
    sub = opt(o,{'subplot',[211,212]});
    MarginChart(o,sub);
 end
-function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin     
+function o = PkgStabilityMargin(o,head)% Plot PKG Stability Margin     
    if ~type(o,{'pkg'})
       plot(o,'About');
       return
@@ -1078,8 +1084,12 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
       end
    end
 
-   Heading(o);                         % start with heading
-
+   if (nargin > 1)
+      Heading(o,head);
+   else
+      Heading(o);                      % start with heading
+   end
+   
       % get object list of package
       % note that first list element is the package object, which has
       % to been deleted. calculate stability margin for all data objects
@@ -1111,6 +1121,7 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
    yellow = 'yyyr|o3';
    red = 'r|o3';
 
+   stopped = 0;
    stop(o,'Enable');
    for (i=1:n)                         % calc & plot stability margin
       txt = sprintf('calculate stability range of %s',get(o,'title'));
@@ -1141,13 +1152,22 @@ function o = PkgStabilityMargin(o)     % Plot PKG Stability Margin
 
       idle(o);                         % show graphics
       if stop(o)
+         stopped = 1;
          break;
       end
    end
    stop(o,'Enable');
 
    progress(o);                        % progress completed
-   Heading(o);                         % add heading
+   if (nargin > 1)
+      Heading(o,head);
+   else
+      Heading(o);                      % start with heading
+   end
+   
+   if (stopped)
+      o = [];                          % indicate to caller that we stop
+   end
 
    function PlotMucrit(xi,mu0,sub)     % Critical Friction Coefficient
       if (sub == 0)

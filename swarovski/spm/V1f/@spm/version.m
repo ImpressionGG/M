@@ -745,6 +745,7 @@ function SpmV1F9
 % - Beta SpmV1F9 @ CorazonV1i9 complete
 % - start SpmV1F release
 % - crash fixed (On StabilityMargin change from pkg to sho)
+% - Analyse/Stability/Critical_Friction reactivated with suitable labels
 end
 
 function KnownBugsAndWishlist                                          
