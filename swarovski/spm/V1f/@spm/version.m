@@ -748,6 +748,7 @@ function SpmV1F9
 % - Analyse/Stability/Critical_Friction reactivated with suitable labels
 % - title shorter for principal/critical overview
 % - setup kind (basic,sample,symmetry) added in title of SPM setup study
+% - focus thief found in heading and footer method (restoring old axes)
 end
 
 function KnownBugsAndWishlist                                          

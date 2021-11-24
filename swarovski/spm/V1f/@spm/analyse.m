@@ -3416,6 +3416,7 @@ function Heading(o,head)
    else
       msg = [head,' ',txt,', ',phitxt,dvartxt];
    end
+   o = opt(o,'restore',false);         % prevent focus thief
    heading(o,msg);
 end
 function txt = Contact(o)                                              

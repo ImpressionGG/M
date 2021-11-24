@@ -5,7 +5,16 @@ function hdl = heading(o,msg)
 %             hdl = heading(o,text)    % draw figure heading
 %             hdl = heading(o)         % use title as figure heading
 %
-%          Remarks: heading() implicitely calls 'hold off' at the end
+%          Options:
+%             restore      % restore current axes (default: true)
+%
+%          Remarks: 
+%             - heading() implicitely calls 'hold off' at the end
+%             - restoring current axes is usually an ease for the appli-
+%               cation, but it comes with the drawback of popping the
+%               matlab figure in front of all windows, which is a kind
+%               of 'focus thief'. For this reason the option setting
+%               o = opt(o,'restore',false) prevents the 'focus thief'
 %
 %          Copyright(c): Bluenetics 2020 
 %
@@ -61,8 +70,11 @@ function hdl = heading(o,msg)
    axis off
    shelf(o,hax,'kind','heading');      % provide axis kind
    shelf(o,hax,'closeup',false);       % prevents closeup control
+ 
+   if opt(o,{'restore',1})
+      axes(oldhax);                    % restore old axes
+   end
    
-   axes(oldhax);                       % restore old axes
    dark(o,'Axes');
    
    hold off

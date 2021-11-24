@@ -253,11 +253,11 @@ function o = RunBatch(o)               % Master Entry for Batch Process
       
    switch o.type
       case 'shell'
-         o = RunAll(o);
+         oo = RunAll(o);
       case 'pkg'
-         o = RunPkg(o);
+         oo = RunPkg(o);
       case 'spm'
-         o = RunSpm(o);
+         oo = RunSpm(o);
    end
    
       % print/display end message
@@ -766,6 +766,7 @@ function Footer(o,time)                % Refresh Footer
    if (nargin >= 2)
       foot = sprintf('%s, time: %gs',foot,o.rd(time,1));
    end
+   o = opt(o,'restore',0);             % prevent focus thief
    footer(o,foot);
 end
 function IntermediateSave(o)           % Save to .Mat file             

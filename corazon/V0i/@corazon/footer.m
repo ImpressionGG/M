@@ -4,6 +4,16 @@ function hdl = footer(o,msg)
 %
 %             hdl = footer(o,text)    % draw figure footer
 %
+%          Options:
+%             restore      % restore current axes (default: true)
+%
+%          Remarks: 
+%             - heading() implicitely calls 'hold off' at the end
+%             - restoring current axes is usually an ease for the appli-
+%               cation, but it comes with the drawback of popping the
+%               matlab figure in front of all windows, which is a kind
+%               of 'focus thief'. For this reason the option setting
+%               o = opt(o,'restore',false) prevents the 'focus thief'
 %          Copyright(c): Bluenetics 2021
 %
 %          See also: CORAZON, PLOT, HEADING
@@ -49,7 +59,9 @@ function hdl = footer(o,msg)
    shelf(o,hax,'kind','footer');       % provide axis kind
    shelf(o,hax,'closeup',false);       % prevents closeup control
    
-   axes(oldhax);                       % restore old axes
+   if opt(o,{'restore',true})
+      axes(oldhax);                    % restore old axes
+   end
    dark(o,'Axes');
 end
 
