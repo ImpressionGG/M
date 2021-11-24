@@ -225,7 +225,7 @@ function use(tag,version)
       case 'spm-v1f9'
          Swarovski('15','Spm','V1f9','V1i9','Beta','23Nov21')
       case 'spm-v1f'
-         Swarovski('16','Spm','V1f','V1i','Release','23Nov21')
+         Swarovski('16','Spm','V1f','V1i','Release','24Nov21')
 
       case 'minispm-v1e'
          Swarovski('07','MiniSpm','V1e','V1h','Release','22Feb21')

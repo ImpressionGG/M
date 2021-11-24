@@ -776,10 +776,10 @@ function SpmV1F9
 % - title shorter for principal/critical overview
 % - setup kind (basic,sample,symmetry) added in title of SPM setup study
 % - focus thief found in heading and footer method (restoring old axes)
-% - Release SpmV1F @ CorazonV1i
 % - titles fixed for CriticalForward and CriticalReverse
 % - buy-off remarks phase 3
 % - nyquist chart: shorter titles in non-expert mode
+% - Release SpmV1F @ CorazonV1i
 end
 
 function KnownBugsAndWishlist                                          
