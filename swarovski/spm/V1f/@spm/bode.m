@@ -100,9 +100,14 @@ function Bode(o,L,sub1,sub2,dominant)  % Actual Bode Plot
       everr = var(L0,['EVerr',tag]);
       
          % labels
-         
-      title(sprintf('%s: Magnitude Plots - K%s: %g @ %g Hz (EV error: %g)',...
+
+      if opt(o,{'mode.expert',0})
+         title(sprintf('%s: Magnitude Plots - K%s: %g @ %g Hz (EV error: %g)',...
                     name,tag,K,f,everr));
+      else
+         title(sprintf('%s: Magnitude Plots - K%s: %g @ %g Hz (EV error: %g)',...
+                    name,tag,o.rd(K,2),o.rd(f,1),Rd(everr)));
+      end
       xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
       ylabel(sprintf('|%s[k](jw)| [dB]',name));
       subplot(o);
@@ -145,8 +150,14 @@ function Bode(o,L,sub1,sub2,dominant)  % Actual Bode Plot
          % labels
          
       subplot(o);  idle(o);  % give time to refresh graphics
-      title(sprintf('%s: Phase Plots - K%s: %g @ %g Hz (Nyquist error: %g)',...
+
+      if opt(o,{'mode.expert',0})
+         title(sprintf('%s: Phase Plots - K%s: %g @ %g Hz (Nyquist error: %g)',...
                     name,tag,K,f,nyqerr));
+      else
+         title(sprintf('%s: Phase Plots - K%s: %g @ %g Hz (Nyquist error: %g)',...
+                    name,tag,o.rd(K,2),o.rd(f,1),Rd(nyqerr)));
+      end
       xlabel(o.iif(frequency,'Frequency [Hz]','Omega [1/s]'));
       ylabel(sprintf('%s[k](jw): Phase [deg]',name));
    end
@@ -188,4 +199,10 @@ function o = Closeup(o,f0)                  % Set Closeup if Activated
        o = opt(o,'omega.high',2*pi*f0*(1+closeup));
        o = opt(o,'omega.points',points);
    end
+end
+function y = Rd(x)                          % Round Error
+   exp = floor(log10(x));
+   y = x/10^exp;
+   y = spm.rd(y,1);
+   y = y*10^exp;
 end

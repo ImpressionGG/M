@@ -422,7 +422,7 @@ function AbnahmeTeil2
 %     => Aufrufe müssen als message(opt(o,'pitch',0.5),...) angepasst
 %        werden
 %   + 10000 Punkte Default auch im Patch (wie im Live Modus)
-%     => auf 1000 Punkte geändert
+%     => auf 10000 Punkte geändert
 %   + PNGs werden beim Batch überschrieben. Diskutieren ob wir das so
 %     lassen wollen, bzw, ob ein neuer Ordner Ordner erzeugt wird, oder
 %     beim Bestätigungsdialog vor dem Ausführen checken und darüber
@@ -746,6 +746,7 @@ function SpmV1F9
 % - start SpmV1F release
 % - crash fixed (On StabilityMargin change from pkg to sho)
 % - Analyse/Stability/Critical_Friction reactivated with suitable labels
+% - title shorter for principal/critical overview 
 end
 
 function KnownBugsAndWishlist                                          
