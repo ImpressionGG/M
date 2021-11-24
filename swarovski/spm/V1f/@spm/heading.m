@@ -41,11 +41,7 @@ function txt = heading(o,txt)
    
    if (nargout == 0)   
       if (nargin == 1 || nargin == 2)
-         
-            % call corazon method, copy 'restore' option
-            
-         oo = opt(corazon(o),'restore',opt(o,'restore'));
-         heading(oo,txt);
+         heading(corazon(o),txt);
          'done';
       else
          error('1 or 2 input args expected');

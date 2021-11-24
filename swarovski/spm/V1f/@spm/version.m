@@ -515,7 +515,15 @@ function AbnahmeTeil2
 %   + Nice2Have (6 Punkte)
 %     => Auftrag!
 end
+function AbnahmeTeil3
+%   + Crash wenn Stability Margin aufgerufen und ein Wechsel der Selektion 
+%     von pkg zu sho erfolgt
+%     => Crash behoben
+%   + Verschwundene Menüpunkte Analyse>Stability>Critical_Friction(Forward)
+%     Analyse>Stability>Critical_Friction(Backward)
+%     => wurden wieder eingebaut, Beschriftung wurde angepasst
 
+end
 function Roadmap                                                       
 % - Roadmap
 %   - consolidation of algorithms (ommit anything which is not numerically
@@ -749,6 +757,8 @@ function SpmV1F9
 % - title shorter for principal/critical overview
 % - setup kind (basic,sample,symmetry) added in title of SPM setup study
 % - focus thief found in heading and footer method (restoring old axes)
+% - Release SpmV1F @ CorazonV1i
+% - titles fixed for CriticalForward and CriticalReverse
 end
 
 function KnownBugsAndWishlist                                          

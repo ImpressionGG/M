@@ -1022,17 +1022,18 @@ function o = CriticalFriction(o)       % Critical Friction Comparison
    for (i=1:length(list))
       oo = list{i};
       
-      sub = 100*m + 10*n + i;
+      Sub = 100*m + 10*n + i;
       if (cutting > 0)
-         sub = [0 0;  0 0; sub 0; 0 0];
+         sub = [0 0;  0 0; Sub 0; 0 0];
          head = ['Critical Friction (Forward)'];
       else
-         sub = [0 0;  0 0; 0 sub; 0 0];
+         sub = [0 0;  0 0; 0 Sub; 0 0];
          head = ['Critical Friction (Reverse)'];
       end
       tit = get(oo,{'title',''});
       oo = opt(oo,'subplot',sub);
       oo = PkgStabilityMargin(oo,head);
+      subplot(o,Sub);                  % re-select subplot to set title
       title(tit);
       heading(o,head);
       
