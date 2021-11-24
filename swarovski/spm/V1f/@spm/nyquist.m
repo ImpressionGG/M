@@ -56,5 +56,11 @@ function Nyquist(o,L,sub)
       
    name = get(L,'name');
    kind = o.iif(critical,'Critical','Principal');
-   title(sprintf('%s Spectrum: %s - K%s: %g @ %g Hz',kind,name,tag,K,f));
+   
+   if opt(o,{'mode.expert',0})
+      title(sprintf('%s Spectrum: %s - K%s: %g @ %g Hz',kind,name,tag,K,f));
+   else
+      title(sprintf('%s Spectrum: %s - K%s: %g @ %g Hz',...
+            kind,name,tag,o.rd(K,2),o.rd(f,1)));
+   end
 end

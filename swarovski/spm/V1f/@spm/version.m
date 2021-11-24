@@ -779,6 +779,7 @@ function SpmV1F9
 % - Release SpmV1F @ CorazonV1i
 % - titles fixed for CriticalForward and CriticalReverse
 % - buy-off remarks phase 3
+% - nyquist chart: shorter titles in non-expert mode
 end
 
 function KnownBugsAndWishlist                                          
