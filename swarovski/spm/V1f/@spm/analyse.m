@@ -2261,6 +2261,11 @@ function o = SpmSetupAnalysis(o)       % Setup Specific Stab. Margin
             title(sprintf('Stability Margin (%s Cutting, mu: %g/%g)',...
                           dir,abs(mu),abs(mu)*lim(1)/lim(2)));
             ylabel(sprintf('%s',lower(tit)));
+         case 'Setup'
+            kind = arg(o,1);
+            kind(1) = upper(kind(1));
+            title(sprintf('%s %s (%s Cutting)',kind,tit,dir));
+            ylabel(lower(tit));
          otherwise
             title(sprintf('%s (%s Cutting)',tit,dir));
             ylabel(lower(tit));

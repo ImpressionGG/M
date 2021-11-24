@@ -746,7 +746,8 @@ function SpmV1F9
 % - start SpmV1F release
 % - crash fixed (On StabilityMargin change from pkg to sho)
 % - Analyse/Stability/Critical_Friction reactivated with suitable labels
-% - title shorter for principal/critical overview 
+% - title shorter for principal/critical overview
+% - setup kind (basic,sample,symmetry) added in title of SPM setup study
 end
 
 function KnownBugsAndWishlist                                          
